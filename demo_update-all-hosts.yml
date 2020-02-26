@@ -1,0 +1,46 @@
+---
+- name: "Update all hosts -  x86, power"
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+
+  - name: Check oslevel of AIX system
+    shell: "oslevel -s"
+    when: ansible_distribution == 'AIX'
+    register: output
+  - debug: var=output
+
+
+  - name: Check for, and install, system updates
+    suma:
+      oslevel: 'latest'
+      download_only: False
+    when: ansible_distribution == 'AIX'
+    ignore_errors: True
+    register: output
+  - debug: var=output
+
+
+  - name: Check for new oslevel
+    shell: "oslevel -s"
+    when: ansible_distribution == 'AIX'
+    register: output
+  - debug: var=output
+
+
+  - name: Perform YuM check-updates
+    yum:
+      name: '*'
+      state: latest
+    when: ansible_distribution == 'CentOS'
+    register: output
+  - debug: var=output
+
+
+  - name: Restart with newest kernel
+    shell: "sleep 5 && reboot"
+    async: 1
+    poll: 0
+    register: output
+  - debug: var=output

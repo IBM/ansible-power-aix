@@ -1,0 +1,15 @@
+---
+- name: "BOS install using mksysb image"
+  hosts: nim
+  gather_facts: no
+
+  tasks:
+
+    - name: Install using group resource
+      nim:
+        action: 'bos_inst'
+        targets: 'quimby03'
+        group: 'basic_res_grp'
+        description: 'NIM -o bos_inst -a source=mksysb'
+      register: nim_output
+    - debug: var=nim_output

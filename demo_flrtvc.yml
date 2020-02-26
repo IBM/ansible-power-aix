@@ -1,0 +1,14 @@
+- name: "FLRTVC on AIX playbook"
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: "FLRTVC"
+      flrtvc:
+        path: /usr/sys/inst.images
+        verbose: yes
+        apar: sec
+        force: no
+        clean: False
+        download_only: yes
+      register: result
+    - debug: var=result

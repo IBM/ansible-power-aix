@@ -1,0 +1,65 @@
+---
+- name: "SUMA on AIX"
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+
+  - name: Check oslevel of system
+    shell: "oslevel -s"
+    when: ansible_distribution == 'AIX'
+    register: output
+  - debug: var=output
+
+  - name: Create file system for system updates
+    aix_filesystem:
+      filesystem: /usr/sys/inst.images
+      size: 1G
+      state: present
+      vg: rootvg
+    when: ansible_distribution == 'AIX'
+
+  - name: Mount the file system (if necessary)
+    aix_filesystem:
+      filesystem: /usr/sys/inst.images
+      state: mounted
+    when: ansible_distribution == 'AIX'
+
+  - name: Check for, and install, system updates
+    suma:
+      oslevel: 'latest'
+      download_dir: '/usr/sys/inst.images'
+      download_only: False
+    when: ansible_distribution == 'AIX'
+    register: output
+  - debug: var=output
+
+  - name: Check for new oslevel
+    shell: "oslevel -s"
+    when: ansible_distribution == 'AIX'
+    register: output
+  - debug: var=output
+
+# - name: Restart with newest kernel
+#   shell: "sleep 5 && shutdown -Fr"
+#   async: 1
+#   poll: 0
+#   register: output
+# - debug: var=output
+
+# - name: Restart with newest kernel
+#   reboot:
+#   when: ansible_distribution == 'AIX'
+#   register: output
+# - debug: var=output
+
+  - name: Wait for 10 seconds
+    pause:
+      seconds: 10
+
+  - name: Wait for the system to reboot
+    wait_for_connection:
+      connect_timeout: 20
+      sleep: 5
+      delay: 5
+      timeout: 600

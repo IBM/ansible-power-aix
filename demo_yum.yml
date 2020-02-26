@@ -1,0 +1,16 @@
+---
+- name: "YuM Check-Update"
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+
+  - name: Upgrade packages, excluding kernel related packages
+    yum:
+      name: '*'
+      state: latest
+#      exclude: kernel*
+#    when: ansible_distribution == 'CentOS'
+
+    register: output
+  - debug: var=output
