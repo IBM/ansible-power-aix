@@ -2,7 +2,8 @@
 - name: "SUMA on AIX"
   hosts: all
   gather_facts: yes
-
+  vars:
+    download_dir: /usr/sys/inst.images
   tasks:
 
   - name: Check oslevel of system
@@ -13,7 +14,7 @@
 
   - name: Create file system for system updates
     aix_filesystem:
-      filesystem: /usr/sys/inst.images
+      filesystem: "{{ download_dir }}"
       size: 1G
       state: present
       vg: rootvg
@@ -21,14 +22,14 @@
 
   - name: Mount the file system (if necessary)
     aix_filesystem:
-      filesystem: /usr/sys/inst.images
+      filesystem: "{{ download_dir }}"
       state: mounted
     when: ansible_distribution == 'AIX'
 
   - name: Check for, and install, system updates
     suma:
       oslevel: 'latest'
-      download_dir: '/usr/sys/inst.images'
+      download_dir: "{{ download_dir }}"
       download_only: False
     when: ansible_distribution == 'AIX'
     register: output
