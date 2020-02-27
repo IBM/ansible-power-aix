@@ -2,7 +2,8 @@
 - name: "Install an SQL database server"
   hosts: all
   gather_facts: yes
-
+  vars:
+    package: mariadb-server
   tasks:
 
   - name: Increase File System size for /opt
@@ -12,9 +13,16 @@
       state: present
     when: ansible_distribution == 'AIX'
 
-  - name: Yum install mariaDB-server
+  - name: Increase File System size for /var
+    aix_filesystem:
+      filesystem: /var
+      size: +250M
+      state: present
+    when: ansible_distribution == 'AIX'
+
+  - name: Yum install "{{ package }}"
     yum:
-      name: 'mariadb-server'
+      name: "{{ package }}"
       state: latest
     register: output
   - debug: var=output

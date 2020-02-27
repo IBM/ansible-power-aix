@@ -1,14 +1,17 @@
 - name: "FLRTVC on AIX playbook"
   hosts: all
   gather_facts: no
+  vars:
+    path: /usr/sys/inst.images
+    download: yes
   tasks:
     - name: "FLRTVC"
       flrtvc:
-        path: /usr/sys/inst.images
+        path: "{{ path }}"
         verbose: yes
         apar: sec
         force: no
         clean: False
-        download_only: yes
+        download_only: "{{ download }}"
       register: result
     - debug: var=result

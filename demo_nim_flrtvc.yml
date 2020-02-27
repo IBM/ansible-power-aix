@@ -1,15 +1,19 @@
 - name: "NIM FLRTVC on AIX playbook"
   hosts: nim
   gather_facts: no
+  vars:
+    vm_targets: quimby01
+    path: /export/nim/ansible
+    download: no
   tasks:
     - name: "FLRTVC"
       nim_flrtvc:
-        targets: 'quimby01'
-        path: /export/nim/ansible
+        targets: "{{ vm_targets }}"
+        path: "{{ path }}"
         verbose: yes
         apar: all
         force: no
         clean: False
-        download_only: no
+        download_only: "{{ download }}"
       register: result
     - debug: var=result
