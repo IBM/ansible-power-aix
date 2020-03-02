@@ -2,6 +2,7 @@
   hosts: all
   gather_facts: no
   vars:
+    apar: sec
     path: /usr/sys/inst.images
     download: yes
   tasks:
@@ -9,7 +10,7 @@
       flrtvc:
         path: "{{ path }}"
         verbose: yes
-        apar: sec
+        apar: "{{ sec }}"
         force: no
         clean: False
         download_only: "{{ download }}"
