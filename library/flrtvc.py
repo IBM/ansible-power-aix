@@ -47,6 +47,7 @@ requirements: [ AIX ]
 # Threading
 THRDS = []
 
+
 def start_threaded(thds):
     """
     Decorator for thread start
@@ -65,6 +66,7 @@ def start_threaded(thds):
             thds.append(thd)
         return start_threaded_inner_wrapper
     return start_threaded_wrapper
+
 
 def wait_threaded(thds):
     """
@@ -384,11 +386,11 @@ def check_epkgs(epkg_list, lpps, efixes, output):
 
         # convert packaging date into time in sec from epoch
         if epkg['pkg_date']:
-                (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
-                if sec_from_epoch == -1:
-                    logging.warning('{}: "{}" for epkg:{} '
-                                    .format(msg, epkg['pkg_date'], epkg))
-                epkg['sec_from_epoch'] = sec_from_epoch
+            (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
+            if sec_from_epoch == -1:
+                logging.warning('{}: "{}" for epkg:{} '
+                                .format(msg, epkg['pkg_date'], epkg))
+            epkg['sec_from_epoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
 
@@ -960,7 +962,6 @@ if __name__ == '__main__':
     # metadata
     OUTPUT = {}
     OUTPUT = {'messages': []}  # first time init
-
 
     # ===========================================
     # Install flrtvc script
