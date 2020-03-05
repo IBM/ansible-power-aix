@@ -4,6 +4,7 @@
   gather_facts: yes
   vars:
     download_dir: /usr/sys/inst.images
+    download_only: False
   tasks:
 
   - name: Check oslevel of system
@@ -30,7 +31,7 @@
     suma:
       oslevel: 'latest'
       download_dir: "{{ download_dir }}"
-      download_only: False
+      download_only: "{{ download_only }}"
     when: ansible_distribution == 'AIX'
     register: output
   - debug: var=output

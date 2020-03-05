@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: yes
   vars:
-    name: *
+    name: '*'
     state: latest
     exclude: kernel*
   tasks:

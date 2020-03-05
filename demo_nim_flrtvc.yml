@@ -2,6 +2,7 @@
   hosts: nim
   gather_facts: no
   vars:
+    apar: all
     vm_targets: quimby01
     path: /export/nim/ansible
     download: no
@@ -11,7 +12,7 @@
         targets: "{{ vm_targets }}"
         path: "{{ path }}"
         verbose: yes
-        apar: all
+        apar: "{{ apar }}"
         force: no
         clean: False
         download_only: "{{ download }}"
