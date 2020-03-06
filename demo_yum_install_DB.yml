@@ -9,7 +9,7 @@
   - name: Increase File System size for /opt
     aix_filesystem:
       filesystem: /opt
-      size: +250M
+      size: +350M
       state: present
     when: ansible_distribution == 'AIX'
 
