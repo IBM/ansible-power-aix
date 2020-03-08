@@ -18,17 +18,13 @@ This repository contains some example best practices for open source repositorie
 * [README.md](README.md)
 * [CONTRIBUTING.md](CONTRIBUTING.md)
 * [MAINTAINERS.md](MAINTAINERS.md)
-<!-- The Code of Conduct is vital to help enforce a inclusive and positive project -->
 * [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for more details you should [read this][coc].
-<!-- A Changelog allows you to track major changes and things that happen, https://github.com/github-changelog-generator/github-changelog-generator can help automate the process -->
 * [CHANGELOG.md](CHANGELOG.md)
-
-> These are optional
+<!-- A Changelog allows you to track major changes and things that happen, https://github.com/github-changelog-generator/github-changelog-generator can help automate the process -->
 
 <!-- The following are OPTIONAL, but strongly suggested to have in your repository. -->
-* [travis.yml](.travis.yml) - This is a example `.travis.yml`, please take a look https://docs.travis-ci.com/user/tutorial/ for more details.
+* [travis.yml](.travis.yml) - Look https://docs.travis-ci.com/user/tutorial/ for more details.
 
-These may be copied into a new or existing project to make it easier for developers not on a project team to collaborate.
 
 <!-- A notes section is useful for anything that isn't covered in the Usage or Scope. Like what we have below. -->
 <!-- ## Notes -->
