@@ -1,19 +1,20 @@
 #!/usr/bin/python
 #
-# Copyright 2020, International Business Machines Corporation
+# Copyright:: 2020- IBM, Inc
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 ######################################################################
 """AIX FLRTVC: generate flrtvc report, download and install efix"""
 
@@ -47,6 +48,7 @@ requirements: [ AIX ]
 # Threading
 THRDS = []
 
+
 def start_threaded(thds):
     """
     Decorator for thread start
@@ -65,6 +67,7 @@ def start_threaded(thds):
             thds.append(thd)
         return start_threaded_inner_wrapper
     return start_threaded_wrapper
+
 
 def wait_threaded(thds):
     """
@@ -112,10 +115,13 @@ def download(src, dst):
         False otherwise
     """
     res = True
+    wget = '/bin/wget'
     if not os.path.isfile(dst):
         logging.debug('downloading {} to {}...'.format(src, dst))
+        if not os.path.exists(wget):
+            logging.debug('Unable to locate {} ...'.format(wget))
         try:
-            cmd = ['/bin/wget', '--no-check-certificate', src, '-P', os.path.dirname(dst)]
+            cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
             subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             logging.warning('EXCEPTION cmd={} rc={} output={}'
@@ -384,11 +390,11 @@ def check_epkgs(epkg_list, lpps, efixes, output):
 
         # convert packaging date into time in sec from epoch
         if epkg['pkg_date']:
-                (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
-                if sec_from_epoch == -1:
-                    logging.warning('{}: "{}" for epkg:{} '
-                                    .format(msg, epkg['pkg_date'], epkg))
-                epkg['sec_from_epoch'] = sec_from_epoch
+            (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
+            if sec_from_epoch == -1:
+                logging.warning('{}: "{}" for epkg:{} '
+                                .format(msg, epkg['pkg_date'], epkg))
+            epkg['sec_from_epoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
 
@@ -571,13 +577,19 @@ def run_flrtvc(output, params, force):
     lslpp_file = os.path.join(WORKDIR, 'lslpp.txt')
     if os.path.exists(lslpp_file):
         os.remove(lslpp_file)
-    run_lslpp(lslpp_file, output)
+    thd1 = threading.Thread(target=run_lslpp, args=(lslpp_file, output))
+    thd1.start()
 
     # Run 'emgr -lv3' on the system and save to file
     emgr_file = os.path.join(WORKDIR, 'emgr.txt')
     if os.path.exists(emgr_file):
         os.remove(emgr_file)
-    run_emgr(emgr_file, output)
+    thd2 = threading.Thread(target=run_emgr, args=(emgr_file, output))
+    thd2.start()
+
+    # Wait until threads finish
+    thd1.join()
+    thd2.join()
 
     if not os.path.exists(lslpp_file) or not os.path.exists(emgr_file):
         if not os.path.exists(lslpp_file):
@@ -849,7 +861,8 @@ def exec_cmd(cmd, output, exit_on_error=False, shell=False):
     res = 0
     stdout = ''
     errout = ''
-    stderr_file = os.path.join(WORKDIR, 'cmd_stderr')
+    th_id = threading.current_thread().ident
+    stderr_file = os.path.join(WORKDIR, 'cmd_stderr_{}'.format(th_id))
 
     try:
         myfile = open(stderr_file, 'w')
@@ -961,7 +974,6 @@ if __name__ == '__main__':
     OUTPUT = {}
     OUTPUT = {'messages': []}  # first time init
 
-
     # ===========================================
     # Install flrtvc script
     # ===========================================
@@ -981,6 +993,7 @@ if __name__ == '__main__':
     # ===========================================
     logging.debug('*** REPORT ***')
     rc = run_flrtvc(OUTPUT, FLRTVC_PARAMS, FORCE)
+    wait_all()
     if rc == 1:
         msg = 'Error: system will not be updated (flrtvc report failed)'
         logging.warning(msg)
@@ -995,12 +1008,14 @@ if __name__ == '__main__':
     # ===========================================
     logging.debug('*** PARSE ***')
     run_parser(OUTPUT, OUTPUT['0.report'])
+    wait_all()
 
     # ===========================================
     # Download and check efixes
     # ===========================================
     logging.debug('*** DOWNLOAD ***')
     run_downloader(OUTPUT, OUTPUT['1.parse'])
+    wait_all()
 
     if DOWNLOAD_ONLY:
         if CLEAN and os.path.exists(WORKDIR):
@@ -1012,6 +1027,7 @@ if __name__ == '__main__':
     # ===========================================
     logging.debug('*** UPDATE ***')
     run_installer(OUTPUT, OUTPUT['4.2.check'])
+    wait_all()
 
     if CLEAN and os.path.exists(WORKDIR):
         shutil.rmtree(WORKDIR, ignore_errors=True)

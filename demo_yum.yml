@@ -13,7 +13,6 @@
       name: "{{ name }}"
       state: "{{ state }}"
       exclude: "{{ exclude }}"
-#    when: ansible_distribution == 'CentOS'
 
     register: output
   - debug: var=output

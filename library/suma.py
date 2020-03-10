@@ -1,20 +1,20 @@
 #!/usr/bin/python
 #
-# Copyright 2020, International Business Machines Corporation
+# Copyright:: 2020- IBM, Inc
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-
 ######################################################################
 """SUMA: download fixes, SP or TL on an AIX server"""
 
@@ -37,6 +37,7 @@ author: "Paul Finley"
 version_added: "1.0.0"
 requirements: [ AIX ]
 """
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -83,6 +84,7 @@ def exec_cmd(cmd, shell=False):
 
     return 0, out
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def compute_rq_type(oslevel):
@@ -105,6 +107,7 @@ def compute_rq_type(oslevel):
         return 'SP'
 
     return 'ERROR'
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -232,6 +235,7 @@ def compute_rq_name(rq_type, oslevel):
 
     return 0, rq_name
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def compute_filter_ml(rq_name):
@@ -245,6 +249,7 @@ def compute_filter_ml(rq_name):
         filter_ml += "-00"
 
     return filter_ml
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -263,10 +268,10 @@ def compute_dl_target(location):
     else:
         loc = location.rstrip('/')
 
-
     dl_target = loc
 
     return 0, dl_target
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -284,12 +289,12 @@ def suma_command(module, action):
     rq_type = PARAMS['RqType']
     if rq_type == 'Latest':
         suma_cmd = 'LC_ALL=C /usr/sbin/suma -x -a RqType={} -a Action={} '\
-                   '-a DLTarget={} -a DisplayName="{}"'\
-                   .format(rq_type, action, PARAMS['DLTarget'], PARAMS['Description'])
+           '-a DLTarget={} -a DisplayName="{}"'\
+           .format(rq_type, action, PARAMS['DLTarget'], PARAMS['Description'])
     else:
         suma_cmd = 'LC_ALL=C /usr/sbin/suma -x -a RqType={} -a Action={} '\
-                   '-a DLTarget={} -a RqName={} -a DisplayName="{}"'\
-                   .format(rq_type, action, PARAMS['DLTarget'], PARAMS['RqName'], PARAMS['Description'])
+           '-a DLTarget={} -a RqName={} -a DisplayName="{}"'\
+           .format(rq_type, action, PARAMS['DLTarget'], PARAMS['RqName'], PARAMS['Description'])
 
     logging.debug("SUMA - Command:{}".format(suma_cmd))
     SUMA_OUTPUT.append("SUMA - Command:{}".format(suma_cmd))
@@ -297,11 +302,12 @@ def suma_command(module, action):
     ret, stdout = exec_cmd(suma_cmd, shell=True)
     if ret != 0:
         logging.error("Error: suma {} command failed with return code {}"
-                      .format(action, ret))
+              .format(action, ret))
         SUMA_ERROR.append("SUMA Command: {} => Error :{}".format(suma_cmd, stdout.split('\n')))
         module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
 
     return ret, stdout
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -325,6 +331,7 @@ def suma_list(module):
     SUMA_OUTPUT.append('List SUMA tasks:')
     SUMA_OUTPUT.append(stdout.split('\n'))
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def check_time(val, mini, maxi):
@@ -339,6 +346,7 @@ def check_time(val, mini, maxi):
         return True
 
     return False
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -386,6 +394,7 @@ def suma_edit(module):
     SUMA_OUTPUT.append("Edit SUMA task {}".format(PARAMS['task_id']))
     SUMA_OUTPUT.append(stdout.split('\n'))
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def suma_unschedule(module):
@@ -404,6 +413,7 @@ def suma_unschedule(module):
 
     SUMA_OUTPUT.append("Unschedule suma task: {}".format(PARAMS['task_id']))
     SUMA_OUTPUT.append(stdout.split('\n'))
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -424,6 +434,7 @@ def suma_delete(module):
     SUMA_OUTPUT.append("Delete SUMA task {}".format(PARAMS['task_id']))
     SUMA_OUTPUT.append(stdout.split('\n'))
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def suma_config(module):
@@ -443,6 +454,7 @@ def suma_config(module):
     SUMA_OUTPUT.append('SUMA global configuration settings:')
     SUMA_OUTPUT.append(stdout.split('\n'))
 
+
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 def suma_default(module):
@@ -461,6 +473,7 @@ def suma_default(module):
 
     SUMA_OUTPUT.append('SUMA default task:')
     SUMA_OUTPUT.append(stdout.split('\n'))
+
 
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
@@ -485,7 +498,6 @@ def suma_download(module):
         logging.error(msg)
         SUMA_ERROR.append(msg)
         module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
 
     # =========================================================================
     # compute SUMA request type based on oslevel property
@@ -646,19 +658,22 @@ def suma_download(module):
                 #   Install updates
                 # ===========================================================
                 if not PARAMS['download_only']:
-                    cmde = "LC_ALL=C /usr/sbin/install_all_updates -Yd {}".format(PARAMS['DLTarget'])
+                    cmde = "LC_ALL=C /usr/sbin/install_all_updates -Yd {}"\
+                           .format(PARAMS['DLTarget'])
                     logging.debug("SUMA command:{}".format(cmde))
                     SUMA_OUTPUT.append("SUMA command:{}".format(cmde))
                     ret, stdout = exec_cmd(cmde, shell=True)
 
                     if ret != 0:
-                        msg = "SUMA Error: install_all_updates command failed with return code {}. Review {}/suma_debug.log for status." \
+                        msg = "SUMA Error: install_all_updates command failed with return code {}. \
+                               Review {}/suma_debug.log for status." \
                               .format(ret, LOGDIR)
                         logging.error(msg)
                         SUMA_ERROR.append(msg)
                         module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
 
 ##############################################################################
+
 
 if __name__ == '__main__':
 
@@ -761,7 +776,6 @@ if __name__ == '__main__':
         PARAMS['req_oslevel'] = req_oslevel
         PARAMS['download_dir'] = download_dir
         suma_download(module)
-
 
     # ========================================================================
     # Exit
