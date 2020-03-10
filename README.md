@@ -318,7 +318,7 @@ example:
 
 If you would like to see the detailed LICENSE click [here](LICENSE).
 
-- Authors: Paul B. Finley <pfinley@us.ibm.com>
+- Authors: Alain Poncet <aponcet@us.ibm.com>, Damien Bergamini <dbergami@us.ibm.com>, Pascal Oliva <poliva@us.ibm.com>, Patrice Jacquin <pjacquin@us.ibm.com>, Paul B. Finley <pfinley@us.ibm.com>, Vianney Robin <vrobin@us.ibm.com>
 
 ```text
 Copyright:: 2020- IBM, Inc

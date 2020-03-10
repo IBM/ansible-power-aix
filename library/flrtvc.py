@@ -40,7 +40,7 @@ from ansible.module_utils.basic import AnsibleModule
 DOCUMENTATION = """
 ------
 module: flrtvc
-author: "Paul Finley"
+author: "AIX Development Team"
 version_added: "1.0.0"
 requirements: [ AIX ]
 """

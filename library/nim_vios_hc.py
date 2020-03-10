@@ -32,7 +32,7 @@ DOCUMENTATION = """
 ---
 module: nim_vios_hc
 short_description: "Check the pair of VIOS can be updated"
-author: "Patrice Jacquin, Alain Poncet, Vianney Robin"
+author: "AIX Development Team"
 version_added: "1.0.0"
 requirements: [ AIX ]
 """
