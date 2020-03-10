@@ -34,7 +34,7 @@ DOCUMENTATION = """
 ---
 module: nim_vios_alt_disk
 short_description: "Copy the rootvg to an alternate disk or cleanup an existing one"
-author: "Patrice Jacquin, Vianney Robin, Alain Poncet"
+author: "AIX Development Team"
 version_added: "1.0.0"
 requirements: [ AIX ]
 

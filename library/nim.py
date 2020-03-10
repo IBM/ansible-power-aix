@@ -31,7 +31,7 @@ from ansible.module_utils.basic import AnsibleModule
 DOCUMENTATION = """
 ---
 module: nim
-author: "Alain Poncet, Patrice Jacquin"
+author: "AIX Development Team"
 version_added: "1.0.0"
 requirements: [ AIX ]
 

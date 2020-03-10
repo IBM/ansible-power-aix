@@ -33,7 +33,7 @@ from ansible.module_utils.basic import AnsibleModule
 DOCUMENTATION = """
 ---
 module: nim_updateios
-authors: Alain Poncet, Patrice Jacquin, Vianney Robin
+author: AIX Development Team
 short_description: Perform a VIOS update with NIM
 """
 

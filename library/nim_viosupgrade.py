@@ -29,7 +29,7 @@ from ansible.module_utils.basic import AnsibleModule
 DOCUMENTATION = """
 ---
 module: nim_upgradeios
-authors: Vianney Robin, Alain Poncet, Pascal Oliva
+author: AIX Development Team
 short_description: Perform a upgrade with the viosupgrade tool
 """
 
