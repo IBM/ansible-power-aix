@@ -23,10 +23,10 @@ script:
   #  F405: <var> may be undefined, or defined from star imports
   #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
   #- flake8 library/* --max-line-length=100 --ignore F403,F405,W503
-  - flake8 library/* --max-line-length=100
+  - flake8 library/* --max-line-length=160
 
   # pycodestyle (PEP8)
-  - pycodestyle library/* --max-line-length=100
+  - pycodestyle library/* --max-line-length=160
 
   # checking yaml syntax is not relevant since there are just examples.
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
