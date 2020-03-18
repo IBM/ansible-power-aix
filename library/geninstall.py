@@ -31,7 +31,8 @@ author:
 module: geninstall
 short_description: Generic installer for various packaging formats
 description:
-- A generic installer that installs software products of various packaging formats. For example, installp, RPM, SI, and ISMP.
+- A generic installer that installs software products of various packaging formats.
+- For example, installp, RPM, SI, and ISMP.
 version_added: '2.9'
 requirements: [ AIX ]
 options:
