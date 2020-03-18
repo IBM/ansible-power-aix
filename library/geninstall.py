@@ -28,11 +28,11 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team
-module: ibm_aix_geninstall
+module: geninstall
 short_description: Generic installer for various packaging formats
 description:
 - A generic installer that installs software products of various packaging formats. For example, installp, RPM, SI, and ISMP.
-version_added: '2.8'
+version_added: '2.9'
 requirements: [ AIX ]
 options:
   device:
@@ -73,12 +73,12 @@ options:
 
 EXAMPLES = r'''
 - name: Install all the products on a CD media
-  ibm_aix_geninstall:
+  geninstall:
     device: /dev/cd0
     install_list: all
 
 - name: Install an interim fix located in /images/emgr/ppc directory
-  ibm_aix_geninstall:
+  geninstall:
     device: /images
     install_list: IV12345.160101.epkg.Z
 '''

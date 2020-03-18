@@ -28,12 +28,12 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team
-module: ibm_aix_mktcpip
+module: mktcpip
 short_description: Sets the required values for starting TCP/IP on a host
 description:
 - This module sets the required minimal values required for using TCP/IP on a host machine.
 - These values are written to the configuration database.
-version_added: '2.8'
+version_added: '2.9'
 requirements: [ AIX ]
 options:
   hostname:
@@ -76,7 +76,7 @@ options:
 
 EXAMPLES = r'''
 - name: Set the required values for starting TCP/IP
-  ibm_aix_mktcpip:
+  mktcpip:
     hostname: fred.austin.century.com
     address: 192.9.200.4
     interface: en0
