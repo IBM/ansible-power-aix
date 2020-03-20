@@ -104,7 +104,7 @@ def logged(func):
 
 
 @logged
-def download(src, dst):
+def download(src, dst, output):
     """
     Download efix from url to directory
     args:
@@ -115,19 +115,26 @@ def download(src, dst):
         False otherwise
     """
     res = True
+    wget = '/bin/wget'
     if not os.path.isfile(dst):
         logging.debug('downloading {} to {}...'.format(src, dst))
-        try:
-            cmd = ['/bin/wget', '--no-check-certificate', src, '-P', os.path.dirname(dst)]
-            subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logging.warning('EXCEPTION cmd={} rc={} output={}'
-                            .format(exc.cmd, exc.returncode, exc.output))
+        if not os.path.exists(wget):
+            msg = 'Error: Unable to locate {} ...'.format(wget)
+            logging.warning(msg)
+            output['messages'].append(msg)
             res = False
-            if exc.returncode == 3:
-                increase_fs(dst)
-                os.remove(dst)
-                res = download(src, dst)
+        else:
+            try:
+                cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
+                subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as exc:
+                logging.warning('EXCEPTION cmd={} rc={} output={}'
+                                .format(exc.cmd, exc.returncode, exc.output))
+                res = False
+                if exc.returncode == 3:
+                    increase_fs(dst)
+                    os.remove(dst)
+                    res = download(src, dst, output)
     else:
         logging.debug('{} already exists'.format(dst))
     return res
@@ -734,7 +741,7 @@ def run_downloader(machine, output, urls):
 
             # download epkg file
             epkg = os.path.abspath(os.path.join(WORKDIR, name))
-            if download(url, epkg):
+            if download(url, epkg, out):
                 out['3.download'].extend(epkg)
 
         elif '.tar' in name:  # URL as a tar file
@@ -742,7 +749,7 @@ def run_downloader(machine, output, urls):
             dst = os.path.abspath(os.path.join(WORKDIR, name))
 
             # download and open tar file
-            download(url, dst)
+            download(url, dst, out)
             tar = tarfile.open(dst, 'r')
 
             # find all epkg in tar file
@@ -780,7 +787,7 @@ def run_downloader(machine, output, urls):
             # download epkg
             epkgs = [os.path.abspath(os.path.join(WORKDIR, epkg)) for epkg in epkgs
                      if download(os.path.join(url, epkg),
-                                 os.path.abspath(os.path.join(WORKDIR, epkg)))]
+                                 os.path.abspath(os.path.join(WORKDIR, epkg)), out)]
             out['3.download'].extend(epkgs)
 
     # Get installed filesets' levels
@@ -1197,7 +1204,10 @@ if __name__ == '__main__':
     _FLRTVCFILE = os.path.join(_FLRTVCPATH, 'flrtvc.ksh')
     if not os.path.exists(_FLRTVCFILE):
         _DESTNAME = os.path.abspath(os.path.join(os.sep, 'FLRTVC-latest.zip'))
-        download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip', _DESTNAME)
+        if not download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip', _DESTNAME, OUTPUT):
+            if CLEAN and os.path.exists(WORKDIR):
+                shutil.rmtree(WORKDIR, ignore_errors=True)
+            MODULE.fail_json(changed=CHANGED, msg='Failed to download FLRTVC-latest.zip', meta=OUTPUT)
         unzip(_DESTNAME, os.path.abspath(os.path.join(os.sep, 'usr', 'bin')))
     _STAT = os.stat(_FLRTVCFILE)
     if not _STAT.st_mode & stat.S_IEXEC:
