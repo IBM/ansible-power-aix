@@ -37,7 +37,7 @@ short_description: Perform a upgrade with the viosupgrade tool
 # TODO: Later, check SSP support (option -c of viosupgrade)
 # TODO: Later, check mirrored rootvg support for upgrade & upgrade all in one
 # TODO: Check if all debug section (TBC) are commented before commit
-# TODO: Check flake8 complaints 
+# TODO: Check flake8 complaints
 # TODO: Add this module usage in README.md file
 # TODO: -----------------------------------------------------------------------------
 # TODO: Add message in OUTPUT
@@ -130,7 +130,7 @@ def viosupgrade_file(module, filename):
     # run the command
     (ret, stdout, stderr) = module.run_command(cmd)
 
-    CHANGED=True  # don't really know
+    CHANGED = True  # don't really know
     logging.info("[STDOUT] {}".format(stdout))
     if ret == 0:
         logging.info("[STDERR] {}".format(stderr))
@@ -236,7 +236,7 @@ def viosupgrade_list(module, targets):
         # run the command
         (rc, stdout, stderr) = module.run_command(cmd)
 
-        CHANGED=True  # don't really know
+        CHANGED = True  # don't really know
         logging.info("[STDOUT] {}".format(stdout))
         if rc == 0:
             logging.info("[STDERR] {}".format(stderr))

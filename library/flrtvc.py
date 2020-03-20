@@ -166,8 +166,8 @@ def remove_efix(output):
     logging.debug(': Removing all installed efix')
 
     cmd = ['"export LC_ALL=C; rc=0;'
-            ' for i in `/usr/sbin/emgr -P |/usr/bin/tail -n +4 |/usr/bin/awk \'{print \$NF}\'`;'
-            ' do /usr/sbin/emgr -r -L $i || (( rc = rc | $? )); done; echo rc=$rc"']
+           r' for i in `/usr/sbin/emgr -P |/usr/bin/tail -n +4 |/usr/bin/awk \'{print \$NF}\'`;'
+           ' do /usr/sbin/emgr -r -L $i || (( rc = rc | $? )); done; echo rc=$rc"']
 
     (ret, stdout, stderr) = exec_cmd(cmd, output)
 
@@ -233,7 +233,7 @@ def to_utc_epoch(date):
     try:
         datet = time.strptime(date, "%a %b %d %H:%M:%S %Z %Y")
         sec_from_epoch = calendar.timegm(datet)
-    except ValueError as exc:
+    except ValueError:
         return (-1, 'EXCEPTION: cannot parse packaging date')
 
     if TZ not in shift:
@@ -319,7 +319,7 @@ def check_epkgs(epkg_list, lpps, efixes, output):
             if not epkg['pkg_date']:
                 # match: "PACKAGING DATE:   Mon Oct  9 09:35:09 CDT 2017"
                 match = re.match(r'^PACKAGING\s+DATE:\s+'
-                                 '(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\S*\s*\S+).*$',
+                                 r'(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\S*\s*\S+).*$',
                                  line)
                 if match:
                     epkg['pkg_date'] = match.group(1)
@@ -407,7 +407,6 @@ def check_epkgs(epkg_list, lpps, efixes, output):
     global_file_locks = []
     removed_epkg = []
     for epkg in sorted_epkgs:
-        lock_found = False
         if set(epkgs_info[epkg]['files']).isdisjoint(set(global_file_locks)):
             global_file_locks.extend(epkgs_info[epkg]['files'])
             logging.info('keep {}, files: {}'

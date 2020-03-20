@@ -323,9 +323,8 @@ def check_vios_targets(module, targets):
             return None
 
         # check vios not already exists in the target list
-        if tuple_elts[0] in vios_list or \
-           (tuple_len == 4 and (tuple_elts[2] in vios_list or
-                                tuple_elts[0] == tuple_elts[2])):
+        if tuple_elts[0] in vios_list or (tuple_len == 4 and (tuple_elts[2] in vios_list
+                                                              or tuple_elts[0] == tuple_elts[2])):
             OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
                           .format(targets))
             logging.error('Malformed VIOS targets {}. Duplicated VIOS'
@@ -334,8 +333,8 @@ def check_vios_targets(module, targets):
 
         # check vios is known by the NIM master - if not ignore it
         # because it can concern an other ansible host (nim master)
-        if tuple_elts[0] not in NIM_NODE['nim_vios'] or \
-           (tuple_len == 4 and tuple_elts[2] not in NIM_NODE['nim_vios']):
+        if tuple_elts[0] not in NIM_NODE['nim_vios'] or (tuple_len == 4
+                                                         and tuple_elts[2] not in NIM_NODE['nim_vios']):
             logging.info('skipping {} as VIOS not known by the NIM master.'
                          .format(vios_tuple))
             continue
@@ -344,7 +343,7 @@ def check_vios_targets(module, targets):
         res = 0
         id = 0
         while id < tuple_len:
-            elem =  tuple_elts[0]
+            elem = tuple_elts[0]
             cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', elem,
                    '"/usr/bin/ls /dev/null; echo rc=$?"']
             (ret, std_out, std_err) = exec_cmd(cmd, module)
@@ -1061,7 +1060,7 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
         nim_status = std_out.split('\n')[1].rstrip().split(':')
         nim_Cstate = nim_status[1]
         if len(nim_status) == 4 and (string.lower(nim_status[2]) == "success"
-           or string.lower(nim_status[2].lower()) == "failure"):
+                                     or string.lower(nim_status[2].lower()) == "failure"):
             nim_result = string.lower(nim_status[2])
         else:
             nim_info = nim_status[2]
@@ -1413,7 +1412,7 @@ if __name__ == '__main__':
     else:
         disk_size_policy = 'nearest'
 
-    if  module.params['force']:
+    if module.params['force']:
         force = module.params['force']
     else:
         force = 'no'

@@ -169,7 +169,7 @@ def remove_efix(machine, output):
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine]
 
     cmd += ['"export LC_ALL=C; rc=0;'
-            ' for i in `/usr/sbin/emgr -P |/usr/bin/tail -n +4 |/usr/bin/awk \'{print \$NF}\'`;'
+            r' for i in `/usr/sbin/emgr -P |/usr/bin/tail -n +4 |/usr/bin/awk \'{print \$NF}\'`;'
             ' do /usr/sbin/emgr -r -L $i || (( rc = rc | $? )); done; echo rc=$rc"']
 
     (ret, stdout, stderr) = exec_cmd(cmd, output)
@@ -236,7 +236,7 @@ def to_utc_epoch(date):
     try:
         datet = time.strptime(date, "%a %b %d %H:%M:%S %Z %Y")
         sec_from_epoch = calendar.timegm(datet)
-    except ValueError as exc:
+    except ValueError:
         return (-1, 'EXCEPTION: cannot parse packaging date')
 
     if TZ not in shift:
@@ -323,7 +323,7 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
             if not epkg['pkg_date']:
                 # match: "PACKAGING DATE:   Mon Oct  9 09:35:09 CDT 2017"
                 match = re.match(r'^PACKAGING\s+DATE:\s+'
-                                 '(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\S*\s*\S+).*$',
+                                 r'(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\S*\s*\S+).*$',
                                  line)
                 if match:
                     epkg['pkg_date'] = match.group(1)
@@ -394,11 +394,11 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
 
         # convert packaging date into time in sec from epoch
         if epkg['pkg_date']:
-                (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
-                if sec_from_epoch == -1:
-                    logging.warning('{}: {}: "{}" for epkg:{} '
-                                    .format(machine, msg, epkg['pkg_date'], epkg))
-                epkg['sec_from_epoch'] = sec_from_epoch
+            (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
+            if sec_from_epoch == -1:
+                logging.warning('{}: {}: "{}" for epkg:{} '
+                                .format(machine, msg, epkg['pkg_date'], epkg))
+            epkg['sec_from_epoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
 
@@ -411,7 +411,6 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     global_file_locks = []
     removed_epkg = []
     for epkg in sorted_epkgs:
-        lock_found = False
         if set(epkgs_info[epkg]['files']).isdisjoint(set(global_file_locks)):
             global_file_locks.extend(epkgs_info[epkg]['files'])
             logging.info('{}: keep {}, files: {}'
@@ -629,7 +628,7 @@ def run_flrtvc(machine, output, params, force):
 
         # Run flrtvc in compact mode
         logging.debug('{}: run cmd "{}"'.format(machine, ' '.join(cmd)))
-        (res, stdout, errout) = exec_cmd(' '.join(cmd), output, False, True)
+        (res, stdout, stderr) = exec_cmd(' '.join(cmd), output, False, True)
         if res != 0:
             msg = 'flrtvc failed: "{}"'.format(stderr)
             logging.error('{}: {}'.format(machine, msg))
@@ -659,7 +658,7 @@ def run_flrtvc(machine, output, params, force):
                 if params['verbose']:
                     cmd += ['-v']
                     logging.debug('{}: run cmd "{}"'.format(machine, ' '.join(cmd)))
-                    (res, stdout, errout) = exec_cmd(' '.join(cmd), output, False, True)
+                    (res, stdout, stderr) = exec_cmd(' '.join(cmd), output, False, True)
                     if res != 0:
                         msg = 'flrtvc failed: "{}"'.format(stderr)
                         logging.error('{}: {}'.format(machine, msg))

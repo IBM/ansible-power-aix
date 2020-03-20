@@ -236,8 +236,8 @@ def check_vios_targets(module, targets):
             return None
 
         # check vios not already exists in the target list
-        if tuple_elts[0] in vios_list or (tuple_len == 2
-           and (tuple_elts[1] in vios_list or tuple_elts[0] == tuple_elts[1])):
+        if tuple_elts[0] in vios_list or (tuple_len == 2 and (tuple_elts[1] in vios_list
+                                                              or tuple_elts[0] == tuple_elts[1])):
             OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
                           .format(targets))
             logging.error('Malformed VIOS targets {}. Duplicated VIOS'
@@ -665,33 +665,33 @@ def nim_migvios_all(module):
     global CHANGED
     global OUTPUT
 
-    threads = []
+    # threads = []
 
     for target_tuple in module.targets:
-# TODO: VRO test and activate multi threading
+        # TODO: VRO test and activate multi threading
         logging.debug('Start nim_migvios_tuple for {}'.format(target_tuple))
         nim_migvios_tuple(module, target_tuple, None)
         logging.debug('End nim_migvios_tuple for {}'.format(target_tuple))
-    #    # Spawn a thread running nim_migvios_tuple(module, target_tuple, time_limit)
-    #    logging.debug('Spawning MigviosThread for {} terminated'.format(target_tuple))
+    #     # Spawn a thread running nim_migvios_tuple(module, target_tuple, time_limit)
+    #     logging.debug('Spawning MigviosThread for {} terminated'.format(target_tuple))
 
-    #    th = MigviosThread(module=module,
-    #                       target_tuple=target_tuple,
-    #                       time_limit=module.time_limit)
-    #    threads.append(th)
-    #    th.start()
+    #     th = MigviosThread(module=module,
+    #                        target_tuple=target_tuple,
+    #                        time_limit=module.time_limit)
+    #     threads.append(th)
+    #     th.start()
 
-    #for th in threads:
-    #    logging.debug('Waiting for {} termination...'.format(th.getName()))
-    #    # No timeout in this join() as
-    #    # - the user can set a time_limit
-    #    # - there is a timeout when NIM states show no progress
-    #    th.join()
-    #    logging.debug('{} terminated'.format(th.getName()))
+    # for th in threads:
+    #     logging.debug('Waiting for {} termination...'.format(th.getName()))
+    #     # No timeout in this join() as
+    #     # - the user can set a time_limit
+    #     # - there is a timeout when NIM states show no progress
+    #     th.join()
+    #     logging.debug('{} terminated'.format(th.getName()))
 
-    #for th in threads:
-    #    if th.isAlive():
-    #        logging.warn('{} is still alive'.format(th.getName()))
+    # for th in threads:
+    #     if th.isAlive():
+    #         logging.warn('{} is still alive'.format(th.getName()))
 
     return 0
 
