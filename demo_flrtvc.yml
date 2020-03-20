@@ -10,7 +10,7 @@
       flrtvc:
         path: "{{ path }}"
         verbose: yes
-        apar: "{{ sec }}"
+        apar: "{{ apar }}"
         force: no
         clean: False
         download_only: "{{ download }}"

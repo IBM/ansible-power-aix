@@ -23,7 +23,6 @@ import re
 import glob
 import shutil
 import subprocess
-import threading
 import logging
 # Ansible module 'boilerplate'
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
@@ -289,21 +288,21 @@ def suma_command(module, action):
     rq_type = PARAMS['RqType']
     if rq_type == 'Latest':
         suma_cmd = 'LC_ALL=C /usr/sbin/suma -x -a RqType={} -a Action={} '\
-           '-a DLTarget={} -a DisplayName="{}"'\
-           .format(rq_type, action, PARAMS['DLTarget'], PARAMS['Description'])
+                   '-a DLTarget={} -a DisplayName="{}"'\
+                   .format(rq_type, action, PARAMS['DLTarget'], PARAMS['Description'])
     else:
         suma_cmd = 'LC_ALL=C /usr/sbin/suma -x -a RqType={} -a Action={} '\
-           '-a DLTarget={} -a RqName={} -a DisplayName="{}"'\
-           .format(rq_type, action, PARAMS['DLTarget'], PARAMS['RqName'], PARAMS['Description'])
+                   '-a DLTarget={} -a RqName={} -a DisplayName="{}"'\
+                   .format(rq_type, action, PARAMS['DLTarget'], PARAMS['RqName'], PARAMS['Description'])
 
     logging.debug("SUMA - Command:{}".format(suma_cmd))
     SUMA_OUTPUT.append("SUMA - Command:{}".format(suma_cmd))
 
     ret, stdout = exec_cmd(suma_cmd, shell=True)
     if ret != 0:
-        logging.error("Error: suma {} command failed with return code {}"
-              .format(action, ret))
-        SUMA_ERROR.append("SUMA Command: {} => Error :{}".format(suma_cmd, stdout.split('\n')))
+        logging.error("Error: suma {} command failed with return code {}".format(action, ret))
+        SUMA_ERROR.append("SUMA Command: {} => Error :{}"
+                          .format(suma_cmd, stdout.split('\n')))
         module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
 
     return ret, stdout

@@ -873,10 +873,10 @@ def nim_update(module):
     logging.info('NIM - {} update operation on {} with {} lpp_source'
                  .format(log_async, NIM_PARAMS['targets'], lpp_source))
 
-    if NIM_PARAMS['async'] == 'true' and (lpp_source == 'latest_tl'
-                                          or lpp_source == 'latest_sp'
-                                          or lpp_source == 'next_tl'
-                                          or lpp_source == 'next_sp'):
+    if (NIM_PARAMS['async'] == 'true' and (lpp_source == 'latest_tl'
+                                           or lpp_source == 'latest_sp'
+                                           or lpp_source == 'next_tl'
+                                           or lpp_source == 'next_sp')):
         logging.warning('Force customization synchronously')
         async_update = 'no'
 
@@ -954,8 +954,7 @@ def nim_update(module):
                                 .format(target, oslevel_elts[0]))
                 continue
             elif (cur_oslevel_elts[1] > oslevel_elts[1]
-                  or cur_oslevel_elts[1] == oslevel_elts[1]
-                  and cur_oslevel_elts[2] >= oslevel_elts[2]):
+                  or cur_oslevel_elts[1] == oslevel_elts[1] and cur_oslevel_elts[2] >= oslevel_elts[2]):
                 logging.warning('Machine {} is already at same or higher level than {}'
                                 .format(target, '-'.join(oslevel_elts)))
                 continue
@@ -1526,7 +1525,7 @@ if __name__ == '__main__':
             description=dict(required=False, type='str'),
             lpp_source=dict(required=False, type='str'),
             targets=dict(required=False, type='str'),
-            async=dict(choices=['true', 'false'], default='false', type='str'),
+            asynchronous=dict(choices=['true', 'false'], default='false', type='str'),
             device=dict(required=False, type='str'),
             script=dict(required=False, type='str'),
             resource=dict(required=False, type='str'),
@@ -1567,7 +1566,7 @@ if __name__ == '__main__':
     # =========================================================================
     lpp_source = MODULE.params['lpp_source']
     targets = MODULE.params['targets']
-    async_par = MODULE.params['async']
+    async_par = MODULE.params['asynchronous']
     device = MODULE.params['device']
     script = MODULE.params['script']
     resource = MODULE.params['resource']

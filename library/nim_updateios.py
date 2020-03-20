@@ -286,8 +286,8 @@ def check_vios_targets(module, targets):
             return None
 
         # check vios not already exists in the target list
-        if tuple_elts[0] in vios_list or (tuple_len == 2
-           and (tuple_elts[1] in vios_list or tuple_elts[0] == tuple_elts[1])):
+        if tuple_elts[0] in vios_list or (tuple_len == 2 and (tuple_elts[1] in vios_list
+                                                              or tuple_elts[0] == tuple_elts[1])):
             OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
                           .format(targets))
             logging.error('Malformed VIOS targets {}. Duplicated VIOS'
