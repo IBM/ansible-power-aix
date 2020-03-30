@@ -616,6 +616,10 @@ def run_flrtvc(output, params, force):
         # Run flrtvc in compact mode
         logging.debug('run cmd "{}"'.format(' '.join(cmd)))
         (res, stdout, errout) = exec_cmd(' '.join(cmd), output, False, True)
+        # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
+        if res == 2:
+            stdout = errout
+            res = 0
         if res != 0:
             msg = 'flrtvc failed: "{}"'.format(errout)
             logging.error('{}'.format(msg))
@@ -646,6 +650,10 @@ def run_flrtvc(output, params, force):
                     cmd += ['-v']
                     logging.debug('run cmd "{}"'.format(' '.join(cmd)))
                     (res, stdout, errout) = exec_cmd(' '.join(cmd), output, False, True)
+                    # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
+                    if res == 2:
+                        stdout = errout
+                        res = 0
                     if res != 0:
                         msg = 'flrtvc failed: "{}"'.format(errout)
                         logging.error('{}'.format(msg))
