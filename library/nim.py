@@ -6,15 +6,9 @@
 
 """AIX NIM: server setup, install packages, update SP or TL"""
 
-import os
-import re
-import subprocess
-import threading
-import logging
-# Ansible module 'boilerplate'
-# pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
-from ansible.module_utils.basic import AnsibleModule
-
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
 
 DOCUMENTATION = """
 ---
@@ -24,6 +18,15 @@ version_added: "1.0.0"
 requirements: [ AIX ]
 
 """
+
+import os
+import re
+import subprocess
+import threading
+import logging
+# Ansible module 'boilerplate'
+# pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
+from ansible.module_utils.basic import AnsibleModule
 
 
 # ----------------------------------------------------------------

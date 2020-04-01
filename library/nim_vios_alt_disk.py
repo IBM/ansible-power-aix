@@ -6,17 +6,9 @@
 
 """AIX VIOS NIM ALTDISK: Create/Cleanup an alternate rootvg disk"""
 
-import os
-import re
-import threading
-import subprocess
-import time
-import logging
-import string
-
-# Ansible module 'boilerplate'
-from ansible.module_utils.basic import AnsibleModule
-
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
 
 DOCUMENTATION = """
 ---
@@ -33,6 +25,17 @@ Note - alt_disk_copy only backs up mounted file systems. Mount all file
      - error if several altinst_rootvg exist for cleanup operation in
        automatic mode
 """
+
+import os
+import re
+import threading
+import subprocess
+import time
+import logging
+import string
+
+# Ansible module 'boilerplate'
+from ansible.module_utils.basic import AnsibleModule
 
 
 # ----------------------------------------------------------------

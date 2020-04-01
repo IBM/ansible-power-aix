@@ -6,6 +6,17 @@
 
 """AIX VIOS NIM Upgrade: tools to upgrade a list of one or a pair of VIOSes"""
 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
+
+DOCUMENTATION = """
+---
+module: nim_upgradeios
+author: AIX Development Team
+short_description: Perform a VIOS upgrade with NIM
+"""
+
 import os
 import re
 import subprocess
@@ -16,13 +27,6 @@ import threading
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim_upgradeios
-author: AIX Development Team
-short_description: Perform a VIOS upgrade with NIM
-"""
 
 # TODO: Later, add SSP support
 # TODO: Later, add mirrored rootvg support for upgrade & upgrade all in one

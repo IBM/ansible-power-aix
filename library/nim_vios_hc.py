@@ -6,15 +6,9 @@
 
 """AIX VIOS Health Check: check the pair of VIOS can be updated"""
 
-import os
-import stat
-import re
-import subprocess
-import threading
-import logging
-# Ansible module 'boilerplate'
-from ansible.module_utils.basic import AnsibleModule
-
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
 
 DOCUMENTATION = """
 ---
@@ -24,6 +18,15 @@ author: "AIX Development Team"
 version_added: "1.0.0"
 requirements: [ AIX ]
 """
+
+import os
+import stat
+import re
+import subprocess
+import threading
+import logging
+# Ansible module 'boilerplate'
+from ansible.module_utils.basic import AnsibleModule
 
 
 # ----------------------------------------------------------------

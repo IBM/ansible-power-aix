@@ -6,6 +6,17 @@
 
 """AIX VIOS NIM Update: tools to update a list of one or a pair of VIOSes"""
 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
+
+DOCUMENTATION = """
+---
+module: nim_updateios
+author: AIX Development Team
+short_description: Perform a VIOS update with NIM
+"""
+
 import os
 import re
 import subprocess
@@ -16,13 +27,6 @@ import time
 # Ansible module 'boilerplate'
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
-
-DOCUMENTATION = """
----
-module: nim_updateios
-author: AIX Development Team
-short_description: Perform a VIOS update with NIM
-"""
 
 
 # ----------------------------------------------------------------

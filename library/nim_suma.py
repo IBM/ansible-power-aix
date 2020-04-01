@@ -6,6 +6,18 @@
 
 """AIX SUMA: download fixes, SP or TL on a NIM server"""
 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
+
+DOCUMENTATION = """
+------
+module: nim_suma
+author: "AIX Development Team"
+version_added: "1.0.0"
+requirements: [ AIX ]
+"""
+
 import os
 import re
 import glob
@@ -16,15 +28,6 @@ import logging
 # Ansible module 'boilerplate'
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
-
-
-DOCUMENTATION = """
-------
-module: nim_suma
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-"""
 
 
 # ----------------------------------------------------------------

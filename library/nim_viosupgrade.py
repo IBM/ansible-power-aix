@@ -6,13 +6,9 @@
 
 """AIX NIM viosupgrade: tool to upgrade VIOSes in NIM environment"""
 
-import logging
-import csv
-import distutils.util
-
-# Ansible module 'boilerplate'
-from ansible.module_utils.basic import AnsibleModule
-
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'IBM, Inc'}
 
 DOCUMENTATION = """
 ---
@@ -20,6 +16,14 @@ module: nim_upgradeios
 author: AIX Development Team
 short_description: Perform a upgrade with the viosupgrade tool
 """
+
+import logging
+import csv
+import distutils.util
+
+# Ansible module 'boilerplate'
+from ansible.module_utils.basic import AnsibleModule
+
 
 # TODO: -----------------------------------------------------------------------------
 # TODO: Later, check SSP support (option -c of viosupgrade)
