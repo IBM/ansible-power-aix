@@ -662,7 +662,7 @@ def suma_download(module):
 ##############################################################################
 
 
-if __name__ == '__main__':
+def main():
 
     SUMA_CHANGED = False
     SUMA_OUTPUT = []
@@ -771,3 +771,7 @@ if __name__ == '__main__':
         changed=SUMA_CHANGED,
         msg="Suma {} completed successfully".format(action),
         suma_output=SUMA_OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

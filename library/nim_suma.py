@@ -1115,7 +1115,7 @@ def suma_down_prev(module):
 
 ##############################################################################
 
-if __name__ == '__main__':
+def main():
 
     SUMA_CHANGED = False
     SUMA_OUTPUT = []
@@ -1223,3 +1223,7 @@ if __name__ == '__main__':
         suma_output=SUMA_OUTPUT,
         lpp_source_name=PARAMS['LppSource'],
         target_list=" ".join(PARAMS['target_clients']))
+
+
+if __name__ == '__main__':
+    main()

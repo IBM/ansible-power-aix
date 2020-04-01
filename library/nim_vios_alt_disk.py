@@ -1355,7 +1355,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
     DEBUG_DATA = []
     OUTPUT = []
@@ -1498,3 +1498,7 @@ if __name__ == '__main__':
         status=targets_altdisk_status,
         debug_output=DEBUG_DATA,
         output=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

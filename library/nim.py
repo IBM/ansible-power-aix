@@ -1500,7 +1500,7 @@ def nim_reboot(module):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
     DEBUG_DATA = []
     NIM_OUTPUT = []
@@ -1655,3 +1655,7 @@ if __name__ == '__main__':
         msg="NIM {} completed successfully".format(action),
         debug_output=DEBUG_DATA,
         nim_output=NIM_OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

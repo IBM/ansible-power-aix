@@ -237,7 +237,7 @@ def viosupgrade_list(module, targets):
 
 ###################################################################################
 
-if __name__ == '__main__':
+def main():
     DEBUG_DATA = []
     OUTPUT = []
     CHANGED = False
@@ -428,3 +428,7 @@ if __name__ == '__main__':
         debug_output=DEBUG_DATA,
         output=OUTPUT,
         status=MODULE.status)
+
+
+if __name__ == '__main__':
+    main()

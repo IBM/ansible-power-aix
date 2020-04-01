@@ -647,7 +647,7 @@ def health_check(module, targets):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
     DEBUG_DATA = []
     OUTPUT = []
@@ -756,3 +756,7 @@ if __name__ == '__main__':
         status=targets_health_status,
         debug_output=DEBUG_DATA,
         output=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

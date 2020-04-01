@@ -722,7 +722,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
 
 ###################################################################################
 
-if __name__ == '__main__':
+def main():
     DEBUG_DATA = []
     OUTPUT = []
     NIM_NODE = {}
@@ -842,3 +842,7 @@ if __name__ == '__main__':
         debug_output=DEBUG_DATA,
         output=OUTPUT,
         status=targets_update_status)
+
+
+if __name__ == '__main__':
+    main()
