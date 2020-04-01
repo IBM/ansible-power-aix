@@ -91,6 +91,7 @@ options:
 EXAMPLES = r'''
 - name: Download patches for security vulnerabilities
   nim_flrtvc:
+    targets: nimclient01
     path: /usr/sys/inst.images
     verbose: yes
     apar: sec
