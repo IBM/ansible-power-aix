@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright:: 2020- IBM, Inc
 #
@@ -16,7 +17,82 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ######################################################################
-"""AIX FLRTVC: generate flrtvc report, download and install efix"""
+
+ANSIBLE_METADATA = {
+    'metadata_version': '1.1',
+    'status': ['preview'],
+    'supported_by': 'IBM, Inc'
+}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: flrtvc
+short_description: Generate flrtvc report, download and install efix
+description:
+- Generate flrtvc report, download and install efix.
+version_added: '2.8'
+requirements: [ AIX ]
+options:
+  apar:
+    description:
+    - Type of APAR.
+    - C(sec) Security vulnerabilities.
+    - C(hiper) HIPER.
+    - C(all).
+    type: str
+    choices: [ sec, hiper, all, None ]
+    default: None
+  filesets:
+    description:
+    - Filter filesets for specific phrase.
+    type: str
+  csv:
+    description:
+    - APAR CSV file that will be downloaded and saved to location.
+    type: str
+  path:
+    description:
+    - Destination path.
+    type: str
+  verbose:
+    description:
+    - Generate full reporting (verbose mode).
+    type: bool
+    default: no
+  force:
+    description:
+    - Force.
+    type: bool
+    default: no
+  clean:
+    description:
+    - Cleanup downloaded files after install.
+    type: bool
+    default: no
+  check_only:
+    description:
+    - Perform check only.
+    type: bool
+    default: no
+  download_only:
+    description:
+    - Download only, do not install anything.
+    type: bool
+    default: no
+'''
+
+EXAMPLES = r'''
+- name: Download patches for security vulnerabilities
+  flrtvc:
+    path: /usr/sys/inst.images
+    verbose: yes
+    apar: sec
+    download_only: yes
+'''
+
+RETURN = r''' # '''
 
 import logging
 import os
@@ -36,14 +112,6 @@ from collections import OrderedDict
 
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
-
-DOCUMENTATION = """
-------
-module: flrtvc
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-"""
 
 # Threading
 THRDS = []
@@ -934,7 +1002,7 @@ def increase_fs(dest):
 ###################################################################################################
 
 
-if __name__ == '__main__':
+def main():
     MODULE = AnsibleModule(
         argument_spec=dict(
             apar=dict(required=False, choices=['sec', 'hiper', 'all', None], default=None),
@@ -1049,3 +1117,7 @@ if __name__ == '__main__':
         changed=CHANGED,
         msg='FLRTVC completed successfully',
         meta=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()
