@@ -978,8 +978,7 @@ if __name__ == '__main__':
     WORKDIR = os.path.join(FLRTVC_PARAMS['dst_path'], 'work')
 
     if not os.path.exists(WORKDIR):
-        # not sure why flake8 complains against 'mode=0744' token in os.makedirs call
-        os.makedirs(WORKDIR, mode=0744)  # noqa: E999
+        os.makedirs(WORKDIR, mode=0o744)
 
     # metadata
     OUTPUT = {}
