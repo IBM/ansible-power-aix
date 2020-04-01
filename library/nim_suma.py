@@ -4,19 +4,72 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX SUMA: download fixes, SP or TL on a NIM server"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-DOCUMENTATION = """
-------
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
 module: nim_suma
-author: "AIX Development Team"
-version_added: "1.0.0"
+short_description: Download fixes, SP or TL on an AIX server
+description:
+- Creates a task to automate the download of technology levels and
+  service packs from a fix server.
+version_added: '2.9'
 requirements: [ AIX ]
-"""
+options:
+  oslevel:
+    description:
+    - Operating System level.
+    type: str
+  location:
+    description:
+    - NIM location.
+    type: str
+  targets:
+    description:
+    - NIM targets.
+    type: str
+  action:
+    description:
+    - Controls what is performed.
+    - C(download) to download fixes.
+    - C(preview).
+    - C(list).
+    - C(edit).
+    - C(unschedule).
+    - C(delete).
+    - C(config).
+    - C(default).
+    type: str
+    choices: [ download, preview, list, edit, unschedule, delete, config, default ]
+    default: preview
+  task_id:
+    description:
+    - SUMA task.
+    type: str
+  sched_time:
+    description:
+    - Schedule time.
+    type: str
+  description:
+    description:
+    - Display name for SUMA task.
+    type: str
+'''
+
+EXAMPLES = r'''
+- name: Check for, and install, system updates
+  nim_suma:
+    targets: nimclient01
+    location: default
+    oslevel: latest
+    download_dir: /usr/sys/inst.images
+'''
+
+RETURN = r''' # '''
 
 import os
 import re
