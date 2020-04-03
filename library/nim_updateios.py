@@ -4,18 +4,94 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX VIOS NIM Update: tools to update a list of one or a pair of VIOSes"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-DOCUMENTATION = """
+DOCUMENTATION = r'''
 ---
+author:
+- AIX Development Team
 module: nim_updateios
-author: AIX Development Team
-short_description: Perform a VIOS update with NIM
-"""
+short_description: Update a single or a pair of Virtual I/O Servers
+description:
+- Performs updates and customization to the Virtual I/O Server (VIOS).
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  targets:
+    description:
+    - NIM targets.
+    type: str
+    required: true
+  filesets:
+    description:
+    - Specifies a list of file sets to remove from the target.
+    type: str
+  installp_bundle:
+    description:
+    - Specifies an I(installp_bundle) resource that lists file sets to remove on the target.
+    type: str
+  lpp_source:
+    description:
+    - Identifies the I(lpp_source) resource that will provide the installation images for
+      the operation.
+    type: str
+  accept_licenses:
+    description:
+    - Specifies whether the software licenses should be automatically accepted during the installation.
+    type: str
+  action:
+    description:
+    - Operation to perform on the targets.
+    - C(install).
+    - C(commit).
+    - C(reject).
+    - C(cleanup).
+    - C(remove).
+    type: str
+    choices: [ install, commit, reject, cleanup, remove ]
+    required: true
+  preview:
+    description:
+    - Specifies a preview operation.
+    type: str
+  time_limit:
+    description:
+    - Before starting the action, the actual date is compared to this parameter value;
+      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    type: str
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    type: dict
+    suboptions:
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a task to another so that it
+      discovers NIM info only one time for all tasks.
+    type: dict
+    suboptions:
+'''
+
+EXAMPLES = r'''
+- name: Update a pair of VIOSes
+  nim_updateios:
+    targets: "(nimvios01, nimvios02)"
+    action: install
+    lpp_source: /lpp_source
+'''
+
+RETURN = r''' # '''
 
 import os
 import re
@@ -735,7 +811,6 @@ def main():
 
     MODULE = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
             targets=dict(required=True, type='str'),
             filesets=dict(required=False, type='str'),
             installp_bundle=dict(required=False, type='str'),
