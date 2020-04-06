@@ -8,68 +8,76 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-# TODO update the documentation
 DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team
 module: flrtvc
-short_description: Generate flrtvc report, download and install efix
+short_description: Generate FLRTVC report, download and install efix
 description:
-- Generate flrtvc report, download and install efix.
+- Creates a task to check targets vulnerability against available fixes, and
+  apply necessary fixes. It downloads and uses the Fix Level Recommendation Tool
+  Vulnerability Checker Script to generates a report. It parses the report,
+  downloads the fixes, checks their versions and if some files are locked. Then
+  it installs the remaining fixes. In case of inter-locking file you could run
+  this several times.
 version_added: '2.8'
 requirements: [ AIX ]
 options:
   apar:
     description:
-    - Type of APAR.
+    - Type of APAR to check or download.
     - C(sec) Security vulnerabilities.
-    - C(hiper) HIPER.
-    - C(all).
+    - C(hiper) Corrections to High Impact PERvasive threats.
+    - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
     default: None
   filesets:
     description:
-    - Filter filesets for specific phrase.
+    - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
     type: str
   csv:
     description:
-    - APAR CSV file that will be downloaded and saved to location.
+    - path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
+      This file is usually transferred form the fix server; this rather big transfer
+      can be avoided by specifying an already transferred file.
     type: str
   path:
     description:
-    - Specifies the working directory used for temporary files. It will contain FLRTVC reports.
+    - Specifies the working directory used for temporary files. It will contain FLRTVC reports,
+      previously installed filesets and fixes lists and downloaded fixes.
     type: str
     default: /var/adm/ansible/work
   verbose:
     description:
-    - Generate full reporting (verbose mode).
+    - Generate full FLRTVC reporting (verbose mode).
     type: bool
     default: no
   force:
     description:
-    - Force.
+    - Specifies to remove currently installed ifix before running the FLRTVC script.
     type: bool
     default: no
   clean:
     description:
-    - Cleanup downloaded files after install.
+    - Cleanup working directory with all downloaded files at the end of execution.
     type: bool
     default: no
   check_only:
     description:
-    - Perform check only.
+    - Specifies to only check if fixes are already applied on the targets.
+      No download or install operations.
     type: bool
     default: no
   download_only:
     description:
-    - Download only, do not install anything.
+    - Specifies to perform check and download operation, do not install anything.
     type: bool
     default: no
   increase_fs:
     description:
-    - Increase filesystem size if needed.
+    - Specifies to increase filesystem size of the working directory if needed.
     type: bool
     default: yes
 '''
@@ -81,9 +89,119 @@ EXAMPLES = r'''
     verbose: yes
     apar: sec
     download_only: yes
+
+- name: Install both sec and hyper patches using specific directory
+  flrtvc:
+    path: /usr/sys/inst
+    verbose: yes
+    force: no
+    clean: no
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+meta:
+    description: Detailed information on the module execution.
+    returned: always
+    type: dict
+    contains:
+        messages:
+            description: details on errors/warnings
+            returned: always
+            type: list
+            elements: str
+            sample:
+        0.report:
+            description: Output of the FLRTVC script, report or details on flrtvc error if any.
+            returned: if the FLRTVC script run succeeds
+            type: list
+            elements: str
+            sample: see below
+        1.parse:
+            description: List of URLs to download or details on parsing error if any.
+            returned: if the parsing succeeds
+            type: list
+            elements: str
+            sample: see below
+        2.discover:
+            description: List of epkgs found in URLs.
+            returned: if the discovery succeeds
+            type: list
+            elements: str
+            sample: see below
+        3.download:
+            description: run_downloader builds the list of downloaded epkgs
+            returned: if download succeeds
+            type: list
+            elements: str
+            sample: see below
+        4.1.reject:
+            description: list of epkgs rejected, refer to messages and log file for reason
+            returned: if check succeeds
+            type: list
+            elements: str
+            sample: see below
+        4.2.check:
+            description: list of epkgs following prerequisites
+            returned: if check succeeds
+            type: list
+            elements: str
+            sample: see below
+        5.install:
+            description: list of epkgs actually installed
+            returned: if install succeeds
+            type: list
+            elements: str
+            sample: see below
+    sample:
+        "meta": {
+            "0.report": [
+                "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|Last Update|Fixed In",
+                "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
+                ...,
+            ],
+            "1.parse": [
+                "ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar",
+                "ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar",
+                ...,
+            ],
+            "2.discover": [
+                "ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                "ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                ...,
+                "tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                "tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                ...,
+            ],
+            "3.download": [
+                "/usr/sys/inst.images/tardir/ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                "/usr/sys/inst.images/tardir/ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                ...,
+                "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                ...,
+            ],
+            "4.1.reject": [
+                "102p_fix: prerequisite openssl.base levels do not match: 1.0.2.1600 < 1.0.2.1500 < 1.0.2.1600",
+                ...,
+                "IJ12983m2a: locked by previous efix to install",
+                ...,
+                "IJ17059m9b: prerequisite missing: ntp.rte",
+                ...,
+            ],
+            "4.2.check": [
+                "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                ...,
+            ],
+            "5.install": [
+                "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                ...,
+            ],
+            "messages": [
+                "a previous efix to install will lock a file of IJ20785s3a preventing its installation, install it manually or run the task again.",
+                ...,
+            ]
+        }
+'''
 
 import logging
 import os
