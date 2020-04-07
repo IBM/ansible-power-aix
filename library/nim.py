@@ -21,7 +21,7 @@ requirements: [ AIX ]
 options:
   action:
     description:
-    - Specifies the operation to perform on the VIOS.
+    - Specifies the operation to perform on the NIM client.
     - C(update) to update NIM clients with a specified C(lpp_source).
     - C(master_setup) to setup a NIM master.
     - C(check) to retrieve the C(Cstate) of each NIM client.
