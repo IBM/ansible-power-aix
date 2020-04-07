@@ -4,27 +4,114 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX VIOS NIM ALTDISK: Create/Cleanup an alternate rootvg disk"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-DOCUMENTATION = """
+DOCUMENTATION = r'''
 ---
+author:
+- AIX Development Team
 module: nim_vios_alt_disk
-short_description: "Copy the rootvg to an alternate disk or cleanup an existing one"
-author: "AIX Development Team"
-version_added: "1.0.0"
+short_description: Create/Cleanup an alternate rootvg disk
+description:
+- Copy the rootvg to an alternate disk or cleanup an existing one.
+version_added: '2.9'
 requirements: [ AIX ]
+options:
+  action:
+    description:
+    - Specifies the operation to perform on the VIOS.
+    - C(alt_disk_copy) to perform and alternate disk copy.
+    - C(alt_disk_clean) to cleanup an existing alternate disk copy.
+    type: str
+    choices: [ alt_disk_copy, alt_disk_clean ]
+    required: true
+  targets:
+    description:
+    - NIM target.
+    - Use a tuple format with the 1st element the VIOS and the 2nd element
+      the disk used for the alternate disk copy.
+      "(vios1,disk1,vios2,disk2)" for dual VIOSes.
+      "(vios1,disk1)" for single VIOS.
+    type: str
+    required: true
+  time_limit:
+    description:
+    - Before starting the action, the actual date is compared to this parameter value;
+      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    type: str
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+        default: /tmp/ansible_vios_alt_disk_debug.log
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    type: dict
+    suboptions:
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a task to another so that it
+      discovers NIM info only one time for all tasks.
+    type: dict
+    suboptions:
+  disk_size_policy:
+    description:
+    - Specifies how to choose the alternate disk if not specified.
+    - C(minimize) smallest disk that can be selected.
+    - C(upper) first disk found bigger than the rootvg disk.
+    - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
+    - C(nearest)
+    type: str
+    choices: [ minimize, upper, lower, nearest ]
+    default: nearest
+  force:
+    description:
+    - Forces action.
+    type: bool
+    default: no
+notes:
+    - C(alt_disk_copy) only backs up mounted file systems. Mount all file
+      systems that you want to back up.
+    - copy is performed only on one alternate hdisk even if the rootvg
+      contains multiple hdisks
+    - error if several C(altinst_rootvg) exist for cleanup operation in
+      automatic mode
+'''
 
-Note - alt_disk_copy only backs up mounted file systems. Mount all file
-       systems that you want to back up.
-     - copy is performed only on one alternate hdisk even if the rootvg
-       contains multiple hdisks
-     - error if several altinst_rootvg exist for cleanup operation in
-       automatic mode
-"""
+EXAMPLES = r'''
+- name: Perform an alternate disk copy of the rootvg to hdisk1
+  nim_vios_alt_disk:
+    targets: "(nimvios01,hdisk1)"
+    action: alt_disk_copy
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOS tuples.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+'''
 
 import os
 import re
@@ -623,7 +710,7 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
             for key in sorted(pvs, key=lambda k: pvs[k]['size']):
                 hdisk = key
 
-                # disk to small or already used
+                # disk too small or already used
                 if pvs[hdisk]['size'] < used_size or pvs[hdisk]['pvid'] in used_pv:
                     continue
 
