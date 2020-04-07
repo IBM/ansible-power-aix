@@ -4,20 +4,109 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX NIM: server setup, install packages, update SP or TL"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-DOCUMENTATION = """
+DOCUMENTATION = r'''
 ---
+author:
+- AIX Development Team
 module: nim
-author: "AIX Development Team"
-version_added: "1.0.0"
+short_description: Server setup, install packages, update SP or TL.
+description:
+- Server setup, install packages, update SP or TL.
+version_added: '2.9'
 requirements: [ AIX ]
+options:
+  action:
+    description:
+    - Specifies the operation to perform on the VIOS.
+    - C(update) to update NIM clients with a specified C(lpp_source).
+    - C(master_setup) to setup a NIM master.
+    - C(check) to retrieve the C(Cstate) of each NIM client.
+    - C(compare) to compare installation inventories of the NIM clients.
+    - C(script) to apply a script to customize NIM clients.
+    - C(allocate) to allocate a resource to specified NIM clients.
+    - C(deallocate) to deallocate a resource for specified NIM clients.
+    - C(bos_inst) to install a given list of NIM clients.
+    - C(define_script) to define a script NIM resource.
+    - C(remove) to remove a specified NIM resource.
+    - C(reset) to reset the C(Cstate) of a NIM client.
+    - C(reboot) to reboot the given NIM clients if they are running.
+    - C(maintenance) to perform a maintenance operation on NIM clients.
+    type: str
+    choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance ]
+    required: true
+  lpp_source:
+    description:
+    - Indicates the lpp_source to apply to the targets.
+    - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified;
+      based on the NIM server resources, nim will determine
+      the actual oslevel necessary to update the targets.
+    type: str
+  targets:
+    description:
+    - Specifies the NIM clients to update.
+    - C(foo*) designates all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) designates all the NIM clients.
+    type: str
+  asynchronous:
+    description:
+    - If set to C(no), NIM client will be completely installed before starting
+      the installation of another NIM client.
+    type: bool
+    default: no
+  device:
+    description:
+    - The device (or directory) where to find the lpp source to install.
+    type: str
+  script:
+    description:
+    - NIM script resource.
+    type: str
+  resource:
+    description:
+    - NIM resource.
+    type: str
+  location:
+    description:
+    - Specifies the full path name of the script resource file.
+    type: str
+  group:
+    description:
+    - NIM group resource.
+    type: str
+  force:
+    description:
+    - Forces action.
+    type: bool
+    default: no
+  operation:
+    description:
+    - NIM maintenance operation.
+    type: str
+'''
 
-"""
+EXAMPLES = r'''
+- name: Install using group resource
+  nim:
+    action: bos_inst
+    targets: nimclient01
+    group: basic_res_grp
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+nim_output:
+    description: Output from nim commands.
+    returned: always
+    type: str
+'''
 
 import os
 import re
@@ -747,7 +836,7 @@ def list_fixes(target, module):
 # ----------------------------------------------------------------
 def remove_fix(target, fix, module):
     """
-    Remove an interim fixe for a specified nim client
+    Remove an interim fix for a specified nim client
 
     return: the return code of the command.
     """
@@ -965,7 +1054,7 @@ def nim_update(module):
 # ----------------------------------------------------------------
 def nim_maintenance(module):
     """
-    Apply an maintenance operation (commit) on nim clients (targets)
+    Apply a maintenance operation (commit) on nim clients (targets)
 
     return: a return code (O if Ok)
     """
