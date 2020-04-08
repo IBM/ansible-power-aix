@@ -78,12 +78,12 @@ options:
     type: bool
     default: no
 notes:
-    - C(alt_disk_copy) only backs up mounted file systems. Mount all file
-      systems that you want to back up.
-    - copy is performed only on one alternate hdisk even if the rootvg
-      contains multiple hdisks
-    - error if several C(altinst_rootvg) exist for cleanup operation in
-      automatic mode
+  - C(alt_disk_copy) only backs up mounted file systems. Mount all file
+    systems that you want to back up.
+  - copy is performed only on one alternate hdisk even if the rootvg
+    contains multiple hdisks
+  - error if several C(altinst_rootvg) exist for cleanup operation in
+    automatic mode
 '''
 
 EXAMPLES = r'''
