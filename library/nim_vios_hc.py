@@ -4,20 +4,77 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX VIOS Health Check: check the pair of VIOS can be updated"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'IBM, Inc'}
 
-DOCUMENTATION = """
+DOCUMENTATION = r'''
 ---
+author:
+- AIX Development Team
 module: nim_vios_hc
-short_description: "Check the pair of VIOS can be updated"
-author: "AIX Development Team"
-version_added: "1.0.0"
+short_description: Check if a pair of VIOSes can be updated
+description:
+- Check if a pair of Virtual I/O Servers can be updated.
+version_added: '2.9'
 requirements: [ AIX ]
-"""
+options:
+  action:
+    description:
+    - Specifies the operation to perform.
+    - C(health_check) to perform a health check.
+    type: str
+    choices: [ health_check ]
+    required: true
+  targets:
+    description:
+    - NIM target.
+    - 'To perform a health check on dual VIOSes, specify the list as a tuple
+      with the following format: "(vios1, vios2) (vios3, vios4)".'
+    - 'To specify a single VIOS, use the following format: "(vios1)".'
+    type: str
+    required: true
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+        default: /tmp/ansible_vios_check_debug.log
+notes:
+  - Requires vioshc.py as a prerequisite.
+  - vioshc.py is available at U(https://github.com/aixoss/vios-health-checker).
+'''
+
+EXAMPLES = r'''
+- name: Perform a health check on VIOSes vios1 and vios2
+  nim_vios_hc:
+    targets: "(vios1, vios2)"
+    action: health_check
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOS tuples.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+'''
 
 import os
 import stat
