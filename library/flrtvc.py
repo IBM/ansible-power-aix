@@ -155,8 +155,11 @@ meta:
     sample:
         "meta": {
             "0.report": [
-                "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|Last Update|Fixed In",
-                "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
+                "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|
+                 Last Update|Fixed In",
+                "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|
+                 IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|\
+                 ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
                 ...,
             ],
             "1.parse": [
@@ -207,7 +210,6 @@ import logging
 import os
 import re
 import csv
-import subprocess
 import threading
 import urllib
 import ssl
@@ -284,13 +286,13 @@ def logged(func):
 
 
 @logged
-def download(src, dst, increase_fs=True):
+def download(src, dst, resize_fs=True):
     """
     Download efix from url to directory
     args:
-        src          (str): The url to download
-        dst          (str): The absolute destination filename
-        increase_fs (bool): Increase the filesystem size if needed
+        src       (str): The url to download
+        dst       (str): The absolute destination filename
+        resize_fs (bool): Increase the filesystem size if needed
     return:
         True if download succeeded
         False otherwise
@@ -303,9 +305,9 @@ def download(src, dst, increase_fs=True):
             cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
             rc, stdout, stderr = module.run_command(cmd)
             if rc == 3:
-                if increase_fs and increase_fs(dst):
+                if resize_fs and increase_fs(dst):
                     os.remove(dst)
-                    return download(src, dst, increase_fs)
+                    return download(src, dst, resize_fs)
             elif rc != 0:
                 msg = 'Cannot download {}'.format(src)
                 logging.error(msg)
@@ -324,13 +326,13 @@ def download(src, dst, increase_fs=True):
 
 
 @logged
-def unzip(src, dst, increase_fs=True):
+def unzip(src, dst, resize_fs=True):
     """
     Unzip source into the destination directory
     args:
-        src          (str): The url to unzip
-        dst          (str): The absolute destination path
-        increase_fs (bool): Increase the filesystem size if needed
+        src       (str): The url to unzip
+        dst       (str): The absolute destination path
+        resize_fs (bool): Increase the filesystem size if needed
     return:
         True if unzip succeeded
         False otherwise
@@ -339,7 +341,7 @@ def unzip(src, dst, increase_fs=True):
         zfile = zipfile.ZipFile(src)
         zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
-        if increase_fs and increase_fs(dst):
+        if resize_fs and increase_fs(dst):
             return unzip(src, dst)
         else:
             msg = 'Cannot unzip {}'.format(src)
@@ -895,13 +897,13 @@ def run_parser(report):
 
 
 @logged
-def run_downloader(urls, dst_path, increase_fs=True):
+def run_downloader(urls, dst_path, resize_fs=True):
     """
     Download URLs and check efixes
     args:
-        urls        (list): The list of URLs to download
-        dst_path     (str): Path directory where to download
-        increase_fs (bool): Increase the filesystem size if needed
+        urls      (list): The list of URLs to download
+        dst_path   (str): Path directory where to download
+        resize_fs (bool): Increase the filesystem size if needed
     note:
         Create and build
             results['meta']['2.discover']
@@ -926,7 +928,7 @@ def run_downloader(urls, dst_path, increase_fs=True):
 
             # download epkg file
             epkg = os.path.abspath(os.path.join(dst_path, name))
-            if download(url, epkg, increase_fs):
+            if download(url, epkg, resize_fs):
                 out['3.download'].append(epkg)
 
         elif '.tar' in name:  # URL as a tar file
@@ -934,7 +936,7 @@ def run_downloader(urls, dst_path, increase_fs=True):
             dst = os.path.abspath(os.path.join(dst_path, name))
 
             # download and open tar file
-            if download(url, dst, increase_fs):
+            if download(url, dst, resize_fs):
                 tar = tarfile.open(dst, 'r')
 
                 # find all epkg in tar file
@@ -950,7 +952,7 @@ def run_downloader(urls, dst_path, increase_fs=True):
                     try:
                         tar.extract(epkg, tar_dir)
                     except (OSError, IOError, tarfile.TarError) as exc:
-                        if increase_fs and increase_fs(tar_dir):
+                        if resize_fs and increase_fs(tar_dir):
                             try:
                                 tar.extract(epkg, tar_dir)
                             except (OSError, IOError, tarfile.TarError) as exc:
@@ -984,7 +986,7 @@ def run_downloader(urls, dst_path, increase_fs=True):
             epkgs = [os.path.abspath(os.path.join(dst_path, epkg)) for epkg in epkgs
                      if download(os.path.join(url, epkg),
                                  os.path.abspath(os.path.join(dst_path, epkg)),
-                                 increase_fs)]
+                                 resize_fs)]
             out['3.download'].extend(epkgs)
 
     # Get installed filesets' levels
@@ -1000,13 +1002,13 @@ def run_downloader(urls, dst_path, increase_fs=True):
 
 
 @logged
-def run_installer(epkgs, dst_path, increase_fs=True):
+def run_installer(epkgs, dst_path, resize_fs=True):
     """
     Install epkgs efixes
     args:
-        epkgs       (list): The list of efixes to install
-        dst_path     (str): Path directory where to install
-        increase_fs (bool): Increase the filesystem size if needed
+        epkgs     (list): The list of efixes to install
+        dst_path   (str): Path directory where to install
+        resize_fs (bool): Increase the filesystem size if needed
     return:
         True if geninstall succeeded
         False otherwise
@@ -1030,7 +1032,7 @@ def run_installer(epkgs, dst_path, increase_fs=True):
         try:
             shutil.copy(epkg, destpath)
         except (IOError, shutil.Error) as exc:
-            if increase_fs and increase_fs(destpath):
+            if resize_fs and increase_fs(destpath):
                 try:
                     shutil.copy(epkg, destpath)
                 except (IOError, shutil.Error) as exc:
@@ -1096,12 +1098,12 @@ def increase_fs(dest):
         cmd = ['chfs', '-a', 'size=+100M', mount_point]
         rc, stdout, stderr = module.run_command(cmd)
         if rc == 0:
-            logging.debug('{}: {} increased 100Mb: {}'.format(mount_point, stdout))
+            logging.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
             return True
 
     logging.warning('{}: cmd:{} failed rc={} stdout:{} stderr:{}'
                     .format(mount_point, cmd, rc, stdout, stderr))
-    msg = 'Cannot increase filesystem for {}.'.format(dst)
+    msg = 'Cannot increase filesystem for {}.'.format(dest)
     results['meta']['messages'].append(msg)
     return False
 
@@ -1171,7 +1173,7 @@ def main():
     clean = module.params['clean']
     check_only = module.params['check_only']
     download_only = module.params['download_only']
-    increase_fs = module.params['increase_fs']
+    resize_fs = module.params['increase_fs']
 
     # Create working directory if needed
     if (flrtvc_params['dst_path'] is None) or (not flrtvc_params['dst_path'].strip()):
@@ -1198,13 +1200,13 @@ def main():
 
     flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))
     if not download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip',
-                    flrtvc_dst, increase_fs):
+                    flrtvc_dst, resize_fs):
         if clean and os.path.exists(workdir):
             shutil.rmtree(workdir, ignore_errors=True)
         results['msg'] = 'Failed to download FLRTVC-latest.zip'
         module.fail_json(**results)
 
-    if not unzip(flrtvc_dst, flrtvc_dir, increase_fs):
+    if not unzip(flrtvc_dst, flrtvc_dir, resize_fs):
         if clean and os.path.exists(workdir):
             shutil.rmtree(workdir, ignore_errors=True)
         results['msg'] = 'Failed to unzip FLRTVC-latest.zip'
@@ -1241,7 +1243,7 @@ def main():
     # Download and check efixes
     # ===========================================
     logging.debug('*** DOWNLOAD ***')
-    run_downloader(results['meta']['1.parse'], flrtvc_params['dst_path'], increase_fs)
+    run_downloader(results['meta']['1.parse'], flrtvc_params['dst_path'], resize_fs)
 
     if download_only:
         if clean and os.path.exists(workdir):
@@ -1253,7 +1255,7 @@ def main():
     # Install efixes
     # ===========================================
     logging.debug('*** UPDATE ***')
-    if not run_installer(results['meta']['4.2.check']):
+    if not run_installer(results['meta']['4.2.check'], flrtvc_params['dst_path'], resize_fs):
         msg = 'Failed to install fixes, please check meta and log data.'
         results['msg'] = msg
         if clean and os.path.exists(workdir):
