@@ -1018,7 +1018,7 @@ def run_installer(epkgs, dst_path, resize_fs=True):
         Create and build results['meta']['5.install']
     """
     if not epkgs:
-        return 0
+        return True
 
     destpath = os.path.abspath(os.path.join(dst_path))
     destpath = os.path.join(destpath, 'flrtvc_lpp_source', 'emgr', 'ppc')
@@ -1047,7 +1047,7 @@ def run_installer(epkgs, dst_path, resize_fs=True):
                 logging.error('EXCEPTION {}'.format(exc))
                 results['meta']['messages'].append(msg)
                 continue
-            epkgs_base.append(os.path.basename(epkg))
+        epkgs_base.append(os.path.basename(epkg))
 
     # return error if we have nothing to install
     if not epkgs_base:
@@ -1057,6 +1057,7 @@ def run_installer(epkgs, dst_path, resize_fs=True):
 
     # perform customization
     cmd = ['/usr/sbin/geninstall', '-d', destpath, efixes]
+    logging.debug('Perform customization, cmd "{}"'.format(' '.join(cmd)))
     rc, stdout, stderr = module.run_command(cmd)
     logging.debug('geninstall stdout:{}'.format(stdout))
 
