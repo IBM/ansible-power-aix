@@ -221,7 +221,7 @@ def main():
         elif part == 'usr':
             strparts += 'u'
     if strparts != '':
-        cmd += ['-O'+strparts]
+        cmd += ['-O' + strparts]
 
     if action == 'apply':
         cmd += ['-a']
@@ -267,6 +267,7 @@ def main():
 
     result['msg'] = stdout
     module.exit_json(**result)
+
 
 if __name__ == '__main__':
     main()
