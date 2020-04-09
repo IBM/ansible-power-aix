@@ -566,7 +566,7 @@ def check_epkgs(epkg_list, lpps, efixes):
             # parsing done
             # check filseset prerequisite is present
             if prereq not in lpps:
-                epkg['reject'] = '{}: prerequisite missing: {}'.format(epkg['label'], prereq)
+                epkg['reject'] = '{}: prerequisite missing: {}'.format(os.path.basename(epkg['path']), prereq)
                 logging.info('reject {}'.format(epkg['reject']))
                 break  # stop parsing
 
@@ -576,7 +576,7 @@ def check_epkgs(epkg_list, lpps, efixes):
             if lpps[prereq]['int'] < minlvl_i\
                or lpps[prereq]['int'] > maxlvl_i:
                 epkg['reject'] = '{}: prerequisite {} levels do not match: {} < {} < {}'\
-                                 .format(epkg['label'],
+                                 .format(os.path.basename(epkg['path']),
                                          prereq,
                                          epkg['prereq'][prereq]['minlvl'],
                                          lpps[prereq]['str'],
@@ -593,9 +593,9 @@ def check_epkgs(epkg_list, lpps, efixes):
                 results['meta']['messages'].append('installed efix {} is locking {} preventing the '
                                                    'installation of {}, remove it manually or set the '
                                                    '"force" option.'
-                                                   .format(locked_files[file], file, epkg['label']))
+                                                   .format(locked_files[file], file, os.path.basename(epkg['path'])))
                 epkg['reject'] = '{}: installed efix {} is locking {}'\
-                                 .format(epkg['label'], locked_files[file], file)
+                                 .format(os.path.basename(epkg['path']), locked_files[file], file)
                 logging.info('reject {}'.format(epkg['reject']))
                 epkgs_reject.append(epkg['reject'])
                 continue
@@ -625,14 +625,14 @@ def check_epkgs(epkg_list, lpps, efixes):
         if set(epkgs_info[epkg]['files']).isdisjoint(set(global_file_locks)):
             global_file_locks.extend(epkgs_info[epkg]['files'])
             logging.info('keep {}, files: {}'
-                         .format(epkgs_info[epkg]['label'], epkgs_info[epkg]['files']))
+                         .format(os.path.basename(epkgs_info[epkg]['path']), epkgs_info[epkg]['files']))
         else:
             results['meta']['messages'].append('a previous efix to install will lock a file of {} '
                                                'preventing its installation, install it manually or '
                                                'run the task again.'
-                                               .format(epkgs_info[epkg]['label']))
+                                               .format(os.path.basename(epkgs_info[epkg]['path'])))
             epkgs_info[epkg]['reject'] = '{}: locked by previous efix to install'\
-                                         .format(epkgs_info[epkg]['label'])
+                                         .format(os.path.basename(epkgs_info[epkg]['path']))
             logging.info('reject {}'.format(epkgs_info[epkg]['reject']))
             epkgs_reject.append(epkgs_info[epkg]['reject'])
             removed_epkg.append(epkg)
