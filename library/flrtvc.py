@@ -353,7 +353,7 @@ def unzip(src, dst, resize_fs=True):
 
 
 @logged
-def remove_efix():  # TODO check w/ a host w/ efix data
+def remove_efix():
     """
     Remove efix matching the given label
     return:
@@ -363,6 +363,7 @@ def remove_efix():  # TODO check w/ a host w/ efix data
     res = True
     logging.debug('Removing all installed efix')
 
+    # List epkg on the system
     cmd = ['/usr/sbin/emgr', '-P']
     rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
     if rc != 0:
@@ -373,13 +374,24 @@ def remove_efix():  # TODO check w/ a host w/ efix data
         results['meta']['messages'].append('{}: {}'.format(msg, stderr))
         return False
 
-    epkgs = [epkg.rstrip().split()[-1] for epkg in stdout.splitlines()]
-    del epkgs[0:3]   # remove header
+    # Create a list of unique epkg label
+    # stdout is either empty (if there is no epkg data on the system) or contains
+    # the following
+    # PACKAGE                                                  INSTALLER   LABEL
+    # ======================================================== =========== ==========
+    # X11.base.rte                                             installp    IJ11547s0a
+    # bos.net.tcp.client_core                                  installp    IJ09623s2a
+    # bos.perf.perfstat                                        installp    IJ09623s2a
+    epkgs = [epkg.strip().split()[-1] for epkg in stdout.strip().splitlines()]
+    if len(epkgs) >= 2:
+        del epkgs[0:2]
+    epkgs = list(set(epkgs))
 
+    # Remove each epkg from their label
     for epkg in epkgs:
-        cmd = ['/usr/sbin/emgr -r -L', epkg]
+        cmd = ['/usr/sbin/emgr', '-r', '-L', epkg]
         rc, stdout, stderr = module.run_command(cmd)
-        for line in stdout.splitlines():
+        for line in stdout.strip().splitlines():
             match = re.match(r'^\d+\s+(\S+)\s+REMOVE\s+(\S+)\s*$', line)
             if match:
                 if 'SUCCESS' in match.group(2):
@@ -1267,6 +1279,7 @@ def main():
         shutil.rmtree(workdir, ignore_errors=True)
 
     results['msg'] = 'FLRTVC completed successfully'
+    logging.info(results['msg'])
     module.exit_json(**results)
 
 
