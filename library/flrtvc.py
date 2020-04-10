@@ -13,7 +13,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team
 module: flrtvc
-short_description: Generate FLRTVC report, download and install efix
+short_description: Generate FLRTVC report, download and install efix.
 description:
 - Creates a task to check targets vulnerability against available fixes, and
   apply necessary fixes. It downloads and uses the Fix Level Recommendation Tool
@@ -39,8 +39,8 @@ options:
     type: str
   csv:
     description:
-    - path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
-      This file is usually transferred form the fix server; this rather big transfer
+    - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
+    - This file is usually transferred form the fix server; this rather big transfer
       can be avoided by specifying an already transferred file.
     type: str
   path:
@@ -105,7 +105,7 @@ meta:
     type: dict
     contains:
         messages:
-            description: details on errors/warnings
+            description: Details on errors/warnings
             returned: always
             type: list
             elements: str
@@ -129,25 +129,25 @@ meta:
             elements: str
             sample: see below
         3.download:
-            description: run_downloader builds the list of downloaded epkgs
+            description: List of downloaded epkgs.
             returned: if download succeeds
             type: list
             elements: str
             sample: see below
         4.1.reject:
-            description: list of epkgs rejected, refer to messages and log file for reason
+            description: List of epkgs rejected, refer to messages and log file for reason.
             returned: if check succeeds
             type: list
             elements: str
             sample: see below
         4.2.check:
-            description: list of epkgs following prerequisites
+            description: List of epkgs following prerequisites.
             returned: if check succeeds
             type: list
             elements: str
             sample: see below
         5.install:
-            description: list of epkgs actually installed
+            description: List of epkgs actually installed.
             returned: if install succeeds
             type: list
             elements: str
