@@ -5,9 +5,13 @@
     apar: sec
     path: /usr/sys/inst.images
     check: no
-    download: yes
+    download_only: yes
     increase: yes
   tasks:
+    - name: Check for wget command
+      yum:
+        name: "wget"
+        state: latest
     - name: "FLRTVC"
       flrtvc:
         path: "{{ path }}"
@@ -16,7 +20,7 @@
         force: no
         clean: False
         check_only: "{{ check }}"
-        download_only: "{{ download }}"
+        download_only: "{{ download_only }}"
         increase_fs: "{{ increase }}"
       register: result
     - debug: var=result
