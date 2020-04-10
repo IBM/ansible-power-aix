@@ -40,9 +40,9 @@ from ansible.module_utils.basic import AnsibleModule
 # TODO: nim_migvios_setup not supported yet?
 # TODO: -----------------------------------------------------------------------------
 
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 # TODO: test viosupgrade_query
 def viosupgrade_query(module):
     """
@@ -88,8 +88,6 @@ def viosupgrade_query(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: test viosupgrade_file
 def viosupgrade_file(module, filename):
     """
@@ -132,8 +130,6 @@ def viosupgrade_file(module, filename):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: test viosupgrade_list
 def viosupgrade_list(module, targets):
     """
@@ -242,9 +238,9 @@ def viosupgrade_list(module, targets):
 ###################################################################################
 
 def main():
+    global CHANGED
     DEBUG_DATA = []
     OUTPUT = []
-    CHANGED = False
     VARS = {}
 
     MODULE = AnsibleModule(
@@ -305,7 +301,6 @@ def main():
     MODULE.status = {}
     MODULE.targets = []
     MODULE.nim_node = {}
-    nb_error = 0
 
     # Handle playbook variables
     LOGNAME = '/tmp/ansible_upgradeios_debug.log'
@@ -385,6 +380,7 @@ def main():
                          debug_output=DEBUG_DATA, status=MODULE.status)
 
     # # Prints status for each targets
+    # nb_error = 0
     # msg = 'VIOSUpgrade {} operation status:'.format(MODULE.params['action'])
     # if MODULE.status:
     #     OUTPUT.append(msg)

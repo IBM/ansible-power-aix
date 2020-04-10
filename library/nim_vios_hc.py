@@ -85,9 +85,14 @@ import logging
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
+DEBUG_DATA = []
+OUTPUT = []
+PARAMS = {}
+NIM_NODE = {}
+CHANGED = False
+VERBOSITY = 0
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -169,8 +174,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_hmc_info(module):
     """
     Get the hmc info on the nim master
@@ -224,8 +227,6 @@ def get_hmc_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_cecs_info(module):
     """
     Get the list of the cec defined on the nim master and
@@ -263,8 +264,6 @@ def get_nim_cecs_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the nim master, and get their
@@ -316,8 +315,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -363,8 +360,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -443,8 +438,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
     """
     Check the "health" of the given VIOSES
@@ -453,6 +446,7 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
             False else
     """
     global NIM_NODE
+    global VERBOSITY
 
     logging.debug('hmc_ip: {} vios_uuids: {}'.format(hmc_ip, vios_uuids))
 
@@ -492,8 +486,6 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def vios_health_init(module, hmc_id, hmc_ip):
     """
     Check the "health" of the given VIOSES for a rolling update point of view
@@ -509,6 +501,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
     global NIM_NODE
     global CHANGED
     global OUTPUT
+    global VERBOSITY
 
     logging.debug('hmc_id: {}, hmc_ip: {}'.format(hmc_id, hmc_ip))
 
@@ -612,8 +605,6 @@ def vios_health_init(module, hmc_id, hmc_ip):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def health_check(module, targets):
     """
     Healt assessment of the VIOSes targets to ensure they can be support
@@ -709,14 +700,14 @@ def health_check(module, targets):
 
 def main():
 
-    DEBUG_DATA = []
-    OUTPUT = []
-    PARAMS = {}
-    NIM_NODE = {}
-    CHANGED = False
+    global DEBUG_DATA
+    global OUTPUT
+    global PARAMS
+    global NIM_NODE
+    global CHANGED
+    global VERBOSITY
     targets_list = []
     VARS = {}
-    VERBOSITY = 0
 
     module = AnsibleModule(
         argument_spec=dict(

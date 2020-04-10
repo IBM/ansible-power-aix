@@ -124,9 +124,13 @@ import string
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
+DEBUG_DATA = []
+OUTPUT = []
+PARAMS = {}
+NIM_NODE = {}
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -208,8 +212,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_hmc_info(module):
     """
     Get the hmc info on the nim master, and get their login/passwd
@@ -265,8 +267,6 @@ def get_hmc_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined
@@ -326,8 +326,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -360,8 +358,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -450,8 +446,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_pvs(module, vios):
     """
     get the list of PV on the VIOS
@@ -494,8 +488,6 @@ def get_pvs(module, vios):
     return pvs
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_free_pvs(module, vios):
     """
     get the list of free PV on the VIOS
@@ -538,8 +530,6 @@ def get_free_pvs(module, vios):
     return free_pvs
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_vg_size(module, vios, vg_name, used_lp):
     """
     get the size in MB of the VG on the VIOS and the USED size
@@ -598,8 +588,6 @@ def get_vg_size(module, vios, vg_name, used_lp):
     return vg_size, vg_used
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk_op_tab):
     """
     find a valid alternate disk that
@@ -819,8 +807,6 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_rootvg(module, vios):
     """
     Check the rootvg
@@ -1018,8 +1004,6 @@ def check_rootvg(module, vios):
     return vg_info
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_tab, err_label):
     """
     Check a valid alternate disk that
@@ -1085,8 +1069,6 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
             return 1
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_label):
     """
     wait for the alternate disk copy operation to finish.
@@ -1179,8 +1161,6 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
     return -1
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def alt_disk_action(module, action, targets, vios_status, time_limit):
     """
     alt_disk_copy / alt_disk_clean operation
@@ -1447,12 +1427,11 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
 
 def main():
 
-    DEBUG_DATA = []
-    OUTPUT = []
-    PARAMS = {}
-    NIM_NODE = {}
-    CHANGED = False
-    targets_list = []
+    global DEBUG_DATA
+    global OUTPUT
+    global PARAMS
+    global NIM_NODE
+    global CHANGED
     VARS = {}
 
     module = AnsibleModule(

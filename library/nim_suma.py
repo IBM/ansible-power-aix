@@ -82,9 +82,12 @@ import logging
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
+SUMA_CHANGED = False
+SUMA_OUTPUT = []
+SUMA_ERROR = []
+PARAMS = {}
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def min_oslevel(dic):
     """
     Find the minimun value of a dictionnary.
@@ -103,8 +106,6 @@ def min_oslevel(dic):
     return oslevel_min
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def max_oslevel(dic):
     """
     Find the maximum value of a the oslevel dictionary.
@@ -123,8 +124,6 @@ def max_oslevel(dic):
     return oslevel_max
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def run_cmd(machine, result):
     """Run command function, command to be 'threaded'.
 
@@ -149,8 +148,6 @@ def run_cmd(machine, result):
     result[machine] = proc.communicate()[0].rstrip()
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def expand_targets(targets_list, nim_clients):
     """
     Expand the list of the targets.
@@ -225,8 +222,6 @@ def expand_targets(targets_list, nim_clients):
     return list(set(clients))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, shell=False):
     """Execute a command.
 
@@ -271,8 +266,6 @@ def exec_cmd(cmd, shell=False):
     return 0, out
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients(module):
     """
     Get the list of the standalones defined on the NIM master.
@@ -304,8 +297,6 @@ def get_nim_clients(module):
     return clients_list
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_lpp_source():
     """
     Get the list of the lpp_source defined on the NIM master.
@@ -348,8 +339,6 @@ def get_nim_lpp_source():
     return 0, lpp_source_list
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_type(oslevel, empty_list):
     """Compute rq_type.
 
@@ -372,8 +361,6 @@ def compute_rq_type(oslevel, empty_list):
     return 'ERROR'
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
     """
     Compute rq_name.
@@ -525,8 +512,6 @@ def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
     return 0, rq_name
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_filter_ml(clients_target_oslevel, rq_name):
 
     """
@@ -555,8 +540,6 @@ def compute_filter_ml(clients_target_oslevel, rq_name):
     return filter_ml
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_lpp_source_name(location, rq_name):
     """
     Compute lpp source name based on the location.
@@ -581,8 +564,6 @@ def compute_lpp_source_name(location, rq_name):
     return lpp_src
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_dl_target(location, lpp_source, nim_lpp_sources):
     """
     Compute suma DL target based on lpp source name.
@@ -622,8 +603,6 @@ def compute_dl_target(location, lpp_source, nim_lpp_sources):
     return 0, dl_target
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_command(module, action):
     """
     Run a suma command.
@@ -658,8 +637,6 @@ def suma_command(module, action):
     return ret, stdout
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_command(module):
     """
     Run a 'nim -o define' command
@@ -694,8 +671,6 @@ def nim_command(module):
     return ret, stdout
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_list(module):
     """
     List all SUMA tasks or the task associated with the given task ID
@@ -717,8 +692,6 @@ def suma_list(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_time(val, mini, maxi):
     """
     Check a value is equal to '*' or is a numeric value in the
@@ -733,8 +706,6 @@ def check_time(val, mini, maxi):
     return False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_edit(module):
     """
     Edit a SUMA task associated with the given task ID
@@ -780,8 +751,6 @@ def suma_edit(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_unschedule(module):
     """
     Unschedule a SUMA task associated with the given task ID
@@ -800,8 +769,6 @@ def suma_unschedule(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_delete(module):
     """
     Delete the SUMA task associated with the given task ID
@@ -820,8 +787,6 @@ def suma_delete(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_config(module):
     """
     List the SUMA global configuration settings
@@ -840,8 +805,6 @@ def suma_config(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_default(module):
     """
     List default SUMA tasks
@@ -860,8 +823,6 @@ def suma_default(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_down_prev(module):
     """
     Dowload (or preview) action
@@ -1173,10 +1134,9 @@ def suma_down_prev(module):
 
 def main():
 
-    SUMA_CHANGED = False
-    SUMA_OUTPUT = []
-    SUMA_ERROR = []
-    PARAMS = {}
+    global SUMA_CHANGED
+    global PARAMS
+    global SUMA_OUTPUT
 
     module = AnsibleModule(
         argument_spec=dict(

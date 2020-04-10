@@ -80,9 +80,13 @@ import logging
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
+SUMA_CHANGED = False
+SUMA_OUTPUT = []
+SUMA_ERROR = []
+PARAMS = {}
+LOGDIR = "/var/adm/ansible"
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, shell=False):
     """Execute a command.
 
@@ -127,8 +131,6 @@ def exec_cmd(cmd, shell=False):
     return 0, out
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_type(oslevel):
     """Compute rq_type.
 
@@ -151,8 +153,6 @@ def compute_rq_type(oslevel):
     return 'ERROR'
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_name(rq_type, oslevel):
     """
     Compute rq_name.
@@ -278,8 +278,6 @@ def compute_rq_name(rq_type, oslevel):
     return 0, rq_name
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_filter_ml(rq_name):
 
     """
@@ -293,8 +291,6 @@ def compute_filter_ml(rq_name):
     return filter_ml
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_dl_target(location):
     """
     When the location is empty, set the location path to
@@ -315,8 +311,6 @@ def compute_dl_target(location):
     return 0, dl_target
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_command(module, action):
     """
     Run a suma command.
@@ -351,8 +345,6 @@ def suma_command(module, action):
     return ret, stdout
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_list(module):
     """
     List all SUMA tasks or the task associated with the given task ID
@@ -374,8 +366,6 @@ def suma_list(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_time(val, mini, maxi):
     """
     Check a value is equal to '*' or is a numeric value in the
@@ -390,8 +380,6 @@ def check_time(val, mini, maxi):
     return False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_edit(module):
     """
     Edit a SUMA task associated with the given task ID
@@ -437,8 +425,6 @@ def suma_edit(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_unschedule(module):
     """
     Unschedule a SUMA task associated with the given task ID
@@ -457,8 +443,6 @@ def suma_unschedule(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_delete(module):
     """
     Delete the SUMA task associated with the given task ID
@@ -477,8 +461,6 @@ def suma_delete(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_config(module):
     """
     List the SUMA global configuration settings
@@ -497,8 +479,6 @@ def suma_config(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_default(module):
     """
     List default SUMA tasks
@@ -517,8 +497,6 @@ def suma_default(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_download(module):
     """
     Download / Install (or preview) action
@@ -719,11 +697,11 @@ def suma_download(module):
 
 def main():
 
-    SUMA_CHANGED = False
-    SUMA_OUTPUT = []
-    SUMA_ERROR = []
-    PARAMS = {}
-    LOGDIR = "/var/adm/ansible"
+    global SUMA_CHANGED
+    global SUMA_OUTPUT
+    global SUMA_ERROR
+    global PARAMS
+    global LOGDIR
 
     module = AnsibleModule(
         argument_spec=dict(

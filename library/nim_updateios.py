@@ -104,9 +104,12 @@ import time
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
+DEBUG_DATA = []
+OUTPUT = []
+NIM_NODE = {}
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -190,8 +193,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the nim master, and get their
@@ -252,8 +253,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -277,8 +276,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_lpp_source(module, lpp_source):
     """
     Check to make sure lpp_source exists
@@ -315,8 +312,6 @@ def check_lpp_source(module, lpp_source):
     return True
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -405,8 +400,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
     """
     Check the SSP status of the VIOS tuple
@@ -527,8 +520,6 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def ssp_stop_start(module, target_tuple, vios, action):
     """
     stop/start the SSP for a VIOS
@@ -578,8 +569,6 @@ def ssp_stop_start(module, target_tuple, vios, action):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_updateios_cmd(module):
     """
     Assemble the updateios command
@@ -632,8 +621,6 @@ def get_updateios_cmd(module):
     return cmd
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
     """
     Execute the updateios command
@@ -803,10 +790,11 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
 ###################################################################################
 
 def main():
-    DEBUG_DATA = []
-    OUTPUT = []
-    NIM_NODE = {}
-    CHANGED = False
+    global CHANGED
+    global NIM_NODE
+    global OUTPUT
+    global DEBUG_DATA
+
     VARS = {}
 
     MODULE = AnsibleModule(

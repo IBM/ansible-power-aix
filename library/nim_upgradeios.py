@@ -27,7 +27,6 @@ import threading
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
 # TODO: Later, add SSP support
 # TODO: Later, add mirrored rootvg support for upgrade & upgrade all in one
 # TODO: Later, add cluster support for viosbr restore
@@ -36,9 +35,11 @@ from ansible.module_utils.basic import AnsibleModule
 # TODO: VRO Check if all debug section (TBC) are commented before commit
 # TODO: VRO -----------------------------------------------------------------------------
 
+DEBUG_DATA = []
+OUTPUT = []
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -124,8 +125,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the
@@ -193,8 +192,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -279,8 +276,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_set_infofile(module):
     """
     Additional settings in NIM master's /etc/niminfo file
@@ -308,7 +303,8 @@ def nim_set_infofile(module):
         try:
             niminfo_file = open(file_path, 'a+')
             for line in niminfo_file:
-                if re.match(r'^export\S+NIM_MASTER_UID="\(\s+@\s+\)"$', line):
+                match_key = re.match(r'^export\S+NIM_MASTER_UID="\(\s+@\s+\)"$', line)
+                if match_key:
                     msg = 'Existing email "{}" found in "{}", skip this setting'\
                           .format(match_key.group(1), file_path)
                     if match_key.group(1) != module.params['email']:
@@ -328,8 +324,6 @@ def nim_set_infofile(module):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_backup(module):
     """
     Perform a NIM operation to create a backup for each VIOSes
@@ -460,8 +454,6 @@ def nim_backup(module):
     return error_nb
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_viosbr function for restore backup
 def nim_viosbr(module):
     """
@@ -606,8 +598,6 @@ def nim_viosbr(module):
     return error_nb
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test MigviosThread class
 class MigviosThread(threading.Thread):
     """
@@ -642,8 +632,6 @@ class MigviosThread(threading.Thread):
         threading.Thread.join(self, timeout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios_all function
 def nim_migvios_all(module):
     """
@@ -688,8 +676,6 @@ def nim_migvios_all(module):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios_tuple function
 def nim_migvios_tuple(module, target_tuple, stop_event):
     """
@@ -799,8 +785,6 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios function
 def nim_migvios(module, vios):
     """
@@ -899,8 +883,6 @@ def nim_migvios(module, vios):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_check_migvios function
 def nim_wait_migvios(module, vios):
     """
@@ -1024,9 +1006,9 @@ def nim_wait_migvios(module, vios):
 ###################################################################################
 
 def main():
-    DEBUG_DATA = []
-    OUTPUT = []
-    CHANGED = False
+    global DEBUG_DATA
+    global CHANGED
+    global OUTPUT
     VARS = {}
 
     MODULE = AnsibleModule(
