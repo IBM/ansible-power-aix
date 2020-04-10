@@ -4,7 +4,9 @@
   vars:
     apar: sec
     path: /usr/sys/inst.images
+    check: no
     download: yes
+    increase: yes
   tasks:
     - name: "FLRTVC"
       flrtvc:
@@ -13,6 +15,8 @@
         apar: "{{ apar }}"
         force: no
         clean: False
+        check_only: "{{ check }}"
         download_only: "{{ download }}"
+        increase_fs: "{{ increase }}"
       register: result
     - debug: var=result

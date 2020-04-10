@@ -1,22 +1,21 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-############################################################################
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 """AIX VIOS NIM Upgrade: tools to upgrade a list of one or a pair of VIOSes"""
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = """
+---
+module: nim_upgradeios
+author: AIX Development Team
+short_description: Perform a VIOS upgrade with NIM
+"""
 
 import os
 import re
@@ -28,14 +27,6 @@ import threading
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim_upgradeios
-author: AIX Development Team
-short_description: Perform a VIOS upgrade with NIM
-"""
-
 # TODO: Later, add SSP support
 # TODO: Later, add mirrored rootvg support for upgrade & upgrade all in one
 # TODO: Later, add cluster support for viosbr restore
@@ -44,9 +35,11 @@ short_description: Perform a VIOS upgrade with NIM
 # TODO: VRO Check if all debug section (TBC) are commented before commit
 # TODO: VRO -----------------------------------------------------------------------------
 
+DEBUG_DATA = []
+OUTPUT = []
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -132,8 +125,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the
@@ -201,8 +192,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -287,8 +276,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_set_infofile(module):
     """
     Additional settings in NIM master's /etc/niminfo file
@@ -316,7 +303,8 @@ def nim_set_infofile(module):
         try:
             niminfo_file = open(file_path, 'a+')
             for line in niminfo_file:
-                if re.match(r'^export\S+NIM_MASTER_UID="\(\s+@\s+\)"$', line):
+                match_key = re.match(r'^export\S+NIM_MASTER_UID="\(\s+@\s+\)"$', line)
+                if match_key:
                     msg = 'Existing email "{}" found in "{}", skip this setting'\
                           .format(match_key.group(1), file_path)
                     if match_key.group(1) != module.params['email']:
@@ -336,8 +324,6 @@ def nim_set_infofile(module):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_backup(module):
     """
     Perform a NIM operation to create a backup for each VIOSes
@@ -468,8 +454,6 @@ def nim_backup(module):
     return error_nb
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_viosbr function for restore backup
 def nim_viosbr(module):
     """
@@ -614,8 +598,6 @@ def nim_viosbr(module):
     return error_nb
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test MigviosThread class
 class MigviosThread(threading.Thread):
     """
@@ -650,8 +632,6 @@ class MigviosThread(threading.Thread):
         threading.Thread.join(self, timeout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios_all function
 def nim_migvios_all(module):
     """
@@ -696,8 +676,6 @@ def nim_migvios_all(module):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios_tuple function
 def nim_migvios_tuple(module, target_tuple, stop_event):
     """
@@ -807,8 +785,6 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_migvios function
 def nim_migvios(module, vios):
     """
@@ -907,8 +883,6 @@ def nim_migvios(module, vios):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: VRO test nim_check_migvios function
 def nim_wait_migvios(module, vios):
     """
@@ -1031,10 +1005,10 @@ def nim_wait_migvios(module, vios):
 
 ###################################################################################
 
-if __name__ == '__main__':
-    DEBUG_DATA = []
-    OUTPUT = []
-    CHANGED = False
+def main():
+    global DEBUG_DATA
+    global CHANGED
+    global OUTPUT
     VARS = {}
 
     MODULE = AnsibleModule(
@@ -1220,3 +1194,7 @@ if __name__ == '__main__':
         debug_output=DEBUG_DATA,
         output=OUTPUT,
         status=MODULE.status)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,22 +1,74 @@
 #!/usr/bin/python
-#
-# Copyright:: 2020- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-######################################################################
-"""SUMA: download fixes, SP or TL on an AIX server"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2020- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: suma
+short_description: Download fixes, SP or TL on an AIX server
+description:
+- Creates a task to automate the download of technology levels and
+  service packs from a fix server.
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  oslevel:
+    description:
+    - Operating System level.
+    type: str
+  action:
+    description:
+    - Controls what is performed.
+    - C(download) to download fixes.
+    - C(preview).
+    - C(list).
+    - C(edit).
+    - C(unschedule).
+    - C(delete).
+    - C(config).
+    - C(default).
+    type: str
+    choices: [ download, preview, list, edit, unschedule, delete, config, default ]
+    default: download
+  download_dir:
+    description:
+    - Directory where updates are downloaded.
+    type: str
+  download_only:
+    description:
+    - Download only.
+    type: bool
+    default: no
+  task_id:
+    description:
+    - SUMA task.
+    type: str
+  sched_time:
+    description:
+    - Schedule time.
+    type: str
+  description:
+    description:
+    - Display name for SUMA task.
+    type: str
+'''
+
+EXAMPLES = r'''
+- name: Check for, and install, system updates
+  suma:
+    oslevel: latest
+    download_dir: /usr/sys/inst.images
+'''
+
+RETURN = r''' # '''
 
 import os
 import re
@@ -28,18 +80,13 @@ import logging
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
-------
-module: suma
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-"""
+SUMA_CHANGED = False
+SUMA_OUTPUT = []
+SUMA_ERROR = []
+PARAMS = {}
+LOGDIR = "/var/adm/ansible"
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, shell=False):
     """Execute a command.
 
@@ -84,8 +131,6 @@ def exec_cmd(cmd, shell=False):
     return 0, out
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_type(oslevel):
     """Compute rq_type.
 
@@ -108,8 +153,6 @@ def compute_rq_type(oslevel):
     return 'ERROR'
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_rq_name(rq_type, oslevel):
     """
     Compute rq_name.
@@ -235,8 +278,6 @@ def compute_rq_name(rq_type, oslevel):
     return 0, rq_name
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_filter_ml(rq_name):
 
     """
@@ -250,8 +291,6 @@ def compute_filter_ml(rq_name):
     return filter_ml
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def compute_dl_target(location):
     """
     When the location is empty, set the location path to
@@ -272,8 +311,6 @@ def compute_dl_target(location):
     return 0, dl_target
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_command(module, action):
     """
     Run a suma command.
@@ -308,8 +345,6 @@ def suma_command(module, action):
     return ret, stdout
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_list(module):
     """
     List all SUMA tasks or the task associated with the given task ID
@@ -331,8 +366,6 @@ def suma_list(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_time(val, mini, maxi):
     """
     Check a value is equal to '*' or is a numeric value in the
@@ -347,8 +380,6 @@ def check_time(val, mini, maxi):
     return False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_edit(module):
     """
     Edit a SUMA task associated with the given task ID
@@ -394,8 +425,6 @@ def suma_edit(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_unschedule(module):
     """
     Unschedule a SUMA task associated with the given task ID
@@ -414,8 +443,6 @@ def suma_unschedule(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_delete(module):
     """
     Delete the SUMA task associated with the given task ID
@@ -434,8 +461,6 @@ def suma_delete(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_config(module):
     """
     List the SUMA global configuration settings
@@ -454,8 +479,6 @@ def suma_config(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_default(module):
     """
     List default SUMA tasks
@@ -474,8 +497,6 @@ def suma_default(module):
     SUMA_OUTPUT.append(stdout.split('\n'))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def suma_download(module):
     """
     Download / Install (or preview) action
@@ -674,13 +695,13 @@ def suma_download(module):
 ##############################################################################
 
 
-if __name__ == '__main__':
+def main():
 
-    SUMA_CHANGED = False
-    SUMA_OUTPUT = []
-    SUMA_ERROR = []
-    PARAMS = {}
-    LOGDIR = "/var/adm/ansible"
+    global SUMA_CHANGED
+    global SUMA_OUTPUT
+    global SUMA_ERROR
+    global PARAMS
+    global LOGDIR
 
     module = AnsibleModule(
         argument_spec=dict(
@@ -783,3 +804,7 @@ if __name__ == '__main__':
         changed=SUMA_CHANGED,
         msg="Suma {} completed successfully".format(action),
         suma_output=SUMA_OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

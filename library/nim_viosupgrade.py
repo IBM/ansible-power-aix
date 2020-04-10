@@ -1,22 +1,21 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-############################################################################
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 """AIX NIM viosupgrade: tool to upgrade VIOSes in NIM environment"""
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = """
+---
+module: nim_upgradeios
+author: AIX Development Team
+short_description: Perform a upgrade with the viosupgrade tool
+"""
 
 import logging
 import csv
@@ -25,13 +24,6 @@ import distutils.util
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim_upgradeios
-author: AIX Development Team
-short_description: Perform a upgrade with the viosupgrade tool
-"""
 
 # TODO: -----------------------------------------------------------------------------
 # TODO: Later, check SSP support (option -c of viosupgrade)
@@ -48,9 +40,9 @@ short_description: Perform a upgrade with the viosupgrade tool
 # TODO: nim_migvios_setup not supported yet?
 # TODO: -----------------------------------------------------------------------------
 
+CHANGED = False
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
+
 # TODO: test viosupgrade_query
 def viosupgrade_query(module):
     """
@@ -96,8 +88,6 @@ def viosupgrade_query(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: test viosupgrade_file
 def viosupgrade_file(module, filename):
     """
@@ -140,8 +130,6 @@ def viosupgrade_file(module, filename):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 # TODO: test viosupgrade_list
 def viosupgrade_list(module, targets):
     """
@@ -249,10 +237,10 @@ def viosupgrade_list(module, targets):
 
 ###################################################################################
 
-if __name__ == '__main__':
+def main():
+    global CHANGED
     DEBUG_DATA = []
     OUTPUT = []
-    CHANGED = False
     VARS = {}
 
     MODULE = AnsibleModule(
@@ -313,7 +301,6 @@ if __name__ == '__main__':
     MODULE.status = {}
     MODULE.targets = []
     MODULE.nim_node = {}
-    nb_error = 0
 
     # Handle playbook variables
     LOGNAME = '/tmp/ansible_upgradeios_debug.log'
@@ -393,6 +380,7 @@ if __name__ == '__main__':
                          debug_output=DEBUG_DATA, status=MODULE.status)
 
     # # Prints status for each targets
+    # nb_error = 0
     # msg = 'VIOSUpgrade {} operation status:'.format(MODULE.params['action'])
     # if MODULE.status:
     #     OUTPUT.append(msg)
@@ -440,3 +428,7 @@ if __name__ == '__main__':
         debug_output=DEBUG_DATA,
         output=OUTPUT,
         status=MODULE.status)
+
+
+if __name__ == '__main__':
+    main()

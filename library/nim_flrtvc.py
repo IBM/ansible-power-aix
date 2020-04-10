@@ -1,22 +1,88 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-######################################################################
-"""AIX FLRTVC: generate flrtvc report, download and install efix"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: nim_flrtvc
+short_description: Generate flrtvc report, download and install efix
+description:
+- Generate flrtvc report, download and install efix.
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  targets:
+    description:
+    - NIM targets.
+    type: str
+    required: true
+  apar:
+    description:
+    - Type of APAR.
+    - C(sec) Security vulnerabilities.
+    - C(hiper) HIPER.
+    - C(all).
+    type: str
+    choices: [ sec, hiper, all, None ]
+    default: None
+  filesets:
+    description:
+    - Filter filesets for specific phrase.
+    type: str
+  csv:
+    description:
+    - APAR CSV file that will be downloaded and saved to location.
+    type: str
+  path:
+    description:
+    - Destination path.
+    type: str
+  verbose:
+    description:
+    - Generate full reporting (verbose mode).
+    type: bool
+    default: no
+  force:
+    description:
+    - Force.
+    type: bool
+    default: no
+  clean:
+    description:
+    - Cleanup downloaded files after install.
+    type: bool
+    default: no
+  check_only:
+    description:
+    - Perform check only.
+    type: bool
+    default: no
+  download_only:
+    description:
+    - Download only, do not install anything.
+    type: bool
+    default: no
+'''
+
+EXAMPLES = r'''
+- name: Download patches for security vulnerabilities
+  nim_flrtvc:
+    targets: nimclient01
+    path: /usr/sys/inst.images
+    verbose: yes
+    apar: sec
+    download_only: yes
+'''
+
+RETURN = r''' # '''
 
 import logging
 import os
@@ -36,14 +102,6 @@ from collections import OrderedDict
 
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
-
-DOCUMENTATION = """
-------
-module: nim_flrtvc
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-"""
 
 # Threading
 THRDS = []
@@ -104,7 +162,7 @@ def logged(func):
 
 
 @logged
-def download(src, dst):
+def download(src, dst, output):
     """
     Download efix from url to directory
     args:
@@ -115,19 +173,26 @@ def download(src, dst):
         False otherwise
     """
     res = True
+    wget = '/bin/wget'
     if not os.path.isfile(dst):
         logging.debug('downloading {} to {}...'.format(src, dst))
-        try:
-            cmd = ['/bin/wget', '--no-check-certificate', src, '-P', os.path.dirname(dst)]
-            subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logging.warning('EXCEPTION cmd={} rc={} output={}'
-                            .format(exc.cmd, exc.returncode, exc.output))
+        if not os.path.exists(wget):
+            msg = 'Error: Unable to locate {} ...'.format(wget)
+            logging.warning(msg)
+            output['messages'].append(msg)
             res = False
-            if exc.returncode == 3:
-                increase_fs(dst)
-                os.remove(dst)
-                res = download(src, dst)
+        else:
+            try:
+                cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
+                subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError as exc:
+                logging.warning('EXCEPTION cmd={} rc={} output={}'
+                                .format(exc.cmd, exc.returncode, exc.output))
+                res = False
+                if exc.returncode == 3:
+                    increase_fs(dst)
+                    os.remove(dst)
+                    res = download(src, dst, output)
     else:
         logging.debug('{} already exists'.format(dst))
     return res
@@ -734,7 +799,7 @@ def run_downloader(machine, output, urls):
 
             # download epkg file
             epkg = os.path.abspath(os.path.join(WORKDIR, name))
-            if download(url, epkg):
+            if download(url, epkg, out):
                 out['3.download'].extend(epkg)
 
         elif '.tar' in name:  # URL as a tar file
@@ -742,7 +807,7 @@ def run_downloader(machine, output, urls):
             dst = os.path.abspath(os.path.join(WORKDIR, name))
 
             # download and open tar file
-            download(url, dst)
+            download(url, dst, out)
             tar = tarfile.open(dst, 'r')
 
             # find all epkg in tar file
@@ -780,7 +845,7 @@ def run_downloader(machine, output, urls):
             # download epkg
             epkgs = [os.path.abspath(os.path.join(WORKDIR, epkg)) for epkg in epkgs
                      if download(os.path.join(url, epkg),
-                                 os.path.abspath(os.path.join(WORKDIR, epkg)))]
+                                 os.path.abspath(os.path.join(WORKDIR, epkg)), out)]
             out['3.download'].extend(epkgs)
 
     # Get installed filesets' levels
@@ -1120,7 +1185,7 @@ def increase_fs(dest):
 ###################################################################################################
 
 
-if __name__ == '__main__':
+def main():
     MODULE = AnsibleModule(
         argument_spec=dict(
             targets=dict(required=True, type='str'),
@@ -1175,8 +1240,7 @@ if __name__ == '__main__':
     WORKDIR = os.path.join(FLRTVC_PARAMS['dst_path'], 'work')
 
     if not os.path.exists(WORKDIR):
-        # not sure why flake8 complains against 'mode=0744' token in os.makedirs call
-        os.makedirs(WORKDIR, mode=0744)  # noqa: E999
+        os.makedirs(WORKDIR, mode=0o744)
 
     # metadata
     OUTPUT = {}
@@ -1197,7 +1261,10 @@ if __name__ == '__main__':
     _FLRTVCFILE = os.path.join(_FLRTVCPATH, 'flrtvc.ksh')
     if not os.path.exists(_FLRTVCFILE):
         _DESTNAME = os.path.abspath(os.path.join(os.sep, 'FLRTVC-latest.zip'))
-        download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip', _DESTNAME)
+        if not download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip', _DESTNAME, OUTPUT):
+            if CLEAN and os.path.exists(WORKDIR):
+                shutil.rmtree(WORKDIR, ignore_errors=True)
+            MODULE.fail_json(changed=CHANGED, msg='Failed to download FLRTVC-latest.zip', meta=OUTPUT)
         unzip(_DESTNAME, os.path.abspath(os.path.join(os.sep, 'usr', 'bin')))
     _STAT = os.stat(_FLRTVCFILE)
     if not _STAT.st_mode & stat.S_IEXEC:
@@ -1259,3 +1326,7 @@ if __name__ == '__main__':
         changed=CHANGED,
         msg='FLRTVC completed successfully',
         meta=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

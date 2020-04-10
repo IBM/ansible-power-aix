@@ -1,22 +1,112 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-######################################################################
-"""AIX NIM: server setup, install packages, update SP or TL"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: nim
+short_description: Server setup, install packages, update SP or TL.
+description:
+- Server setup, install packages, update SP or TL.
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  action:
+    description:
+    - Specifies the operation to perform on the NIM client.
+    - C(update) to update NIM clients with a specified C(lpp_source).
+    - C(master_setup) to setup a NIM master.
+    - C(check) to retrieve the C(Cstate) of each NIM client.
+    - C(compare) to compare installation inventories of the NIM clients.
+    - C(script) to apply a script to customize NIM clients.
+    - C(allocate) to allocate a resource to specified NIM clients.
+    - C(deallocate) to deallocate a resource for specified NIM clients.
+    - C(bos_inst) to install a given list of NIM clients.
+    - C(define_script) to define a script NIM resource.
+    - C(remove) to remove a specified NIM resource.
+    - C(reset) to reset the C(Cstate) of a NIM client.
+    - C(reboot) to reboot the given NIM clients if they are running.
+    - C(maintenance) to perform a maintenance operation on NIM clients.
+    type: str
+    choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance ]
+    required: true
+  lpp_source:
+    description:
+    - Indicates the lpp_source to apply to the targets.
+    - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified;
+      based on the NIM server resources, nim will determine
+      the actual oslevel necessary to update the targets.
+    type: str
+  targets:
+    description:
+    - Specifies the NIM clients to update.
+    - C(foo*) designates all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) designates all the NIM clients.
+    type: str
+  asynchronous:
+    description:
+    - If set to C(no), NIM client will be completely installed before starting
+      the installation of another NIM client.
+    type: bool
+    default: no
+  device:
+    description:
+    - The device (or directory) where to find the lpp source to install.
+    type: str
+  script:
+    description:
+    - NIM script resource.
+    type: str
+  resource:
+    description:
+    - NIM resource.
+    type: str
+  location:
+    description:
+    - Specifies the full path name of the script resource file.
+    type: str
+  group:
+    description:
+    - NIM group resource.
+    type: str
+  force:
+    description:
+    - Forces action.
+    type: bool
+    default: no
+  operation:
+    description:
+    - NIM maintenance operation.
+    type: str
+'''
+
+EXAMPLES = r'''
+- name: Install using group resource
+  nim:
+    action: bos_inst
+    targets: nimclient01
+    group: basic_res_grp
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+nim_output:
+    description: Output from nim commands.
+    returned: always
+    type: str
+'''
 
 import os
 import re
@@ -27,19 +117,12 @@ import logging
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-
-"""
+NIM_OUTPUT = []
+NIM_PARAMS = {}
+NIM_NODE = {}
+NIM_CHANGED = False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def run_oslevel_cmd(machine, result):
     """
     Run command function, command to be 'threaded'.
@@ -82,8 +165,6 @@ def run_oslevel_cmd(machine, result):
         logging.error('Failed to get oslevel for {}: {}'.format(machine, msg))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, module, shell=False):
     """
     Execute the given command
@@ -103,7 +184,6 @@ def exec_cmd(cmd, module, shell=False):
         - std_err   error out of the command
     """
 
-    global DEBUG_DATA
     ret = 0
     std_out = ''
     std_err = ''
@@ -145,8 +225,6 @@ def exec_cmd(cmd, module, shell=False):
     return (ret, std_out, std_err)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the standalones defined on the nim master, and get their
@@ -212,8 +290,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_master_info(module):
     """
     Get the cstate.of the nim master
@@ -242,14 +318,13 @@ def get_nim_master_info(module):
     return cstate
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_oslevel(type):
     """
     Get the oslevel of the standalones defined on the nim master.
 
     return a hash of the standlone oslevel
     """
+    global NIM_NODE
 
     # =========================================================================
     # Launch threads to collect information on targeted nim clients
@@ -271,8 +346,6 @@ def get_nim_clients_oslevel(type):
     return clients_oslevel
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_master_oslevel():
     """
     Get the oslevel of the nim master.
@@ -284,8 +357,6 @@ def get_nim_master_oslevel():
     return master_oslevel['master']
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_lpp_source(module):
     """
     Get the list of the lpp_source defined on the nim master.
@@ -322,8 +393,6 @@ def get_nim_lpp_source(module):
     return 0, lpp_source_list
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim client info and the lpp source
@@ -400,8 +469,6 @@ def build_nim_node(module):
     logging.debug('NIM master: oslevel = {}'.format(oslevel))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def expand_targets(targets):
     """
     Expand the list of the targets.
@@ -422,6 +489,7 @@ def expand_targets(targets):
 
     return: the list of the existing machines matching the target list
     """
+    global NIM_NODE
 
     clients = []
     targets_list = targets.split(' ')
@@ -479,14 +547,13 @@ def expand_targets(targets):
     return list(set(clients))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def print_node_by_columns():
     """
     Build an array with the oslevel and the Cstate of each nim client
 
     return: the strings array
     """
+    global NIM_NODE
 
     # -----------------------------------------------------------------
     # Print node in column format
@@ -579,8 +646,6 @@ def print_node_by_columns():
     return result
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def perform_async_customization(module, lpp_source, targets):
     """
     Perform an asynchronous customization of the given targets clients,
@@ -633,8 +698,6 @@ def perform_async_customization(module, lpp_source, targets):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def perform_sync_customization(module, lpp_source, targets):
     """
     Perform a synchronous customization of the given targets clients,
@@ -698,8 +761,6 @@ def perform_sync_customization(module, lpp_source, targets):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def list_fixes(target, module):
     """
     Get the list of the interim fixes for a specified nim client
@@ -752,11 +813,9 @@ def list_fixes(target, module):
     return(ret, fixes)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def remove_fix(target, fix, module):
     """
-    Remove an interim fixe for a specified nim client
+    Remove an interim fix for a specified nim client
 
     return: the return code of the command.
     """
@@ -795,8 +854,6 @@ def remove_fix(target, fix, module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def find_resource_by_client(lpp_type, lpp_time, oslevel_elts):
     """
     Retrieve the good SP or TL resource to associate to the nim client oslevel
@@ -806,6 +863,7 @@ def find_resource_by_client(lpp_type, lpp_time, oslevel_elts):
 
     return: the lpp_sourec found or the current oslevel in not found
     """
+    global NIM_NODE
 
     logging.debug('NIM - find resource: {} {}'.format(lpp_time, lpp_type))
 
@@ -847,8 +905,6 @@ def find_resource_by_client(lpp_type, lpp_time, oslevel_elts):
     return lpp_source
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_update(module):
     """
     Update nim clients (targets) with a specified lpp_source
@@ -860,6 +916,8 @@ def nim_update(module):
     """
 
     global NIM_CHANGED
+    global NIM_PARAMS
+    global NIM_NODE
 
     lpp_source = NIM_PARAMS['lpp_source']
     async_update = 'no'
@@ -970,17 +1028,17 @@ def nim_update(module):
     return
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_maintenance(module):
     """
-    Apply an maintenance operation (commit) on nim clients (targets)
+    Apply a maintenance operation (commit) on nim clients (targets)
 
     return: a return code (O if Ok)
     """
 
     global NIM_CHANGED
     global NIM_NODE
+    global NIM_OUTPUT
+    global NIM_PARAMS
 
     logging.info('NIM - {} maintenance operation on {}'
                  .format(NIM_PARAMS['operation'], NIM_PARAMS['targets']))
@@ -1036,8 +1094,6 @@ def nim_maintenance(module):
     return retcode
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_master_setup(module):
     """
     Setup a nim master
@@ -1075,8 +1131,6 @@ def nim_master_setup(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_check():
     """
     Output an array containing the oslevel and the Cstate of each nim client
@@ -1096,8 +1150,6 @@ def nim_check():
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_compare(module):
     """
     Compare installation inventory of the nim clients
@@ -1138,8 +1190,6 @@ def nim_compare(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_script(module):
     """
     Apply a script to customize nim client targets
@@ -1188,8 +1238,6 @@ def nim_script(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_allocate(module):
     """
     Allocate a resource to specified nim clients
@@ -1230,8 +1278,6 @@ def nim_allocate(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_deallocate(module):
     """
     Deallocate a resource for specified nim clients
@@ -1272,8 +1318,6 @@ def nim_deallocate(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_bos_inst(module):
     """
     Install a given list of nim clients.
@@ -1322,8 +1366,6 @@ def nim_bos_inst(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_define_script(module):
     """
     Define a script nim resource
@@ -1362,8 +1404,6 @@ def nim_define_script(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_remove(module):
     """
     Remove a specified nim resource
@@ -1401,8 +1441,6 @@ def nim_remove(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_reset(module):
     """
     Reset the Cstate of a nim client.
@@ -1414,6 +1452,7 @@ def nim_reset(module):
 
     global NIM_CHANGED
     global NIM_OUTPUT
+    global NIM_NODE
 
     ret = 0
     logging.info('NIM - reset operation on {} ressource'
@@ -1466,8 +1505,6 @@ def nim_reset(module):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_reboot(module):
     """
     Reboot the given nim clients if they are running
@@ -1512,13 +1549,12 @@ def nim_reboot(module):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
-    DEBUG_DATA = []
-    NIM_OUTPUT = []
-    NIM_PARAMS = {}
-    NIM_NODE = {}
-    NIM_CHANGED = False
+    global NIM_OUTPUT
+    global NIM_PARAMS
+    global NIM_NODE
+    global NIM_CHANGED
 
     MODULE = AnsibleModule(
         argument_spec=dict(
@@ -1649,11 +1685,11 @@ if __name__ == '__main__':
     elif action == 'reset':
         NIM_PARAMS['targets'] = targets
         NIM_PARAMS['force'] = force
-        ret = nim_reset(MODULE)
+        nim_reset(MODULE)
 
     elif action == 'reboot':
         NIM_PARAMS['targets'] = targets
-        ret = nim_reboot(MODULE)
+        nim_reboot(MODULE)
 
     else:
         logging.error('NIM - Error: Unknowned action {}'.format(action))
@@ -1665,5 +1701,8 @@ if __name__ == '__main__':
     MODULE.exit_json(
         changed=NIM_CHANGED,
         msg="NIM {} completed successfully".format(action),
-        debug_output=DEBUG_DATA,
         nim_output=NIM_OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

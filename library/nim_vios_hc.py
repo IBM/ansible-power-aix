@@ -1,22 +1,80 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-######################################################################
-"""AIX VIOS Health Check: check the pair of VIOS can be updated"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: nim_vios_hc
+short_description: Check if a pair of VIOSes can be updated
+description:
+- Check if a pair of Virtual I/O Servers can be updated.
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  action:
+    description:
+    - Specifies the operation to perform.
+    - C(health_check) to perform a health check.
+    type: str
+    choices: [ health_check ]
+    required: true
+  targets:
+    description:
+    - NIM target.
+    - 'To perform a health check on dual VIOSes, specify the list as a tuple
+      with the following format: "(vios1, vios2) (vios3, vios4)".'
+    - 'To specify a single VIOS, use the following format: "(vios1)".'
+    type: str
+    required: true
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+        default: /tmp/ansible_vios_check_debug.log
+notes:
+  - Requires vioshc.py as a prerequisite.
+  - vioshc.py is available at U(https://github.com/aixoss/vios-health-checker).
+'''
+
+EXAMPLES = r'''
+- name: Perform a health check on VIOSes vios1 and vios2
+  nim_vios_hc:
+    targets: "(vios1, vios2)"
+    action: health_check
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOS tuples.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+'''
 
 import os
 import stat
@@ -27,19 +85,14 @@ import logging
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim_vios_hc
-short_description: "Check the pair of VIOS can be updated"
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-"""
+DEBUG_DATA = []
+OUTPUT = []
+PARAMS = {}
+NIM_NODE = {}
+CHANGED = False
+VERBOSITY = 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -121,8 +174,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_hmc_info(module):
     """
     Get the hmc info on the nim master
@@ -176,8 +227,6 @@ def get_hmc_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_cecs_info(module):
     """
     Get the list of the cec defined on the nim master and
@@ -215,8 +264,6 @@ def get_nim_cecs_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the nim master, and get their
@@ -268,8 +315,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -315,8 +360,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -395,8 +438,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
     """
     Check the "health" of the given VIOSES
@@ -405,6 +446,7 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
             False else
     """
     global NIM_NODE
+    global VERBOSITY
 
     logging.debug('hmc_ip: {} vios_uuids: {}'.format(hmc_ip, vios_uuids))
 
@@ -444,8 +486,6 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def vios_health_init(module, hmc_id, hmc_ip):
     """
     Check the "health" of the given VIOSES for a rolling update point of view
@@ -461,6 +501,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
     global NIM_NODE
     global CHANGED
     global OUTPUT
+    global VERBOSITY
 
     logging.debug('hmc_id: {}, hmc_ip: {}'.format(hmc_id, hmc_ip))
 
@@ -564,8 +605,6 @@ def vios_health_init(module, hmc_id, hmc_ip):
     return ret
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def health_check(module, targets):
     """
     Healt assessment of the VIOSes targets to ensure they can be support
@@ -659,16 +698,16 @@ def health_check(module, targets):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
-    DEBUG_DATA = []
-    OUTPUT = []
-    PARAMS = {}
-    NIM_NODE = {}
-    CHANGED = False
+    global DEBUG_DATA
+    global OUTPUT
+    global PARAMS
+    global NIM_NODE
+    global CHANGED
+    global VERBOSITY
     targets_list = []
     VARS = {}
-    VERBOSITY = 0
 
     module = AnsibleModule(
         argument_spec=dict(
@@ -768,3 +807,7 @@ if __name__ == '__main__':
         status=targets_health_status,
         debug_output=DEBUG_DATA,
         output=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()

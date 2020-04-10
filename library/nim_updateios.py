@@ -1,23 +1,97 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-#
-############################################################################
-"""AIX VIOS NIM Update: tools to update a list of one or a pair of VIOSes"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: nim_updateios
+short_description: Update a single or a pair of Virtual I/O Servers
+description:
+- Performs updates and customization to the Virtual I/O Server (VIOS).
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  targets:
+    description:
+    - NIM targets.
+    type: str
+    required: true
+  filesets:
+    description:
+    - Specifies a list of file sets to remove from the target.
+    type: str
+  installp_bundle:
+    description:
+    - Specifies an I(installp_bundle) resource that lists file sets to remove on the target.
+    type: str
+  lpp_source:
+    description:
+    - Identifies the I(lpp_source) resource that will provide the installation images for
+      the operation.
+    type: str
+  accept_licenses:
+    description:
+    - Specifies whether the software licenses should be automatically accepted during the installation.
+    type: str
+  action:
+    description:
+    - Operation to perform on the targets.
+    - C(install).
+    - C(commit).
+    - C(reject).
+    - C(cleanup).
+    - C(remove).
+    type: str
+    choices: [ install, commit, reject, cleanup, remove ]
+    required: true
+  preview:
+    description:
+    - Specifies a preview operation.
+    type: str
+  time_limit:
+    description:
+    - Before starting the action, the actual date is compared to this parameter value;
+      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    type: str
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    type: dict
+    suboptions:
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a task to another so that it
+      discovers NIM info only one time for all tasks.
+    type: dict
+    suboptions:
+'''
+
+EXAMPLES = r'''
+- name: Update a pair of VIOSes
+  nim_updateios:
+    targets: "(nimvios01, nimvios02)"
+    action: install
+    lpp_source: /lpp_source
+'''
+
+RETURN = r''' # '''
 
 import os
 import re
@@ -30,16 +104,12 @@ import time
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
-DOCUMENTATION = """
----
-module: nim_updateios
-author: AIX Development Team
-short_description: Perform a VIOS update with NIM
-"""
+DEBUG_DATA = []
+OUTPUT = []
+NIM_NODE = {}
+CHANGED = False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -123,8 +193,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined on the nim master, and get their
@@ -185,8 +253,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -210,8 +276,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_lpp_source(module, lpp_source):
     """
     Check to make sure lpp_source exists
@@ -248,8 +312,6 @@ def check_lpp_source(module, lpp_source):
     return True
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -338,8 +400,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
     """
     Check the SSP status of the VIOS tuple
@@ -460,8 +520,6 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def ssp_stop_start(module, target_tuple, vios, action):
     """
     stop/start the SSP for a VIOS
@@ -511,8 +569,6 @@ def ssp_stop_start(module, target_tuple, vios, action):
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_updateios_cmd(module):
     """
     Assemble the updateios command
@@ -565,8 +621,6 @@ def get_updateios_cmd(module):
     return cmd
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
     """
     Execute the updateios command
@@ -735,16 +789,16 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
 
 ###################################################################################
 
-if __name__ == '__main__':
-    DEBUG_DATA = []
-    OUTPUT = []
-    NIM_NODE = {}
-    CHANGED = False
+def main():
+    global CHANGED
+    global NIM_NODE
+    global OUTPUT
+    global DEBUG_DATA
+
     VARS = {}
 
     MODULE = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
             targets=dict(required=True, type='str'),
             filesets=dict(required=False, type='str'),
             installp_bundle=dict(required=False, type='str'),
@@ -855,3 +909,7 @@ if __name__ == '__main__':
         debug_output=DEBUG_DATA,
         output=OUTPUT,
         status=targets_update_status)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,22 +1,117 @@
 #!/usr/bin/python
-#
-# Copyright:: 2018- IBM, Inc
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-######################################################################
-"""AIX VIOS NIM ALTDISK: Create/Cleanup an alternate rootvg disk"""
+# -*- coding: utf-8 -*-
+
+# Copyright: (c) 2018- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+DOCUMENTATION = r'''
+---
+author:
+- AIX Development Team
+module: nim_vios_alt_disk
+short_description: Create/Cleanup an alternate rootvg disk
+description:
+- Copy the rootvg to an alternate disk or cleanup an existing one.
+version_added: '2.9'
+requirements: [ AIX ]
+options:
+  action:
+    description:
+    - Specifies the operation to perform on the VIOS.
+    - C(alt_disk_copy) to perform and alternate disk copy.
+    - C(alt_disk_clean) to cleanup an existing alternate disk copy.
+    type: str
+    choices: [ alt_disk_copy, alt_disk_clean ]
+    required: true
+  targets:
+    description:
+    - NIM target.
+    - Use a tuple format with the 1st element the VIOS and the 2nd element
+      the disk used for the alternate disk copy.
+      "(vios1,disk1,vios2,disk2)" for dual VIOSes.
+      "(vios1,disk1)" for single VIOS.
+    type: str
+    required: true
+  time_limit:
+    description:
+    - Before starting the action, the actual date is compared to this parameter value;
+      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    type: str
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+        default: /tmp/ansible_vios_alt_disk_debug.log
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    type: dict
+    suboptions:
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a task to another so that it
+      discovers NIM info only one time for all tasks.
+    type: dict
+    suboptions:
+  disk_size_policy:
+    description:
+    - Specifies how to choose the alternate disk if not specified.
+    - C(minimize) smallest disk that can be selected.
+    - C(upper) first disk found bigger than the rootvg disk.
+    - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
+    - C(nearest)
+    type: str
+    choices: [ minimize, upper, lower, nearest ]
+    default: nearest
+  force:
+    description:
+    - Forces action.
+    type: bool
+    default: no
+notes:
+  - C(alt_disk_copy) only backs up mounted file systems. Mount all file
+    systems that you want to back up.
+  - copy is performed only on one alternate hdisk even if the rootvg
+    contains multiple hdisks
+  - error if several C(altinst_rootvg) exist for cleanup operation in
+    automatic mode
+'''
+
+EXAMPLES = r'''
+- name: Perform an alternate disk copy of the rootvg to hdisk1
+  nim_vios_alt_disk:
+    targets: "(nimvios01,hdisk1)"
+    action: alt_disk_copy
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOS tuples.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+'''
 
 import os
 import re
@@ -29,26 +124,13 @@ import string
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-
-DOCUMENTATION = """
----
-module: nim_vios_alt_disk
-short_description: "Copy the rootvg to an alternate disk or cleanup an existing one"
-author: "AIX Development Team"
-version_added: "1.0.0"
-requirements: [ AIX ]
-
-Note - alt_disk_copy only backs up mounted file systems. Mount all file
-       systems that you want to back up.
-     - copy is performed only on one alternate hdisk even if the rootvg
-       contains multiple hdisks
-     - error if several altinst_rootvg exist for cleanup operation in
-       automatic mode
-"""
+DEBUG_DATA = []
+OUTPUT = []
+PARAMS = {}
+NIM_NODE = {}
+CHANGED = False
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     """
     Execute the given command
@@ -130,8 +212,6 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     return (ret, output, errout)
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_hmc_info(module):
     """
     Get the hmc info on the nim master, and get their login/passwd
@@ -187,8 +267,6 @@ def get_hmc_info(module):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_nim_clients_info(module, lpar_type):
     """
     Get the list of the lpar (standalones or vios) defined
@@ -248,8 +326,6 @@ def get_nim_clients_info(module, lpar_type):
     return info_hash
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def build_nim_node(module):
     """
     build the nim node containing the nim vios and hmcinfo.
@@ -282,8 +358,6 @@ def build_nim_node(module):
     logging.debug('NIM VIOS: {}'.format(nim_vios))
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_vios_targets(module, targets):
     """
     check the list of the vios targets.
@@ -372,8 +446,6 @@ def check_vios_targets(module, targets):
     return vios_list_tuples_res
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_pvs(module, vios):
     """
     get the list of PV on the VIOS
@@ -416,8 +488,6 @@ def get_pvs(module, vios):
     return pvs
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_free_pvs(module, vios):
     """
     get the list of free PV on the VIOS
@@ -460,8 +530,6 @@ def get_free_pvs(module, vios):
     return free_pvs
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def get_vg_size(module, vios, vg_name, used_lp):
     """
     get the size in MB of the VG on the VIOS and the USED size
@@ -520,8 +588,6 @@ def get_vg_size(module, vios, vg_name, used_lp):
     return vg_size, vg_used
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk_op_tab):
     """
     find a valid alternate disk that
@@ -632,7 +698,7 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
             for key in sorted(pvs, key=lambda k: pvs[k]['size']):
                 hdisk = key
 
-                # disk to small or already used
+                # disk too small or already used
                 if pvs[hdisk]['size'] < used_size or pvs[hdisk]['pvid'] in used_pv:
                     continue
 
@@ -741,8 +807,6 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
     return 0
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_rootvg(module, vios):
     """
     Check the rootvg
@@ -940,8 +1004,6 @@ def check_rootvg(module, vios):
     return vg_info
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_tab, err_label):
     """
     Check a valid alternate disk that
@@ -1007,8 +1069,6 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
             return 1
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_label):
     """
     wait for the alternate disk copy operation to finish.
@@ -1101,8 +1161,6 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
     return -1
 
 
-# ----------------------------------------------------------------
-# ----------------------------------------------------------------
 def alt_disk_action(module, action, targets, vios_status, time_limit):
     """
     alt_disk_copy / alt_disk_clean operation
@@ -1367,14 +1425,13 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
 
 ################################################################################
 
-if __name__ == '__main__':
+def main():
 
-    DEBUG_DATA = []
-    OUTPUT = []
-    PARAMS = {}
-    NIM_NODE = {}
-    CHANGED = False
-    targets_list = []
+    global DEBUG_DATA
+    global OUTPUT
+    global PARAMS
+    global NIM_NODE
+    global CHANGED
     VARS = {}
 
     module = AnsibleModule(
@@ -1510,3 +1567,7 @@ if __name__ == '__main__':
         status=targets_altdisk_status,
         debug_output=DEBUG_DATA,
         output=OUTPUT)
+
+
+if __name__ == '__main__':
+    main()
