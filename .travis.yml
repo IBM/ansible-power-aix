@@ -12,6 +12,7 @@ install:
 
 
 before_script:
+  - mkdir -p ~/.ansible/plugins/modules/
   - cp library/*.py ~/.ansible/plugins/modules/
 
 # command to run tests
