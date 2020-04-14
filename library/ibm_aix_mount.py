@@ -1,4 +1,7 @@
-opyright:: 2020- IBM, Inc
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# Copyright:: 2020- IBM, Inc
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +31,7 @@ author:
 module: mount
 short_description: Makes a file system available for use
 description:
-- This module makes a file system available for use at a specified location. 
+- This module makes a file system available for use at a specified location.
 - Builds other file trees made up of directory and file mounts.
 version_added: '2.9'
 requirements: [ AIX ]
@@ -54,7 +57,7 @@ options:
     default: no
   fs_type:
     description:
-    - Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute 
+    - Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute
     type: str
   vfsname:
     description:
@@ -100,8 +103,8 @@ def main():
             mount_dir=dict(type='str'),
             mount_over_dir=dict(type='str'),
         ),
-        
-        required_together = [["mount_dir", "mount_over_dir"]],
+
+        required_together=[["mount_dir", "mount_over_dir"]],
         mutually_exclusive=[
             ["mount_all", "fs_type", "mount_dir"]
         ]
@@ -148,4 +151,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
