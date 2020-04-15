@@ -40,7 +40,7 @@ options:
   csv:
     description:
     - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
-    - This file is usually transferred form the fix server; this rather big transfer
+    - This file is usually transferred from the fix server; this rather big transfer
       can be avoided by specifying an already transferred file.
     type: str
   path:
@@ -90,9 +90,10 @@ EXAMPLES = r'''
     apar: sec
     download_only: yes
 
-- name: Install both sec and hyper patches using specific directory
+- name: Install both sec and hyper patches for all filesets starting with devices.fcp
   flrtvc:
     path: /usr/sys/inst
+    filesets: devices.fcp.*
     verbose: yes
     force: no
     clean: no
@@ -858,7 +859,7 @@ def run_flrtvc(flrtvc_path, params, force):
         logging.error('cmd:{} failed rc={}'.format(cmd, rc))
         logging.error('stdout:{}'.format(stdout))
         logging.error('stderr:{}'.format(stderr))
-        results['meta']['messages'].append(msg, " stderr: {}".format(stderr))
+        results['meta']['messages'].append(msg + " stderr: {}".format(stderr))
         results['meta']['0.report'].append(msg)
         return False
 
