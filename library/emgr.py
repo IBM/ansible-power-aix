@@ -361,8 +361,8 @@ def main():
             cmd += ['-a', module.params['alternate_dir']]
         if module.params['expand_fs']:
             cmd += ['-X']
-        if action == 'check' and module.params['verbose']:
-            cmd += ['-v', module.params['verbose']]
+        if action == 'check' and module.params['verbose'] is not None:
+            cmd += ['-v', '{}'.format(module.params['verbose'])]
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
@@ -422,8 +422,8 @@ def main():
             cmd += ['-f', module.params['list_file']]
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
-        if module.params['verbose']:
-            cmd += ['-v', module.params['verbose']]
+        if module.params['verbose'] is not None:
+            cmd += ['-v', '{}'.format(module.params['verbose'])]
         if module.params['expand_fs']:
             cmd += ['-X']
 
@@ -437,8 +437,8 @@ def main():
             cmd += ['-n', module.params['ifix_number']]
         elif module.params['ifix_vuid']:
             cmd += ['-u', module.params['ifix_vuid']]
-        if module.params['verbose']:
-            cmd += ['-v', module.params['verbose']]
+        if module.params['verbose'] is not None:
+            cmd += ['-v', '{}'.format(module.params['verbose'])]
         if module.params['expand_fs']:
             cmd += ['-X']
         if module.params['alternate_dir']:
