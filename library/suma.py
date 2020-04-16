@@ -206,6 +206,7 @@ def compute_rq_name(rq_type, oslevel):
         cmd = ['/usr/sbin/suma', '-x', '-a', 'Action=Metadata', '-a', 'RqType=Latest']
         cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
         cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
+        cmd += ['-a', 'FilterDir={}'.format(suma_params['metadata_dir'])]
 
         logging.debug("SUMA command:{}".format(' '.join(cmd)))
 
@@ -266,6 +267,7 @@ def compute_rq_name(rq_type, oslevel):
             cmd = ['/usr/sbin/suma', '-x', '-a', 'Action=Metadata', '-a', 'RqType=Latest']
             cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
             cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
+            cmd += ['-a', 'FilterDir={}'.format(suma_params['metadata_dir'])]
 
             logging.debug("SUMA command:{}".format(' '.join(cmd)))
 
