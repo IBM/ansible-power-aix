@@ -199,6 +199,36 @@ module = None
 results = None
 
 
+def param_one_of(one_of_list, required=True, exclusive=True):
+    """
+    Check at parameter of one_of_list is defined in module.params dictionary.
+
+    arguments:
+        one_of_list (list) list of parameter to check
+        required    (bool) at least one parameter has to be defined.
+        exclusive   (bool) only one parameter can be defined.
+    note:
+        Ansible might have this embedded in some version: require_if 4th parameter.
+        Exits with fail_json in case of error
+    """
+    global module
+    global results
+    
+    count = 0
+    for param in one_of_list:
+        if module.params[param] is not None and module.params[param]:
+            count += 1
+            break
+    if count == 0 and required:
+        results['msg'] = 'Missing parameter: action is {} but one of the following is missing: '.format(module.params['action'])
+        results['msg'] += ','.join(one_of_list)
+        module.fail_json(**results)
+    if count > 1 and exclusive:
+        results['msg'] = 'Invalid parameter: action is {} supports only one of the following: '.format(module.params['action'])
+        results['msg'] += ','.join(one_of_list)
+        module.fail_json(**results)
+
+
 def main():
     global module
     global results
@@ -226,18 +256,15 @@ def main():
             bosboot=dict(type='str', choices=['skip', 'load_debugger', 'invoke_debugger']),
             verbose=dict(type='int', choices=[1, 2, 3]),
         ),
-        required_if=[
-            ['action', 'apply', ['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'], True],
-            ['action', 'install', ['ifix_package', 'list_file'], True],
-        ],
-        mutually_exclusive_args=[
-            ['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'],    # TODO can we specify 4 items here or only couples?
-        ],
+        required_if=[],
+        mutually_exclusive=(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']),
     )
 
-    result = dict(
+    results = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     bosboot_flags = {'skip': '-b', 'load_debugger': '-k', 'invoke_debugger': '-I'}
@@ -248,20 +275,20 @@ def main():
     if action == 'install':
         # Usage: emgr -e <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqmoX]
         # Usage: emgr -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-CkpIqX]
+        param_one_of(['ifix_package', 'list_file'])
+
         if module.params['list_file']:
             cmd += ['-f', module.params['list_file']]
         else:
             if module.params['from_epkg']:
+                param_one_of(['from_epkg', 'commit'])
                 cmd += ['-e', module.params['ifix_package']]
-                if module.params['commit']:
-                    result['msg'] = 'Invalid parameter: action is install with from_epkg set, does not support commit set to {}'.format(module.params['commit'])
-                    module.fail_json(**result)
             else:
-                if module.params['ifix_package']:
-                    cmd += ['-i', module.params['ifix_package']]
                 if module.params['bosboot'] and module.params['bosboot'] == 'skip':
-                    result['msg'] = 'Invalid parameter: action is install, does not support bosboot set to {}'.format(module.params['bosboot'])
-                    module.fail_json(**result)
+                    results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to {}'.format(module.params['bosboot'])
+                    module.fail_json(**results)
+                if module.params['ifix_package']:   # this test is optional thanks to param_one_of check.
+                    cmd += ['-i', module.params['ifix_package']]
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
         if module.params['alternate_dir']:
@@ -284,6 +311,11 @@ def main():
     elif action == 'commit':
         # Usage: emgr -C -L <label> [-kpIqX]
         # Usage: emgr -C -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-kpIqX]
+        param_one_of(['ifix_label', 'ifix_package', 'list_file'])
+        if module.params['bosboot'] == 'skip':
+            results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to {}'.format(module.params['bosboot'])
+            module.fail_json(**results)
+
         cmd += ['-C']
         if module.params['ifix_label']:
             cmd += ['-L', module.params['ifix_label']]
@@ -292,17 +324,11 @@ def main():
                 cmd += ['-i', module.params['ifix_package']]
             elif module.params['list_file']:
                 cmd += ['-f', module.params['list_file']]
-            else:
-                result['msg'] = 'Missing parameter: action is commit but one of the following is missing: ifix_label,ifix_package,list_file'
-                module.fail_json(**result)
             if module.params['working_dir']:
                 cmd += ['-w', module.params['working_dir']]
             if module.params['alternate_dir']:
                 cmd += ['-a', module.params['alternate_dir']]
         if module.params['bosboot']:
-            if module.params['bosboot'] == 'skip':
-                result['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to {}'.format(module.params['bosboot'])
-                module.fail_json(**result)
             cmd += [bosboot_flags[module.params['bosboot']]]
         if module.check_mode or module.params['preview']:
             cmd += ['-p']
@@ -314,6 +340,7 @@ def main():
     elif action == 'check' or action == 'mount' or action == 'unmount':
         # Usage: emgr -c [-L <label> | -n <ifix num> | -u <VUID> | -f <lfile>] [-w <dir>] [-a <path>] [-v{1-3}X]
         # Usage: emgr -M | -U [-L <label> | -n <ifix num> | -u <VUID> | -f <lfile>] [-w <dir>] [-a <path>] [-X]
+        param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'])
         if action == 'check':
             cmd += ['-c']
         elif action == 'mount':
@@ -340,8 +367,8 @@ def main():
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
         if not module.params['ifix_label']:
-            result['msg'] = 'Missing parameter: force remove requires: ifix_label'
-            module.fail_json(**result)
+            results['msg'] = 'Missing parameter: force remove requires: ifix_label'
+            module.fail_json(**results)
         cmd += ['-R', module.params['ifix_label']]
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
@@ -352,9 +379,7 @@ def main():
 
     elif action == 'remove':
         # Usage: emgr -r -L <label> | -n <ifix num> | -u <VUID> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqX]
-        if not module.params['ifix_label'] and not module.params['ifix_number'] and not module.params['ifix_vuid'] and not module.params['list_file']:
-            result['msg'] = 'Missing parameter: action is remove but one of the following is missing: ifix_label,ifix_number,ifix_vuid,list_file'
-            module.fail_json(**result)
+        param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'])
         cmd += ['-r']
         if module.params['ifix_label']:
             cmd += ['-L', module.params['ifix_label']]
@@ -389,14 +414,12 @@ def main():
 
     elif action == 'display_ifix':
         # Usage: emgr -d -e <ifix pkg> | -f <lfile> [-w <path>] [-v{1-3}X]
+        param_one_of(['ifix_package', 'list_file'])
         cmd += ['-d']
         if module.params['ifix_package']:
             cmd += ['-e', module.params['ifix_package']]
         elif module.params['list_file']:
             cmd += ['-f', module.params['list_file']]
-        else:
-            result['msg'] = 'Missing parameter: action is display_ifix but one of the following is missing: ifix_package,list_file'
-            module.fail_json(**result)
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
         if module.params['verbose']:
@@ -406,6 +429,7 @@ def main():
 
     else:   # action=list
         # Usage: emgr -l [-L <label> | -n <ifix number> | -u <VUID>] [-v{1-3}X] [-a <path>]
+        param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid'], required=False)
         cmd += ['-l']
         if module.params['ifix_label']:
             cmd += ['-L', module.params['ifix_label']]
@@ -423,12 +447,15 @@ def main():
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     rc, stdout, stderr = module.run_command(cmd)
-    if rc != 0:
-        result['msg'] = stderr
-        module.fail_json(**result)
 
-    result['msg'] = stdout
-    module.exit_json(**result)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        module.fail_json(**results)
+    results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
