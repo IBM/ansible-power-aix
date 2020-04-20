@@ -157,7 +157,7 @@ EXAMPLES = r'''
 - name: Install ifix package from file generated with epkg
   emgr:
     action: install
-    ifix_package: IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
+    ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
     working_dir: /usr/sys/inst.images
     from_epkg: yes
     expand_fs: yes
@@ -193,6 +193,8 @@ EXAMPLES = r'''
 
 RETURN = r''' # '''
 
+import os
+
 from ansible.module_utils.basic import AnsibleModule
 
 module = None
@@ -213,7 +215,7 @@ def param_one_of(one_of_list, required=True, exclusive=True):
     """
     global module
     global results
-    
+
     count = 0
     for param in one_of_list:
         if module.params[param] is not None and module.params[param]:
@@ -444,6 +446,9 @@ def main():
         if module.params['alternate_dir']:
             cmd += ['-a', module.params['alternate_dir']]
 
+    if module.params['working_dir'] and not os.path.exists(module.params['working_dir']):
+        os.makedirs(module.params['working_dir'])
+
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -453,8 +458,10 @@ def main():
     if rc != 0:
         results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**results)
-    results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
 
+    results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+    if action in ['install', 'commit', 'mount', 'unmount', 'remove']:
+        results['changed'] = True
     module.exit_json(**results)
 
 
