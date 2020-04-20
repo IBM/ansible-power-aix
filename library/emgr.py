@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: emgr
 short_description: The interim fix manager installs and manages system interim fixes.
 description:
@@ -34,7 +34,7 @@ options:
     - C(display_ifix) displays the contents and topology of specified interim fix. This option is useful with C(verbose).
     - C(list) lists interim fix data
     type: str
-    choices: [ install, commit, remove, check, mount, unmount, remove, view_package, display_ifix, list ]
+    choices: [ install, commit, check, mount, unmount, remove, view_package, display_ifix, list ]
     default: list
   ifix_package:
     description:
@@ -82,7 +82,6 @@ options:
     - Specifies an alternative directory path.
     - Can be used if I(action) has one of following values C(list), C(install), C(remove), C(check), C(mount), C(unmount), C(view_package).
     type: path
-    default: no
   working_dir:
     description:
     - Specifies an alternative working directory path instead of the default /tmp directory.
@@ -259,7 +258,7 @@ def main():
             verbose=dict(type='int', choices=[1, 2, 3]),
         ),
         required_if=[],
-        mutually_exclusive=(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']),
+        mutually_exclusive=[['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']],
     )
 
     results = dict(
