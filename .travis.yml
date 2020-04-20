@@ -30,5 +30,4 @@ script:
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
   #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
 
-  - ansible-doc -t module flrtvc
-  - ansible-doc -t module suma
+  - bash devops/bin/gen_doc.sh
