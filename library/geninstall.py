@@ -18,7 +18,9 @@ description:
 - A generic installer that installs software products of various packaging formats.
 - For example, installp, RPM, SI, and ISMP.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   device:
     description:

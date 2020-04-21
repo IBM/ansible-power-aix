@@ -17,7 +17,9 @@ short_description: Generate flrtvc report, download and install efix
 description:
 - Generate flrtvc report, download and install efix.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   targets:
     description:

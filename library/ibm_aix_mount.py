@@ -18,7 +18,9 @@ description:
 - This module makes a file system available for use at a specified location.
 - Builds other file trees made up of directory and file mounts.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   mount_all:
     description:

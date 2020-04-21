@@ -18,7 +18,9 @@ description:
 - Creates a task to automate the download of technology levels and
   service packs from a fix server.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   oslevel:
     description:

@@ -17,7 +17,9 @@ short_description: Update a single or a pair of Virtual I/O Servers
 description:
 - Performs updates and customization to the Virtual I/O Server (VIOS).
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   targets:
     description:

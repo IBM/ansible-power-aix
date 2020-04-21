@@ -17,7 +17,9 @@ short_description: Installs and updates software
 description:
 - Installs available software products in a compatible installation package.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   device:
     description:

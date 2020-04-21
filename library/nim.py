@@ -17,7 +17,9 @@ short_description: Server setup, install packages, update SP or TL.
 description:
 - Server setup, install packages, update SP or TL.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   action:
     description:

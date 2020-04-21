@@ -19,7 +19,9 @@ description:
 - It can perform the following operations install, commit, check, mount, unmount, remove, list interim fix and view package locks.
 - It uses its own log file, /var/adm/ras/emgr.log.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   action:
     description:

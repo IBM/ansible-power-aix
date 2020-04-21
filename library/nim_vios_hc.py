@@ -17,7 +17,9 @@ short_description: Check if a pair of VIOSes can be updated
 description:
 - Check if a pair of Virtual I/O Servers can be updated.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   action:
     description:

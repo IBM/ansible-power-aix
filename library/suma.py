@@ -19,7 +19,9 @@ description:
   and service packs (SP) from a fix server using the Service Update Management
   Assistant (SUMA). Log file is /var/adm/ansible/suma_debug.log.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   action:
     description:

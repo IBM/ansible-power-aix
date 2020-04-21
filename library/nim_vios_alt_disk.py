@@ -17,7 +17,9 @@ short_description: Create/Cleanup an alternate rootvg disk
 description:
 - Copy the rootvg to an alternate disk or cleanup an existing one.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   action:
     description:
