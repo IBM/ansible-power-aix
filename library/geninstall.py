@@ -30,6 +30,7 @@ options:
     - C(all) installs all products
     - C(update_all) updates all products
     type: list
+    elements: str
     default: []
   force:
     description:
@@ -79,11 +80,10 @@ def main():
         argument_spec=dict(
             action=dict(type='str', default='install', choices=['install', 'uninstall', 'list']),
             device=dict(type='str'),
-            debug=dict(type='bool', default=False),
             force=dict(type='bool', default=False),
             installp_flags=dict(type='str', default=''),
             agree_licenses=dict(type='bool', default=False),
-            install_list=dict(type='list', default=[]),
+            install_list=dict(type='list', elements='str', default=[]),
         ),
         required_if=[
             ['action', 'list', ['device']],
