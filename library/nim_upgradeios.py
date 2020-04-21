@@ -4,18 +4,141 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""AIX VIOS NIM Upgrade: tools to upgrade a list of one or a pair of VIOSes"""
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
-DOCUMENTATION = """
+DOCUMENTATION = r'''
 ---
+author:
+- AIX Development Team (@pbfinley1911)
 module: nim_upgradeios
-author: AIX Development Team
 short_description: Perform a VIOS upgrade with NIM
-"""
+description:
+- Tool to upgrade one or a pair of VIOSes.
+version_added: '2.9'
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
+options:
+  action:
+    description:
+    - Specifies the operation to perform.
+    - C(backup) to create a backup.
+    - C(view_backup) to view existing backups.
+    - C(restore_backup) to restore an existing backup.
+    - C(upgrade_restore) to upgrade and restore target VIOS.
+    type: str
+    choices: [ backup, view_backup, restore_backup, upgrade_restore, all ]
+    required: true
+  targets:
+    description:
+    - NIM target.
+    - 'To perform an action on dual VIOSes, specify the list as a tuple
+      with the following format: "(vios1, vios2) (vios3, vios4)".'
+    - 'To specify a single VIOS, use the following format: "(vios1)".'
+    type: str
+    required: true
+  email:
+    description:
+    - Email address to set in the NIM master's /etc/niminfo file if not already set.
+    type: str
+  location:
+    description:
+    - Existing directory to store the ios_backup on the NIM master.
+    type: str
+  backup_prefix:
+    description:
+    - Prefix of the ios_backup NIM resource.
+    - The name of the target VIOS is added to this prefix.
+    type: str
+  force:
+    description:
+    - Removes any existing ios_backup NIM resource prior to creating the backup.
+    type: bool
+  boot_client:
+    description:
+    - Boots the clients of the target VIOS after the upgrade and restore operation.
+    type: bool
+  resolv_conf:
+    description:
+    - NIM resource to use for the VIOS installation.
+    type: str
+  spot_prefix:
+    description:
+    - Prefix of the Shared Product Object Tree (SPOT) NIM resource to use for
+      the VIOS installation.
+    - 'The NIM name of the target VIOS is added to find
+      the actual NIM resource, like: "<spot_prefix>_<vios_name>".'
+    type: str
+  mksysb_prefix:
+    description:
+    - Prefix of the mksysb NIM resource to use for the VIOS installation.
+    - 'The NIM name of the target VIOS is added to this prefix to find the actual
+      NIM resource, like: "<mksysb_prefix>_<vios_name>".'
+    type: str
+  bosinst_data_prefix:
+    description:
+    - Prefix of the bosinst_data NIM resource that contains the BOS
+      installation program to use.
+    - 'The NIM name of the target VIOS is added to
+      this prefix to find the actual NIM resource, like:
+      "<bosinst_data_prefix>_<vios_name>".'
+    type: str
+  time_limit:
+    description:
+    - Before starting the action, the actual date is compared to this parameter value;
+      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    type: str
+  vars:
+    description:
+    - Specifies additional parameters.
+    type: dict
+    suboptions:
+      log_file:
+        description:
+        - Specifies path to log file.
+        type: str
+        default: /tmp/ansible_upgradeios_debug.log
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    type: dict
+    suboptions:
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a task to another so that it
+      discovers NIM info only one time for all tasks.
+    type: dict
+    suboptions:
+'''
+
+EXAMPLES = r'''
+- name: Perform a backup of nimvios01
+  nim_upgradeios:
+    targets: "(nimvios01)"
+    action: backup
+'''
+
+RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOSes.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+'''
 
 import os
 import re
@@ -1013,7 +1136,7 @@ def main():
 
     MODULE = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
+            # description=dict(required=False, type='str'),
 
             # IBM automation generic attributes
             targets=dict(required=True, type='str'),
