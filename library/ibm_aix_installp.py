@@ -186,6 +186,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     action = module.params['action']
@@ -261,11 +263,16 @@ def main():
             cmd += fileset.split(':', 1)
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
-    result['msg'] = stdout
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+    if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
+        result['changed'] = True
     module.exit_json(**result)
 
 

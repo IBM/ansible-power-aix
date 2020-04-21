@@ -95,6 +95,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     action = module.params['action']
@@ -122,16 +124,20 @@ def main():
     if action != 'list':
         # For install and uninstall, check that install list is not empty
         if not install_list:
-            result['msg'] = 'install_list cannot be empty'
+            result['msg'] = 'Invalid parameter: install_list cannot be empty'
             module.fail_json(**result)
         cmd += install_list
+        result['changed'] = True
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
-    result['msg'] = stdout
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
     module.exit_json(**result)
 
 

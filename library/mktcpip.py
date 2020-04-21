@@ -95,6 +95,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     hostname = module.params['hostname']
@@ -118,12 +120,15 @@ def main():
         cmd += ['-s']
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
     result['changed'] = True
-    result['msg'] = stdout
     module.exit_json(**result)
 
 
