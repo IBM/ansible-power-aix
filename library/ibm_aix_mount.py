@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: mount
+module: ibm_aix_mount
 short_description: Makes a file system available for use
 description:
 - This module makes a file system available for use at a specified location.
@@ -63,7 +63,7 @@ options:
 
 EXAMPLES = r'''
 - name: Specify the filesystems to be mounted
-  mount:
+  ibm_aix_mount:
     mount_dir=/dev/hd1
     mount_over_dir=/home
 '''
@@ -79,8 +79,8 @@ def main():
         argument_spec=dict(
             mount_all=dict(type='bool'),
             alternate_fs=dict(type='str'),
-            removable_fs=dict(type='str'),
-            read_only=dict(type='str'),
+            removable_fs=dict(type='bool'),
+            read_only=dict(type='bool'),
             fs_type=dict(type='str'),
             vfsname=dict(type='str'),
             options=dict(type='str'),
