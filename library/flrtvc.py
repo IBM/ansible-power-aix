@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: flrtvc
 short_description: Generate FLRTVC report, download and install efix.
 description:

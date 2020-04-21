@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: nim_updateios
 short_description: Update a single or a pair of Virtual I/O Servers
 description:
