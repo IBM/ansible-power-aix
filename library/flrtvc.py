@@ -32,7 +32,6 @@ options:
     - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
-    default: None
   filesets:
     description:
     - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
@@ -1134,7 +1133,7 @@ def main():
             apar=dict(required=False, choices=['sec', 'hiper', 'all', None], default=None),
             filesets=dict(required=False, type='str'),
             csv=dict(required=False, type='str'),
-            path=dict(required=False, type='str'),
+            path=dict(required=False, type='str', default='/var/adm/ansible/work'),
             verbose=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
             clean=dict(required=False, type='bool', default=False),
@@ -1190,9 +1189,6 @@ def main():
     resize_fs = module.params['increase_fs']
 
     # Create working directory if needed
-    if (flrtvc_params['dst_path'] is None) or (not flrtvc_params['dst_path'].strip()):
-        flrtvc_params['dst_path'] = os.path.abspath(os.path.join('var', 'adm', 'ansible', 'work'))
-
     workdir = os.path.abspath(os.path.join(flrtvc_params['dst_path'], 'work'))
     if not os.path.exists(workdir):
         os.makedirs(workdir, mode=0o744)
