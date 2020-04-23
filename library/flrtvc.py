@@ -79,6 +79,7 @@ options:
   increase_fs:
     description:
     - Specifies to increase filesystem size of the working directory if needed.
+    - If set a filesystem of the host could have increased even if ansible return I(changed=False).
     type: bool
     default: yes
 '''
@@ -1075,7 +1076,7 @@ def run_installer(epkgs, dst_path, resize_fs=True):
     rc, stdout, stderr = module.run_command(cmd)
     logging.debug('geninstall stdout:{}'.format(stdout))
 
-    results['changed'] = True
+    results['changed'] = True   # Some efixes might be installed
     results['meta'].update({'5.install': stdout.splitlines()})
 
     if rc != 0:

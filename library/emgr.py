@@ -452,17 +452,23 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    rc, stdout, stderr = module.run_command(cmd)
+    if not module.check_mode or ((action in ['install', 'commit', 'check', 'view_package', 'display_ifix', 'list'])
+                                 and (action == 'remove' and not module.params['force'])):
+        rc, stdout, stderr = module.run_command(cmd)
 
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if rc != 0:
-        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
-        module.fail_json(**results)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        if rc != 0:
+            results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+            module.fail_json(**results)
 
-    results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
-    if action in ['install', 'commit', 'mount', 'unmount', 'remove']:
-        results['changed'] = True
+        results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+        if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode:
+            results['changed'] = True
+    else:
+        results['msg'] = 'Command \'{}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
+        results['stdout'] = 'No stdout as execution has been skipped.'
+
     module.exit_json(**results)
 
 
