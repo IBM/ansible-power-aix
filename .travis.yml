@@ -7,15 +7,15 @@ python:
 
 # command to install dependencies
 install:
+  - sudo add-apt-repository ppa:deadsnakes/ppa --yes
+  - sudo apt-get --yes --force-yes install python3-venv
   - pip install ansible
   - pip install flake8
-  #- pip install pycodestyle
+  - pip install wheel
+  - pip install Jinja2
+  - pip3 install pyyaml
+  - pip3 install voluptuous
   - ansible --version
-
-
-before_script:
-  - mkdir -p ~/.ansible/plugins/modules/
-  - cp library/*.py ~/.ansible/plugins/modules/
 
 # command to run tests
 script:
@@ -25,11 +25,11 @@ script:
   #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
   - flake8 library/* --max-line-length=160 --ignore=E402,W503
 
-  # pycodestyle (PEP8)
-  #- pycodestyle library/* --max-line-length=160 --ignore=E402,W503
-
   # checking yaml syntax is not relevant since there are just examples.
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
   #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
 
   - bash devops/bin/gen_doc.sh
+  - bash devops/bin/validate_module.sh
+
+
