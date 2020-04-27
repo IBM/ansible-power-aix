@@ -32,15 +32,24 @@ pip install -r docs/docsite/requirements.txt
 # place the modules in the appropriate folder
 cp $DIR/library/*.py $ANSIBLE_DIR/lib/ansible/modules/system/
 
-# run the validate-modules
 set +e
+
 rc=0
 for f in $DIR/library/*.py; do
     f="${f##*/}"
+    echo "-------- compile for $f --------"
+    ansible-test sanity --test compile ${f%%.py} --python 2.7
+    rc=$(($rc + $?))
+    ansible-test sanity --test compile ${f%%.py} --python 3.7
+    rc=$(($rc + $?))
+
     echo "-------- validate-modules for $f --------"
     ansible-test sanity --test validate-modules ${f%%.py}
     rc=$(($rc + $?))
+
 done
+
+
 set -e
 
 deactivate
