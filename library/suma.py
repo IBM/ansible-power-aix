@@ -30,6 +30,7 @@ options:
     - C(preview) to execute all the checks without downloading the fixes.
     - C(list) to list all SUMA tasks.
     - C(edit) to edit an exiting SUMA task.
+    - C(run) to run an exiting SUMA task.
     - C(unschedule) to remove any scheduling information for the specified SUMA task.
     - C(delete) to delete a SUMA task and remove any schedules for this task.
     - C(config) to list global SUMA configuration settings.
@@ -73,14 +74,21 @@ options:
   task_id:
     description:
     - SUMA task identification number.
-    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=unschedule).
-    - Required when I(action=edit) or I(action=delete) or I(action=unschedule).
+    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=run) or I(action=unschedule).
+    - Required when I(action=edit) or I(action=delete) or I(action=run) or I(action=unschedule).
     type: str
   sched_time:
     description:
     - Schedule time. Specifying an empty or space filled string results in unscheduling the task. If not set, it saves the task.
     - Can be used if I(action=edit).
     type: str
+  save_task:
+    description:
+    - Saves the SUMA task. The task is saved, allowing scheduling information to be added later.
+    - Can be used if I(action=download) or C(action=preview).
+    - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the saving time. 
+    type: bool
+    default: no
   description:
     description:
     - Display name for SUMA task.
@@ -384,6 +392,10 @@ def suma_command(action):
     else:
         cmd += ['-a', 'Extend=n']
 
+    # save the task only if that's the last action
+    if suma_params['action'].upper() == action.upper() and suma_params['save_task']:
+        cmd += ['-w']
+
     logging.debug("SUMA - Command:{}".format(' '.join(cmd)))
     results['meta']['messages'].append("SUMA - Command: {}".format(' '.join(cmd)))
 
@@ -411,9 +423,10 @@ def suma_list():
 
     task = suma_params['task_id']
     if task is None or not task.strip():
-        task = ''
+        cmd = ['/usr/sbin/suma', '-L']
+    else:
+        cmd = ['/usr/sbin/suma', '-L', task]
 
-    cmd = ['/usr/sbin/suma', '-l', task]
     rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
@@ -537,6 +550,29 @@ def suma_delete():
 
     if rc != 0:
         msg = "Suma delete command '{}' failed with return code {}".format(cmd, rc)
+        logging.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
+
+
+@logged
+def suma_run():
+    """
+    Run the SUMA task associated with the given task ID
+
+    note:
+        Exits with fail_json in case of error
+    """
+    global results
+
+    cmd = "/usr/sbin/suma -x {}".format(suma_params['task_id'])
+    rc, stdout, stderr = module.run_command(cmd)
+
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma run command '{}' failed with return code {}".format(cmd, rc)
         logging.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
@@ -772,7 +808,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(required=False,
-                        choices=['download', 'preview', 'list', 'edit',
+                        choices=['download', 'preview', 'list', 'edit', 'run',
                                  'unschedule', 'delete', 'config', 'default'],
                         type='str', default='download'),
             oslevel=dict(required=False, type='str', default='Latest'),
@@ -780,6 +816,7 @@ def main():
             extend_fs=dict(required=False, type='bool', default=True),
             download_dir=dict(required=False, type='path', default='/usr/sys/inst.images'),
             download_only=dict(required=False, type='bool', default=False),
+            save_task=dict(required=False, type='bool', default=False),
             task_id=dict(required=False, type='str'),
             sched_time=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
@@ -788,6 +825,7 @@ def main():
         required_if=[
             ['action', 'edit', ['task_id']],
             ['action', 'delete', ['task_id']],
+            ['action', 'run', ['task_id']],
             ['action', 'download', ['oslevel']],
             ['action', 'preview', ['oslevel']],
             ['action', 'unschedule', ['task_id']],
@@ -846,6 +884,10 @@ def main():
         suma_params['task_id'] = module.params['task_id']
         suma_delete()
 
+    elif action == 'run':
+        suma_params['task_id'] = module.params['task_id']
+        suma_run()
+
     elif action == 'config':
         suma_config()
 
@@ -857,6 +899,7 @@ def main():
         suma_params['download_dir'] = module.params['download_dir']
         suma_params['metadata_dir'] = module.params['metadata_dir']
         suma_params['download_only'] = module.params['download_only']
+        suma_params['save_task'] = module.params['save_task']
         suma_params['last_sp'] = module.params['last_sp']
         suma_params['extend_fs'] = module.params['extend_fs']
         suma_download()
