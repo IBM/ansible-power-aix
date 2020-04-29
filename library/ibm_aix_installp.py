@@ -62,9 +62,9 @@ options:
     - C(usr)
     type: list
     elements: str
-  expand_fs:
+  extend_fs:
     description:
-    - Attempts to expand any file systems where there is insufficient space to do the installation.
+    - Attempts to resize any file systems where there is insufficient space to do the installation.
     type: bool
     default: yes
   commit:
@@ -134,7 +134,7 @@ EXAMPLES = r'''
 
 - name: Install all filesets within the bos.net software package and expand file systems if necessary
   ibm_aix_installp:
-    expand_fs: yes
+    extend_fs: yes
     device: /usr/sys/inst.images
     install_list: bos.net
 
@@ -167,7 +167,7 @@ def main():
             delete_image=dict(type='bool', default=False),
             save=dict(type='bool', default=True),
             parts=dict(type='list', elements='str', default=None),
-            expand_fs=dict(type='bool', default=True),
+            extend_fs=dict(type='bool', default=True),
             commit=dict(type='bool', default=False),
             dependencies=dict(type='bool', default=False),
             base_only=dict(type='bool', default=False),
@@ -206,7 +206,7 @@ def main():
 
     if not module.params['bosboot']:
         cmd += ['-b']
-    if module.params['expand_fs']:
+    if module.params['extend_fs']:
         cmd += ['-X']
     if module.params['updates_only']:
         cmd += ['-B']

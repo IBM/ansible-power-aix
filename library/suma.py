@@ -246,7 +246,7 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         if oslevel is an incomplete SP (8 digits) or equal Latest then execute
         a metadata suma request to find the complete SP level (12 digits).
     The return format depends on rq_type value,
-        - for Latest: return a SP value in the form xxxx-xx-xx-xxxx
+        - for Latest: return None
         - for TL: return the TL value in the form xxxx-xx
         - for SP: return the SP value in the form xxxx-xx-xx-xxxx
 
@@ -263,7 +263,10 @@ def compute_rq_name(rq_type, oslevel, last_sp):
     global suma_params
 
     rq_name = ''
-    if rq_type == 'TL':
+    if rq_type == 'Latest':
+        return None
+
+    elif rq_type == 'TL':
         rq_name = re.match(r"^([0-9]{4}-[0-9]{2})(|-00|-00-0000)$",
                            oslevel).group(1)
 
@@ -271,35 +274,10 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         rq_name = oslevel
 
     else:
-        if oslevel == 'Latest':
-            # Get the current oslevel of the system
-            cmd = ['/bin/oslevel', '-s']
+        # oslevel has either a TL format (xxxx-xx) or a short SP format (xxxx-xx-xx)
 
-            rc, stdout, stderr = module.run_command(cmd)
-            if rc != 0:
-                msg = "Suma oslevel command '{}' failed with return code {}".format(' '.join(cmd), rc)
-                logging.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-                results['stdout'] = stdout
-                results['stderr'] = stderr
-                results['msg'] = msg
-                module.fail_json(**results)
-            elif not re.match(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}(|-[0-9]{2}|-[0-9]{4})$", stdout.strip()):
-                msg = "Suma oslevel command '{}' returned an unexpected OS level '{}'".format(' '.join(cmd), stdout)
-                logging.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-                results['stdout'] = stdout
-                results['stderr'] = stderr
-                results['msg'] = msg
-                module.fail_json(**results)
-            logging.debug("SUMA command '{}' rc:{}, stdout:{}".format(' '.join(cmd), rc, stdout))
-            oslevel = stdout.strip()
-            rq_oslevel = oslevel[:7]
-        else:
-            rq_oslevel = oslevel
-
-        # rq_oslevel has either a TL format (xxxx-xx) or a short SP format (xxxx-xx-xx)
-
-        # Build the FilterML for metadata request from the rq_oslevel
-        metadata_filter_ml = rq_oslevel[:7]
+        # Build the FilterML for metadata request from the oslevel
+        metadata_filter_ml = oslevel[:7]
         if not metadata_filter_ml:
             msg = "Cannot build minimum level filter based on the target OS level {}".format(oslevel)
             logging.error(msg)
@@ -327,9 +305,9 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         logging.debug("SUMA command '{}' rc:{}, stdout:{}".format(' '.join(cmd), rc, stdout))
 
         sp_version = None
-        if len(rq_oslevel) == 10:
+        if len(oslevel) == 10:
             # find latest SP build number for the SP
-            file_name = suma_params['metadata_dir'] + "/installp/ppc/" + rq_oslevel + ".xml"
+            file_name = suma_params['metadata_dir'] + "/installp/ppc/" + oslevel + ".xml"
             sp_version = find_sp_version(file_name)
         else:
             # find latest SP build number for the TL
@@ -725,6 +703,7 @@ def suma_download():
     # If action is preview or nothing is available to download, we are done
     if suma_params['action'] == 'preview':
         results['meta']['messages'].append(msg)
+        return
     if downloaded == 0 and skipped == 0:
         return
     # else continue

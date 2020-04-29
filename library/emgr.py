@@ -108,9 +108,9 @@ options:
     - Can be used if I(action=install).
     type: bool
     default: no
-  expand_fs:
+  extend_fs:
     description:
-    - Attempts to expand any file systems where there is insufficient space.
+    - Attempts to resize any file systems where there is insufficient space.
     type: bool
     default: no
   force:
@@ -161,7 +161,7 @@ EXAMPLES = r'''
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
     working_dir: /usr/sys/inst.images
     from_epkg: yes
-    expand_fs: yes
+    extend_fs: yes
 
 - name: List a specific ifix data in details
   emgr:
@@ -252,7 +252,7 @@ def main():
             from_epkg=dict(type='bool', default=False),
             mount_install=dict(type='bool', default=False),
             commit=dict(type='bool', default=False),
-            expand_fs=dict(type='bool', default=False),
+            extend_fs=dict(type='bool', default=False),
             force=dict(type='bool', default=False),
             preview=dict(type='bool', default=False),
             quiet=dict(type='bool', default=False),
@@ -308,7 +308,7 @@ def main():
             cmd += ['-m']
         if module.params['force']:
             cmd += ['-o']
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
 
     elif action == 'commit':
@@ -337,7 +337,7 @@ def main():
             cmd += ['-p']
         if module.params['quiet']:
             cmd += ['-q']
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
 
     elif action == 'check' or action == 'mount' or action == 'unmount':
@@ -362,7 +362,7 @@ def main():
             cmd += ['-w', module.params['working_dir']]
         if module.params['alternate_dir']:
             cmd += ['-a', module.params['alternate_dir']]
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
         if action == 'check' and module.params['verbose'] is not None:
             cmd += ['-v', '{}'.format(module.params['verbose'])]
@@ -377,7 +377,7 @@ def main():
             cmd += ['-w', module.params['working_dir']]
         if module.params['alternate_dir']:
             cmd += ['-a', module.params['alternate_dir']]
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
 
     elif action == 'remove':
@@ -402,7 +402,7 @@ def main():
             cmd += ['-p']
         if module.params['quiet']:
             cmd += ['-q']
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
 
     elif action == 'view_package':
@@ -412,8 +412,8 @@ def main():
             cmd += [module.params['package']]
         if module.params['alternate_dir']:
             cmd += ['-a', module.params['alternate_dir']]
-        if module.params['expand_fs']:
-            cmd += ['-P']
+        if module.params['extend_fs']:
+            cmd += ['-X']
 
     elif action == 'display_ifix':
         # Usage: emgr -d -e <ifix pkg> | -f <lfile> [-w <path>] [-v{1-3}X]
@@ -427,7 +427,7 @@ def main():
             cmd += ['-w', module.params['working_dir']]
         if module.params['verbose'] is not None:
             cmd += ['-v', '{}'.format(module.params['verbose'])]
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
 
     else:   # action=list
@@ -442,7 +442,7 @@ def main():
             cmd += ['-u', module.params['ifix_vuid']]
         if module.params['verbose'] is not None:
             cmd += ['-v', '{}'.format(module.params['verbose'])]
-        if module.params['expand_fs']:
+        if module.params['extend_fs']:
             cmd += ['-X']
         if module.params['alternate_dir']:
             cmd += ['-a', module.params['alternate_dir']]
