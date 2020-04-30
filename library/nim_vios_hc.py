@@ -713,7 +713,6 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
             targets=dict(required=True, type='str'),
             action=dict(required=True, choices=['health_check'], type='str'),
             vars=dict(required=False, type='dict'),
@@ -728,14 +727,8 @@ def main():
     targets = module.params['targets']
     VERBOSITY = module._verbosity
 
-    if module.params['description']:
-        description = module.params['description']
-    else:
-        description = "Perform a VIOS Health Check operation: {} request".format(action)
-
     PARAMS['action'] = action
     PARAMS['targets'] = targets
-    PARAMS['Description'] = description
 
     # Handle playbook variables
     if module.params['vars']:

@@ -924,7 +924,7 @@ def nim_update(module):
     lpp_source = NIM_PARAMS['lpp_source']
     async_update = 'no'
 
-    if NIM_PARAMS['async'] == 'true':
+    if NIM_PARAMS['async']:
         async_update = 'yes'
         log_async = 'asynchronous'
     else:
@@ -933,10 +933,10 @@ def nim_update(module):
     logging.info('NIM - {} update operation on {} with {} lpp_source'
                  .format(log_async, NIM_PARAMS['targets'], lpp_source))
 
-    if (NIM_PARAMS['async'] == 'true' and (lpp_source == 'latest_tl'
-                                           or lpp_source == 'latest_sp'
-                                           or lpp_source == 'next_tl'
-                                           or lpp_source == 'next_sp')):
+    if (NIM_PARAMS['async'] and (lpp_source == 'latest_tl'
+                                 or lpp_source == 'latest_sp'
+                                 or lpp_source == 'next_tl'
+                                 or lpp_source == 'next_sp')):
         logging.warning('Force customization synchronously')
         async_update = 'no'
 
@@ -944,7 +944,7 @@ def nim_update(module):
     logging.debug('NIM - Target list: {}'.format(target_list))
 
     # force interim fixes automatic removal
-    if NIM_PARAMS['force'] == 'true':
+    if NIM_PARAMS['force']:
         for target in target_list:
             (ret, fixes) = list_fixes(target, module)
             if ret != 0:
@@ -1203,7 +1203,7 @@ def nim_script(module):
     global NIM_OUTPUT
 
     async_script = ''
-    if NIM_PARAMS['async'] == 'true':
+    if NIM_PARAMS['async']:
         async_script = 'yes'
         log_async = 'asynchronous'
     else:
@@ -1467,7 +1467,7 @@ def nim_reset(module):
     logging.debug('NIM - Target list: {}'.format(target_list))
 
     force = ''
-    if NIM_PARAMS['force'] == 'true':
+    if NIM_PARAMS['force']:
         force = '-F'
 
     # remove from the list the targets that are already in "ready' state
@@ -1560,21 +1560,21 @@ def main():
 
     MODULE = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
             lpp_source=dict(required=False, type='str'),
             targets=dict(required=False, type='str'),
-            asynchronous=dict(choices=['true', 'false'], default='false', type='str'),
+            asynchronous=dict(required=False, type='bool', default=False),
             device=dict(required=False, type='str'),
             script=dict(required=False, type='str'),
             resource=dict(required=False, type='str'),
             location=dict(required=False, type='str'),
             group=dict(required=False, type='str'),
-            force=dict(choices=['true', 'false'], default='false', type='str'),
+            force=dict(required=False, type='bool', default=False),
             operation=dict(required=False, type='str'),
-            action=dict(choices=['update', 'master_setup', 'check', 'compare',
+            action=dict(required=True, type='str',
+                        choices=['update', 'master_setup', 'check', 'compare',
                                  'script', 'allocate', 'deallocate',
                                  'bos_inst', 'define_script', 'remove',
-                                 'reset', 'reboot', 'maintenance'], type='str'),
+                                 'reset', 'reboot', 'maintenance']),
         ),
         required_if=[
             ['action', 'update', ['lpp_source', 'targets']],
@@ -1614,13 +1614,6 @@ def main():
     action = MODULE.params['action']
     operation = MODULE.params['operation']
 
-    description = ''
-    if MODULE.params['description']:
-        description = MODULE.params['description']
-    else:
-        description = "NIM operation: {} request".format(action)
-
-    NIM_PARAMS['Description'] = description
     NIM_PARAMS['action'] = action
 
     # =========================================================================

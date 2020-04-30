@@ -55,11 +55,15 @@ options:
   force:
     description:
     - Removes any existing ios_backup NIM resource prior to creating the backup.
-    type: bool
+    type: str
+    choices: [ 'yes', 'no' ]
+    default: 'no'
   boot_client:
     description:
     - Boots the clients of the target VIOS after the upgrade and restore operation.
-    type: bool
+    type: str
+    choices: [ 'yes', 'no' ]
+    default: 'no'
   resolv_conf:
     description:
     - NIM resource to use for the VIOS installation.
@@ -150,13 +154,15 @@ import threading
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
+# TODO: Replace argument with choice [yes,no] into bool
+# TODO: -----------------------------------------------------------------------------
 # TODO: Later, add SSP support
 # TODO: Later, add mirrored rootvg support for upgrade & upgrade all in one
 # TODO: Later, add cluster support for viosbr restore
 
 # TODO: VRO Check message indentation in OUTPUT
 # TODO: VRO Check if all debug section (TBC) are commented before commit
-# TODO: VRO -----------------------------------------------------------------------------
+# TODO: -----------------------------------------------------------------------------
 
 DEBUG_DATA = []
 OUTPUT = []

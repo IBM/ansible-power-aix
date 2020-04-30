@@ -28,48 +28,51 @@ options:
     required: true
   apar:
     description:
-    - Type of APAR.
+    - Type of APAR to check or download.
     - C(sec) Security vulnerabilities.
-    - C(hiper) HIPER.
-    - C(all).
+    - C(hiper) Corrections to High Impact PERvasive threats.
+    - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
-    default: None
   filesets:
     description:
-    - Filter filesets for specific phrase.
+    - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
     type: str
   csv:
     description:
-    - APAR CSV file that will be downloaded and saved to location.
+    - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
+    - This file is usually transferred from the fix server; this rather big transfer
+      can be avoided by specifying an already transferred file.
     type: str
   path:
     description:
-    - Destination path.
+    - Specifies the working directory used for temporary files. It will contain FLRTVC reports,
+      previously installed filesets and fixes lists and downloaded fixes.
     type: str
   verbose:
     description:
-    - Generate full reporting (verbose mode).
+    - Generate full FLRTVC reporting (verbose mode).
     type: bool
     default: no
   force:
     description:
-    - Force.
+    - Specifies to remove currently installed ifix before running the FLRTVC script.
     type: bool
     default: no
   clean:
     description:
-    - Cleanup downloaded files after install.
+    - Cleanup working directory with all downloaded files at the end of execution.
     type: bool
     default: no
   check_only:
     description:
-    - Perform check only.
+    - Specifies to only check if fixes are already applied on the targets.
+      No download or install operations.
     type: bool
     default: no
   download_only:
     description:
-    - Download only, do not install anything.
+    - Specifies to perform check and download operation, do not install anything.
     type: bool
     default: no
 '''

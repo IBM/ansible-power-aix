@@ -628,7 +628,7 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
             return 1
 
         # Clean existing altinst_rootvg if needed
-        if PARAMS['force'] == 'yes':
+        if PARAMS['force']:
             OUTPUT.append('    Remove altinst_rootvg from {} of {}'
                           .format(vios_dict[vios], vios))
             cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
@@ -1438,19 +1438,17 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            description=dict(required=False, type='str'),
             targets=dict(required=True, type='str'),
-            action=dict(required=True,
-                        choices=['alt_disk_copy', 'alt_disk_clean'],
-                        type='str'),
+            action=dict(required=True, type='str',
+                        choices=['alt_disk_copy', 'alt_disk_clean']),
             time_limit=dict(required=False, type='str'),
             vars=dict(required=False, type='dict'),
             vios_status=dict(required=False, type='dict'),
             nim_node=dict(required=False, type='dict'),
-            disk_size_policy=dict(required=False,
-                                  choice=['minimize', 'upper', 'lower', 'nearest'],
-                                  type='str'),
-            force=dict(choices=['yes', 'no'], required=False, type='str'),
+            disk_size_policy=dict(required=False, type='str',
+                                  choices=['minimize', 'upper', 'lower', 'nearest'],
+                                  default='nearest'),
+            force=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode=True
     )
@@ -1461,26 +1459,10 @@ def main():
     action = module.params['action']
     targets = module.params['targets']
 
-    if module.params['description']:
-        description = module.params['description']
-    else:
-        description = "Perform an alternate disk operation: {} request".format(action)
-
-    if module.params['disk_size_policy']:
-        disk_size_policy = module.params['disk_size_policy']
-    else:
-        disk_size_policy = 'nearest'
-
-    if module.params['force']:
-        force = module.params['force']
-    else:
-        force = 'no'
-
     PARAMS['action'] = action
     PARAMS['targets'] = targets
-    PARAMS['Description'] = description
-    PARAMS['disk_size_policy'] = disk_size_policy
-    PARAMS['force'] = force
+    PARAMS['disk_size_policy'] = module.params['disk_size_policy']
+    PARAMS['force'] = module.params['force']
 
     if module.params['time_limit']:
         time_limit = module.params['time_limit']

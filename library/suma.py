@@ -36,7 +36,7 @@ options:
     - C(config) to list global SUMA configuration settings.
     - C(default) to list default SUMA tasks.
     type: str
-    choices: [ download, preview, list, edit, unschedule, delete, config, default ]
+    choices: [ download, preview, list, edit, run, unschedule, delete, config, default ]
     default: download
   oslevel:
     description:
@@ -86,7 +86,7 @@ options:
     description:
     - Saves the SUMA task. The task is saved, allowing scheduling information to be added later.
     - Can be used if I(action=download) or C(action=preview).
-    - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the saving time. 
+    - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the saving time.
     type: bool
     default: no
   description:

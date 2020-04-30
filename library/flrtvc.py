@@ -76,7 +76,7 @@ options:
     - Specifies to perform check and download operation, do not install anything.
     type: bool
     default: no
-  increase_fs:
+  extend_fs:
     description:
     - Specifies to increase filesystem size of the working directory if needed.
     - If set a filesystem of the host could have increased even if ansible return I(changed=False).
@@ -1133,7 +1133,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            apar=dict(required=False, choices=['sec', 'hiper', 'all', None], default=None),
+            apar=dict(required=False, type='str', choices=['sec', 'hiper', 'all', None], default=None),
             filesets=dict(required=False, type='str'),
             csv=dict(required=False, type='str'),
             path=dict(required=False, type='str', default='/var/adm/ansible/work'),
@@ -1142,7 +1142,7 @@ def main():
             clean=dict(required=False, type='bool', default=False),
             check_only=dict(required=False, type='bool', default=False),
             download_only=dict(required=False, type='bool', default=False),
-            increase_fs=dict(required=False, type='bool', default=True),
+            extend_fs=dict(required=False, type='bool', default=True),
         ),
         supports_check_mode=True
     )
