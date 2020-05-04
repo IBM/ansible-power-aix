@@ -17,6 +17,10 @@ install:
   - pip install pyyaml      # for compile test with Python2
   - ansible --version
 
+env:
+  global:
+    secure: kqXVcPMZ5RrHvtRV3sv6e/cI3y1WPPdjoBN9W395WRc7dGKq89tg6aYL4zrwmlE+IcmJEf6Nt0r1nFOdtYDLpJvuavI9wGq3opnFxyj16owgAdghLb9tb8EsZc5kd4Ga0D0hxvbnHsyvaYSBlsZBUczMPrXFAPDg7fRp9sW2Bejs7AAJy16hhIwWQgsM9/biGbh+N8Co+EzTsN7OjYlzakkUliikgg1bevvdEWNuyoN/QqT/W6s2E5ZQgEYsXL/YOa37nutF+NNoGf1pGL/h9II8bdDcV1PEbNsNfk8I8/R5ryQu2OZVS/TDzuJweEABwwXAaCGypXd85ZPYLnUbXuuWafG1aaiEqGWsZw1+nXDcmSZszs801RZOgd70o6hztN1NpjZUIoFWP2RDxzMnUVr0h05vMlbnqvOwfqFhVJjTsMNH1uOlIaKTBjp5H66yGNu4qlJC+3Cc3ybt1xUB5MQ7WLNoVlqVBinKLE3mlesx+MZEuTGucm/ohsZhg16fkwPjJpDfP9tgu5Kx/9fKyXyy/e+bnG7WjgrOKPg1jJrBiI9oRDJ+3KUDkhT60geH+1g1SSlxXOfnt+RJtB42rnXQ4Y37rYjyrkFTGrSou6wTmITmGRWyaAavUKt/fCHIRFL9ICGIhZghBfH+7NL8mc+d+SNhfnpr/n6vSQadmfI=
+
 # command to run tests
 script:
 
@@ -30,6 +34,13 @@ script:
   #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
 
   - bash devops/bin/gen_doc.sh
-  - bash devops/bin/sanity_test.sh
+  # - bash devops/bin/sanity_test.sh
 
-
+deploy:
+    provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_API_KEY
+    local_dir: documentation
+    keep_history: true
+    on:
+        branch: travis
