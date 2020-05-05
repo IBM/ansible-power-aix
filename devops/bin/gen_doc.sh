@@ -33,7 +33,4 @@ for f in $DIR/library/*.py; do
 done
 set -e
 
-# check if we can push
-
-
 exit $rc

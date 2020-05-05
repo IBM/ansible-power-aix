@@ -34,8 +34,9 @@ script:
   #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
 
   - bash devops/bin/gen_doc.sh
-  # - bash devops/bin/sanity_test.sh
+  - bash devops/bin/sanity_test.sh
 
+# push the generated documentation using GitHub Pages
 deploy:
     provider: pages
     skip_cleanup: true
@@ -43,4 +44,4 @@ deploy:
     local_dir: documentation
     keep_history: true
     on:
-        branch: travis
+        branch: master
