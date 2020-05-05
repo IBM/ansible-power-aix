@@ -338,7 +338,7 @@ def get_nim_lpp_source(module):
                       .format(ret, stderr))
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
     # lpp_source list
