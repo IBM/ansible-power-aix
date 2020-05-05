@@ -151,7 +151,7 @@ nim_node:
             returned: always
             type: dict
     sample:
-        "nim_node:" {
+        "nim_node": {
             "lpp_source": {
                 "723lpp_res": "/export/nim/lpp_source/723lpp_res"
             },
