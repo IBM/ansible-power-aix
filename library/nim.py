@@ -141,7 +141,6 @@ nim_node:
 
 import os
 import re
-import subprocess
 import threading
 import logging
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
@@ -522,7 +521,7 @@ def perform_sync_customization(module, lpp_source, target):
         'NIM - perform_sync_customization - lpp_spource: {}, target: {} '
         .format(lpp_source, target))
 
-    cmd = ['nim', '-o', 'cust', 
+    cmd = ['nim', '-o', 'cust',
            '-a', 'lpp_source=' + lpp_source,
            '-a', 'fixes=update_all',
            '-a', 'accept_licenses=yes',
@@ -1479,7 +1478,7 @@ def main():
     action = module.params['action']
     operation = module.params['operation']
 
-    params={}
+    params = {}
 
     description = module.params['description']
     if description is None:
