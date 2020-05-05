@@ -49,11 +49,12 @@ options:
     type: str
   targets:
     description:
-    - Specifies the NIM clients to update.
+    - Specifies the NIM clients to perform the action on.
     - C(foo*) designates all the NIM clients with name starting by C(foo).
     - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
     - C(*) or C(ALL) designates all the NIM clients.
-    type: str
+    type: list
+    elements: str
   asynchronous:
     description:
     - If set to C(no), NIM client will be completely installed before starting
@@ -393,33 +394,28 @@ def build_nim_node(module):
 
 def expand_targets(targets):
     """
-    Expand the list of the targets.
+    Expand the list of target patterns.
 
-    A target name can be of the following form:
-        target*       all the nim client machines whose name starts
+    A target pattern can be of the following form:
+        target*       all the nim client machines whose names start
                           with 'target'
         target[n1:n2] where n1 and n2 are numeric: target<n1> to target<n2>
         * or ALL      all the nim client machines
         client_name   the nim client named 'client_name'
         master        the nim master
 
-        sample:  target[1:5] target12 other_target*
-
     arguments:
-        machine (str): The name machine
-        result  (dict): The result of the command
+        targets (list): The list of target patterns
 
-    return: the list of the existing machines matching the target list
+    return: the list of existing machines matching the target patterns
     """
     global nim_node
 
+    # ===========================================
+    # Build clients list
+    # ===========================================
     clients = []
-    targets_list = targets.split(' ')
-
-    # ===========================================
-    # Build targets list
-    # ===========================================
-    for target in targets_list:
+    for target in targets:
 
         # -----------------------------------------------------------
         # Build target(s) from: range i.e. quimby[7:12]
@@ -1374,7 +1370,7 @@ def main():
                                  'reset', 'reboot', 'maintenance']),
             description=dict(type='str'),
             lpp_source=dict(type='str'),
-            targets=dict(type='str'),
+            targets=dict(type='list', elements='str'),
             asynchronous=dict(type='bool', default=False),
             device=dict(type='str'),
             script=dict(type='str'),
