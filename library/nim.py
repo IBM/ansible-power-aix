@@ -219,14 +219,14 @@ def run_oslevel_cmd(module, machine, result):
         # return stdout only ... stripped!
         result[machine] = stdout.rstrip()
     else:
-        msg = 'Command: \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        msg = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         logging.error('Failed to get oslevel for {}: {}'.format(machine, msg))
 
 
 def get_nim_clients_info(module, lpar_type):
     """
-    return the list of nim lpar_type objects defined on the
-           nim master and their associated Cstate value
+    Return the list of nim lpar_type objects defined on the
+           nim master and their associated Cstate value.
     """
     global results
 
@@ -235,7 +235,7 @@ def get_nim_clients_info(module, lpar_type):
     if rc != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command: \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**results)
 
     # client name and associated Cstate
@@ -262,7 +262,7 @@ def get_nim_clients_info(module, lpar_type):
                 info_hash[obj_key]['mgmt_id'] = mgmt_elts[1]
                 info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             else:
-                logging.warning('WARNING: VIOS {} management profile does not have 3 elements: {}'.
+                logging.warning('WARNING: {} management profile does not have 3 elements: {}'.
                                 format(obj_key, match_mgmtprof.group(1)))
             continue
 
@@ -276,7 +276,7 @@ def get_nim_clients_info(module, lpar_type):
 
 def get_nim_master_info(module):
     """
-    Get the Cstate of the nim master
+    Get the Cstate of the nim master.
     """
     global results
 
@@ -764,6 +764,10 @@ def nim_update(module, params):
         async_update = 'no'
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
+
     logging.debug('NIM - Target list: {}'.format(target_list))
 
     # force interim fixes automatic removal
@@ -1004,6 +1008,9 @@ def nim_compare(module, params):
                  .format(params['targets']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1047,6 +1054,9 @@ def nim_script(module, params):
                  .format(log_async, params['targets'], params['script']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1081,10 +1091,13 @@ def nim_allocate(module, params):
 
     global results
 
-    logging.info('NIM - alloacte operation on {} for {} lpp source'
+    logging.info('NIM - allocate operation on {} for {} lpp source'
                  .format(params['targets'], params['lpp_source']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1122,6 +1135,9 @@ def nim_deallocate(module, params):
                  .format(params['targets'], params['lpp_source']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1161,6 +1177,9 @@ def nim_bos_inst(module, params):
                  .format(params['targets'], params['group']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1327,6 +1346,9 @@ def nim_reboot(module, params):
     logging.info('NIM - reboot operation on {}'.format(params['targets']))
 
     target_list = expand_targets(params['targets'])
+    if not target_list:
+        results['msg'] = 'No matching target found for {}.'.format(params['targets'])
+        module.fail_json(**results)
 
     logging.debug('NIM - Target list: {}'.format(target_list))
 
@@ -1409,7 +1431,7 @@ def main():
     logpath = os.path.join(logdir, 'nim_debug.log')
     if not os.path.exists(logdir):
         os.makedirs(logdir, mode=0o744)
-    logging.basicConfig(filename=logpath,
+    logging.basicConfig(filename=logpath, filemode='w',
                         format='[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s',
                         level=logging.DEBUG)
 
