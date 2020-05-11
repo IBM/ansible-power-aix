@@ -862,7 +862,7 @@ def check_rootvg(module, vios):
         OUTPUT.append('    Failed to check mirroring on {}, lsvg returns: {}'
                       .format(vios, std_err))
         module.error('Failed to check mirroring on {}, lsvg returns: {} {}'
-                      .format(vios, ret, std_err))
+                     .format(vios, ret, std_err))
         return vg_info
 
     if std_out.find('stale') > 0:
@@ -1427,7 +1427,6 @@ def main():
     global PARAMS
     global NIM_NODE
     global CHANGED
-    VARS = {}
 
     module = AnsibleModule(
         argument_spec=dict(
@@ -1459,10 +1458,6 @@ def main():
 
     if module.params['time_limit']:
         time_limit = module.params['time_limit']
-
-    # Handle playbook variables
-    if module.params['vars']:
-        VARS = module.params['vars']
 
     module.debug('*** START VIOS {} ***'.format(action.upper()))
 

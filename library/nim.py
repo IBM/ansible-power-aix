@@ -176,7 +176,6 @@ nim_node:
         }
 '''
 
-import os
 import re
 import threading
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
@@ -681,7 +680,7 @@ def remove_fix(target, fix, module):
     return ret
 
 
-def find_resource_by_client(lpp_type, lpp_time, oslevel_elts):
+def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
     """
     Retrieve the good SP or TL resource to associate to the nim client oslevel.
 
@@ -822,7 +821,8 @@ def nim_update(module, params):
                 lpp_source_array = lpp_source.split('_')
                 lpp_time = lpp_source_array[0]
                 lpp_type = lpp_source_array[1]
-                new_lpp_source = find_resource_by_client(lpp_type, lpp_time,
+                new_lpp_source = find_resource_by_client(module,
+                                                         lpp_type, lpp_time,
                                                          cur_oslevel_elts)
                 module.debug('NIM - new_lpp_source: {}'.format(new_lpp_source))
             else:

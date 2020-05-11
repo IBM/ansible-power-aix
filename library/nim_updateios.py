@@ -774,7 +774,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
                 ret = ssp_stop_start(module, target_tuple, vios, 'start')
                 if ret == 1:
                     module.log('SSP start operation failure for VIOS {}'
-                                  .format(vios))
+                               .format(vios))
                     update_op_tab[vios_key] = err_label
                     module.log('VIOS update status for {}: {}'
                                .format(vios_key, update_op_tab[vios_key]))
@@ -795,8 +795,6 @@ def main():
     global NIM_NODE
     global OUTPUT
     global DEBUG_DATA
-
-    VARS = {}
 
     MODULE = AnsibleModule(
         argument_spec=dict(
@@ -844,10 +842,6 @@ def main():
             msg = 'Malformed time limit "{}", please use mm/dd/yyyy hh:mm format.'\
                   .format(MODULE.params['time_limit'])
             MODULE.fail_json(msg=msg)
-
-    # Handle playbook variables
-    if MODULE.params['vars']:
-        VARS = MODULE.params['vars']
 
     MODULE.debug('*** START NIM UPDATE VIOS OPERATION ***')
 

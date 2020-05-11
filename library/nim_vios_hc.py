@@ -703,7 +703,6 @@ def main():
     global CHANGED
     global VERBOSITY
     targets_list = []
-    VARS = {}
 
     module = AnsibleModule(
         argument_spec=dict(
@@ -723,10 +722,6 @@ def main():
 
     PARAMS['action'] = action
     PARAMS['targets'] = targets
-
-    # Handle playbook variables
-    if module.params['vars']:
-        VARS = module.params['vars']
 
     module.debug('*** START VIOS {} ***'.format(action.upper()))
 

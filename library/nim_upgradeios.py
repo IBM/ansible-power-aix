@@ -1132,7 +1132,6 @@ def main():
     global DEBUG_DATA
     global CHANGED
     global OUTPUT
-    VARS = {}
 
     MODULE = AnsibleModule(
         argument_spec=dict(
@@ -1212,10 +1211,6 @@ def main():
             msg = 'Malformed time limit "{}", please use mm/dd/yyyy hh:mm format.'\
                   .format(MODULE.params['time_limit'])
             MODULE.fail_json(msg=msg)
-
-    # Handle playbook variables
-    if MODULE.params['vars']:
-        VARS = MODULE.params['vars']
 
     MODULE.debug('*** START NIM UPGRADE VIOS OPERATION ***')
 

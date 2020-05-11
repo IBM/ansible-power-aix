@@ -35,11 +35,6 @@ options:
     - Specifies additional parameters.
     type: dict
     suboptions:
-      log_file:
-        description:
-        - Specifies path to log file.
-        type: str
-        default: /tmp/ansible_upgradeios_debug.log
   vios_status:
     description:
     - Specifies the result of a previous operation.
@@ -362,7 +357,6 @@ def main():
     global CHANGED
     DEBUG_DATA = []
     OUTPUT = []
-    VARS = {}
 
     MODULE = AnsibleModule(
         # TODO: remove not needed attributes
@@ -423,10 +417,6 @@ def main():
     MODULE.targets = []
     MODULE.nim_node = {}
 
-    # Handle playbook variables
-    if MODULE.params['vars']:
-        VARS = MODULE.params['vars']
-
     MODULE.debug('*** START NIM VIOSUPGRADE OPERATION ***')
 
     OUTPUT.append('VIOSUpgrade operation for {}'.format(MODULE.params['targets']))
@@ -450,7 +440,7 @@ def main():
             myfile.close()
         except IOError as e:
             msg = 'Failed to parse file {}: {}.'.format(e.filename, e.strerror)
-            module.log(msg)
+            MODULE.log(msg)
             MODULE.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
                              debug_output=DEBUG_DATA, status=MODULE.status)
     else:
