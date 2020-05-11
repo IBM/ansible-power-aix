@@ -53,6 +53,7 @@ options:
     - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies a SP.
     - Required when I(action=download) or I(action=preview).
     type: str
+    default: Latest
   lpp_source_name:
     description:
     - Name of the lpp_source NIM resource.
@@ -232,7 +233,7 @@ def run_oslevel_cmd(module, machine, oslevels):
         module.error('Failed to get oslevel for {}: {}'.format(machine, msg))
 
 @logged
-def expand_targets(targets, nim_clients):
+def expand_targets(module, targets, nim_clients):
     """
     Expand the list of target patterns.
 
@@ -394,9 +395,13 @@ def get_nim_lpp_source(module):
 
 
 @logged
-def compute_rq_type(oslevel, targets_list):
+def compute_rq_type(module, oslevel, targets_list):
     """Compute rq_type.
 
+    arguments:
+        module          (dict): The Ansible module
+        oslevel          (str): requested oslevel
+        targets_list    (list): list of target NIM clients
     return:
         Latest when oslevel is blank or latest (not case sensitive)
         Latest when oslevel is a TL (6 digits) and target list is empty
@@ -417,11 +422,12 @@ def compute_rq_type(oslevel, targets_list):
 
 
 @logged
-def find_sp_version(file):
+def find_sp_version(module, file):
     """
     Open and parse the provided file to find higher SP version
     arguments:
-        file    path of the file to parse
+        module  (dict): The Ansible module
+        file     (str): path of the file to parse
     return:
        sp_version   value found or None
     """
@@ -531,7 +537,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         files = glob.glob(file_name)
         module.debug("searching SP in files: {}".format(files))
         for cur_file in files:
-            version = find_sp_version(cur_file)
+            version = find_sp_version(module, cur_file)
             if sp_version is None or version > sp_version:
                 sp_version = version
 
@@ -572,7 +578,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             # find SP build number
             sp_version = None
             cur_file = suma_params['metadata_dir'] + "/installp/ppc/" + oslevel + ".xml"
-            sp_version = find_sp_version(cur_file)
+            sp_version = find_sp_version(module, cur_file)
 
             rq_name = sp_version
             shutil.rmtree(suma_params['metadata_dir'])
@@ -587,7 +593,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
 
 
 @logged
-def compute_filter_ml(clients_target_oslevel, rq_name):
+def compute_filter_ml(module, clients_target_oslevel, rq_name):
     """
     Compute the suma filter ML.
     returns the TL part of rq_name if there is no target machine.
@@ -596,8 +602,9 @@ def compute_filter_ml(clients_target_oslevel, rq_name):
         requested target os_level (rq_name).
 
     arguments:
-        clients_target_oslevel   oslevel of each selected client
-        rq_name                  SUMA request name based on metadata info
+        module                 (dict): The Ansible module
+        clients_target_oslevel (list): oslevel of each selected client
+        rq_name                 (str): SUMA request name based on metadata info
     """
     minimum_oslevel = None
     filter_ml = None
@@ -619,15 +626,15 @@ def compute_filter_ml(clients_target_oslevel, rq_name):
 
 
 @logged
-def compute_lpp_source_name(lpp_source, rq_name):
+def compute_lpp_source_name(module, lpp_source, rq_name):
     """
     Compute lpp source name based on lpp_source and rq_name.
     When no lpp_source is specified the lpp_source_name is <rq_name>-lpp_source
 
     arguments:
-        module          (dict): The Ansible module
-        download_dir     (str): directory
-        lpp_source       (str): lpp source name
+        module     (dict): The Ansible module
+        lpp_source  (str): lpp source name
+        rq_name     (str): SUMA request name based on metadata info
     return:
         lpp_src     the name of the lpp_source
     """
@@ -881,7 +888,7 @@ def suma_config(module):
     List the SUMA global configuration settings
 
     arguments:
-        module      (dict): The Ansible module
+        module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     """
@@ -906,7 +913,7 @@ def suma_default(module):
     List default SUMA tasks
 
     arguments:
-        module      (dict): The Ansible module
+        module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     """
@@ -972,7 +979,7 @@ def suma_download(module, suma_params):
     module.debug("NIM Clients: {}".format(nim_clients))
 
     # Build targets list from nim_clients list
-    target_clients = expand_targets(targets_list, nim_clients)
+    target_clients = expand_targets(module, targets_list, nim_clients)
     results['target_list'] = target_clients
     if targets_list and not target_clients:
         msg = 'No matching NIM client found for target \'{}\'.'.format(suma_params['targets'])
@@ -1005,7 +1012,7 @@ def suma_download(module, suma_params):
         results['meta']['messages'].append(msg)
 
     # compute SUMA request type based on oslevel property
-    rq_type = compute_rq_type(suma_params['req_oslevel'], targets_list)
+    rq_type = compute_rq_type(module, suma_params['req_oslevel'], targets_list)
     if rq_type == 'ERROR':
         msg = "Invalid oslevel: '{}'".format(suma_params['req_oslevel'])
         module.error(msg)
@@ -1020,7 +1027,7 @@ def suma_download(module, suma_params):
     module.debug("Suma req Name: {}".format(rq_name))
 
     # Compute the filter_ml i.e. the min oslevel from the clients_oslevel
-    filter_ml = compute_filter_ml(clients_oslevel, rq_name)
+    filter_ml = compute_filter_ml(module, clients_oslevel, rq_name)
     suma_params['FilterMl'] = filter_ml
     module.debug("SUMA req filter min Oslevel: {}".format(filter_ml))
 
@@ -1032,7 +1039,7 @@ def suma_download(module, suma_params):
         module.fail_json(**results)
 
     # compute lpp source name based on request name
-    lpp_source = compute_lpp_source_name(suma_params['lpp_source_name'], rq_name)
+    lpp_source = compute_lpp_source_name(module, suma_params['lpp_source_name'], rq_name)
     suma_params['LppSource'] = lpp_source
     module.debug("Lpp source name: {}".format(lpp_source))
 
