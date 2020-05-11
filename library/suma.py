@@ -37,7 +37,7 @@ options:
     - C(default) to list default SUMA tasks.
     type: str
     choices: [ download, preview, list, edit, run, unschedule, delete, config, default ]
-    default: download
+    default: preview
   oslevel:
     description:
     - Specifies the Operating System level to update to;
@@ -93,6 +93,7 @@ options:
     description:
     - Display name for SUMA task.
     - If not set the will be labelled 'I(action) request for oslevel I(oslevel)'
+    - Can be used for I(action=download) or I(action=preview).
     type: str
   metadata_dir:
     description:
@@ -105,11 +106,13 @@ options:
 EXAMPLES = r'''
 - name: Check, download and install system updates for the current oslevel of the system
   suma:
+    action: download
     oslevel: Latest
     download_dir: /usr/sys/inst.images
 
 - name: Check and download required to update to SP 7.2.3.2
   suma:
+    action: download
     oslevel: '7200-03-02'
     download_only: yes
     download_dir: /tmp/dl_updt_7200-03-02
@@ -117,12 +120,14 @@ EXAMPLES = r'''
 
 - name: Check, download and install to latest SP of TL 7.2.4
   suma:
+    action: download
     oslevel: '7200-04'
     last_sp: yes
     extend_fs: no
 
 - name: Check, download and install to TL 7.2.3
   suma:
+    action: download
     oslevel: '7200-03'
 '''
 
@@ -137,7 +142,7 @@ meta:
             returned: always
             type: list
             elements: str
-            sample: "Parameter last_sp={} is ignored when oslevel is a TL 7200-02-00"
+            sample: "Parameter last_sp=yes is ignored when oslevel is a TL 7200-02-00"
     sample:
         "meta": {
             "messages": [
@@ -349,10 +354,10 @@ def suma_command(action):
     note:
         Exits with fail_json in case of error
     return:
-       rc      suma command return code
        stdout  suma command output
     """
     global results
+    global suma_params
 
     rq_type = suma_params['RqType']
     cmd = ['/usr/sbin/suma', '-x', '-a', 'RqType={}'.format(rq_type)]
@@ -384,7 +389,7 @@ def suma_command(action):
         results['msg'] = msg
         module.fail_json(**results)
 
-    return rc, stdout
+    return stdout
 
 
 @logged
@@ -467,7 +472,7 @@ def suma_edit():
 
             cmd += ' -s "{}"'.format(suma_params['sched_time'])
         else:
-            msg = "Suma edit command '{}' failed Bad schedule time '{}'".format(' '.join(cmd), suma_params['sched_time'])
+            msg = "Suma edit command '{}' failed: Bad schedule time '{}'".format(' '.join(cmd), suma_params['sched_time'])
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
@@ -787,7 +792,7 @@ def main():
             action=dict(required=False,
                         choices=['download', 'preview', 'list', 'edit', 'run',
                                  'unschedule', 'delete', 'config', 'default'],
-                        type='str', default='download'),
+                        type='str', default='preview'),
             oslevel=dict(required=False, type='str', default='Latest'),
             last_sp=dict(required=False, type='bool', default=False),
             extend_fs=dict(required=False, type='bool', default=True),
@@ -821,21 +826,9 @@ def main():
     module.debug('*** START ***')
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    # ========================================================================
-    # Get Module params
-    # ========================================================================
     action = module.params['action']
 
-    if module.params['description']:
-        suma_params['description'] = module.params['description']
-    else:
-        suma_params['description'] = "{} request for oslevel {}".format(action, module.params['oslevel'])
-
-    suma_params['action'] = action
-
-    # ========================================================================
     # switch action
-    # ========================================================================
     if action == 'list':
         suma_params['task_id'] = module.params['task_id']
         suma_list()
@@ -871,12 +864,15 @@ def main():
         suma_params['save_task'] = module.params['save_task']
         suma_params['last_sp'] = module.params['last_sp']
         suma_params['extend_fs'] = module.params['extend_fs']
+        if module.params['description']:
+            suma_params['description'] = module.params['description']
+        else:
+            suma_params['description'] = "{} request for oslevel {}".format(action, module.params['oslevel'])
+
+        suma_params['action'] = action
         suma_download()
 
-    # ========================================================================
     # Exit
-    # ========================================================================
-
     msg = 'Suma {} completed successfully'.format(action)
     module.log(msg)
     results['msg'] = msg
