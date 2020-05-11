@@ -209,7 +209,6 @@ meta:
         }
 '''
 
-import logging
 import os
 import re
 import csv
@@ -247,7 +246,7 @@ def start_threaded(thds):
             Decorator inner wrapper for thread start
             """
             thd = threading.Thread(target=func, args=args)
-            logging.debug('Start thread {}'.format(func.__name__))
+            module.debug('Start thread {}'.format(func.__name__))
             thd.start()
             thds.append(thd)
         return start_threaded_inner_wrapper
@@ -281,9 +280,9 @@ def logged(func):
         """
         Decorator wrapper for logging
         """
-        logging.debug('ENTER {} with {}'.format(func.__name__, args))
+        module.debug('ENTER {} with {}'.format(func.__name__, args))
         res = func(*args)
-        logging.debug('EXIT {} with {}'.format(func.__name__, res))
+        module.debug('EXIT {} with {}'.format(func.__name__, res))
         return res
     return logged_wrapper
 
@@ -303,7 +302,7 @@ def download(src, dst, resize_fs=True):
     res = True
     wget = '/bin/wget'
     if not os.path.isfile(dst):
-        logging.debug('downloading {} to {}...'.format(src, dst))
+        module.debug('downloading {} to {}...'.format(src, dst))
         if os.path.exists(wget):
             cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
             rc, stdout, stderr = module.run_command(cmd)
@@ -313,18 +312,18 @@ def download(src, dst, resize_fs=True):
                     return download(src, dst, resize_fs)
             elif rc != 0:
                 msg = 'Cannot download {}'.format(src)
-                logging.error(msg)
-                logging.error('cmd={} rc={} stdout:{} stderr:{}'
-                              .format(cmd, rc, stdout, stderr))
+                module.log(msg)
+                module.log('cmd={} rc={} stdout:{} stderr:{}'
+                           .format(cmd, rc, stdout, stderr))
                 results['meta']['messages'].append(msg)
                 res = False
         else:
             msg = 'Cannot locate {}, please install related package.'.format(wget)
-            logging.error(msg)
+            module.log(msg)
             results['meta']['messages'].append(msg)
             res = False
     else:
-        logging.debug('{} already exists'.format(dst))
+        module.debug('{} already exists'.format(dst))
     return res
 
 
@@ -348,8 +347,8 @@ def unzip(src, dst, resize_fs=True):
             return unzip(src, dst)
         else:
             msg = 'Cannot unzip {}'.format(src)
-            logging.error(msg)
-            logging.error('EXCEPTION {}'.format(exc))
+            module.log(msg)
+            module.log('EXCEPTION {}'.format(exc))
             results['meta']['messages'].append(msg)
             return False
     return True
@@ -364,16 +363,16 @@ def remove_efix():
         False otherwise
     """
     res = True
-    logging.debug('Removing all installed efix')
+    module.debug('Removing all installed efix')
 
     # List epkg on the system
     cmd = ['/usr/sbin/emgr', '-P']
     rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
     if rc != 0:
         msg = 'Cannot list interim fix to remove'
-        logging.error(msg)
-        logging.error('cmd:{} failed rc={} stdout:{} stderr:{}'
-                      .format(cmd, rc, stdout, stderr))
+        module.log(msg)
+        module.log('cmd:{} failed rc={} stdout:{} stderr:{}'
+                   .format(cmd, rc, stdout, stderr))
         results['meta']['messages'].append('{}: {}'.format(msg, stderr))
         return False
 
@@ -400,11 +399,11 @@ def remove_efix():
                 if 'SUCCESS' in match.group(2):
                     msg = 'efix {} removed, please check if you want to reinstall it'\
                           .format(match.group(1))
-                    logging.info(msg)
+                    module.log(msg)
                     results['meta']['messages'].append(msg)
                 else:
                     msg = 'Cannot remove efix {}, see logs for details'.format(match.group(1))
-                    logging.error(msg)
+                    module.log(msg)
                     results['meta']['messages'].append(msg)
                     res = False
     return res
@@ -492,7 +491,7 @@ def check_epkgs(epkg_list, lpps, efixes):
         for file in efixes[efix]['files']:
             if file not in locked_files:
                 locked_files[file] = efix
-    logging.debug('locked_files: {}'.format(locked_files))
+    module.debug('locked_files: {}'.format(locked_files))
 
     # Get information on efix we want to install and check it can be installed
     for epkg_path in epkg_list:
@@ -512,9 +511,9 @@ def check_epkgs(epkg_list, lpps, efixes):
         rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
         if rc != 0:
             msg = 'Cannot get efix information {}'.format(epkg['path'])
-            logging.error(msg)
-            logging.error('cmd:{} failed rc={} stdout:{} stderr:{}'
-                          .format(cmd, rc, stdout, stderr))
+            module.log(msg)
+            module.log('cmd:{} failed rc={} stdout:{} stderr:{}'
+                       .format(cmd, rc, stdout, stderr))
             results['meta']['messages'].append(msg)
             # do not break or continue, we keep this efix, will try to install it anyway
 
@@ -570,7 +569,7 @@ def check_epkgs(epkg_list, lpps, efixes):
             # check filseset prerequisite is present
             if prereq not in lpps:
                 epkg['reject'] = '{}: prerequisite missing: {}'.format(os.path.basename(epkg['path']), prereq)
-                logging.info('reject {}'.format(epkg['reject']))
+                module.log('reject {}'.format(epkg['reject']))
                 break  # stop parsing
 
             # check filseset prerequisite is present
@@ -584,7 +583,7 @@ def check_epkgs(epkg_list, lpps, efixes):
                                          epkg['prereq'][prereq]['minlvl'],
                                          lpps[prereq]['str'],
                                          epkg['prereq'][prereq]['maxlvl'])
-                logging.info('reject {}'.format(epkg['reject']))
+                module.log('reject {}'.format(epkg['reject']))
                 break
         if epkg['reject']:
             epkgs_reject.append(epkg['reject'])
@@ -599,7 +598,7 @@ def check_epkgs(epkg_list, lpps, efixes):
                                                    .format(locked_files[file], file, os.path.basename(epkg['path'])))
                 epkg['reject'] = '{}: installed efix {} is locking {}'\
                                  .format(os.path.basename(epkg['path']), locked_files[file], file)
-                logging.info('reject {}'.format(epkg['reject']))
+                module.log('reject {}'.format(epkg['reject']))
                 epkgs_reject.append(epkg['reject'])
                 continue
         if epkg['reject']:
@@ -610,8 +609,8 @@ def check_epkgs(epkg_list, lpps, efixes):
         if epkg['pkg_date']:
             (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
             if sec_from_epoch == -1:
-                logging.error('{}: "{}" for epkg:{} '
-                              .format(msg, epkg['pkg_date'], epkg))
+                module.log('{}: "{}" for epkg:{} '
+                           .format(msg, epkg['pkg_date'], epkg))
             epkg['sec_from_epoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
@@ -627,8 +626,8 @@ def check_epkgs(epkg_list, lpps, efixes):
     for epkg in sorted_epkgs:
         if set(epkgs_info[epkg]['files']).isdisjoint(set(global_file_locks)):
             global_file_locks.extend(epkgs_info[epkg]['files'])
-            logging.info('keep {}, files: {}'
-                         .format(os.path.basename(epkgs_info[epkg]['path']), epkgs_info[epkg]['files']))
+            module.log('keep {}, files: {}'
+                       .format(os.path.basename(epkgs_info[epkg]['path']), epkgs_info[epkg]['files']))
         else:
             results['meta']['messages'].append('a previous efix to install will lock a file of {} '
                                                'preventing its installation, install it manually or '
@@ -636,7 +635,7 @@ def check_epkgs(epkg_list, lpps, efixes):
                                                .format(os.path.basename(epkgs_info[epkg]['path'])))
             epkgs_info[epkg]['reject'] = '{}: locked by previous efix to install'\
                                          .format(os.path.basename(epkgs_info[epkg]['path']))
-            logging.info('reject {}'.format(epkgs_info[epkg]['reject']))
+            module.log('reject {}'.format(epkgs_info[epkg]['reject']))
             epkgs_reject.append(epkgs_info[epkg]['reject'])
             removed_epkg.append(epkg)
     for epkg in removed_epkg:
@@ -665,7 +664,7 @@ def parse_lpps_info():
             mylist = myline.split(':')
             if len(mylist) < 3:
                 msg = 'file {} is malformed'.format(lslpp_file)
-                logging.error('{}: got line: "{}"'.format(msg, myline))
+                module.log('{}: got line: "{}"'.format(msg, myline))
                 results['meta']['messages'].append(msg)
                 continue
             lpps_lvl[mylist[1]] = {'str': mylist[2]}
@@ -686,9 +685,9 @@ def run_lslpp(filename):
         True if lslpp succeeded
         False otherwise
     """
-    logging.debug('{}'.format(filename))
+    module.debug('{}'.format(filename))
     cmd = ['/bin/lslpp', '-Lcq']
-    logging.debug('run cmd="{}"'.format(' '.join(cmd)))
+    module.debug('run cmd="{}"'.format(' '.join(cmd)))
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc == 0:
@@ -697,10 +696,10 @@ def run_lslpp(filename):
         return True
     else:
         msg = 'Failed to list fileset'
-        logging.error(msg)
-        logging.error('cmd:{} failed rc={}'.format(cmd, rc))
-        logging.error('stdout:{}'.format(stdout))
-        logging.error('stderr:{}'.format(stderr))
+        module.log(msg)
+        module.log('cmd:{} failed rc={}'.format(cmd, rc))
+        module.log('stdout:{}'.format(stdout))
+        module.log('stderr:{}'.format(stderr))
         return False
 
 
@@ -780,7 +779,7 @@ def run_emgr(f_efix):
 
     # list efix information
     cmd = ['/usr/sbin/emgr', '-lv3']
-    logging.debug('run cmd="{}"'.format(' '.join(cmd)))
+    module.debug('run cmd="{}"'.format(' '.join(cmd)))
     rc, stdout, stderr = module.run_command(cmd)
     if rc == 0:
         with open(f_efix, 'w') as myfile:
@@ -788,10 +787,10 @@ def run_emgr(f_efix):
         return True
     else:
         msg = 'Failed to list interim fix information'
-        logging.error(msg)
-        logging.error('cmd:{} failed rc={}'.format(cmd, rc))
-        logging.error('stdout:{}'.format(stdout))
-        logging.error('stderr:{}'.format(stderr))
+        module.log(msg)
+        module.log('cmd:{} failed rc={}'.format(cmd, rc))
+        module.log('stdout:{}'.format(stdout))
+        module.log('stderr:{}'.format(stderr))
         return False
 
 
@@ -853,14 +852,14 @@ def run_flrtvc(flrtvc_path, params, force):
         cmd += ['-g', params['filesets']]
 
     # Run flrtvc in compact mode
-    logging.debug('run flrtvc in compact mode: cmd="{}"'.format(' '.join(cmd)))
+    module.debug('run flrtvc in compact mode: cmd="{}"'.format(' '.join(cmd)))
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0 and rc != 2:
         msg = 'Failed to get flrtvc report, rc={}'.format(rc)
-        logging.error(msg)
-        logging.error('cmd:{} failed rc={}'.format(cmd, rc))
-        logging.error('stdout:{}'.format(stdout))
-        logging.error('stderr:{}'.format(stderr))
+        module.log(msg)
+        module.log('cmd:{} failed rc={}'.format(cmd, rc))
+        module.log('stdout:{}'.format(stdout))
+        module.log('stderr:{}'.format(stderr))
         results['meta']['messages'].append(msg + " stderr: {}".format(stderr))
         results['meta']['0.report'].append(msg)
         return False
@@ -874,15 +873,15 @@ def run_flrtvc(flrtvc_path, params, force):
             if params['verbose']:
                 cmd += ['-v']
 
-            logging.debug('write flrtvc report to file, cmd "{}"'.format(' '.join(cmd)))
+            module.debug('write flrtvc report to file, cmd "{}"'.format(' '.join(cmd)))
             rc, stdout, stderr = module.run_command(cmd)
             # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
             if rc != 0 and rc != 2:
                 msg = 'Failed to save flrtvc report in file, rc={}'.format(rc)
-                logging.error(msg)
-                logging.error('cmd:{} failed rc={}'.format(cmd, rc))
-                logging.error('stdout:{}'.format(stdout))
-                logging.error('stderr:{}'.format(stderr))
+                module.log(msg)
+                module.log('cmd:{} failed rc={}'.format(cmd, rc))
+                module.log('stdout:{}'.format(stdout))
+                module.log('stderr:{}'.format(stderr))
                 results['meta']['messages'].append(msg)
             myfile.write(stdout)
 
@@ -907,7 +906,7 @@ def run_parser(report):
     selected_rows = [row for row in rows if pattern.match(row) is not None]
 
     rows = list(set(selected_rows))  # remove duplicates
-    logging.debug('extracted {} urls in the report'.format(len(rows)))
+    module.debug('extracted {} urls in the report'.format(len(rows)))
     results['meta'].update({'1.parse': rows})
 
 
@@ -934,11 +933,11 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
     for url in urls:
         protocol, srv, rep, name = re.search(r'^(.*?)://(.*?)/(.*)/(.*)$', url).groups()
-        logging.debug('protocol={}, srv={}, rep={}, name={}'
-                      .format(protocol, srv, rep, name))
+        module.debug('protocol={}, srv={}, rep={}, name={}'
+                     .format(protocol, srv, rep, name))
 
         if '.epkg.Z' in name:  # URL as an efix file
-            logging.debug('treat url as an epkg file')
+            module.debug('treat url as an epkg file')
             out['2.discover'].extend(name)
 
             # download epkg file
@@ -947,7 +946,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
                 out['3.download'].append(epkg)
 
         elif '.tar' in name:  # URL as a tar file
-            logging.debug('treat url as a tar file')
+            module.debug('treat url as a tar file')
             dst = os.path.abspath(os.path.join(dst_path, name))
 
             # download and open tar file
@@ -957,7 +956,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
                 # find all epkg in tar file
                 epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
                 out['2.discover'].extend(epkgs)
-                logging.debug('found {} epkg.Z file in tar file'.format(len(epkgs)))
+                module.debug('found {} epkg.Z file in tar file'.format(len(epkgs)))
 
                 # extract epkg
                 tar_dir = os.path.join(dst_path, 'tardir')
@@ -972,20 +971,20 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                 tar.extract(epkg, tar_dir)
                             except (OSError, IOError, tarfile.TarError) as exc:
                                 msg = 'Cannot extract tar file {}'.format(epkg)
-                                logging.error(msg)
-                                logging.error('EXCEPTION {}'.format(exc))
+                                module.log(msg)
+                                module.log('EXCEPTION {}'.format(exc))
                                 results['meta']['messages'].append(msg)
                                 continue
                         else:
                             msg = 'Cannot extract tar file {}'.format(epkg)
-                            logging.error(msg)
-                            logging.error('EXCEPTION {}'.format(exc))
+                            module.log(msg)
+                            module.log('EXCEPTION {}'.format(exc))
                             results['meta']['messages'].append(msg)
                             continue
                     out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
         else:  # URL as a Directory
-            logging.debug('treat url as a directory')
+            module.debug('treat url as a directory')
             # pylint: disable=protected-access
             response = urllib.urlopen(url, context=ssl._create_unverified_context())
 
@@ -995,7 +994,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
             epkgs = list(set(epkgs))
 
             out['2.discover'].extend(epkgs)
-            logging.debug('found {} epkg.Z file in html body'.format(len(epkgs)))
+            module.debug('found {} epkg.Z file in html body'.format(len(epkgs)))
 
             # download epkg
             epkgs = [os.path.abspath(os.path.join(dst_path, epkg)) for epkg in epkgs
@@ -1052,14 +1051,14 @@ def run_installer(epkgs, dst_path, resize_fs=True):
                     shutil.copy(epkg, destpath)
                 except (IOError, shutil.Error) as exc:
                     msg = 'Cannot copy file {} to {}'.format(epkg, destpath)
-                    logging.error(msg)
-                    logging.error('EXCEPTION {}'.format(exc))
+                    module.log(msg)
+                    module.log('EXCEPTION {}'.format(exc))
                     results['meta']['messages'].append(msg)
                     continue
             else:
                 msg = 'Cannot copy file {} to {}'.format(epkg, destpath)
-                logging.error(msg)
-                logging.error('EXCEPTION {}'.format(exc))
+                module.log(msg)
+                module.log('EXCEPTION {}'.format(exc))
                 results['meta']['messages'].append(msg)
                 continue
         epkgs_base.append(os.path.basename(epkg))
@@ -1072,18 +1071,18 @@ def run_installer(epkgs, dst_path, resize_fs=True):
 
     # perform customization
     cmd = ['/usr/sbin/geninstall', '-d', destpath, efixes]
-    logging.debug('Perform customization, cmd "{}"'.format(' '.join(cmd)))
+    module.debug('Perform customization, cmd "{}"'.format(' '.join(cmd)))
     rc, stdout, stderr = module.run_command(cmd)
-    logging.debug('geninstall stdout:{}'.format(stdout))
+    module.debug('geninstall stdout:{}'.format(stdout))
 
     results['changed'] = True   # Some efixes might be installed
     results['meta'].update({'5.install': stdout.splitlines()})
 
     if rc != 0:
         msg = 'Cannot perform customization, rc={}'.format(rc)
-        logging.error(msg)
-        logging.error('cmd={} rc={} stdout:{} stderr:{}'
-                      .format(cmd, rc, stdout, stderr))
+        module.log(msg)
+        module.log('cmd={} rc={} stdout:{} stderr:{}'
+                   .format(cmd, rc, stdout, stderr))
         results['meta']['messages'].append(msg)
         return False
 
@@ -1114,11 +1113,11 @@ def increase_fs(dest):
         cmd = ['chfs', '-a', 'size=+100M', mount_point]
         rc, stdout, stderr = module.run_command(cmd)
         if rc == 0:
-            logging.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
+            module.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
             return True
 
-    logging.warning('{}: cmd:{} failed rc={} stdout:{} stderr:{}'
-                    .format(mount_point, cmd, rc, stdout, stderr))
+    module.warn('{}: cmd:{} failed rc={} stdout:{} stderr:{}'
+                .format(mount_point, cmd, rc, stdout, stderr))
     msg = 'Cannot increase filesystem for {}.'.format(dest)
     results['meta']['messages'].append(msg)
     return False
@@ -1162,22 +1161,13 @@ def main():
         #       '5.install': []}    run_installer builds the list of installed epkgs
     )
 
-    # Open log file
-    logdir = os.path.abspath(os.path.join('var', 'adm', 'ansible'))
-    logpath = os.path.join(logdir, 'flrtvc_debug.log')
-    if not os.path.exists(logdir):
-        os.makedirs(logdir, mode=0o744)
-    logging.basicConfig(filename=logpath,
-                        format='[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s',
-                        level=logging.DEBUG)
-
-    logging.debug('*** START ***')
+    module.debug('*** START ***')
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # ===========================================
     # Get module params
     # ===========================================
-    logging.debug('*** INIT ***')
+    module.debug('*** INIT ***')
 
     # Used for independence vs Ansible options
     flrtvc_params = {'apar_type': module.params['apar'],
@@ -1199,7 +1189,7 @@ def main():
     # ===========================================
     # Install flrtvc script
     # ===========================================
-    logging.debug('*** INSTALL ***')
+    module.debug('*** INSTALL ***')
     flrtvc_dir = os.path.abspath(os.path.join('usr', 'bin'))
     flrtvc_path = os.path.abspath(os.path.join(flrtvc_dir, 'flrtvc.ksh'))
 
@@ -1208,7 +1198,7 @@ def main():
             os.remove(flrtvc_path)
         except OSError as exc:
             msg = 'Exception removing {}, exception={}'.format(flrtvc_path, exc)
-            logging.warning(msg)
+            module.warn(msg)
             results['meta']['messages'].append(msg)
 
     flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))
@@ -1232,7 +1222,7 @@ def main():
     # ===========================================
     # Run flrtvc script
     # ===========================================
-    logging.debug('*** REPORT ***')
+    module.debug('*** REPORT ***')
     if not run_flrtvc(flrtvc_path, flrtvc_params, force):
         msg = 'Failed to get vulnerabilities report, system will not be updated'
         results['msg'] = msg
@@ -1249,13 +1239,13 @@ def main():
     # ===========================================
     # Parse flrtvc report
     # ===========================================
-    logging.debug('*** PARSE ***')
+    module.debug('*** PARSE ***')
     run_parser(results['meta']['0.report'])
 
     # ===========================================
     # Download and check efixes
     # ===========================================
-    logging.debug('*** DOWNLOAD ***')
+    module.debug('*** DOWNLOAD ***')
     run_downloader(results['meta']['1.parse'], flrtvc_params['dst_path'], resize_fs)
 
     if download_only:
@@ -1267,7 +1257,7 @@ def main():
     # ===========================================
     # Install efixes
     # ===========================================
-    logging.debug('*** UPDATE ***')
+    module.debug('*** UPDATE ***')
     if not run_installer(results['meta']['4.2.check'], flrtvc_params['dst_path'], resize_fs):
         msg = 'Failed to install fixes, please check meta and log data.'
         results['msg'] = msg
@@ -1279,7 +1269,7 @@ def main():
         shutil.rmtree(workdir, ignore_errors=True)
 
     results['msg'] = 'FLRTVC completed successfully'
-    logging.info(results['msg'])
+    module.log(results['msg'])
     module.exit_json(**results)
 
 

@@ -99,11 +99,6 @@ options:
     - Specifies additional parameters.
     type: dict
     suboptions:
-      log_file:
-        description:
-        - Specifies path to log file.
-        type: str
-        default: /tmp/ansible_upgradeios_debug.log
   vios_status:
     description:
     - Specifies the result of a previous operation.
@@ -147,7 +142,6 @@ status:
 import os
 import re
 import subprocess
-import logging
 import time
 import threading
 
@@ -202,7 +196,7 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     th_id = threading.current_thread().ident
     stderr_file = '/tmp/ansible_upgradeios_cmd_stderr_{}'.format(th_id)
 
-    logging.debug('exec command:{}'.format(cmd))
+    module.debug('exec command:{}'.format(cmd))
     if debug_data is True:
         DEBUG_DATA.append('exec command:{}'.format(cmd))
     try:
@@ -242,8 +236,8 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     if debug_data is True:
         DEBUG_DATA.append('exec command rc:{}, output:{} errout:{}'
                           .format(ret, output, errout))
-        logging.debug('exec command rc:{}, output:{} errout:{}'
-                      .format(ret, output, errout))
+        module.debug('exec command rc:{}, output:{} errout:{}'
+                     .format(ret, output, errout))
 
     if ret != 0 and exit_on_error is True:
         msg = 'Command: {} RetCode:{} ... stdout:{} stderr:{}'\
@@ -276,7 +270,7 @@ def get_nim_clients_info(module, lpar_type):
     (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
     if ret != 0:
         msg = 'Cannot list NIM {} objects: {}'.format(lpar_type, std_err)
-        logging.error(msg)
+        module.log(msg)
         module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
                          debug_output=DEBUG_DATA, status=module.status)
 
@@ -307,8 +301,8 @@ def get_nim_clients_info(module, lpar_type):
             #         info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
             #         info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             #     else:
-            #         logging.warn('VIOS {} management profile has not 3 elements: {}'
-            #                      .format(obj_key, match_mgmtprof.group(1)))
+            #         module.warn('VIOS {} management profile has not 3 elements: {}'
+            #                     .format(obj_key, match_mgmtprof.group(1)))
             #     continue
 
             # Get VIOS interface info in case we need c_rsh
@@ -317,7 +311,7 @@ def get_nim_clients_info(module, lpar_type):
                 info_hash[obj_key]['vios_ip'] = match_if.group(1)
                 continue
 
-    logging.debug('get_nim_clients_info return: {}'.format(info_hash))
+    module.debug('get_nim_clients_info return: {}'.format(info_hash))
     return info_hash
 
 
@@ -332,7 +326,7 @@ def check_vios_targets(module, targets):
     return:
         the list of the existing vios tuple matching the target list
     """
-    logging.debug('ENTER check_vios_targets targets: {}'.format(targets))
+    module.debug('ENTER check_vios_targets targets: {}'.format(targets))
     vios_list = {}
     vios_list_tuples_res = []
     vios_list_tuples = targets.replace(" ", "").replace("),(", ")(").split('(')
@@ -341,7 +335,7 @@ def check_vios_targets(module, targets):
     # Build targets list
     # ===========================================
     for vios_tuple in vios_list_tuples[1:]:
-        logging.debug('Checking vios_tuple: {}'.format(vios_tuple))
+        module.debug('Checking vios_tuple: {}'.format(vios_tuple))
 
         tuple_elts = list(vios_tuple[:-1].split(','))
         tuple_len = len(tuple_elts)
@@ -349,8 +343,8 @@ def check_vios_targets(module, targets):
         if tuple_len != 1 and tuple_len != 2:
             OUTPUT.append('Malformed VIOS targets {}. Tuple {} should be a 1 or 2 elements.'
                           .format(targets, tuple_elts))
-            logging.error('Malformed VIOS targets {}. Tuple {} should be a 1 or 2 elements.'
-                          .format(targets, tuple_elts))
+            module.log('Malformed VIOS targets {}. Tuple {} should be a 1 or 2 elements.'
+                       .format(targets, tuple_elts))
             return None
 
         # check vios not already exists in the target list
@@ -358,8 +352,8 @@ def check_vios_targets(module, targets):
                                                               or tuple_elts[0] == tuple_elts[1])):
             OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
                           .format(targets))
-            logging.error('Malformed VIOS targets {}. Duplicated VIOS'
-                          .format(targets))
+            module.log('Malformed VIOS targets {}. Duplicated VIOS'
+                       .format(targets))
             return None
 
         # check vios is knowed by the NIM master - if not ignore it
@@ -367,13 +361,13 @@ def check_vios_targets(module, targets):
             msg = 'VIOS {} is not client of the NIM master, will be ignored'\
                   .format(tuple_elts[0])
             OUTPUT.append(msg)
-            logging.warn(msg)
+            module.warn(msg)
             continue
         if tuple_len == 2 and tuple_elts[1] not in module.nim_node['nim_vios']:
             msg = 'VIOS {} is not client of the NIM master, will be ignored'\
                   .format(tuple_elts[1])
             OUTPUT.append(msg)
-            logging.warn(msg)
+            module.warn(msg)
             continue
 
         # check vios connectivity
@@ -386,7 +380,7 @@ def check_vios_targets(module, targets):
                 res = 1
                 msg = 'skipping {}: cannot reach {} with c_rsh: {}, {}, {}'\
                       .format(vios_tuple, elem, res, std_out, std_err)
-                logging.info(msg)
+                module.log(msg)
                 continue
         if res != 0:
             continue
@@ -425,7 +419,7 @@ def nim_set_infofile(module):
 
     if 'email' in module.params and module.params['email']:
         if not re.match(r"^\s*\s+@\s+$", module.params['email']):
-            logging.error('Check the email address is valid: "{}"'.format(module.params['email']))
+            module.log('Check the email address is valid: "{}"'.format(module.params['email']))
             OUTPUT.append('Check the email address is valid: "{}"'.format(module.params['email']))
             return 1
 
@@ -437,17 +431,17 @@ def nim_set_infofile(module):
                     msg = 'Existing email "{}" found in "{}", skip this setting'\
                           .format(match_key.group(1), file_path)
                     if match_key.group(1) != module.params['email']:
-                        logging.warn(msg)
+                        module.warn(msg)
                         OUTPUT.append(msg)
                     else:
-                        logging.info(msg)
+                        module.log(msg)
                     break
             else:  # NIM_MASTER_UID not found
                 niminfo_file.write('export NIM_MASTER_UID="root,{}"'
                                    .format(module.params['email']))
         except IOError as e:
             msg = 'Failed to parse file {}: {}.'.format(e.filename, e.strerror)
-            logging.error(msg)
+            module.log(msg)
             module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
                              debug_output=DEBUG_DATA, status=module.status)
     return 0
@@ -481,14 +475,14 @@ def nim_backup(module):
 
     vios_key = []
     for target_tuple in module.targets:
-        logging.debug('Backup for target_tuple: {}'.format(target_tuple))
+        module.debug('Backup for target_tuple: {}'.format(target_tuple))
 
         vios1 = target_tuple[0]
         if len(target_tuple) == 2:
             vios_key = '{}-{}'.format(target_tuple[0], target_tuple[1])
         else:
             vios_key = vios1
-        logging.debug('vios_key: {}'.format(vios_key))
+        module.debug('vios_key: {}'.format(vios_key))
 
         # Check previous status if known
         if module.params['vios_status'] is not None:
@@ -496,16 +490,16 @@ def nim_backup(module):
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 OUTPUT.append('    {} vioses skipped (no previous status found)'
                               .format(vios_key))
-                logging.warn('{} vioses skipped (no previous status found)'
-                             .format(vios_key))
+                module.warn('{} vioses skipped (no previous status found)'
+                            .format(vios_key))
                 continue
 
             elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {} vioses skipped (vios_status: {})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
-                logging.warn('{} vioses skipped (vios_status: {})'
-                             .format(vios_key, module.params['vios_status'][vios_key]))
+                module.warn('{} vioses skipped (vios_status: {})'
+                            .format(vios_key, module.params['vios_status'][vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -513,7 +507,7 @@ def nim_backup(module):
             time_limit_str = time.strftime('%m/%d/%Y %H:%M', module.time_limit)
             msg = 'Time limit {} reached, no further operation'\
                   .format(time_limit_str)
-            logging.info(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             return 0
 
@@ -528,7 +522,7 @@ def nim_backup(module):
             else:
                 backup_info['name'] = 'ios_backup_{}'.format(vios)
                 msg = 'backup_prefix is missing, using default:"{}"'.format(backup_info['name'])
-                logging.info(msg)
+                module.log(msg)
                 OUTPUT.append('    ' + msg)
             if module.params['location']:
                 backup_info['location'] = module.params['location']
@@ -562,8 +556,8 @@ def nim_backup(module):
             (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
 
             if ret != 0:
-                logging.error('NIM Command: {} failed {} {} {}'
-                              .format(cmd, ret, std_out, std_err))
+                module.log('NIM Command: {} failed {} {} {}'
+                           .format(cmd, ret, std_out, std_err))
                 OUTPUT.append('    Failed to backup VIOS {} with NIM: {}'
                               .format(vios, std_err))
                 # set the error label to be used in sub routines
@@ -576,7 +570,7 @@ def nim_backup(module):
             else:
                 module.nim_node['nim_vios'][vios]['backup'] = backup_info.copy()
                 msg = 'VIOS {} successfully backed up'.format(vios)
-                logging.info(msg)
+                module.log(msg)
                 OUTPUT.append('    ' + msg)
                 # CHANGED = True
 
@@ -614,7 +608,7 @@ def nim_viosbr(module):
     else:
         # Should not happen
         msg = 'Unknown action "{}" in nim_viosbr'.format(module.params['action'])
-        logging.error(msg)
+        module.log(msg)
         module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
                          debug_output=DEBUG_DATA, status=module.status)
 
@@ -627,14 +621,14 @@ def nim_viosbr(module):
 
     vios_key = []
     for target_tuple in module.targets:
-        logging.debug('nim_backup for target_tuple: {}'.format(target_tuple))
+        module.debug('nim_backup for target_tuple: {}'.format(target_tuple))
 
         vios1 = target_tuple[0]
         if len(target_tuple) == 2:
             vios_key = '{}-{}'.format(target_tuple[0], target_tuple[1])
         else:
             vios_key = vios1
-        logging.debug('vios_key: {}'.format(vios_key))
+        module.debug('vios_key: {}'.format(vios_key))
 
         # Check previous status if known
         if module.params['vios_status'] is not None:
@@ -642,16 +636,16 @@ def nim_viosbr(module):
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 OUTPUT.append('    {} vioses skipped (no previous status found)'
                               .format(vios_key))
-                logging.warn('{} vioses skipped (no previous status found)'
-                             .format(vios_key))
+                module.warn('{} vioses skipped (no previous status found)'
+                            .format(vios_key))
                 continue
 
             elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {} vioses skipped (vios_status: {})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
-                logging.warn('{} vioses skipped (vios_status: {})'
-                             .format(vios_key, module.params['vios_status'][vios_key]))
+                module.warn('{} vioses skipped (vios_status: {})'
+                            .format(vios_key, module.params['vios_status'][vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -659,7 +653,7 @@ def nim_viosbr(module):
             time_limit_str = time.strftime('%m/%d/%Y %H:%M', module.time_limit)
             msg = 'Time limit {} reached, no further operation'\
                   .format(time_limit_str)
-            logging.info(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             return 0
 
@@ -676,7 +670,7 @@ def nim_viosbr(module):
             else:
                 backup_name = 'ios_backup_{}'.format(vios)
                 msg = 'backup_prefix is missing, using default:"{}"'.format(backup_name)
-                logging.info(msg)
+                module.log(msg)
                 OUTPUT.append('    ' + msg)
                 # TODO: VRO 'view_backup' we could also look into the NIM resource
                 #           type=ios_backup and source_image=<vios>
@@ -699,8 +693,8 @@ def nim_viosbr(module):
             (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
 
             if ret != 0:
-                logging.error('NIM Command: {} failed {} {} {}'
-                              .format(cmd, ret, std_out, std_err))
+                module.log('NIM Command: {} failed {} {} {}'
+                           .format(cmd, ret, std_out, std_err))
                 OUTPUT.append('    Failed to {} for VIOS {} with NIM: {}'
                               .format(module.params['action'], vios, std_err))
                 if vios != vios1:
@@ -712,15 +706,15 @@ def nim_viosbr(module):
             else:
                 if module.params['action'] == 'view_backup':
                     msg = 'VIOS {} backup info:'.format(vios)
-                    logging.info(msg)
-                    logging.info(std_out)
+                    module.log(msg)
+                    module.log(std_out)
                     OUTPUT.append('    ' + msg)
                     OUTPUT.append(map(lambda x: '      ' + str(x), std_out.split('\n')))
                     # CHANGED = True
                 elif module.params['action'] == 'restore_backup'\
                         or module.params['action'] == 'all':
                     msg = 'VIOS {} backup successfully restored'.format(vios)
-                    logging.info(msg)
+                    module.log(msg)
                     OUTPUT.append('    ' + msg)
                     CHANGED = True
 
@@ -745,9 +739,9 @@ class MigviosThread(threading.Thread):
         threading.Thread.__init__(self, name='MigviosThread({})'.format(vios_key))
 
     def run(self):
-        logging.debug('Strating {}'.format(self.getName()))
+        self._module.debug('Strating {}'.format(self.getName()))
         nim_migvios_tuple(self._module, self._target_tuple, self._stop_event)
-        logging.debug('End of {}'.format(self.getName()))
+        self._module.debug('End of {}'.format(self.getName()))
 
     def join(self, timeout=None):
         while self.isAlive():
@@ -756,8 +750,8 @@ class MigviosThread(threading.Thread):
                 break
             time.sleep(60)
         self._stop_event.set()
-        logging.debug('Asking {} to terminate, waiting for timeout={}'
-                      .format(self.getName(), timeout))
+        self._module.debug('Asking {} to terminate, waiting for timeout={}'
+                           .format(self.getName(), timeout))
         threading.Thread.join(self, timeout)
 
 
@@ -778,11 +772,11 @@ def nim_migvios_all(module):
 
     for target_tuple in module.targets:
         # TODO: VRO test and activate multi threading
-        logging.debug('Start nim_migvios_tuple for {}'.format(target_tuple))
+        module.debug('Start nim_migvios_tuple for {}'.format(target_tuple))
         nim_migvios_tuple(module, target_tuple, None)
-        logging.debug('End nim_migvios_tuple for {}'.format(target_tuple))
+        module.debug('End nim_migvios_tuple for {}'.format(target_tuple))
     #     # Spawn a thread running nim_migvios_tuple(module, target_tuple, time_limit)
-    #     logging.debug('Spawning MigviosThread for {} terminated'.format(target_tuple))
+    #     module.debug('Spawning MigviosThread for {} terminated'.format(target_tuple))
 
     #     th = MigviosThread(module=module,
     #                        target_tuple=target_tuple,
@@ -791,16 +785,16 @@ def nim_migvios_all(module):
     #     th.start()
 
     # for th in threads:
-    #     logging.debug('Waiting for {} termination...'.format(th.getName()))
+    #     module.debug('Waiting for {} termination...'.format(th.getName()))
     #     # No timeout in this join() as
     #     # - the user can set a time_limit
     #     # - there is a timeout when NIM states show no progress
     #     th.join()
-    #     logging.debug('{} terminated'.format(th.getName()))
+    #     module.debug('{} terminated'.format(th.getName()))
 
     # for th in threads:
     #     if th.isAlive():
-    #         logging.warn('{} is still alive'.format(th.getName()))
+    #         module.warn('{} is still alive'.format(th.getName()))
 
     return 0
 
@@ -837,19 +831,19 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
     else:
         vios_key = vios1
 
-    logging.info('nim_migvios {} for target_tuple: {}'
-                 .format(module.params['action'], target_tuple))
+    module.log('nim_migvios {} for target_tuple: {}'
+               .format(module.params['action'], target_tuple))
 
     for vios in target_tuple:
-        logging.info('nim_migvios {} for VIOS {}'
-                     .format(module.params['action'], vios))
+        module.log('nim_migvios {} for VIOS {}'
+                   .format(module.params['action'], vios))
 
         # Check previous status if known
         if module.params['vios_status'] is not None:
             if vios_key not in module.params['vios_status']:
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 msg = '{} vioses skipped (no previous status found)'.format(vios_key)
-                logging.warn(msg)
+                module.warn(msg)
                 OUTPUT.append('    ' + msg)
                 continue
 
@@ -857,7 +851,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 msg = '{} vioses skipped (vios_status: {})'\
                       .format(vios_key, module.params['vios_status'][vios_key])
-                logging.warn(msg)
+                module.warn(msg)
                 OUTPUT.append('    ' + msg)
                 continue
 
@@ -865,7 +859,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
         if stop_event and stop_event.isSet():
             msg = 'Time limit {} reached, no further operation'\
                   .format(time.strftime('%m/%d/%Y %H:%M', module.time_limit))
-            logging.info(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             return -1
 
@@ -886,7 +880,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
         if stop_event and stop_event.isSet():
             msg = 'Time limit {} reached, no further operation'\
                   .format(time.strftime('%m/%d/%Y %H:%M', module.time_limit))
-            logging.info(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             return -1
 
@@ -949,7 +943,7 @@ def nim_migvios(module, vios):
     else:
         backup_name = 'ios_backup_{}'.format(vios)
         msg = 'backup_prefix is missing, using default:"{}"'.format(backup_name)
-        logging.info(msg)
+        module.log(msg)
         OUTPUT.append('    ' + msg)
 
     # nim -o migvios
@@ -985,7 +979,7 @@ def nim_migvios(module, vios):
     #     module.nim_node['nim_vios'][vios]['backup'] = {}
     #     module.nim_node['nim_vios'][vios]['backup']['name'] = backup_name
     # msg = 'VIOS {} upgrade successfully initiated'.format(vios)
-    # logging.info(msg)
+    # module.log(msg)
     # OUTPUT.append('    ' + msg)
     # CHANGED = True
     # return ret
@@ -994,8 +988,8 @@ def nim_migvios(module, vios):
     (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
 
     if ret != 0:
-        logging.error('NIM Command: {} failed {} {}'
-                      .format(cmd, ret, std_out, std_err))
+        module.log('NIM Command: {} failed {} {}'
+                   .format(cmd, ret, std_out, std_err))
         OUTPUT.append('    Failed to initiate the upgrade of VIOS {} with NIM: {}'
                       .format(vios, std_err))
     else:
@@ -1005,7 +999,7 @@ def nim_migvios(module, vios):
             module.nim_node['nim_vios'][vios]['backup'] = {}
             module.nim_node['nim_vios'][vios]['backup']['name'] = backup_name
         msg = 'VIOS {} upgrade successfully initiated'.format(vios)
-        logging.info(msg)
+        module.log(msg)
         OUTPUT.append('    ' + msg)
         CHANGED = True
 
@@ -1031,8 +1025,8 @@ def nim_wait_migvios(module, vios):
     global OUTPUT
     global DEBUG_DATA
 
-    logging.info('Waiting completion of migvios on {}...'
-                 .format(vios))
+    module.log('Waiting completion of migvios on {}...'
+               .format(vios))
 
     cmd = 'LC_ALL=C lsnim -a info -a Cstate -a Cstate_result'\
           ' -a Mstate -a prev_state {}'.format(vios)
@@ -1055,7 +1049,7 @@ def nim_wait_migvios(module, vios):
         # if time_limit is not None and time.localtime(time.time()) >= time_limit:
         #     msg = 'Time limit {} reached, no further operation'\
         #           .format(time_limit_str)
-        #     logging.info(msg)
+        #     module.log(msg)
         #     OUTPUT.append('    ' + msg)
         #     return -1
 
@@ -1063,7 +1057,7 @@ def nim_wait_migvios(module, vios):
         if ret != 0:
             msg = 'Failed to get the NIM state for {}: {} {}'\
                   .format(vios, std_out, std_err)
-            logging.error(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             return 2
 
@@ -1087,8 +1081,8 @@ def nim_wait_migvios(module, vios):
 
         if len(curr_states) <= 0:
             msg = 'Failed to retrieve NIM states for {} from lsnim output'.format(vios)
-            logging.error(msg)
-            logging.info('cmd {} stdout: \n{}'.format(' '.join(cmd), std_out))
+            module.log(msg)
+            module.log('cmd {} stdout: \n{}'.format(' '.join(cmd), std_out))
             OUTPUT.append('    ' + msg)
             return 2
         elif curr_states == prev_states:
@@ -1096,18 +1090,18 @@ def nim_wait_migvios(module, vios):
                 # log only every 5 minutes
                 msg = 'VIOS {}, waiting migvios completion... {} minute(s)'\
                       .format(vios, wait_time / 60)
-                logging.info(msg)
+                module.log(msg)
             continue
 
         # NIM states have changed
         wait_time = _TIMEOUT_NIMSTATE
-        logging.debug('VIOS {}, NIM states: \n{}'.format(std_out))
+        module.debug('VIOS {}, NIM states: \n{}'.format(std_out))
 
 # TODO: VRO can we have Cstate_result != 'success' and the migvios is not finished? should we wait?
         if curr_states['Cstate_result'] != 'success':
             msg = 'VIOS {} migration failed, NIM states:'.format(vios)
-            logging.error(msg)
-            logging.error(curr_states)
+            module.log(msg)
+            module.log(curr_states)
             OUTPUT.append('    ' + msg)
             OUTPUT.append(map(lambda x: '      ' + str(x), std_out.split('\n')))
             return 1
@@ -1119,14 +1113,14 @@ def nim_wait_migvios(module, vios):
             continue
         else:
             msg = 'VIOS {} successfully upgraded'.format(vios)
-            logging.info(msg)
+            module.log(msg)
             OUTPUT.append('    ' + msg)
             CHANGED = True
             return 0
 
     msg = 'VIOS {} upgrade shown no progress for {} hours, NIM state:'\
           .format(vios, _TIMEOUT_NIMSTATE % 3600)
-    logging.error(msg)
+    module.log(msg)
     OUTPUT.append('    ' + msg)
     OUTPUT.append(map(lambda x: '      ' + str(x), std_out.split('\n')))
     return -1
@@ -1220,45 +1214,37 @@ def main():
             MODULE.fail_json(msg=msg)
 
     # Handle playbook variables
-    LOGNAME = '/tmp/ansible_upgradeios_debug.log'
     if MODULE.params['vars']:
         VARS = MODULE.params['vars']
-    if VARS is not None and 'log_file' not in VARS:
-        VARS['log_file'] = LOGNAME
 
-    # Open log file
-    OUTPUT.append('Log file: {}'.format(VARS['log_file']))
-    LOGFRMT = '[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s'
-    logging.basicConfig(filename='{}'.format(VARS['log_file']), format=LOGFRMT, level=logging.DEBUG)
-
-    logging.debug('*** START NIM UPGRADE VIOS OPERATION ***')
+    MODULE.debug('*** START NIM UPGRADE VIOS OPERATION ***')
 
     OUTPUT.append('Upgradeios operation for {}'.format(MODULE.params['targets']))
-    logging.info('Action {} for {} targets'
-                 .format(MODULE.params['action'], MODULE.params['targets']))
+    MODULE.log('Action {} for {} targets'
+               .format(MODULE.params['action'], MODULE.params['targets']))
 
     # =========================================================================
     # build NIM node info (if needed)
     # =========================================================================
     if MODULE.params['nim_node']:
         MODULE.nim_node = MODULE.params['nim_node']
-        logging.info('VRO Using previous nim_node: {}'
-                     .format(MODULE.nim_node))
+        MODULE.log('VRO Using previous nim_node: {}'
+                   .format(MODULE.nim_node))
 
     if 'nim_vios' not in MODULE.nim_node:
         MODULE.nim_node['nim_vios'] = get_nim_clients_info(MODULE, 'vios')
-    logging.debug('NIM VIOS: {}'.format(MODULE.nim_node['nim_vios']))
+    MODULE.debug('NIM VIOS: {}'.format(MODULE.nim_node['nim_vios']))
 
     ret = check_vios_targets(MODULE, MODULE.params['targets'])
     if not ret:
         msg = 'Empty target list'
         OUTPUT.append(msg)
-        logging.warn(msg + ': {}'.format(MODULE.params['targets']))
+        MODULE.warn(msg + ': {}'.format(MODULE.params['targets']))
 
     else:
         MODULE.targets = ret
         OUTPUT.append('Targets list:{}'.format(MODULE.targets))
-        logging.debug('Target list: {}'.format(MODULE.targets))
+        MODULE.debug('Target list: {}'.format(MODULE.targets))
 
         nim_set_infofile(MODULE)
 
@@ -1279,14 +1265,14 @@ def main():
         msg = 'NIM upgradeios {} operation status:'.format(MODULE.params['action'])
         if MODULE.status:
             OUTPUT.append(msg)
-            logging.info(msg)
+            MODULE.log(msg)
             for vios_key in MODULE.status:
                 OUTPUT.append('    {} : {}'.format(vios_key, MODULE.status[vios_key]))
-                logging.info('    {} : {}'.format(vios_key, MODULE.status[vios_key]))
+                MODULE.log('    {} : {}'.format(vios_key, MODULE.status[vios_key]))
                 if not re.match(r"^SUCCESS", MODULE.status[vios_key]):
                     nb_error += 1
         else:
-            logging.error(msg + ' MODULE.status table is empty')
+            MODULE.log(msg + ' MODULE.status table is empty')
             OUTPUT.append(msg + ' Error getting the status')
             MODULE.status = MODULE.params['vios_status']  # can be None
 
@@ -1295,12 +1281,12 @@ def main():
             msg = 'NIM upgradeios {} operation succeeded'\
                   .format(MODULE.params['action'])
             OUTPUT.append(msg)
-            logging.info(msg)
+            MODULE.log(msg)
         else:
             msg = 'NIM upgradeios {} operation failed: {} errors'\
                   .format(MODULE.params['action'], nb_error)
             OUTPUT.append(msg)
-            logging.error(msg)
+            MODULE.log(msg)
 
     # =========================================================================
     # Exit

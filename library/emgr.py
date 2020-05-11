@@ -17,7 +17,6 @@ short_description: The interim fix manager installs and manages system interim f
 description:
 - The interim fix manager installs packages created with the epkg command and maintains a database containing interim fix information.
 - It can perform the following operations install, commit, check, mount, unmount, remove, list interim fix and view package locks.
-- It uses its own log file, /var/adm/ras/emgr.log.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3

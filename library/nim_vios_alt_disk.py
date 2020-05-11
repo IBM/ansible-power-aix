@@ -47,12 +47,6 @@ options:
     description:
     - Specifies additional parameters.
     type: dict
-    suboptions:
-      log_file:
-        description:
-        - Specifies path to log file.
-        type: str
-        default: /tmp/ansible_vios_alt_disk_debug.log
   vios_status:
     description:
     - Specifies the result of a previous operation.
@@ -120,7 +114,6 @@ import re
 import threading
 import subprocess
 import time
-import logging
 import string
 
 # Ansible module 'boilerplate'
@@ -165,7 +158,7 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     th_id = threading.current_thread().ident
     stderr_file = '/tmp/ansible_vios_alt_disk_cmd_stderr_{}'.format(th_id)
 
-    logging.debug('exec command:{}'.format(cmd))
+    module.debug('exec command:{}'.format(cmd))
     if debug_data is True:
         DEBUG_DATA.append('exec command:{}'.format(cmd))
     try:
@@ -209,7 +202,7 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
           .format(ret, output, errout)
     if debug_data is True:
         DEBUG_DATA.append(msg)
-    logging.debug(msg)
+    module.debug(msg)
 
     return (ret, output, errout)
 
@@ -231,8 +224,8 @@ def get_hmc_info(module):
     if ret != 0:
         OUTPUT.append('Failed to get NIM HMC info: {}'
                       .format(std_err))
-        logging.error('Failed to get NIM HMC info: {}'
-                      .format(std_err))
+        module.log('Failed to get NIM HMC info: {}'
+                   .format(std_err))
         return info_hash
 
     obj_key = ''
@@ -286,8 +279,8 @@ def get_nim_clients_info(module, lpar_type):
     if ret != 0:
         OUTPUT.append('Failed to get NIM partions info: {}'
                       .format(std_err))
-        logging.error('Failed to get NIM partions info: {}'
-                      .format(std_err))
+        module.log('Failed to get NIM partions info: {}'
+                   .format(std_err))
         return info_hash
 
     # lpar name and associated Cstate
@@ -316,8 +309,8 @@ def get_nim_clients_info(module, lpar_type):
                     info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
                     info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
                 else:
-                    logging.warning('WARNING: VIOS {} management profile has not 3 elements: {}'
-                                    .format(obj_key, match_mgmtprof.group(1)))
+                    module.warn('WARNING: VIOS {} management profile has not 3 elements: {}'
+                                .format(obj_key, match_mgmtprof.group(1)))
                 continue
 
             match_if = re.match(r"^\s+if1\s+=\s+\S+\s+(\S+)\s+.*$", line)
@@ -348,7 +341,7 @@ def build_nim_node(module):
     nim_hmc = get_hmc_info(module)
 
     NIM_NODE['nim_hmc'] = nim_hmc
-    logging.debug('NIM HMC: {}'.format(nim_hmc))
+    module.debug('NIM HMC: {}'.format(nim_hmc))
 
     # =========================================================================
     # Build vios info list
@@ -357,7 +350,7 @@ def build_nim_node(module):
     nim_vios = get_nim_clients_info(module, 'vios')
 
     NIM_NODE['nim_vios'] = nim_vios
-    logging.debug('NIM VIOS: {}'.format(nim_vios))
+    module.debug('NIM VIOS: {}'.format(nim_vios))
 
 
 def check_vios_targets(module, targets):
@@ -386,7 +379,7 @@ def check_vios_targets(module, targets):
     # Build targets list
     # ===========================================
     for vios_tuple in vios_list_tuples[1:]:
-        logging.debug('Checking vios_tuple: {}'.format(vios_tuple))
+        module.debug('Checking vios_tuple: {}'.format(vios_tuple))
 
         tuple_elts = list(vios_tuple[:-1].split(','))
         tuple_len = len(tuple_elts)
@@ -394,8 +387,8 @@ def check_vios_targets(module, targets):
         if tuple_len != 2 and tuple_len != 4:
             OUTPUT.append('Malformed VIOS targets {}. Tuple {} should be a 2 or 4 elements.'
                           .format(targets, tuple_elts))
-            logging.error('Malformed VIOS targets {}. Tuple {} should be a 2 or 4 elements.'
-                          .format(targets, tuple_elts))
+            module.log('Malformed VIOS targets {}. Tuple {} should be a 2 or 4 elements.'
+                       .format(targets, tuple_elts))
             return None
 
         # check vios not already exists in the target list
@@ -403,16 +396,16 @@ def check_vios_targets(module, targets):
                                                               or tuple_elts[0] == tuple_elts[2])):
             OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
                           .format(targets))
-            logging.error('Malformed VIOS targets {}. Duplicated VIOS'
-                          .format(targets))
+            module.log('Malformed VIOS targets {}. Duplicated VIOS'
+                       .format(targets))
             return None
 
         # check vios is known by the NIM master - if not ignore it
         # because it can concern an other ansible host (nim master)
         if tuple_elts[0] not in NIM_NODE['nim_vios'] or (tuple_len == 4
                                                          and tuple_elts[2] not in NIM_NODE['nim_vios']):
-            logging.info('skipping {} as VIOS not known by the NIM master.'
-                         .format(vios_tuple))
+            module.log('skipping {} as VIOS not known by the NIM master.'
+                       .format(vios_tuple))
             continue
 
         # check vios connectivity
@@ -424,8 +417,8 @@ def check_vios_targets(module, targets):
                    '"/usr/bin/ls /dev/null; echo rc=$?"']
             (ret, std_out, std_err) = exec_cmd(cmd, module)
             if ret != 0:
-                logging.info('skipping {}: cannot reach {} with c_rsh: {}, {}, {}'
-                             .format(vios_tuple, elem, res, std_out, std_err))
+                module.log('skipping {}: cannot reach {} with c_rsh: {}, {}, {}'
+                           .format(vios_tuple, elem, res, std_out, std_err))
                 res = 1
             id += 2
         if res != 0:
@@ -457,7 +450,7 @@ def get_pvs(module, vios):
     global NIM_NODE
     global OUTPUT
 
-    logging.debug('vios: {}'.format(vios))
+    module.debug('vios: {}'.format(vios))
 
     pvs = {}
 
@@ -468,8 +461,8 @@ def get_pvs(module, vios):
     if ret != 0:
         OUTPUT.append('    Failed to get the PV list on {}, lspv returns: {}'
                       .format(vios, std_err))
-        logging.error('Failed to get the PV list on {}, lspv returns: {} {}'
-                      .format(vios, ret, std_err))
+        module.log('Failed to get the PV list on {}, lspv returns: {} {}'
+                   .format(vios, ret, std_err))
         return None
 
     # NAME             PVID                                 VG               STATUS
@@ -483,9 +476,9 @@ def get_pvs(module, vios):
             pvs[match_key.group(1)]['vg'] = match_key.group(3)
             pvs[match_key.group(1)]['status'] = match_key.group(4)
 
-    logging.debug('List of PVs:')
+    module.debug('List of PVs:')
     for key in pvs.keys():
-        logging.debug('    pvs[{}]: {}'.format(key, pvs[key]))
+        module.debug('    pvs[{}]: {}'.format(key, pvs[key]))
 
     return pvs
 
@@ -499,7 +492,7 @@ def get_free_pvs(module, vios):
     global NIM_NODE
     global OUTPUT
 
-    logging.debug('vios: {}'.format(vios))
+    module.debug('vios: {}'.format(vios))
 
     free_pvs = {}
 
@@ -511,8 +504,8 @@ def get_free_pvs(module, vios):
     if ret != 0:
         OUTPUT.append('    Failed to get the list of free PV on {}: {}'
                       .format(vios, std_err))
-        logging.error('Failed to get the list of free PVs on {}, lspv returns: {} {}'
-                      .format(vios, ret, std_err))
+        module.log('Failed to get the list of free PVs on {}, lspv returns: {} {}'
+                   .format(vios, ret, std_err))
         return None
 
     # NAME            PVID                                SIZE(megabytes)
@@ -525,9 +518,9 @@ def get_free_pvs(module, vios):
             free_pvs[match_key.group(1)]['pvid'] = match_key.group(2)
             free_pvs[match_key.group(1)]['size'] = int(match_key.group(3))
 
-    logging.debug('List of available PVs:')
+    module.debug('List of available PVs:')
     for key in free_pvs.keys():
-        logging.debug('    free_pvs[{}]: {}'.format(key, free_pvs[key]))
+        module.debug('    free_pvs[{}]: {}'.format(key, free_pvs[key]))
 
     return free_pvs
 
@@ -543,7 +536,7 @@ def get_vg_size(module, vios, vg_name, used_lp):
     global NIM_NODE
     global OUTPUT
 
-    logging.debug('vios: {}'.format(vios))
+    module.debug('vios: {}'.format(vios))
 
     vg_size = -1
     vg_used = -1
@@ -556,8 +549,8 @@ def get_vg_size(module, vios, vg_name, used_lp):
     if ret != 0:
         OUTPUT.append('    Failed to get the {} VG size on {}, lsvg returns: {}'
                       .format(vg_name, vios, std_err))
-        logging.error('Failed to get the {} VG size on {}, lsvg returns: {} {}'
-                      .format(vg_name, vios, ret, std_err))
+        module.log('Failed to get the {} VG size on {}, lsvg returns: {} {}'
+                   .format(vg_name, vios, ret, std_err))
         return -1, -1
 
     # parse lsvg outpout to get the size in megabytes:
@@ -583,8 +576,8 @@ def get_vg_size(module, vios, vg_name, used_lp):
     if vg_size == -1 or vg_used == -1:
         OUTPUT.append('    Failed to get the {} VG size and the USED size on {}, parsing error'
                       .format(vg_name, vios))
-        logging.error('Failed to get the {} VG size and the USED size on {}, parsing error'
-                      .format(vg_name, vios))
+        module.log('Failed to get the {} VG size and the USED size on {}, parsing error'
+                   .format(vg_name, vios))
         return -1, -1
 
     return vg_size, vg_used
@@ -615,8 +608,8 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
     used_pv = []
 
     for vios in vios_dict:
-        logging.debug('action: {}, vios: {}, vios_dict[{}]: {}, vios_key: {}'
-                      .format(action, vios, vios, vios_dict[vios], vios_key))
+        module.debug('action: {}, vios: {}, vios_dict[{}]: {}, vios_key: {}'
+                     .format(action, vios, vios, vios_dict[vios], vios_key))
 
         OUTPUT.append('    Check the alternate disk {} on {}'.format(vios_dict[vios], vios))
 
@@ -640,8 +633,8 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                                            .format(err_label, vios)
                 OUTPUT.append('    Failed to remove altinst_rootvg on {}: {}'
                               .format(vios, std_err))
-                logging.error('Failed to remove altinst_rootvg on {}: {}'
-                              .format(vios, std_err))
+                module.log('Failed to remove altinst_rootvg on {}: {}'
+                           .format(vios, std_err))
             else:
                 cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
                        NIM_NODE['nim_vios'][vios]['vios_ip'],
@@ -653,8 +646,8 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                                                .format(err_label, vios_dict[vios], vios)
                     OUTPUT.append('    Failed to clear altinst_rootvg from disk {} on {}: {}'
                                   .format(vios_dict[vios], vios, std_err))
-                    logging.error('Failed to clear altinst_rootvg from disk {} on {}: {}'
-                                  .format(vios_dict[vios], vios, std_err))
+                    module.log('Failed to clear altinst_rootvg from disk {} on {}: {}'
+                               .format(vios_dict[vios], vios, std_err))
                     continue
                 OUTPUT.append('    Clear altinst_rootvg from disk {}: Success'
                               .format(vios_dict[vios]))
@@ -674,8 +667,8 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                                            .format(err_label, hdisk, vios)
                 OUTPUT.append('    An alternate disk is already available on disk {} on {}'
                               .format(hdisk, vios))
-                logging.error('An alternate disk is already available on disk {} on {}'
-                              .format(hdisk, vios))
+                module.log('An alternate disk is already available on disk {} on {}'
+                           .format(hdisk, vios))
                 return 1
 
         pvs = get_free_pvs(module, vios)
@@ -761,12 +754,12 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                                                .format(err_label, vios_dict[vios], vios)
                     OUTPUT.append('    No available alternate disk with size greater than {} MB'
                                   ' found on {}'.format(rootvg_size, vios))
-                    logging.error('No available alternate disk with size greater than {} MB'
-                                  ' found on {}'.format(rootvg_size, vios))
+                    module.log('No available alternate disk with size greater than {} MB'
+                               ' found on {}'.format(rootvg_size, vios))
                     return 1
 
-            logging.debug('Selected disk on vios {} is {} (select mode: {})'
-                          .format(vios, vios_dict[vios], PARAMS['disk_size_policy']))
+            module.debug('Selected disk on vios {} is {} (select mode: {})'
+                         .format(vios, vios_dict[vios], PARAMS['disk_size_policy']))
 
         # hdisk specified by the user
         else:
@@ -777,8 +770,8 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                     altdisk_op_tab[vios_key] = "{} alternate disk {} already"\
                                                " used on the mirror VIOS"\
                                                .format(err_label, vios_dict[vios])
-                    logging.error('Alternate disk {} already used on the mirror VIOS.'
-                                  .format(vios_dict[vios]))
+                    module.log('Alternate disk {} already used on the mirror VIOS.'
+                               .format(vios_dict[vios]))
                     return 1
                 if pvs[vios_dict[vios]]['size'] >= rootvg_size:
                     if pvs[hdisk]['pvid'] != 'none':
@@ -787,22 +780,22 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                     if pvs[vios_dict[vios]]['size'] >= used_size:
                         if pvs[hdisk]['pvid'] != 'none':
                             used_pv.append(pvs[hdisk]['pvid'])
-                        logging.warn('Alternate disk {} smaller than the current rootvg.'
-                                     .format(vios_dict[vios]))
+                        module.warn('Alternate disk {} smaller than the current rootvg.'
+                                    .format(vios_dict[vios]))
                     else:
                         altdisk_op_tab[vios_key] = "{} alternate disk {} too small on {}"\
                                                    .format(err_label, vios_dict[vios], vios)
-                        logging.error('Alternate disk {} too small ({} < {}) on {}.'
-                                      .format(vios_dict[vios], pvs[vios_dict[vios]]['size'],
-                                              rootvg_size, vios))
+                        module.log('Alternate disk {} too small ({} < {}) on {}.'
+                                   .format(vios_dict[vios], pvs[vios_dict[vios]]['size'],
+                                           rootvg_size, vios))
                         return 1
             else:
                 altdisk_op_tab[vios_key] = "{} disk {} is not available on {}"\
                                            .format(err_label, vios_dict[vios], vios)
                 OUTPUT.append('    Alternate disk {} is not available on {}'
                               .format(vios_dict[vios], vios))
-                logging.error('Alternate disk {} is either not found or not available on {}'
-                              .format(vios_dict[vios], vios))
+                module.log('Alternate disk {} is either not found or not available on {}'
+                           .format(vios_dict[vios], vios))
                 return 1
 
     # Disks found
@@ -868,15 +861,15 @@ def check_rootvg(module, vios):
     if ret != 0:
         OUTPUT.append('    Failed to check mirroring on {}, lsvg returns: {}'
                       .format(vios, std_err))
-        logging.error('Failed to check mirroring on {}, lsvg returns: {} {}'
+        module.error('Failed to check mirroring on {}, lsvg returns: {} {}'
                       .format(vios, ret, std_err))
         return vg_info
 
     if std_out.find('stale') > 0:
         OUTPUT.append('    {} rootvg contains stale partitions'
                       .format(vios))
-        logging.error('{} rootvg contains stale partitions: {}'
-                      .format(vios, std_out))
+        module.log('{} rootvg contains stale partitions: {}'
+                   .format(vios, std_out))
         return vg_info
     hdisk = ''
 
@@ -902,7 +895,7 @@ def check_rootvg(module, vios):
                 msg = "rootvg data structure is not compatible with an "\
                       "alt_disk_copy operation (2 copies on the same disk)"
                 OUTPUT.append('    ' + msg)
-                logging.error(msg)
+                module.log(msg)
                 return vg_info
         else:
             hdisk_dict[hdisk] = copy
@@ -911,7 +904,7 @@ def check_rootvg(module, vios):
             if hdisk in copy_dict.values():
                 msg = "rootvg data structure is not compatible with an alt_disk_copy operation"
                 OUTPUT.append('    ' + msg)
-                logging.error(msg)
+                module.log(msg)
                 return vg_info
             copy_dict[copy] = hdisk
 
@@ -922,7 +915,7 @@ def check_rootvg(module, vios):
                   "system from creating an alternate rootvg disk copy."\
                   .format(vios)
             OUTPUT.append('    ' + msg)
-            logging.error(msg)
+            module.log(msg)
             return vg_info
 
         # the (rootvg) is mirrored then get the size of hdisk from copy1
@@ -934,8 +927,8 @@ def check_rootvg(module, vios):
         if ret != 0:
             OUTPUT.append('    Failed to get the pvs of rootvg on {}, lsvg returns: {}'
                           .format(vios, std_err))
-            logging.error('Failed to get the pvs of rootvg on {}, lsvg returns: {} {}'
-                          .format(vios, ret, std_err))
+            module.log('Failed to get the pvs of rootvg on {}, lsvg returns: {} {}'
+                       .format(vios, ret, std_err))
             return vg_info
 
         # parse lsvg outpout to get the size in megabytes:
@@ -956,8 +949,8 @@ def check_rootvg(module, vios):
         if pv_size == -1:
             OUTPUT.append('    Failed to get pv size on {}, parsing error'
                           .format(vios))
-            logging.error('Failed to get pv size on {}, parsing error'
-                          .format(vios))
+            module.log('Failed to get pv size on {}, parsing error'
+                       .format(vios))
             return vg_info
 
     # get now the rootvg pp size
@@ -969,8 +962,8 @@ def check_rootvg(module, vios):
     if ret != 0:
         OUTPUT.append('    Failed to get rootvg VG size on {}, lsvg returns: {}'
                       .format(vios, std_err))
-        logging.error('Failed to get rootvg VG size on {}, lsvg returns: {} {}'
-                      .format(vios, ret, std_err))
+        module.log('Failed to get rootvg VG size on {}, lsvg returns: {} {}'
+                   .format(vios, ret, std_err))
         return vg_info
 
     # parse lsvg outpout to get the size in megabytes:
@@ -990,8 +983,8 @@ def check_rootvg(module, vios):
     if pp_size == -1:
         OUTPUT.append('    Failed to get rootvg pp size on {}, parsing error'
                       .format(vios))
-        logging.error('Failed to get rootvg pp size on {}, parsing error'
-                      .format(vios))
+        module.log('Failed to get rootvg pp size on {}, parsing error'
+                   .format(vios))
         return vg_info
 
     if len(copy_dict.keys()) > 1:
@@ -1024,8 +1017,8 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
     global NIM_NODE
     global OUTPUT
 
-    logging.debug('action: {}, vios: {}, vios_dict[{}]: {}, vios_key: {}'
-                  .format(action, vios, vios, vios_dict[vios], vios_key))
+    module.debug('action: {}, vios: {}, vios_dict[{}]: {}, vios_key: {}'
+                 .format(action, vios, vios, vios_dict[vios], vios_key))
 
     OUTPUT.append('    Check the alternate disk {} on {}'.format(vios_dict[vios], vios))
     pvs = {}
@@ -1044,8 +1037,8 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
                                        .format(err_label, vios_dict[vios], vios)
             OUTPUT.append('    Specified disk {} is not an alternate install rootvg on {}'
                           .format(vios_dict[vios], vios))
-            logging.error('Specified disk {} is not an alternate install rootvg on {}'
-                          .format(vios_dict[vios], vios))
+            module.log('Specified disk {} is not an alternate install rootvg on {}'
+                       .format(vios_dict[vios], vios))
             return 1
     else:
         # check there is one and only one alternate install rootvg
@@ -1057,8 +1050,8 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
                                                .format(err_label, vios)
                     OUTPUT.append('    There are several alternate install rootvg on {}: {} and {}'
                                   .format(vios, vios_dict[vios], hdisk))
-                    logging.error('There are several alternate install rootvg on {}: {} and {}'
-                                  .format(vios, vios_dict[vios], hdisk))
+                    module.log('There are several alternate install rootvg on {}: {} and {}'
+                               .format(vios, vios_dict[vios], hdisk))
                     vios_dict[vios] = ""    # reset previously set hdisk
                     return 1
                 else:
@@ -1067,7 +1060,7 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
             return 0
         else:
             OUTPUT.append('    There is no alternate install rootvg on {}'.format(vios))
-            logging.error('There is no alternate install rootvg on {}'.format(vios))
+            module.log('There is no alternate install rootvg on {}'.format(vios))
             return 1
 
 
@@ -1087,10 +1080,10 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
     """
     global OUTPUT
 
-    logging.debug('vios: {}, vios_dict[{}]: {}, vios_key: {}'
-                  .format(vios, vios, vios_dict[vios], vios_key))
-    logging.info('Waiting completion of alt_disk copy {} on {}...'
-                 .format(vios_dict[vios], vios))
+    module.debug('vios: {}, vios_dict[{}]: {}, vios_key: {}'
+                 .format(vios, vios, vios_dict[vios], vios_key))
+    module.log('Waiting completion of alt_disk copy {} on {}...'
+               .format(vios_dict[vios], vios))
     wait_time = 0
 
     # if there is no progress in nim operation "info" attribute for more than
@@ -1108,8 +1101,8 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
             altdisk_op_tab[vios_key] = "{} to get the NIM state for {}".format(err_label, vios)
             OUTPUT.append('    Failed to get the NIM state for {}, lsnim returns: {}'
                           .format(vios, std_err))
-            logging.error('Failed to get the NIM state for {}, lsnim returns: {} {}'
-                          .format(vios, ret, std_err))
+            module.log('Failed to get the NIM state for {}, lsnim returns: {} {}'
+                       .format(vios, ret, std_err))
             break
 
         # info attribute (that appears in 3rd possition) can be empty. So stdout looks like:
@@ -1129,15 +1122,15 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
             nim_result = string.lower(nim_status[3])
 
         if nim_Cstate == "ready for a NIM operation":
-            logging.info('alt_disk copy operation on {} ended with nim_result: {}'
-                         .format(vios, nim_result))
+            module.log('alt_disk copy operation on {} ended with nim_result: {}'
+                       .format(vios, nim_result))
             if nim_result != "success":
                 altdisk_op_tab[vios_key] = "{} to perform alt_disk copy on {} {}"\
                                            .format(err_label, vios, nim_info)
                 OUTPUT.append('    Failed to perform alt_disk copy on {}: {}'
                               .format(vios, nim_info))
-                logging.error('Failed to perform alt_disk copy on {}: {}'
-                              .format(vios, nim_info))
+                module.log('Failed to perform alt_disk copy on {}: {}'
+                           .format(vios, nim_info))
                 return 1
             else:
                 return 0
@@ -1149,16 +1142,16 @@ def wait_altdisk_install(module, vios, vios_dict, vios_key, altdisk_op_tab, err_
                 check_count = 0
 
         if wait_time % 60 == 0:
-            logging.info('Waiting completion of alt_disk copy {} on {}... {} minute(s)'
-                         .format(vios_dict[vios], vios, wait_time / 60))
+            module.log('Waiting completion of alt_disk copy {} on {}... {} minute(s)'
+                       .format(vios_dict[vios], vios, wait_time / 60))
 
     # timed out before the end of alt_disk_install
     altdisk_op_tab[vios_key] = "{} alternate disk copy of {} blocked on {}: NIM operation blocked"\
                                .format(err_label, vios, nim_info)
     OUTPUT.append('    Alternate disk copy of {} blocked on {}: {}'
                   .format(vios_dict[vios], vios, nim_info))
-    logging.error('Alternate disk copy of {} blocked on {}: {}'
-                  .format(vios_dict[vios], vios, nim_info))
+    module.log('Alternate disk copy of {} blocked on {}: {}'
+               .format(vios_dict[vios], vios, nim_info))
 
     return -1
 
@@ -1184,15 +1177,15 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
     global OUTPUT
     global CHANGED
 
-    logging.debug('action: {}, targets: {}, vios_status: {}'
-                  .format(action, targets, vios_status))
+    module.debug('action: {}, targets: {}, vios_status: {}'
+                 .format(action, targets, vios_status))
 
     rootvg_info = {}
     altdisk_op_tab = {}
     vios_key = []
     for target_tuple in targets:
-        logging.debug('action: {} for target_tuple: {}'
-                      .format(action, target_tuple))
+        module.debug('action: {} for target_tuple: {}'
+                     .format(action, target_tuple))
 
         vios_dict = {}
         tup_len = len(target_tuple)
@@ -1206,7 +1199,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
         else:
             vios_key = vios1
 
-        logging.debug('vios_key: {}'.format(vios_key))
+        module.debug('vios_key: {}'.format(vios_key))
 
         # if health check status is known, check the vios tuple has passed
         # the health check successfuly
@@ -1215,16 +1208,16 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                 altdisk_op_tab[vios_key] = "FAILURE-NO-PREV-STATUS"
                 OUTPUT.append("    {} vioses skiped (no previous status found)"
                               .format(vios_key))
-                logging.warn("{} vioses skiped (no previous status found)"
-                             .format(vios_key))
+                module.warn("{} vioses skiped (no previous status found)"
+                            .format(vios_key))
                 continue
 
             elif vios_status[vios_key] != 'SUCCESS-HC' and vios_status[vios_key] != 'SUCCESS-UPDT':
                 altdisk_op_tab[vios_key] = vios_status[vios_key]
                 OUTPUT.append("    {} vioses skiped ({})"
                               .format(vios_key, vios_status[vios_key]))
-                logging.warn("{} vioses skiped ({})"
-                             .format(vios_key, vios_status[vios_key]))
+                module.warn("{} vioses skiped ({})"
+                            .format(vios_key, vios_status[vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -1233,8 +1226,8 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
             time_limit_str = time.strftime("%m/%d/%Y %H:%M", time_limit)
             OUTPUT.append("    Time limit {} reached, no further operation"
                           .format(time_limit_str))
-            logging.info('Time limit {} reached, no further operation'
-                         .format(time_limit_str))
+            module.log('Time limit {} reached, no further operation'
+                       .format(time_limit_str))
             continue
 
         altdisk_op_tab[vios_key] = "SUCCESS-ALTDC"
@@ -1261,7 +1254,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                     err_label = "FAILURE-ALTDCLEAN2"
 
             OUTPUT.append('    Using {} as alternate disk on {}'.format(vios_dict[vios], vios))
-            logging.info('Using {} as alternate disk on {}'.format(vios_dict[vios], vios))
+            module.log('Using {} as alternate disk on {}'.format(vios_dict[vios], vios))
 
             if action == 'alt_disk_copy':
                 # unmirror the vg if necessary
@@ -1272,7 +1265,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
 
                 if nb_copies > 1:
                     OUTPUT.append('    Stop mirroring on {}'.format(vios))
-                    logging.warn('Stop mirror on {}'.format(vios))
+                    module.warn('Stop mirror on {}'.format(vios))
 
                     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
                            NIM_NODE['nim_vios'][vios]['vios_ip'],
@@ -1284,8 +1277,8 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                    .format(err_label, vios)
                         OUTPUT.append('    Failed to unmirror rootvg on {}: {}'
                                       .format(vios, std_err))
-                        logging.error('Failed to unmirror rootvg on {}: {}'
-                                      .format(vios, std_err))
+                        module.log('Failed to unmirror rootvg on {}: {}'
+                                   .format(vios, std_err))
                         break
                     elif std_out.find('rootvg successfully unmirrored') == -1:
                         # unmirror command Failed
@@ -1293,15 +1286,15 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                    .format(err_label, vios)
                         OUTPUT.append('    Failed to unmirror rootvg on {}: {} {}'
                                       .format(vios, std_out, std_err))
-                        logging.error('Failed to unmirror rootvg on {}: {} {}'
-                                      .format(vios, std_out, std_err))
+                        module.log('Failed to unmirror rootvg on {}: {} {}'
+                                   .format(vios, std_out, std_err))
                         break
                     else:
                         # unmirror command OK
                         OUTPUT.append('    Unmirror rootvg on {} successful'
                                       .format(vios))
-                        logging.info('Unmirror rootvg on {} successful'
-                                     .format(vios))
+                        module.info('Unmirror rootvg on {} successful'
+                                    .format(vios))
 
                 OUTPUT.append('    Alternate disk copy on {}'.format(vios))
 
@@ -1317,8 +1310,8 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                        vios_dict[vios], vios)
                     OUTPUT.append('    Failed to copy {} on {}: {}'
                                   .format(vios_dict[vios], vios, std_err))
-                    logging.error('Failed to copy {} on {}: {}'
-                                  .format(vios_dict[vios], vios, std_err))
+                    module.log('Failed to copy {} on {}: {}'
+                               .format(vios_dict[vios], vios, std_err))
                 else:
                     # wait till alt_disk_install ends
                     ret_altdc = wait_altdisk_install(module, vios, vios_dict,
@@ -1328,7 +1321,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                 # restore the mirroring if necessary
                 if nb_copies > 1:
                     OUTPUT.append('    Restore mirror on {}'.format(vios))
-                    logging.info('Restore mirror on {}'.format(vios))
+                    module.log('Restore mirror on {}'.format(vios))
                     mirror_cmd = 'LC_ALL=C /usr/sbin/mirrorvg -m -c {} rootvg {} '\
                                  .format(nb_copies, copies_h[2])
                     if nb_copies > 2:
@@ -1345,22 +1338,22 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                    .format(err_label, vios)
                         OUTPUT.append('    Failed to mirror rootvg on {}: {}'
                                       .format(vios, std_err))
-                        logging.error('Failed to mirror rootvg on {}: {}'
-                                      .format(vios, std_err))
+                        module.log('Failed to mirror rootvg on {}: {}'
+                                   .format(vios, std_err))
                         break
                     elif std_out.find('Failed to mirror the volume group') == -1:
                         OUTPUT.append('    Mirror rootvg on {} successful'
                                       .format(vios))
-                        logging.info('Mirror rootvg on {} successful'
-                                     .format(vios))
+                        module.log('Mirror rootvg on {} successful'
+                                   .format(vios))
                     else:
                         # mirror command failed
                         altdisk_op_tab[vios_key] = "{} to mirror rootvg on {}"\
                                                    .format(err_label, vios)
                         OUTPUT.append('    Failed to mirror rootvg on {}: {} {}'
                                       .format(vios, std_out, std_err))
-                        logging.error('Failed to mirror rootvg on {}: {} {}'
-                                      .format(vios, std_out, std_err))
+                        module.log('Failed to mirror rootvg on {}: {} {}'
+                                   .format(vios, std_out, std_err))
                         break
 
                 if ret_altdc != 0:
@@ -1379,8 +1372,8 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                 else:
                     OUTPUT.append('    Using {} as alternate disk on {}'
                                   .format(vios_dict[vios], vios))
-                    logging.info('Using {} as alternate disk on {}'
-                                 .format(vios_dict[vios], vios))
+                    module.log('Using {} as alternate disk on {}'
+                               .format(vios_dict[vios], vios))
 
                 # First remove the alternate VG
                 OUTPUT.append('    Remove altinst_rootvg from {} of {}'
@@ -1395,8 +1388,8 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                .format(err_label, vios)
                     OUTPUT.append('    Failed to remove altinst_rootvg on {}: {}'
                                   .format(vios, std_err))
-                    logging.error('Failed to remove altinst_rootvg on {}: {}'
-                                  .format(vios, std_err))
+                    module.log('Failed to remove altinst_rootvg on {}: {}'
+                               .format(vios, std_err))
                     continue
 
                 # Clears the owning VG from the disk
@@ -1413,15 +1406,15 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                                                .format(err_label, vios_dict[vios], vios)
                     OUTPUT.append('    Failed to clear altinst_rootvg from disk {} on {}: {}'
                                   .format(vios_dict[vios], vios, std_err))
-                    logging.error('Failed to clear altinst_rootvg from disk {} on {}: {}'
-                                  .format(vios_dict[vios], vios, std_err))
+                    module.log('Failed to clear altinst_rootvg from disk {} on {}: {}'
+                               .format(vios_dict[vios], vios, std_err))
                     continue
 
                 OUTPUT.append('    Clear altinst_rootvg from disk {}: Success'
                               .format(vios_dict[vios]))
                 CHANGED = True
 
-    logging.debug('altdisk_op_tab: {}'. format(altdisk_op_tab))
+    module.debug('altdisk_op_tab: {}'. format(altdisk_op_tab))
     return altdisk_op_tab
 
 
@@ -1470,20 +1463,11 @@ def main():
     # Handle playbook variables
     if module.params['vars']:
         VARS = module.params['vars']
-    if VARS is not None and 'log_file' not in VARS:
-        VARS['log_file'] = '/tmp/ansible_vios_alt_disk_debug.log'
 
-    # Open log file
-    DEBUG_DATA.append('Log file: {}'.format(VARS['log_file']))
-    logging.basicConfig(
-        filename="{}".format(VARS['log_file']),
-        format='[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s',
-        level=logging.DEBUG)
-
-    logging.debug('*** START VIOS {} ***'.format(action.upper()))
+    module.debug('*** START VIOS {} ***'.format(action.upper()))
 
     OUTPUT.append('VIOS Alternate disk operation for {}'.format(targets))
-    logging.info('action {} for {} targets'.format(action, targets))
+    module.log('action {} for {} targets'.format(action, targets))
 
     vios_status = {}
     targets_altdisk_status = {}
@@ -1520,24 +1504,24 @@ def main():
     ret = check_vios_targets(module, targets)
     if (ret is None) or (not ret):
         OUTPUT.append('    Warning: Empty target list')
-        logging.warn('Empty target list: "{}"'.format(targets))
+        module.warn('Empty target list: "{}"'.format(targets))
     else:
         target_list = ret
         OUTPUT.append('    Targets list: {}'.format(target_list))
-        logging.debug('Targets list: {}'.format(target_list))
+        module.debug('Targets list: {}'.format(target_list))
 
         targets_altdisk_status = alt_disk_action(module, action, target_list,
                                                  vios_status, time_limit)
 
         if targets_altdisk_status:
             OUTPUT.append('VIOS Alternate disk operation status:')
-            logging.info('VIOS Alternate disk operation status:')
+            module.log('VIOS Alternate disk operation status:')
             for vios_key in targets_altdisk_status.keys():
                 OUTPUT.append("    {} : {}".format(vios_key, targets_altdisk_status[vios_key]))
-                logging.info('    {} : {}'.format(vios_key, targets_altdisk_status[vios_key]))
+                module.log('    {} : {}'.format(vios_key, targets_altdisk_status[vios_key]))
         else:
             OUTPUT.append('VIOS Alternate disk operation: Error getting the status')
-            logging.error('VIOS Alternate disk operation: Error getting the status')
+            module.log('VIOS Alternate disk operation: Error getting the status')
             targets_altdisk_status = vios_status
 
     # ==========================================================================
