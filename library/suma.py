@@ -620,7 +620,6 @@ def suma_download():
     note:
         Exits with fail_json in case of error
     """
-    global logdir
     global results
     global suma_params
 
@@ -772,7 +771,6 @@ def suma_download():
         if rc != 0:
             msg = "Suma install command '{}' failed with return code {}.".format(cmd, rc)
             module.log(msg + ", stderr:{}, stdout:{}".format(stderr, stdout))
-            msg += " Review {}/suma_debug.log for status.".format(logdir)
             results['msg'] = msg
             module.fail_json(**results)
 
@@ -785,7 +783,6 @@ def main():
     global module
     global results
     global suma_params
-    global logdir
 
     module = AnsibleModule(
         argument_spec=dict(
