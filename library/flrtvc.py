@@ -272,22 +272,6 @@ def wait_threaded(thds):
     return wait_threaded_wrapper
 
 
-def logged(func):
-    """
-    Decorator for logging
-    """
-    def logged_wrapper(*args):
-        """
-        Decorator wrapper for logging
-        """
-        module.debug('ENTER {} with {}'.format(func.__name__, args))
-        res = func(*args)
-        module.debug('EXIT {} with {}'.format(func.__name__, res))
-        return res
-    return logged_wrapper
-
-
-@logged
 def download(src, dst, resize_fs=True):
     """
     Download efix from url to directory
@@ -327,7 +311,6 @@ def download(src, dst, resize_fs=True):
     return res
 
 
-@logged
 def unzip(src, dst, resize_fs=True):
     """
     Unzip source into the destination directory
@@ -354,7 +337,6 @@ def unzip(src, dst, resize_fs=True):
     return True
 
 
-@logged
 def remove_efix():
     """
     Remove efix matching the given label
@@ -463,7 +445,6 @@ def to_utc_epoch(date):
     return (sec_from_epoch, msg)
 
 
-@logged
 def check_epkgs(epkg_list, lpps, efixes):
     """
     For each epkg get the label, packaging date, filset and check prerequisites
@@ -646,7 +627,6 @@ def check_epkgs(epkg_list, lpps, efixes):
     return (sorted_epkgs, epkgs_reject)
 
 
-@logged
 def parse_lpps_info():
     """
     Parse the lslpp file and build a dictionary with installed lpps current levels
@@ -675,7 +655,6 @@ def parse_lpps_info():
 
 
 @start_threaded(THRDS)
-@logged
 def run_lslpp(filename):
     """
     Use lslpp on a target system to list filesets and write into provided file.
@@ -703,7 +682,6 @@ def run_lslpp(filename):
         return False
 
 
-@logged
 def parse_emgr():
     """
     Parse the emgr file and build a dictionary with efix data
@@ -763,7 +741,6 @@ def parse_emgr():
 
 
 @start_threaded(THRDS)
-@logged
 def run_emgr(f_efix):
     """
     Use the interim fix manager to list detailed information of
@@ -794,7 +771,6 @@ def run_emgr(f_efix):
         return False
 
 
-@logged
 def run_flrtvc(flrtvc_path, params, force):
     """
     Use the flrtvc script on target system to get the
@@ -888,7 +864,6 @@ def run_flrtvc(flrtvc_path, params, force):
     return True
 
 
-@logged
 def run_parser(report):
     """
     Parse report by extracting URLs
@@ -910,7 +885,6 @@ def run_parser(report):
     results['meta'].update({'1.parse': rows})
 
 
-@logged
 def run_downloader(urls, dst_path, resize_fs=True):
     """
     Download URLs and check efixes
@@ -1015,7 +989,6 @@ def run_downloader(urls, dst_path, resize_fs=True):
     results['meta'].update(out)
 
 
-@logged
 def run_installer(epkgs, dst_path, resize_fs=True):
     """
     Install epkgs efixes

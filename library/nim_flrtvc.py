@@ -151,22 +151,6 @@ def wait_threaded(thds):
     return wait_threaded_wrapper
 
 
-def logged(func):
-    """
-    Decorator for logging
-    """
-    def logged_wrapper(*args):
-        """
-        Decorator wrapper for logging
-        """
-        logging.debug('ENTER {} with {}'.format(func.__name__, args))
-        res = func(*args)
-        logging.debug('EXIT {} with {}'.format(func.__name__, res))
-        return res
-    return logged_wrapper
-
-
-@logged
 def download(src, dst, output):
     """
     Download efix from url to directory
@@ -203,7 +187,6 @@ def download(src, dst, output):
     return res
 
 
-@logged
 def unzip(src, dst):
     """
     Unzip source into the destination directory
@@ -220,7 +203,6 @@ def unzip(src, dst):
         unzip(src, dst)
 
 
-@logged
 def remove_efix(machine, output):
     """
     Remove efix with the given label on the machine
@@ -318,7 +300,6 @@ def to_utc_epoch(date):
     return (sec_from_epoch, msg)
 
 
-@logged
 def check_epkgs(epkg_list, lpps, efixes, machine, output):
     """
     For each epkg get the label, packaging date, filset and check prerequisites
@@ -499,7 +480,6 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     return (sorted_epkgs, epkgs_reject)
 
 
-@logged
 def parse_lpps_info(machine, out):
     """
     Parse the lslpp output and build a dictionary with lpps current levels
@@ -525,7 +505,6 @@ def parse_lpps_info(machine, out):
     return lpps_lvl
 
 
-@logged
 def run_lslpp(machine, filename, output):
     """
     Run command lslpp on a target system
@@ -551,7 +530,6 @@ def run_lslpp(machine, filename, output):
         output['messages'].append(msg)
 
 
-@logged
 def parse_emgr(machine, out):
     """
     Parse the emgr output and build a dictionary with efix data
@@ -609,7 +587,6 @@ def parse_emgr(machine, out):
     return efixes
 
 
-@logged
 def run_emgr(machine, f_efix, output):
     """
     Use the interim fix manager to list detailed information of
@@ -639,7 +616,6 @@ def run_emgr(machine, f_efix, output):
 
 
 # @start_threaded(THRDS)
-@logged
 def run_flrtvc(machine, output, params, force):
     """
     Run command flrtvc on a target system
@@ -752,7 +728,6 @@ def run_flrtvc(machine, output, params, force):
 
 
 # @start_threaded(THRDS)
-@logged
 def run_parser(machine, output, report):
     """
     Parse report by extracting URLs
@@ -776,7 +751,6 @@ def run_parser(machine, output, report):
 
 
 @start_threaded(THRDS)
-@logged
 def run_downloader(machine, output, urls):
     """
     Download URLs and check efixes
@@ -867,7 +841,6 @@ def run_downloader(machine, output, urls):
 
 
 @start_threaded(THRDS)
-@logged
 def run_installer(machine, output, epkgs):
     """
     Install epkgs efixes
@@ -954,7 +927,6 @@ def wait_all():
     pass
 
 
-@logged
 def exec_cmd(cmd, output, exit_on_error=False, shell=False):
     """
     Execute the given command

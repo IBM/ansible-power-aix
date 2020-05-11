@@ -145,21 +145,6 @@ from ansible.module_utils.basic import AnsibleModule
 results = None
 
 
-def logged(func):
-    """
-    Decorator for logging
-    """
-    def logged_wrapper(*args):
-        """
-        Decorator wrapper for logging
-        """
-        module.debug('ENTER {} with {}'.format(func.__name__, args))
-        res = func(*args)
-        module.debug('EXIT {} with {}'.format(func.__name__, res))
-        return res
-    return logged_wrapper
-
-
 def min_oslevel(dic):
     """
     Find the minimun value of a dictionnary.
@@ -232,7 +217,7 @@ def run_oslevel_cmd(module, machine, oslevels):
         msg = 'Command: \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.error('Failed to get oslevel for {}: {}'.format(machine, msg))
 
-@logged
+
 def expand_targets(module, targets, nim_clients):
     """
     Expand the list of target patterns.
@@ -294,7 +279,6 @@ def expand_targets(module, targets, nim_clients):
     return list(set(clients))
 
 
-@logged
 def get_nim_clients(module):
     """
     Get the list of the standalones defined on the NIM master.
@@ -324,7 +308,6 @@ def get_nim_clients(module):
     return clients_list
 
 
-@logged
 def get_oslevels(module, targets):
     """
     Get the oslevel of the specified targets.
@@ -352,7 +335,6 @@ def get_oslevels(module, targets):
     return oslevels
 
 
-@logged
 def get_nim_lpp_source(module):
     """
     Get the list of the lpp_source defined on the NIM master.
@@ -394,7 +376,6 @@ def get_nim_lpp_source(module):
     return lpp_source_list
 
 
-@logged
 def compute_rq_type(module, oslevel, targets_list):
     """Compute rq_type.
 
@@ -421,7 +402,6 @@ def compute_rq_type(module, oslevel, targets_list):
     return 'ERROR'
 
 
-@logged
 def find_sp_version(module, file):
     """
     Open and parse the provided file to find higher SP version
@@ -450,7 +430,6 @@ def find_sp_version(module, file):
     return sp_version
 
 
-@logged
 def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_oslevel):
     """
     Compute rq_name.
@@ -592,7 +571,6 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
     return rq_name
 
 
-@logged
 def compute_filter_ml(module, clients_target_oslevel, rq_name):
     """
     Compute the suma filter ML.
@@ -625,7 +603,6 @@ def compute_filter_ml(module, clients_target_oslevel, rq_name):
     return filter_ml
 
 
-@logged
 def compute_lpp_source_name(module, lpp_source, rq_name):
     """
     Compute lpp source name based on lpp_source and rq_name.
@@ -650,7 +627,6 @@ def compute_lpp_source_name(module, lpp_source, rq_name):
     return lpp_src
 
 
-@logged
 def compute_dl_target(module, download_dir, lpp_source, nim_lpp_sources):
     """
     Compute suma download target directory.
@@ -687,7 +663,6 @@ def compute_dl_target(module, download_dir, lpp_source, nim_lpp_sources):
     return dl_target
 
 
-@logged
 def suma_command(module, action, suma_params):
     """
     Run a suma command.
@@ -732,7 +707,6 @@ def suma_command(module, action, suma_params):
     return stdout
 
 
-@logged
 def suma_list(module, suma_params):
     """
     List all SUMA tasks or the task associated with the given task ID
@@ -760,7 +734,6 @@ def suma_list(module, suma_params):
         module.fail_json(**results)
 
 
-@logged
 def check_time(val, mini, maxi):
     """
     Check a value is equal to '*' or is a numeric value in the
@@ -775,7 +748,6 @@ def check_time(val, mini, maxi):
     return False
 
 
-@logged
 def suma_edit(module, suma_params):
     """
     Edit a SUMA task associated with the given task ID
@@ -830,7 +802,6 @@ def suma_edit(module, suma_params):
         module.fail_json(**results)
 
 
-@logged
 def suma_unschedule(module, suma_params):
     """
     Unschedule a SUMA task associated with the given task ID
@@ -856,7 +827,6 @@ def suma_unschedule(module, suma_params):
         module.fail_json(**results)
 
 
-@logged
 def suma_delete(module, suma_params):
     """
     Delete the SUMA task associated with the given task ID
@@ -882,7 +852,6 @@ def suma_delete(module, suma_params):
         module.fail_json(**results)
 
 
-@logged
 def suma_config(module):
     """
     List the SUMA global configuration settings
@@ -907,7 +876,6 @@ def suma_config(module):
         module.fail_json(**results)
 
 
-@logged
 def suma_default(module):
     """
     List default SUMA tasks
@@ -932,7 +900,6 @@ def suma_default(module):
         module.fail_json(**results)
 
 
-@logged
 def suma_download(module, suma_params):
     """
     Dowload (or preview) action

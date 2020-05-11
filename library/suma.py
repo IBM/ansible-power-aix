@@ -165,22 +165,6 @@ results = None
 suma_params = {}
 
 
-def logged(func):
-    """
-    Decorator for logging
-    """
-    def logged_wrapper(*args):
-        """
-        Decorator wrapper for logging
-        """
-        module.debug('ENTER {} with {}'.format(func.__name__, args))
-        res = func(*args)
-        module.debug('EXIT {} with {}'.format(func.__name__, res))
-        return res
-    return logged_wrapper
-
-
-@logged
 def compute_rq_type(oslevel, last_sp):
     """
     Compute rq_type to use in a suma request based on provided oslevel.
@@ -212,7 +196,6 @@ def compute_rq_type(oslevel, last_sp):
     return 'ERROR'
 
 
-@logged
 def find_sp_version(file):
     """
     Open and parse the provided file to find higher SP version
@@ -240,7 +223,6 @@ def find_sp_version(file):
     return sp_version
 
 
-@logged
 def compute_rq_name(rq_type, oslevel, last_sp):
     """
     Compute rq_name.
@@ -344,7 +326,6 @@ def compute_rq_name(rq_type, oslevel, last_sp):
     return rq_name
 
 
-@logged
 def suma_command(action):
     """
     Run a suma command.
@@ -392,7 +373,6 @@ def suma_command(action):
     return stdout
 
 
-@logged
 def suma_list():
     """
     List all SUMA tasks or the task associated with the given task ID
@@ -420,7 +400,6 @@ def suma_list():
         module.fail_json(**results)
 
 
-@logged
 def check_time(val, mini, maxi):
     """
     Check a value is equal to '*' or is a numeric value in the
@@ -440,7 +419,6 @@ def check_time(val, mini, maxi):
     return False
 
 
-@logged
 def suma_edit():
     """
     Edit a SUMA task associated with the given task ID
@@ -490,7 +468,6 @@ def suma_edit():
         module.fail_json(**results)
 
 
-@logged
 def suma_unschedule():
     """
     Unschedule a SUMA task associated with the given task ID
@@ -513,7 +490,6 @@ def suma_unschedule():
         module.fail_json(**results)
 
 
-@logged
 def suma_delete():
     """
     Delete the SUMA task associated with the given task ID
@@ -536,7 +512,6 @@ def suma_delete():
         module.fail_json(**results)
 
 
-@logged
 def suma_run():
     """
     Run the SUMA task associated with the given task ID
@@ -559,7 +534,6 @@ def suma_run():
         module.fail_json(**results)
 
 
-@logged
 def suma_config():
     """
     List the SUMA global configuration settings
@@ -582,7 +556,6 @@ def suma_config():
         module.fail_json(**results)
 
 
-@logged
 def suma_default():
     """
     List default SUMA tasks
@@ -605,7 +578,6 @@ def suma_default():
         module.fail_json(**results)
 
 
-@logged
 def suma_download():
     """
     Download / Install (or preview) action
