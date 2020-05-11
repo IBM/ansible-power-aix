@@ -77,7 +77,6 @@ options:
     - Specifies the package to view.
     - Can be used if I(action==view_package)
     type: str
-
   alternate_dir:
     description:
     - Specifies an alternative directory path.
@@ -98,7 +97,8 @@ options:
   mount_install:
     description:
     - Perform a mount installation. When and interim fix is mount-installed, the interim fix files are mounted over the target files.
-    - Can be used if I(action=install).
+    - This option is not supported for interim fix packages that require rebooting.
+    - Can be used if I(action=install). Cannot be set when I(from_epkg=no).
     type: bool
     default: no
   commit:
