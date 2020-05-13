@@ -79,7 +79,7 @@ options:
   extend_fs:
     description:
     - Specifies to increase filesystem size of the working directory if needed.
-    - If set a filesystem of the host could have increased even if ansible return I(changed=False).
+    - If set a filesystem of the host could have increased even if it returns I(changed=False).
     type: bool
     default: yes
 '''
@@ -112,7 +112,7 @@ meta:
             returned: always
             type: list
             elements: str
-            sample:
+            sample: see below
         0.report:
             description: Output of the FLRTVC script, report or details on flrtvc error if any.
             returned: if the FLRTVC script run succeeds
@@ -327,7 +327,7 @@ def unzip(src, dst, resize_fs=True):
         zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
         if resize_fs and increase_fs(dst):
-            return unzip(src, dst)
+            return unzip(src, dst, resize_fs)
         else:
             msg = 'Cannot unzip {}'.format(src)
             module.log(msg)
@@ -375,6 +375,9 @@ def remove_efix():
     for epkg in epkgs:
         cmd = ['/usr/sbin/emgr', '-r', '-L', epkg]
         rc, stdout, stderr = module.run_command(cmd)
+        if rc != 0:
+            res = False
+            continue
         for line in stdout.strip().splitlines():
             match = re.match(r'^\d+\s+(\S+)\s+REMOVE\s+(\S+)\s*$', line)
             if match:
