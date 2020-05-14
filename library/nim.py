@@ -465,9 +465,7 @@ def expand_targets(targets):
 def perform_async_customization(module, lpp_source, targets):
     """
     Perform an asynchronous customization of the given target clients,
-    applying the given lpp_source
-
-    stdout and stderr are outputed in log file at info level
+    applying the given lpp_source.
 
     return: the return code of the command.
     """
@@ -522,8 +520,6 @@ def perform_sync_customization(module, lpp_source, target):
     """
     Perform a synchronous customization of the given target client,
     applying the given lpp_source.
-
-    stdout and stderr are output in log file at info level
 
     return: the return code of the command.
     """
@@ -1354,6 +1350,8 @@ def nim_reboot(module, params):
     if 'master' in target_list:
         module.warn('master can not be rebooted, master is discarded from the target list')
         target_list.remove('master')
+        if not target_list:
+            return
 
     cmd = ['nim', '-o', 'reboot']
     cmd += target_list
@@ -1428,7 +1426,7 @@ def main():
     module.debug('*** START ***')
 
     # =========================================================================
-    # Get Module params
+    # Get module params
     # =========================================================================
     lpp_source = module.params['lpp_source']
     targets = module.params['targets']
@@ -1450,7 +1448,7 @@ def main():
     params['description'] = description
 
     # =========================================================================
-    # build nim node info
+    # Build nim node info
     # =========================================================================
     build_nim_node(module)
 
