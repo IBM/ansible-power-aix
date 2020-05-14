@@ -215,7 +215,7 @@ def run_oslevel_cmd(module, machine, oslevels):
         oslevels[machine] = stdout.rstrip()
     else:
         msg = 'Command: \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
-        module.error('Failed to get oslevel for {}: {}'.format(machine, msg))
+        module.log('Failed to get oslevel for {}: {}'.format(machine, msg))
 
 
 def expand_targets(module, targets, nim_clients):
@@ -233,6 +233,7 @@ def expand_targets(module, targets, nim_clients):
         example:  target[1:5] target12 other_target*
 
     arguments:
+        module      (dict): The Ansible module
         targets     (list): The list of target patterns
         nim_clients (list): The list of existing NIM clients
 
@@ -357,7 +358,7 @@ def get_nim_lpp_source(module):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         msg = "Cannot get the list of lpp source, command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         results['stdout'] = stdout
         results['stderr'] = stderr
@@ -459,7 +460,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         if not clients_target_oslevel:
             if oslevel == 'Latest':
                 msg = "Cannot get oslevel from targets, check you can get the oslevel on targets"
-                module.error(msg)
+                module.log(msg)
                 results['msg'] = msg
                 module.fail_json(**results)
             metadata_filter_ml = oslevel[:7]
@@ -486,7 +487,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
 
         if not metadata_filter_ml:
             msg = "Cannot build minimum level filter based on the OS level of targets"
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
 
@@ -502,7 +503,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
             msg = "Suma metadata command '{}' failed with return code {}".format(' '.join(cmd), rc)
-            module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+            module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
             results['stdout'] = stdout
             results['stderr'] = stderr
             results['msg'] = msg
@@ -547,7 +548,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 msg = "Suma metadata command '{}' failed with return code {}".format(' '.join(cmd), rc)
-                module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+                module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
                 results['stdout'] = stdout
                 results['stderr'] = stderr
                 results['msg'] = msg
@@ -564,7 +565,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
 
     if not rq_name or not rq_name.strip():  # should never happen
         msg = "OS level {} does not match any fixes".format(oslevel)
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -651,7 +652,7 @@ def compute_dl_target(module, download_dir, lpp_source, nim_lpp_sources):
         dl_target = "{}/{}".format(download_dir, lpp_source)
         if lpp_source in nim_lpp_sources and nim_lpp_sources[lpp_source] != dl_target:
             msg = "lpp source location mismatch. A lpp source '{}' already exists with a location different from '{}'".format(lpp_source, dl_target)
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
     else:
@@ -700,7 +701,7 @@ def suma_command(module, action, suma_params):
     results['stderr'] = stderr
     if rc != 0:
         msg = "Suma {} command '{}' failed with return code {}".format(action, ' '.join(cmd), rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -729,7 +730,7 @@ def suma_list(module, suma_params):
     results['stderr'] = stderr
     if rc != 0:
         msg = "Suma list command: '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -783,7 +784,7 @@ def suma_edit(module, suma_params):
             cmd += ' -s "{}"'.format(suma_params['sched_time'])
         else:
             msg = "Suma edit command '{}': bad schedule time '{}'".format(cmd, suma_params['sched_time'])
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
 
@@ -797,7 +798,7 @@ def suma_edit(module, suma_params):
 
     if rc != 0:
         msg = "Suma edit command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -822,7 +823,7 @@ def suma_unschedule(module, suma_params):
 
     if rc != 0:
         msg = "Suma unschedule command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -847,7 +848,7 @@ def suma_delete(module, suma_params):
 
     if rc != 0:
         msg = "Suma delete command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -871,7 +872,7 @@ def suma_config(module):
 
     if rc != 0:
         msg = "Suma config command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -895,7 +896,7 @@ def suma_default(module):
 
     if rc != 0:
         msg = "Suma default command '{}' failed with return code {}".format(cmd, rc)
-        module.error(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -921,18 +922,18 @@ def suma_download(module, suma_params):
         if req_oslevel == 'Latest':
             msg = 'Oslevel target could not be empty or equal "Latest" when' \
                   ' target machine list is empty'
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
         elif re.match(r"^([0-9]{4}-[0-9]{2})(-00|-00-0000)$", req_oslevel):
             msg = 'When no Service Pack is provided , a target machine list is required'
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
     else:
         if re.match(r"^([0-9]{4})(|-00|-00-00|-00-00-0000)$", req_oslevel):
             msg = 'Specify a non 0 value for the Technical Level or the Service Pack'
-            module.error(msg)
+            module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
 
@@ -950,7 +951,7 @@ def suma_download(module, suma_params):
     results['target_list'] = target_clients
     if targets_list and not target_clients:
         msg = 'No matching NIM client found for target \'{}\'.'.format(suma_params['targets'])
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
     module.debug('Target list: {}'.format(target_clients))
@@ -968,7 +969,7 @@ def suma_download(module, suma_params):
     # Check we have at least one oslevel when a target is specified
     if targets_list and not clients_oslevel:
         msg = "Cannot retrieve oslevel for any NIM client of the target list"
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
     module.debug("oslevel cleaned dict: {}".format(clients_oslevel))
@@ -982,7 +983,7 @@ def suma_download(module, suma_params):
     rq_type = compute_rq_type(module, suma_params['req_oslevel'], targets_list)
     if rq_type == 'ERROR':
         msg = "Invalid oslevel: '{}'".format(suma_params['req_oslevel'])
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
     suma_params['RqType'] = rq_type
@@ -1001,7 +1002,7 @@ def suma_download(module, suma_params):
     if filter_ml is None:
         # no technical level found for the target machines
         msg = "There is no target machine matching the requested oslevel {}.".format(rq_name[:10])
-        module.error(msg)
+        module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -1093,7 +1094,7 @@ def suma_download(module, suma_params):
 
         if downloaded == 0 and skipped == 0:
             # All expected download have failed
-            module.error(msg)
+            module.log(msg)
             results['meta']['messages'].append(msg)
             return
 
@@ -1118,7 +1119,7 @@ def suma_download(module, suma_params):
         results['stderr'] = stderr
         if rc != 0:
             msg = "NIM command '{}' failed with return code {}".format(' '.join(cmd), rc)
-            module.error(msg + ", stderr:{}, stdout:{}".format(stderr, stdout))
+            module.log(msg + ", stderr:{}, stdout:{}".format(stderr, stdout))
             results['msg'] = msg
             module.fail_json(**results)
 

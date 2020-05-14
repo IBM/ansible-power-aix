@@ -259,7 +259,7 @@ def main():
             verbose=dict(type='int', choices=[1, 2, 3]),
         ),
         required_if=[],
-        mutually_exclusive=[['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']],
+        mutually_exclusive=[['ifix_package', 'ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']],
     )
 
     results = dict(
