@@ -188,7 +188,7 @@ def viosupgrade_query(module):
         if ret == 0:
             module.log("[STDERR] {}".format(stderr))
         else:
-            module.log("command {} failed: {}".format(stderr))
+            module.log("command {} failed: {}".format(cmd, stderr))
             ret = 1
     else:
         for target in module.param['targets']:
@@ -199,7 +199,7 @@ def viosupgrade_query(module):
             if rc == 0:
                 module.log("[STDERR] {}".format(stderr))
             else:
-                module.log("command {} failed: {}".format(stderr))
+                module.log("command {} failed: {}".format(cmd, stderr))
                 ret += 1
     return ret
 
@@ -241,7 +241,7 @@ def viosupgrade_file(module, filename):
     if ret == 0:
         module.log("[STDERR] {}".format(stderr))
     else:
-        module.log("command {} failed: {}".format(stderr))
+        module.log("command {} failed: {}".format(cmd, stderr))
 
     return ret
 
@@ -345,7 +345,7 @@ def viosupgrade_list(module, targets):
         if rc == 0:
             module.log("[STDERR] {}".format(stderr))
         else:
-            module.log("command {} failed: {}".format(stderr))
+            module.log("command {} failed: {}".format(cmd, stderr))
             ret += 1
 
     return ret

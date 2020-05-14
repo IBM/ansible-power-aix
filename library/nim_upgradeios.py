@@ -988,7 +988,7 @@ def nim_migvios(module, vios):
     (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
 
     if ret != 0:
-        module.log('NIM Command: {} failed {} {}'
+        module.log('NIM Command: {} failed ret={}: {} {}'
                    .format(cmd, ret, std_out, std_err))
         OUTPUT.append('    Failed to initiate the upgrade of VIOS {} with NIM: {}'
                       .format(vios, std_err))
@@ -1095,7 +1095,7 @@ def nim_wait_migvios(module, vios):
 
         # NIM states have changed
         wait_time = _TIMEOUT_NIMSTATE
-        module.debug('VIOS {}, NIM states: \n{}'.format(std_out))
+        module.debug('VIOS {}, NIM states: \n{}'.format(vios, std_out))
 
 # TODO: VRO can we have Cstate_result != 'success' and the migvios is not finished? should we wait?
         if curr_states['Cstate_result'] != 'success':

@@ -498,7 +498,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
         OUTPUT.append('    Bad command output for the hmc: {}'.format(hmc_id))
         module.log('vioshc command, bad output line: {}'.format(line))
         results['msg'] = 'Health init check failed. Bad vioshc.py command output for the {} hmc - output: {}'\
-              .format(hmc_id, line)
+                         .format(hmc_id, line)
         module.fail_json(**results)
 
     module.debug('vioshc output: {}'.format(line))
@@ -619,7 +619,6 @@ def main():
     # =========================================================================
     # Get module params
     # =========================================================================
-    action = module.params['action']
     targets = module.params['targets']
 
     OUTPUT.append('VIOS Health Check operation for {}'.format(targets))

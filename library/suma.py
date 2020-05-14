@@ -617,7 +617,7 @@ def suma_download():
     # =========================================================================
     rq_type = compute_rq_type(suma_params['oslevel'], suma_params['last_sp'])
     if rq_type == 'ERROR':
-        msg = "Bad parameter: oslevel is '{}', parsing error".format(suma_params['action'], suma_params['oslevel'])
+        msg = "Bad parameter: oslevel is '{}', parsing error".format(suma_params['oslevel'])
         module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)

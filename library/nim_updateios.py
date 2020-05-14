@@ -552,7 +552,7 @@ def ssp_stop_start(module, target_tuple, vios, action):
 
     (ret, std_out, std_err) = exec_cmd(cmd, module)
     if ret != 0:
-        msg = 'Failed to {} SSP cluster on {}: {}'\
+        msg = 'Failed to {} SSP cluster {} on {}: {}'\
               .format(action, NIM_NODE['nim_vios'][vios]['ssp_name'], vios, std_err)
         OUTPUT.append('    ' + msg)
         module.log(msg)
