@@ -30,7 +30,7 @@ pip install -r docs/docsite/requirements.txt
 [[ -e $(find test/ -name sanity.txt) ]] && pip install -r $(find test/ -name sanity.txt)
 
 # place the modules in the appropriate folder
-cp $DIR/library/*.py $ANSIBLE_DIR/lib/ansible/modules/system/
+cp $DIR/library/*.py $ANSIBLE_DIR/lib/ansible/modules/
 
 set +e
 
