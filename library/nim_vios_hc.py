@@ -206,7 +206,7 @@ def get_nim_clients_info(module, lpar_type):
             match_mgmtprof = re.match(r"^\s+mgmt_profile1\s+=\s+(.*)$", line)
             if match_mgmtprof:
                 mgmt_elts = match_mgmtprof.group(1).split()
-                if len(mgmt_elts) == 3:
+                if len(mgmt_elts) >= 3:
                     info_hash[obj_key]['mgmt_hmc_id'] = mgmt_elts[0]
                     info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
                     info_hash[obj_key]['mgmt_cec'] = mgmt_elts[2]
