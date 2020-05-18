@@ -46,10 +46,16 @@ options:
     type: str
   path:
     description:
-    - Specifies the working directory used for temporary files. It will contain FLRTVC reports,
-      previously installed filesets and fixes lists and downloaded fixes.
+    - Specifies the directory to save the FLRTVC report. All temporary files such as
+      previously installed filesets, fixes lists and downloaded fixes files will be
+      stored in the working subdirectory named 'I(path)/work'.
     type: str
-    default: /var/adm/ansible/work
+    default: /var/adm/ansible
+  save_report:
+    description:
+    - Specifies to save the FLRTVC report in file 'I(path)/flrtvc.txt'.
+    type: bool
+    default: no
   verbose:
     description:
     - Generate full FLRTVC reporting (verbose mode).
@@ -62,7 +68,8 @@ options:
     default: no
   clean:
     description:
-    - Cleanup working directory with all downloaded files at the end of execution.
+    - Cleanup working directory 'I(path)/work' with all temporary and downloaded files
+      at the end of execution.
     type: bool
     default: no
   check_only:
@@ -593,8 +600,7 @@ def check_epkgs(epkg_list, lpps, efixes):
         if epkg['pkg_date']:
             (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
             if sec_from_epoch == -1:
-                module.log('{}: "{}" for epkg:{} '
-                           .format(msg, epkg['pkg_date'], epkg))
+                module.log('{}: "{}" for epkg:{}'.format(msg, epkg['pkg_date'], epkg))
             epkg['sec_from_epoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
@@ -782,7 +788,6 @@ def run_flrtvc(flrtvc_path, params, force):
         params     (dict): The parameters to pass to flrtvc command
         force      (bool): The flag to automatically remove efixes
     note:
-        exit_json if an exception raises
         Create and build
             results['meta']['0.report']
             results['meta']['1.parse']
@@ -846,7 +851,7 @@ def run_flrtvc(flrtvc_path, params, force):
     results['meta'].update({'0.report': stdout.splitlines()})
 
     # Save to file
-    if params['dst_path']:
+    if params['save_report']:
         filename = os.path.join(params['dst_path'], 'flrtvc.txt')
         with open(filename, 'w') as myfile:
             if params['verbose']:
@@ -1111,7 +1116,8 @@ def main():
             apar=dict(required=False, type='str', choices=['sec', 'hiper', 'all', None], default=None),
             filesets=dict(required=False, type='str'),
             csv=dict(required=False, type='str'),
-            path=dict(required=False, type='str', default='/var/adm/ansible/work'),
+            path=dict(required=False, type='str', default='/var/adm/ansible'),
+            save_report=dict(required=False, type='bool', default=False),
             verbose=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
             clean=dict(required=False, type='bool', default=False),
@@ -1150,6 +1156,7 @@ def main():
                      'apar_csv': module.params['csv'],
                      'filesets': module.params['filesets'],
                      'dst_path': module.params['path'],
+                     'save_report': module.params['save_report'],
                      'verbose': module.params['verbose']}
     force = module.params['force']
     clean = module.params['clean']
