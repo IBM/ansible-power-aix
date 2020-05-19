@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -11,14 +11,16 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: geninstall
 short_description: Generic installer for various packaging formats
 description:
 - A generic installer that installs software products of various packaging formats.
 - For example, installp, RPM, SI, and ISMP.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   device:
     description:
@@ -30,6 +32,7 @@ options:
     - C(all) installs all products
     - C(update_all) updates all products
     type: list
+    elements: str
     default: []
   force:
     description:
@@ -79,11 +82,10 @@ def main():
         argument_spec=dict(
             action=dict(type='str', default='install', choices=['install', 'uninstall', 'list']),
             device=dict(type='str'),
-            debug=dict(type='bool', default=False),
             force=dict(type='bool', default=False),
             installp_flags=dict(type='str', default=''),
             agree_licenses=dict(type='bool', default=False),
-            install_list=dict(type='list', default=[]),
+            install_list=dict(type='list', elements='str', default=[]),
         ),
         required_if=[
             ['action', 'list', ['device']],
@@ -95,6 +97,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     action = module.params['action']
@@ -122,16 +126,20 @@ def main():
     if action != 'list':
         # For install and uninstall, check that install list is not empty
         if not install_list:
-            result['msg'] = 'install_list cannot be empty'
+            result['msg'] = 'Invalid parameter: install_list cannot be empty'
             module.fail_json(**result)
         cmd += install_list
+        result['changed'] = True
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
-    result['msg'] = stdout
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
     module.exit_json(**result)
 
 

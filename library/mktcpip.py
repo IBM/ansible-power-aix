@@ -11,14 +11,16 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: mktcpip
 short_description: Sets the required values for starting TCP/IP on a host
 description:
 - This module sets the required minimal values required for using TCP/IP on a host machine.
 - These values are written to the configuration database.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   hostname:
     description:
@@ -95,6 +97,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     hostname = module.params['hostname']
@@ -118,12 +122,15 @@ def main():
         cmd += ['-s']
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
     result['changed'] = True
-    result['msg'] = stdout
     module.exit_json(**result)
 
 

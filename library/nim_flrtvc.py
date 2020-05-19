@@ -11,13 +11,15 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: nim_flrtvc
 short_description: Generate flrtvc report, download and install efix
 description:
 - Generate flrtvc report, download and install efix.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   targets:
     description:
@@ -26,48 +28,51 @@ options:
     required: true
   apar:
     description:
-    - Type of APAR.
+    - Type of APAR to check or download.
     - C(sec) Security vulnerabilities.
-    - C(hiper) HIPER.
-    - C(all).
+    - C(hiper) Corrections to High Impact PERvasive threats.
+    - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
-    default: None
   filesets:
     description:
-    - Filter filesets for specific phrase.
+    - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
     type: str
   csv:
     description:
-    - APAR CSV file that will be downloaded and saved to location.
+    - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
+    - This file is usually transferred from the fix server; this rather big transfer
+      can be avoided by specifying an already transferred file.
     type: str
   path:
     description:
-    - Destination path.
+    - Specifies the working directory used for temporary files. It will contain FLRTVC reports,
+      previously installed filesets and fixes lists and downloaded fixes.
     type: str
   verbose:
     description:
-    - Generate full reporting (verbose mode).
+    - Generate full FLRTVC reporting (verbose mode).
     type: bool
     default: no
   force:
     description:
-    - Force.
+    - Specifies to remove currently installed ifix before running the FLRTVC script.
     type: bool
     default: no
   clean:
     description:
-    - Cleanup downloaded files after install.
+    - Cleanup working directory with all downloaded files at the end of execution.
     type: bool
     default: no
   check_only:
     description:
-    - Perform check only.
+    - Specifies to only check if fixes are already applied on the targets.
+      No download or install operations.
     type: bool
     default: no
   download_only:
     description:
-    - Download only, do not install anything.
+    - Specifies to perform check and download operation, do not install anything.
     type: bool
     default: no
 '''
@@ -146,22 +151,6 @@ def wait_threaded(thds):
     return wait_threaded_wrapper
 
 
-def logged(func):
-    """
-    Decorator for logging
-    """
-    def logged_wrapper(*args):
-        """
-        Decorator wrapper for logging
-        """
-        logging.debug('ENTER {} with {}'.format(func.__name__, args))
-        res = func(*args)
-        logging.debug('EXIT {} with {}'.format(func.__name__, res))
-        return res
-    return logged_wrapper
-
-
-@logged
 def download(src, dst, output):
     """
     Download efix from url to directory
@@ -198,7 +187,6 @@ def download(src, dst, output):
     return res
 
 
-@logged
 def unzip(src, dst):
     """
     Unzip source into the destination directory
@@ -215,7 +203,6 @@ def unzip(src, dst):
         unzip(src, dst)
 
 
-@logged
 def remove_efix(machine, output):
     """
     Remove efix with the given label on the machine
@@ -313,7 +300,6 @@ def to_utc_epoch(date):
     return (sec_from_epoch, msg)
 
 
-@logged
 def check_epkgs(epkg_list, lpps, efixes, machine, output):
     """
     For each epkg get the label, packaging date, filset and check prerequisites
@@ -494,7 +480,6 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     return (sorted_epkgs, epkgs_reject)
 
 
-@logged
 def parse_lpps_info(machine, out):
     """
     Parse the lslpp output and build a dictionary with lpps current levels
@@ -520,7 +505,6 @@ def parse_lpps_info(machine, out):
     return lpps_lvl
 
 
-@logged
 def run_lslpp(machine, filename, output):
     """
     Run command lslpp on a target system
@@ -546,7 +530,6 @@ def run_lslpp(machine, filename, output):
         output['messages'].append(msg)
 
 
-@logged
 def parse_emgr(machine, out):
     """
     Parse the emgr output and build a dictionary with efix data
@@ -604,7 +587,6 @@ def parse_emgr(machine, out):
     return efixes
 
 
-@logged
 def run_emgr(machine, f_efix, output):
     """
     Use the interim fix manager to list detailed information of
@@ -634,7 +616,6 @@ def run_emgr(machine, f_efix, output):
 
 
 # @start_threaded(THRDS)
-@logged
 def run_flrtvc(machine, output, params, force):
     """
     Run command flrtvc on a target system
@@ -747,7 +728,6 @@ def run_flrtvc(machine, output, params, force):
 
 
 # @start_threaded(THRDS)
-@logged
 def run_parser(machine, output, report):
     """
     Parse report by extracting URLs
@@ -771,7 +751,6 @@ def run_parser(machine, output, report):
 
 
 @start_threaded(THRDS)
-@logged
 def run_downloader(machine, output, urls):
     """
     Download URLs and check efixes
@@ -862,7 +841,6 @@ def run_downloader(machine, output, urls):
 
 
 @start_threaded(THRDS)
-@logged
 def run_installer(machine, output, epkgs):
     """
     Install epkgs efixes
@@ -949,7 +927,6 @@ def wait_all():
     pass
 
 
-@logged
 def exec_cmd(cmd, output, exit_on_error=False, shell=False):
     """
     Execute the given command

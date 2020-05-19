@@ -1,0 +1,86 @@
+---
+- name: "emgr on AIX"
+  hosts: all
+  gather_facts: no
+  vars:
+    install_v:      False
+    ifix_package_v: "/usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z"
+    ifix_label_v:   "IJ22714s1a"
+    ifix_number_v:  ""
+    ifix_vuid_v:    "00F7CD554C00021210023020"
+    package_v:      "devices.fcp.disk.rte"
+    list_file_v:    ""
+    alt_dir_v:      "/usr/sys/inst.images"
+    work_dir_v:     "/var/adm/ansible/work"
+    mount_inst_v:   False
+    from_epkg_v:    False
+    commit_v:       False
+    expand_fs_v:    True
+    force_rm_v:     False
+    overwrite_v:    False
+    preview_v:      True
+    quiet_v:        True
+    bosboot_v:      "skip"
+    verbose_v:      3
+
+  tasks:
+
+  - name: List interim fix on the system
+    emgr:
+      action: list
+    register: output
+  - debug: var=output
+
+  - name: Install ifix package from file generated with epkg
+    emgr:
+      action: install
+      ifix_package: "{{ ifix_package_v }}"
+      working_dir: "{{ work_dir_v }}"
+      from_epkg: yes
+      expand_fs: yes
+      force: "{{ overwrite_v }}"
+    register: output
+    when: install_v
+  - debug: var=output
+    when: install_v
+
+  - name: List a specific ifix data in details
+    emgr:
+      action: list
+      ifix_label: "{{ ifix_label_v }}"
+      verbose: "{{ verbose_v }}"
+    register: output
+  - debug: var=output
+
+  - name: Check an ifix
+    emgr:
+      action: check
+      ifix_label: "{{ ifix_label_v }}"
+    ignore_errors: yes
+    register: output
+  - debug: var=output
+
+  - name: Preview ifix commit and display only errors and warnings
+    emgr:
+      action: commit
+      ifix_label: "{{ ifix_label_v }}"
+      preview: "{{ preview_v }}"
+      quiet: "{{ quiet_v }}"
+    register: output
+  - debug: var=output
+
+  - name: Remove an installed ifix based on its VUID
+    emgr:
+      action: remove
+      ifix_vuid: "{{ ifix_vuid_v }}"
+      preview: "{{ preview_v }}"
+    register: output
+  - debug: var=output
+
+  - name: Display contents and topology of an ifix
+    emgr:
+      action: display_ifix
+      ifix_package: "{{ ifix_package_v }}"
+    register: output
+  - debug: var=output
+

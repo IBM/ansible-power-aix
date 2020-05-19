@@ -11,81 +11,138 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: nim_suma
 short_description: Download fixes, SP or TL on an AIX server
 description:
-- Creates a task to automate the download of technology levels and
-  service packs from a fix server.
+- Creates a task to automate the download of technology level (TL) and
+  service pack (SP) from a fix server using the Service Update Management
+  Assistant (SUMA). Log file is /var/adm/ansible/nim_suma_debug.log.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
-  oslevel:
-    description:
-    - Operating System level.
-    type: str
-  location:
-    description:
-    - NIM location.
-    type: str
-  targets:
-    description:
-    - NIM targets.
-    type: str
   action:
     description:
     - Controls what is performed.
-    - C(download) to download fixes.
-    - C(preview).
-    - C(list).
-    - C(edit).
-    - C(unschedule).
-    - C(delete).
-    - C(config).
-    - C(default).
+    - C(download) to download fixes and define the NIM resource.
+    - C(preview)  to execute all the checks without downloading the fixes.
+    - C(list) to list all SUMA tasks.
+    - C(edit) to edit an exiting SUMA task.
+    - C(unschedule) to remove any scheduling information for the specified SUMA task.
+    - C(delete) to delete a SUMA task and remove any schedules for this task.
+    - C(config) to list global SUMA configuration settings.
+    - C(default) to list default SUMA tasks.
     type: str
     choices: [ download, preview, list, edit, unschedule, delete, config, default ]
     default: preview
+  targets:
+    description:
+    - Specifies the NIM clients to perform the action on.
+    - C(foo*) designates all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(all) designates all the NIM clients.
+    type: list
+    elements: str
+  oslevel:
+    description:
+    - Specifies the Operating System level to update to;
+    - C(Latest) indicates the latest SP suma can update the targets to.
+    - C(xxxx-xx(-00-0000)) sepcifies a TL.
+    - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies a SP.
+    - Required when I(action=download) or I(action=preview).
+    type: str
+    default: Latest
+  lpp_source_name:
+    description:
+    - Name of the lpp_source NIM resource.
+    - Required when I(action=download) or I(action=preview).
+    type: str
+  download_dir:
+    description:
+    - Absolute directory path where to download the packages on the NIM server.
+    - If not set it looks for existing NIM ressource mattching I(lpp_source_name) and use its location.
+    - If no NIM ressource is found, the path is set to /usr/sys/inst.images
+    - Can be used if I(action=download) or C(action=preview).
+    type: path
+  download_only:
+    description:
+    - Download only. Do not create the NIM resource.
+    - Can be used if I(action=download)
+    type: bool
+    default: no
+  extend_fs:
+    description:
+    - Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
+    - Can be used if I(action=download) or C(action=preview).
+    type: bool
+    default: yes
   task_id:
     description:
-    - SUMA task.
+    - SUMA task identification number.
+    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=unschedule).
+    - Required when I(action=edit) or I(action=delete) or I(action=unschedule).
     type: str
   sched_time:
     description:
-    - Schedule time.
+    - Schedule time. Specifying an empty or space filled string results in unscheduling the task. If not set, it saves the task.
+    - Can be used if I(action=edit).
     type: str
   description:
     description:
     - Display name for SUMA task.
+    - If not set the will be labelled 'I(action) request for oslevel I(oslevel)'
+    - Can be used for I(action=download) or I(action=preview).
     type: str
+  metadata_dir:
+    description:
+    - Directory where metadata files are downloaded.
+    - Can be used if I(action=download) or C(action=preview) when I(last_sp=yes) or I(oslevel) is not exact, for example I(oslevel=Latest).
+    type: path
+    default: /var/adm/ansible/metadata
 '''
 
 EXAMPLES = r'''
 - name: Check for, and install, system updates
   nim_suma:
+    action: download
     targets: nimclient01
-    location: default
     oslevel: latest
     download_dir: /usr/sys/inst.images
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+meta:
+    description: Detailed information on the module execution.
+    returned: always
+    type: dict
+    contains:
+        messages:
+            description: Details on errors/warnings/inforamtion
+            returned: always
+            type: list
+            elements: str
+            sample: "Unavailable client: nimclient02"
+    sample:
+        "meta": {
+            "messages": [
+                "Unavailable client: nimclient02",
+                "The latest SP of 7200-02 is: 7200-02-01-1732",
+                ...,
+            ]
+        }
+'''
 
 import os
 import re
 import glob
 import shutil
-import subprocess
 import threading
-import logging
-# Ansible module 'boilerplate'
-# pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
+
 from ansible.module_utils.basic import AnsibleModule
 
-SUMA_CHANGED = False
-SUMA_OUTPUT = []
-SUMA_ERROR = []
-PARAMS = {}
+results = None
 
 
 def min_oslevel(dic):
@@ -124,209 +181,190 @@ def max_oslevel(dic):
     return oslevel_max
 
 
-def run_cmd(machine, result):
-    """Run command function, command to be 'threaded'.
+def run_oslevel_cmd(module, machine, oslevels):
+    """
+    Run the oslevel command on target machine.
 
-    The thread then store the outpout in the dedicated slot of the result
-    dictionnary.
+    Stores the output in the dedicated slot of the oslevels dictionnary.
 
     arguments:
-        machine (str): The name machine
-        result  (dict): The result of the command
+        module      (dict): The Ansible module
+        machine      (str): The name machine
+        oslevels    (dict): The results of the command
     """
+    oslevels[machine] = 'timedout'
+
     if machine == 'master':
         cmd = ['/usr/bin/oslevel', '-s']
     else:
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
                machine,
-               '"/usr/bin/oslevel -s"']
+               '"/usr/bin/oslevel -s; echo rc=$?"']
 
-    proc = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        module.debug('{} oslevel stdout: "{}"'.format(machine, stdout))
+        if stderr.rstrip():
+            module.warn('"{}" command stderr: {}'.format(' '.join(cmd), stderr))
 
-    # return stdout only ... stripped!
-    result[machine] = proc.communicate()[0].rstrip()
+        # remove the rc of c_rsh with echo $?
+        if machine != 'master':
+            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+        # return stdout only ... stripped!
+        oslevels[machine] = stdout.rstrip()
+    else:
+        msg = 'Command: \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        module.log('Failed to get oslevel for {}: {}'.format(machine, msg))
 
 
-def expand_targets(targets_list, nim_clients):
+def expand_targets(module, targets, nim_clients):
     """
-    Expand the list of the targets.
+    Expand the list of target patterns.
 
-    a taget name could be of the following form:
-        target*       all the NIM client machines whose name starts
+    A target pattern can be of the following form:
+        target*       all the NIM client machines whose names start
                           with 'target'
         target[n1:n2] where n1 and n2 are numeric: target<n1> to target<n2>
         * or ALL      all the NIM client machines
         client_name   the NIM client named 'client_name'
         master        the NIM master
 
-        sample:  target[1:5] target12 other_target*
+        example:  target[1:5] target12 other_target*
 
     arguments:
-        machine (str): The name machine
-        result  (dict): The result of the command
+        module      (dict): The Ansible module
+        targets     (list): The list of target patterns
+        nim_clients (list): The list of existing NIM clients
 
-    return: the list of the existing machines matching the target list
+    return: clients: the list of the existing machines matching the target list
     """
     clients = []
-    if len(targets_list) == 0:
+    if len(targets) == 0:
         return clients
 
-    for target in targets_list:
+    for target in targets:
 
-        # -----------------------------------------------------------
         # Build target(s) from: range i.e. quimby[7:12]
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
-
             name = rmatch.group(1)
             start = rmatch.group(2)
             end = rmatch.group(3)
 
             for i in range(int(start), int(end) + 1):
-                # target_results.append("{0}{1:02}".format(name, i))
                 curr_name = name + str(i)
                 if curr_name in nim_clients:
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: val*. i.e. quimby*
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
-
             name = rmatch.group(1)
 
             for curr_name in nim_clients:
                 if re.match(r"^%s\.*" % name, curr_name):
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: all or *
-        # -----------------------------------------------------------
         if target.upper() == 'ALL' or target == '*':
             clients = nim_clients
             continue
 
-        # -----------------------------------------------------------
-        # Build target(s) from: quimby05 quimby08 quimby12
-        # -----------------------------------------------------------
+        # Build target(s) from full name: quimby05
         if (target in nim_clients) or (target == 'master'):
             clients.append(target)
 
     return list(set(clients))
 
 
-def exec_cmd(cmd, shell=False):
-    """Execute a command.
-
-    arguments:
-        cmd    (str): The command to be executed
-        shell (bool): execute cmd through the shell if set (vulnerable to shell
-                      injection when cmd is from user inputs). If cmd is a string
-                      string, the string specifies the command to execute through
-                      the shell. If cmd is a list, the first item specifies the
-                      command, and other items are arguments to the shell itself.
-
-    return:
-        ret code: 0 - OK
-                  1 - CalledProcessError exception
-                  2 - other exception
-        both stdout and stderr of the command
-    """
-    out = ''
-
-    logging.debug("exec command:{}".format(cmd))
-    try:
-        out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=shell)
-
-    except subprocess.CalledProcessError as exc:
-        logging.debug("exec command rc:{} out:{}"
-                      .format(exc.returncode, exc.output))
-        return exc.returncode, exc.output
-
-    except OSError as exc:
-        logging.debug("exec command rc:{} out:{}"
-                      .format(exc.args[0], exc.args))
-        return exc.args[0], exc.args
-
-    except Exception as exc:
-        msg = "Command: {} Exception:{} =>Data:{}"\
-              .format(cmd, exc, out)
-        logging.debug("exec command rc:2 out:{}".format(msg))
-        return 2, msg
-
-    logging.debug("exec command rc:0 out:{}".format(out))
-
-    return 0, out
-
-
 def get_nim_clients(module):
     """
     Get the list of the standalones defined on the NIM master.
 
+    arguments:
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
     return the list of the name of the standlone objects defined on the
            NIM master.
     """
-    std_out = ''
-    std_err = ''
+    global results
+
     clients_list = []
 
     cmd = ['lsnim', '-t', 'standalone']
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        module.fail_json(**results)
 
-    try:
-        proc = subprocess.Popen(cmd, shell=False, stdin=None,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (std_out, std_err) = proc.communicate()
-    except Exception as excep:
-        msg = "Command: {} Exception.Args{} =>Data:{} ... Error :{}"\
-              .format(cmd, excep.args, std_out, std_err)
-        SUMA_ERROR.append(msg)
-        logging.error(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
-    # nim_clients list
-    for line in std_out.rstrip().split('\n'):
-        clients_list.append(line.split()[0])
+    for line in stdout.rstrip().splitlines():
+        clients_list.append(line.strip().split()[0])
 
     return clients_list
 
 
-def get_nim_lpp_source():
+def get_oslevels(module, targets):
+    """
+    Get the oslevel of the specified targets.
+
+    arguments:
+        module  (dict): The Ansible module
+    return a dictionary of the oslevels
+    """
+
+    # Launch threads to collect information on targets
+    threads = []
+    oslevels = {}
+
+    for machine in targets:
+        process = threading.Thread(target=run_oslevel_cmd,
+                                   args=(module, machine, oslevels))
+        process.start()
+        threads.append(process)
+
+    for process in threads:
+        process.join(300)  # wait 5 min for c_rsh to timeout
+        if process.is_alive():
+            module.warn('{} Not responding'.format(process))
+
+    return oslevels
+
+
+def get_nim_lpp_source(module):
     """
     Get the list of the lpp_source defined on the NIM master.
 
     arguments:
-        None
-
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
     return:
-        ret code: 0 - OK
-                  1 - CalledProcessError exception
-                  2 - other exception
         lpp_source_list: dictionary key, value
                 key = lpp source name
                 value = lpp source location
     """
-    std_out = ''
+    global results
+
     lpp_source_list = {}
 
-    cmd = 'LC_ALL=C lsnim -t lpp_source -l'
+    cmd = ['lsnim', '-t', 'lpp_source', '-l']
 
-    logging.debug("SUMA command:{}".format(cmd))
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        msg = "Cannot get the list of lpp source, command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg)
+        results['msg'] = msg
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        module.fail_json(**results)
 
-    ret, std_out = exec_cmd(cmd, shell=True)
-    if ret != 0:
-        logging.error("SUMA command error rc:{}, error: {}"
-                      .format(ret, std_out))
-        return ret, std_out
-
-    # lpp_source list
-    for line in std_out.rstrip().split('\n'):
+    for line in stdout.rstrip().split('\n'):
         match_key = re.match(r"^(\S+):", line)
         if match_key:
             obj_key = match_key.group(1)
@@ -336,12 +374,16 @@ def get_nim_lpp_source():
                 loc = match_loc.group(1)
                 lpp_source_list[obj_key] = loc
 
-    return 0, lpp_source_list
+    return lpp_source_list
 
 
-def compute_rq_type(oslevel, empty_list):
+def compute_rq_type(module, oslevel, targets_list):
     """Compute rq_type.
 
+    arguments:
+        module          (dict): The Ansible module
+        oslevel          (str): requested oslevel
+        targets_list    (list): list of target NIM clients
     return:
         Latest when oslevel is blank or latest (not case sensitive)
         Latest when oslevel is a TL (6 digits) and target list is empty
@@ -349,9 +391,9 @@ def compute_rq_type(oslevel, empty_list):
         SP     when oslevel is xxxx-xx-xx(-xxxx)
         ERROR  when oslevel is not recognized
     """
-    if oslevel is None or not oslevel.strip() or oslevel.upper() == 'LATEST':
+    if oslevel is None or not oslevel.strip() or oslevel == 'Latest':
         return 'Latest'
-    if re.match(r"^([0-9]{4}-[0-9]{2})$", oslevel) and empty_list:
+    if re.match(r"^([0-9]{4}-[0-9]{2})$", oslevel) and not targets_list:
         return 'Latest'
     if re.match(r"^([0-9]{4}-[0-9]{2})(|-00|-00-0000)$", oslevel):
         return 'TL'
@@ -361,7 +403,35 @@ def compute_rq_type(oslevel, empty_list):
     return 'ERROR'
 
 
-def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
+def find_sp_version(module, file):
+    """
+    Open and parse the provided file to find higher SP version
+    arguments:
+        module  (dict): The Ansible module
+        file     (str): path of the file to parse
+    return:
+       sp_version   value found or None
+    """
+    sp_version = None
+    module.debug("opening file: {}".format(file))
+    myfile = open(file, "r")
+    for line in myfile:
+        # module.debug("line: {}".format(line.rstrip()))
+        match_item = re.match(
+            r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
+            line.rstrip())
+        if match_item:
+            version = match_item.group(1)
+            module.debug("matched line: {}, version={}".format(line.rstrip(), version))
+            if sp_version is None or version > sp_version:
+                sp_version = version
+            break
+    myfile.close()
+
+    return sp_version
+
+
+def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_oslevel):
     """
     Compute rq_name.
         if oslevel is a complete SP (12 digits) then return RqName = oslevel
@@ -373,24 +443,26 @@ def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
         - for SP: return the SP value in the form xxxx-xx-xx-xxxx
 
     arguments:
-        rq_type
-        oslevel                  requested oslevel
-        clients_target__oslevel  oslevel of each selected client
-
+        module                  (dict): The Ansible module
+        suma_params             (dict): parameters to build the suma command
+        rq_type                  (str): type of request, can be Latest, SP or TL
+        oslevel                  (str): requested oslevel
+        clients_target_oslevel  (dict): oslevel of each selected client
+    note:
+        Exits with fail_json in case of error
     return:
-       return code : 0 - OK
-                     1 - CalledProcessError exception
-                     2 - other exception
-       rq_name value or stderr in case of error
+       rq_name value
     """
-    metadata_dir = "/tmp/ansible/metadata"  # <TODO> get env variable for that
+    global results
+
     rq_name = ''
     if rq_type == 'Latest':
         if not clients_target_oslevel:
-            if clients_target_oslevel == 'Latest':
-                logging.error('Error: target oslevel cannot be "Latest"'
-                              'check you can get the oslevel on targets')
-                return 2
+            if oslevel == 'Latest':
+                msg = "Cannot get oslevel from targets, check you can get the oslevel on targets"
+                module.log(msg)
+                results['msg'] = msg
+                module.fail_json(**results)
             metadata_filter_ml = oslevel[:7]
             if len(metadata_filter_ml) == 4:
                 metadata_filter_ml += "-00"
@@ -407,62 +479,50 @@ def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
 
             # warn the user if bigest and lowest tl do not belong
             # to the same release
-            if re.match(r"^([0-9]{4})", tl_min).group(1) \
-               != re.match(r"^([0-9]{4})", tl_max).group(1):
-                logging.warning("Error: Release level mismatch, "
-                                "only AIX {} SP/TL will be downloaded\n\n"
-                                .format(tl_max[:2]))
+            if re.match(r"^([0-9]{4})", tl_min).group(1) != re.match(r"^([0-9]{4})", tl_max).group(1):
+                module.warn("Error: Release level mismatch, only AIX {} SP/TL will be downloaded\n\n".format(tl_max[:2]))
 
             # tl_max is used to get metadata then to get latest SP
             metadata_filter_ml = tl_max
 
         if not metadata_filter_ml:
-            logging.error(
-                'Error: cannot discover filter ml based on the list of targets')
-            raise Exception(
-                'Error: cannot discover filter ml based on the list of targets')
+            msg = "Cannot build minimum level filter based on the OS level of targets"
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
 
-        if not os.path.exists(metadata_dir):
-            os.makedirs(metadata_dir)
+        if not os.path.exists(suma_params['metadata_dir']):
+            os.makedirs(suma_params['metadata_dir'])
 
         # Build suma command to get metadata
-        cmd = 'LC_ALL=C /usr/sbin/suma -x -a Action=Metadata '\
-              '-a RqType=Latest -a FilterML={} -a DLTarget={} -a DisplayName="{}"'\
-              .format(metadata_filter_ml, metadata_dir, PARAMS['Description'])
+        cmd = ['/usr/sbin/suma', '-x', '-a', 'Action=Metadata', '-a', 'RqType=Latest']
+        cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
+        cmd += ['-a', 'FilterML={}'.format(metadata_filter_ml)]
+        cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
 
-        logging.debug("SUMA command:{}".format(cmd))
-
-        ret, stdout = exec_cmd(cmd, shell=True)
-        if ret != 0:
-            logging.error("SUMA command error rc:{}, error: {}"
-                          .format(ret, stdout))
-            return ret, stdout
-
-        logging.debug("SUMA command rc:{}".format(ret))
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc != 0:
+            msg = "Suma metadata command '{}' failed with return code {}".format(' '.join(cmd), rc)
+            module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+            results['stdout'] = stdout
+            results['stderr'] = stderr
+            results['msg'] = msg
+            module.fail_json(**results)
+        module.debug("SUMA command '{}' rc:{}, stdout:{}".format(' '.join(cmd), rc, stdout))
 
         # find latest SP build number for the highest TL
         sp_version = None
-        file_name = metadata_dir + "/installp/ppc/" \
-                                 + metadata_filter_ml + "*.xml"
-        logging.debug("searched files: {}".format(file_name))
+        file_name = suma_params['metadata_dir'] + "/installp/ppc/" + metadata_filter_ml + "*.xml"
+        module.debug("searched files: {}".format(file_name))
         files = glob.glob(file_name)
-        logging.debug("found files: {}".format(files))
+        module.debug("searching SP in files: {}".format(files))
         for cur_file in files:
-            logging.debug("open file: {}".format(cur_file))
-            fic = open(cur_file, "r")
-            for line in fic:
-                logging.debug("line: {}".format(line))
-                match_item = re.match(
-                    r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
-                    line)
-                if match_item:
-                    version = match_item.group(1)
-                    if sp_version is None or version > sp_version:
-                        sp_version = version
-                    break
+            version = find_sp_version(module, cur_file)
+            if sp_version is None or version > sp_version:
+                sp_version = version
 
         rq_name = sp_version
-        shutil.rmtree(metadata_dir)
+        shutil.rmtree(suma_params['metadata_dir'])
 
     elif rq_type == 'TL':
         # target verstion = TL part of the requested version
@@ -476,50 +536,54 @@ def compute_rq_name(rq_type, oslevel, clients_target_oslevel):
             metadata_filter_ml = re.match(r"^([0-9]{4}-[0-9]{2})-[0-9]{2}$",
                                           oslevel).group(1)
 
-            if not os.path.exists(metadata_dir):
-                os.makedirs(metadata_dir)
+            if not os.path.exists(suma_params['metadata_dir']):
+                os.makedirs(suma_params['metadata_dir'])
 
-            # =================================================================
             # Build suma command to get metadata
-            # =================================================================
-            cmd = 'LC_ALL=C /usr/sbin/suma -x -a Action=Metadata '\
-                  '-a RqType=Latest -a FilterML={} -a DLTarget={} -a DisplayName="{}"'\
-                  .format(metadata_filter_ml, metadata_dir, PARAMS['Description'])
+            cmd = ['/usr/sbin/suma', '-x', '-a', 'Action=Metadata', '-a', 'RqType=Latest']
+            cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
+            cmd += ['-a', 'FilterML={}'.format(metadata_filter_ml)]
+            cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
 
-            logging.debug("suma command: {}".format(cmd))
-
-            ret, stdout = exec_cmd(cmd, shell=True)
-            if ret != 0:
-                logging.error("SUMA command error rc:{}, error: {}"
-                              .format(ret, stdout))
-                return ret, stdout
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc != 0:
+                msg = "Suma metadata command '{}' failed with return code {}".format(' '.join(cmd), rc)
+                module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+                results['stdout'] = stdout
+                results['stderr'] = stderr
+                results['msg'] = msg
+                module.fail_json(**results)
+            module.debug("SUMA command '{}' rc:{}, stdout:{}".format(' '.join(cmd), rc, stdout))
 
             # find SP build number
             sp_version = None
-            cur_file = metadata_dir + "/installp/ppc/" + oslevel + ".xml"
-            fic = open(cur_file, "r")
-            for line in fic:
-                match_item = re.match(
-                    r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
-                    line)
-                if match_item:
-                    sp_version = match_item.group(1)
-                    break
+            cur_file = suma_params['metadata_dir'] + "/installp/ppc/" + oslevel + ".xml"
+            sp_version = find_sp_version(module, cur_file)
 
             rq_name = sp_version
-            shutil.rmtree(metadata_dir)
+            shutil.rmtree(suma_params['metadata_dir'])
 
-    return 0, rq_name
+    if not rq_name or not rq_name.strip():  # should never happen
+        msg = "OS level {} does not match any fixes".format(oslevel)
+        module.log(msg)
+        results['msg'] = msg
+        module.fail_json(**results)
+
+    return rq_name
 
 
-def compute_filter_ml(clients_target_oslevel, rq_name):
-
+def compute_filter_ml(module, clients_target_oslevel, rq_name):
     """
     Compute the suma filter ML.
     returns the TL part of rq_name if there is no target machine.
     returns the lowest Technical Level from the target client list
         (clients_oslevel) that is at the same release as the
         requested target os_level (rq_name).
+
+    arguments:
+        module                 (dict): The Ansible module
+        clients_target_oslevel (list): oslevel of each selected client
+        rq_name                 (str): SUMA request name based on metadata info
     """
     minimum_oslevel = None
     filter_ml = None
@@ -540,156 +604,135 @@ def compute_filter_ml(clients_target_oslevel, rq_name):
     return filter_ml
 
 
-def compute_lpp_source_name(location, rq_name):
+def compute_lpp_source_name(module, lpp_source, rq_name):
     """
-    Compute lpp source name based on the location.
-    return: the name of the lpp_source
+    Compute lpp source name based on lpp_source and rq_name.
+    When no lpp_source is specified the lpp_source_name is <rq_name>-lpp_source
 
-    When no location is specified or the location is a path the
-        lpp_source_name is the <rq_name>-lpp_source
-    else le lpp_source_name is the location value
-    if location contains a relative path it will be considered as a
-    lpp_source, and will not be find in lpp source list
-    because "/" is a wrong caracter fo lpp_source name
+    arguments:
+        module     (dict): The Ansible module
+        lpp_source  (str): lpp source name
+        rq_name     (str): SUMA request name based on metadata info
+    return:
+        lpp_src     the name of the lpp_source
     """
     lpp_src = ''
     oslevel = rq_name
-    if not location or not location.strip() or location[0] == '/':
+    if lpp_source and lpp_source.strip():
+        lpp_src = lpp_source
+    else:
         if re.match(r"^([0-9]{4}-[0-9]{2})$", oslevel):
             oslevel = oslevel + '-00-0000'
         lpp_src = "{}-lpp_source".format(oslevel)
-    else:
-        lpp_src = location.rstrip('/')
 
     return lpp_src
 
 
-def compute_dl_target(location, lpp_source, nim_lpp_sources):
+def compute_dl_target(module, download_dir, lpp_source, nim_lpp_sources):
     """
-    Compute suma DL target based on lpp source name.
+    Compute suma download target directory.
 
-    When the location is empty, set the location path to
-        /usr/sys/inst.images
-    Check if a lpp_source NIM resource already exist and check the path is
-        the same
-    When the location is not a path, check that a NIM lpp_source
-        corresponding to the location value exists, and returns the
-        location path of this NIM ressource.
+    Check if a lpp_source NIM resource already exists and check the location is the same.
+    If download_dir is not set look for an existing NIM resource and return its location.
+    Otherwise return the default location: /usr/sys/inst.images
 
+    arguments:
+        module          (dict): The Ansible module
+        download_dir     (str): directory
+        lpp_source       (str): lpp source name
+        nim_lpp_sources (dict): NIM lpp_source list
+    note:
+        Exits with fail_json in case of error
     return:
-        return code : 0 - OK
-                      1 - if error
         dl_target value or msg in case of error
     """
-    if not location or not location.strip():
-        loc = "/usr/sys/inst.images"
+    global results
+
+    if download_dir:
+        dl_target = "{}/{}".format(download_dir, lpp_source)
+        if lpp_source in nim_lpp_sources and nim_lpp_sources[lpp_source] != dl_target:
+            msg = "lpp source location mismatch. A lpp source '{}' already exists with a location different from '{}'".format(lpp_source, dl_target)
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
     else:
-        loc = location.rstrip('/')
+        if lpp_source in nim_lpp_sources:
+            dl_target = nim_lpp_sources[lpp_source]
+        else:
+            dl_target = '/usr/sys/inst.images'
 
-    if loc[0] == '/':
-        dl_target = "{}/{}".format(loc, lpp_source)
-        if lpp_source in nim_lpp_sources \
-           and nim_lpp_sources[lpp_source] != dl_target:
-            return 1, "SUMA Error: lpp source location mismatch. It already " \
-                      "exists a lpp source '{}' with a location different as '{}'" \
-                      .format(lpp_source, dl_target)
-    else:
-        if loc not in nim_lpp_sources:
-            return 1, "SUMA Error: lpp_source: '{}' does not exist" \
-                      .format(loc)
-
-        dl_target = nim_lpp_sources[loc]
-
-    return 0, dl_target
+    return dl_target
 
 
-def suma_command(module, action):
+def suma_command(module, action, suma_params):
     """
     Run a suma command.
 
-    parameters
-        action   preview or download
-
+    arguments:
+        module      (dict): The Ansible module
+        action       (str): preview or download
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
     return:
-       ret     suma command return code
        stdout  suma command output
     """
-    rq_type = PARAMS['RqType']
+    global results
+
+    rq_type = suma_params['RqType']
     if rq_type == 'Latest':
         rq_type = 'SP'
 
-    suma_cmd = 'LC_ALL=C /usr/sbin/suma -x -a RqType={} -a Action={} '\
-               '-a FilterML={} -a DLTarget={} -a RqName={} -a DisplayName="{}"'\
-               .format(rq_type, action,
-                       PARAMS['FilterMl'], PARAMS['DLTarget'],
-                       PARAMS['RqName'], PARAMS['Description'])
+    cmd = ['/usr/sbin/suma', '-x']
+    cmd += ['-a', 'RqType={}'.format(rq_type)]
+    cmd += ['-a', 'Action={}'.format(action)]
+    cmd += ['-a', 'FilterML={}'.format(suma_params['FilterMl'])]
+    cmd += ['-a', 'DLTarget={}'.format(suma_params['DLTarget'])]
+    cmd += ['-a', 'RqName={}'.format(suma_params['RqName'])]
+    cmd += ['-a', 'DisplayName={}'.format(suma_params['description'])]
 
-    logging.debug("SUMA - Command:{}".format(suma_cmd))
-    SUMA_OUTPUT.append("SUMA - Command:{}".format(suma_cmd))
+    if suma_params['extend_fs']:
+        cmd += ['-a', 'Extend=y']
+    else:
+        cmd += ['-a', 'Extend=n']
 
-    ret, stdout = exec_cmd(suma_cmd, shell=True)
-    if ret != 0:
-        logging.error("Error: suma {} command failed with return code {}"
-                      .format(action, ret))
-        SUMA_ERROR.append("SUMA Command: {} => Error :{}".format(suma_cmd, stdout.split('\n')))
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        msg = "Suma {} command '{}' failed with return code {}".format(action, ' '.join(cmd), rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
-    return ret, stdout
-
-
-def nim_command(module):
-    """
-    Run a 'nim -o define' command
-
-    parameters
-        action
-
-    return:
-       ret     NIM command return code
-       stdout  NIM command output
-    """
-    nim_cmd = 'LC_ALL=C /usr/sbin/nim  -o define  -t lpp_source  -a server=master '\
-              '-a location={} -a packages=all -a comments={} {}'\
-              .format(PARAMS['DLTarget'], PARAMS['Comments'], PARAMS['LppSource'])
-
-    logging.info("NIM - Command:{}".format(nim_cmd))
-    SUMA_OUTPUT.append("NIM command:{}".format(nim_cmd))
-
-    ret, stdout = exec_cmd(nim_cmd, shell=True)
-
-    if ret != 0:
-        msg = "NIM Command: {}".format(nim_cmd)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        msg = "NIM operation failed - rc:{}".format(ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        logging.error("{}".format(stdout))
-        SUMA_ERROR.append("{}".format(stdout))
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
-    return ret, stdout
+    return stdout
 
 
-def suma_list(module):
+def suma_list(module, suma_params):
     """
     List all SUMA tasks or the task associated with the given task ID
+
+    arguments:
+        module      (dict): The Ansible module
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
     """
-    task = PARAMS['task_id']
+    global results
+
+    task = suma_params['task_id']
     if task is None or task.strip() == '':
         task = ''
-    cmde = "/usr/sbin/suma -l {}".format(task)
-    ret, stdout, stderr = module.run_command(cmde)
 
-    if ret != 0:
-        msg = "SUMA Error: list command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
-    SUMA_OUTPUT.append('List SUMA tasks:')
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    cmd = "/usr/sbin/suma -l {}".format(task)
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        msg = "Suma list command: '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
 def check_time(val, mini, maxi):
@@ -706,356 +749,296 @@ def check_time(val, mini, maxi):
     return False
 
 
-def suma_edit(module):
+def suma_edit(module, suma_params):
     """
     Edit a SUMA task associated with the given task ID
 
     Depending on the shed_time parameter value, the task wil be scheduled,
         unscheduled or saved
-    """
-    cmde = '/usr/sbin/suma'
-    if PARAMS['sched_time'] is None:
-        # save
-        cmde += ' w'
 
-    elif not PARAMS['sched_time'].strip():
+    arguments:
+        module      (dict): The Ansible module
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
+    """
+    global results
+
+    cmd = '/usr/sbin/suma'
+    if suma_params['sched_time'] is None:
+        # save
+        cmd += ' -w'
+
+    elif not suma_params['sched_time'].strip():
         # unschedule
-        cmde += ' u'
+        cmd += ' -u'
 
     else:
         # schedule
-        minute, hour, day, month, weekday = PARAMS['sched_time'].split(' ')
+        minute, hour, day, month, weekday = suma_params['sched_time'].split(' ')
 
         if check_time(minute, 0, 59) and check_time(hour, 0, 23) \
            and check_time(day, 1, 31) and check_time(month, 1, 12) \
            and check_time(weekday, 0, 6):
 
-            cmde += ' -s "{}"'.format(PARAMS['sched_time'])
+            cmd += ' -s "{}"'.format(suma_params['sched_time'])
         else:
-            msg = "Error: SUMA edit command: '{}' Bad schedule time".format(cmde)
-            logging.error(msg)
-            SUMA_ERROR.append(msg)
-            module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+            msg = "Suma edit command '{}': bad schedule time '{}'".format(cmd, suma_params['sched_time'])
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
 
-    cmde += ' {}'.format(PARAMS['task_id'])
-    ret, stdout, stderr = module.run_command(cmde)
+    if suma_params['task_id']:
+        cmd += ' {}'.format(suma_params['task_id'])
 
-    if ret != 0:
-        msg = "SUMA Error: edit command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    rc, stdout, stderr = module.run_command(cmd)
 
-    SUMA_OUTPUT.append("Edit SUMA task {}".format(PARAMS['task_id']))
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma edit command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
-def suma_unschedule(module):
+def suma_unschedule(module, suma_params):
     """
     Unschedule a SUMA task associated with the given task ID
+
+    arguments:
+        module      (dict): The Ansible module
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
     """
-    cmde = "/usr/sbin/suma -u {}".format(PARAMS['task_id'])
-    ret, stdout, stderr = module.run_command(cmde)
+    global results
 
-    if ret != 0:
-        msg = "SUMA Error: unschedule command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    cmd = "/usr/sbin/suma -u {}".format(suma_params['task_id'])
+    rc, stdout, stderr = module.run_command(cmd)
 
-    SUMA_OUTPUT.append("Unschedule suma task: {}".format(PARAMS['task_id']))
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma unschedule command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
-def suma_delete(module):
+def suma_delete(module, suma_params):
     """
     Delete the SUMA task associated with the given task ID
+
+    arguments:
+        module      (dict): The Ansible module
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
     """
-    cmde = "/usr/sbin/suma -d {}".format(PARAMS['task_id'])
-    ret, stdout, stderr = module.run_command(cmde)
+    global results
 
-    if ret != 0:
-        msg = "SUMA Error: delete command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    cmd = "/usr/sbin/suma -d {}".format(suma_params['task_id'])
+    rc, stdout, stderr = module.run_command(cmd)
 
-    SUMA_OUTPUT.append("Delete SUMA task {}".format(PARAMS['task_id']))
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma delete command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
 def suma_config(module):
     """
     List the SUMA global configuration settings
+
+    arguments:
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
     """
-    cmde = '/usr/sbin/suma -c'
-    ret, stdout, stderr = module.run_command(cmde)
+    global results
 
-    if ret != 0:
-        msg = "SUMA Error: config command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    cmd = '/usr/sbin/suma -c'
+    rc, stdout, stderr = module.run_command(cmd)
 
-    SUMA_OUTPUT.append('SUMA global configuration settings:')
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma config command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
 def suma_default(module):
     """
     List default SUMA tasks
+
+    arguments:
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
     """
-    cmde = '/usr/sbin/suma -D'
-    ret, stdout, stderr = module.run_command(cmde)
+    global results
 
-    if ret != 0:
-        msg = "SUMA Error: default command: '{}' failed with return code {}" \
-              .format(cmde, ret)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    cmd = '/usr/sbin/suma -D'
+    rc, stdout, stderr = module.run_command(cmd)
 
-    SUMA_OUTPUT.append('SUMA default task:')
-    SUMA_OUTPUT.append(stdout.split('\n'))
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if rc != 0:
+        msg = "Suma default command '{}' failed with return code {}".format(cmd, rc)
+        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        results['msg'] = msg
+        module.fail_json(**results)
 
 
-def suma_down_prev(module):
+def suma_download(module, suma_params):
     """
     Dowload (or preview) action
-    """
 
-    global SUMA_CHANGED
-    global PARAMS
-    targets_list = []
-    empty_list = False
-    if PARAMS['targets'] != '':
-        targets_list = PARAMS['targets'].split(' ')
-    else:
-        empty_list = True
-    req_oslevel = PARAMS['req_oslevel']
-    if req_oslevel is None \
-       or not req_oslevel.strip() \
-       or req_oslevel.upper() == 'LATEST':
-        req_oslevel = 'Latest'
-        PARAMS['req_oslevel'] = req_oslevel
+    suma_params['action'] should be set to either 'preview' or 'download'.
+
+    arguments:
+        module      (dict): The Ansible module
+        suma_params (dict): parameters to build the suma command
+    note:
+        Exits with fail_json in case of error
+    """
+    global results
+
+    targets_list = suma_params['targets']
+    req_oslevel = suma_params['req_oslevel']
 
     if not targets_list:
         if req_oslevel == 'Latest':
             msg = 'Oslevel target could not be empty or equal "Latest" when' \
                   ' target machine list is empty'
-            logging.error(msg)
-            SUMA_ERROR.append(msg)
-            module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
         elif re.match(r"^([0-9]{4}-[0-9]{2})(-00|-00-0000)$", req_oslevel):
             msg = 'When no Service Pack is provided , a target machine list is required'
-            logging.error(msg)
-            SUMA_ERROR.append(msg)
-            module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
     else:
         if re.match(r"^([0-9]{4})(|-00|-00-00|-00-00-0000)$", req_oslevel):
             msg = 'Specify a non 0 value for the Technical Level or the Service Pack'
-            logging.error(msg)
-            SUMA_ERROR.append(msg)
-            module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+            module.log(msg)
+            results['msg'] = msg
+            module.fail_json(**results)
 
-    # =========================================================================
-    # build NIM lpp_source list
-    # =========================================================================
-    nim_lpp_sources = {}
-    ret, nim_lpp_sources = get_nim_lpp_source()
-    if ret != 0:
-        msg = "SUMA Error: Getting the lpp_source list - rc:{}, error:{}" \
-              .format(ret, nim_lpp_sources)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    # Build NIM lpp_source list
+    nim_lpp_sources = get_nim_lpp_source(module)
+    module.debug("lpp source list: {}".format(nim_lpp_sources))
 
-    logging.debug("lpp source list: {}".format(nim_lpp_sources))
-
-    # ===========================================
     # Build nim_clients list
-    # ===========================================
-    nim_clients = []
     nim_clients = get_nim_clients(module)
     nim_clients.append('master')
+    module.debug("NIM Clients: {}".format(nim_clients))
 
-    logging.debug("NIM Clients: {}".format(nim_clients))
+    # Build targets list from nim_clients list
+    target_clients = expand_targets(module, targets_list, nim_clients)
+    results['target_list'] = target_clients
+    if targets_list and not target_clients:
+        msg = 'No matching NIM client found for target \'{}\'.'.format(suma_params['targets'])
+        module.log(msg)
+        results['msg'] = msg
+        module.fail_json(**results)
+    module.debug('Target list: {}'.format(target_clients))
 
-    # ===========================================
-    # Build targets list
-    # ===========================================
-    target_clients = []
-    target_clients = expand_targets(targets_list, nim_clients)
-    PARAMS['target_clients'] = target_clients
+    # Get the oslevels of the specified targets only
+    clients_oslevel = get_oslevels(module, target_clients)
+    module.debug("client oslevel dict: {}".format(clients_oslevel))
 
-    logging.info("SUMA - Target list: {}".format(len(targets_list)))
-    logging.info("SUMA - Target clients: {}".format(len(target_clients)))
-
-    if len(targets_list) != 0 and len(target_clients) == 0:
-        # the tagets_list doesn't match any NIM clients
-        msg = "SUMA Error: The target patern '{}' does not match any NIM client" \
-              .format(PARAMS['targets'])
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
-    # =========================================================================
-    # Launch threads to collect information on targeted nim clients
-    # =========================================================================
-    threads = []
-    clients_oslevel = {}
-
-    for machine in target_clients:
-        process = threading.Thread(target=run_cmd,
-                                   args=(machine, clients_oslevel))
-        process.start()
-        threads.append(process)
-
-    for process in threads:
-        process.join()
-
-    logging.debug("oslevel unclean dict: {}".format(clients_oslevel))
-
-    # =========================================================================
-    # Delete empty value of dictionnary
-    # =========================================================================
+    # Delete clients with no oslevel value
     removed_oslevel = []
-
     for key in [k for (k, v) in clients_oslevel.items() if not v]:
         removed_oslevel.append(key)
         del clients_oslevel[key]
 
     # Check we have at least one oslevel when a target is specified
-    if len(targets_list) != 0 and len(clients_oslevel) == 0:
-        msg = "SUMA Error: Cannot retrieve oslevel for any NIM client of the target list"
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    if targets_list and not clients_oslevel:
+        msg = "Cannot retrieve oslevel for any NIM client of the target list"
+        module.log(msg)
+        results['msg'] = msg
+        module.fail_json(**results)
+    module.debug("oslevel cleaned dict: {}".format(clients_oslevel))
 
-    logging.debug("oslevel cleaned dict: {}".format(clients_oslevel))
+    if removed_oslevel:
+        msg = "Unavailable client: {}".format(removed_oslevel)
+        module.warn(msg)
+        results['meta']['messages'].append(msg)
 
-    if len(removed_oslevel) != 0:
-        msg = "SUMA - unavailable client list: {}".format(removed_oslevel)
-        SUMA_ERROR.append(msg)
-        SUMA_OUTPUT.append(msg)
-        logging.warn(msg)
-
-    # =========================================================================
     # compute SUMA request type based on oslevel property
-    # =========================================================================
-    rq_type = compute_rq_type(PARAMS['req_oslevel'], empty_list)
+    rq_type = compute_rq_type(module, suma_params['req_oslevel'], targets_list)
     if rq_type == 'ERROR':
-        msg = "SUMA Error: Invalid oslevel: '{}'".format(PARAMS['req_oslevel'])
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+        msg = "Invalid oslevel: '{}'".format(suma_params['req_oslevel'])
+        module.log(msg)
+        results['msg'] = msg
+        module.fail_json(**results)
+    suma_params['RqType'] = rq_type
+    module.debug("SUMA req Type: {}".format(rq_type))
 
-    PARAMS['RqType'] = rq_type
-
-    logging.debug("SUMA req Type: {}".format(rq_type))
-
-    # =========================================================================
     # compute SUMA request name based on metadata info
-    # =========================================================================
-    ret, rq_name = compute_rq_name(rq_type, PARAMS['req_oslevel'], clients_oslevel)
-    if ret != 0:
-        msg = "SUMA Error: compute_rq_name - rc:{}, error:{}" \
-              .format(ret, rq_name)
-        logging.error(msg)
-        SUMA_OUTPUT.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    rq_name = compute_rq_name(module, suma_params, rq_type, suma_params['req_oslevel'], clients_oslevel)
+    suma_params['RqName'] = rq_name
+    module.debug("Suma req Name: {}".format(rq_name))
 
-    PARAMS['RqName'] = rq_name
-
-    logging.debug("Suma req Name: {}".format(rq_name))
-
-    # =========================================================================
     # Compute the filter_ml i.e. the min oslevel from the clients_oslevel
-    # =========================================================================
-    filter_ml = compute_filter_ml(clients_oslevel, rq_name)
-    PARAMS['FilterMl'] = filter_ml
-
-    logging.debug("{} <= Min Oslevel".format(filter_ml))
+    filter_ml = compute_filter_ml(module, clients_oslevel, rq_name)
+    suma_params['FilterMl'] = filter_ml
+    module.debug("SUMA req filter min Oslevel: {}".format(filter_ml))
 
     if filter_ml is None:
         # no technical level found for the target machines
-        msg = "SUMA Error: There is no target machine matching the requested oslevel {}." \
-              .format(rq_name[:10])
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+        msg = "There is no target machine matching the requested oslevel {}.".format(rq_name[:10])
+        module.log(msg)
+        results['msg'] = msg
+        module.fail_json(**results)
 
-    # =========================================================================
-    # metadata does not match any fixes
-    # =========================================================================
-    if not rq_name or not rq_name.strip():
-        msg = "SUMA - Error: oslevel {} doesn't match any fixes" \
-              .format(PARAMS['req_oslevel'])
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
-
-    logging.debug("Suma req Name: {}".format(rq_name))
-
-    # =========================================================================
     # compute lpp source name based on request name
-    # =========================================================================
-    lpp_source = compute_lpp_source_name(PARAMS['location'], rq_name)
-    PARAMS['LppSource'] = lpp_source
+    lpp_source = compute_lpp_source_name(module, suma_params['lpp_source_name'], rq_name)
+    suma_params['LppSource'] = lpp_source
+    module.debug("Lpp source name: {}".format(lpp_source))
 
-    logging.debug("Lpp source name: {}".format(lpp_source))
-
-    # =========================================================================
     # compute suma dl target based on lpp source name
-    # =========================================================================
-    ret, dl_target = compute_dl_target(PARAMS['location'], lpp_source,
-                                       nim_lpp_sources)
-    if ret != 0:
-        msg = "SUMA Error: compute_dl_target - {}".format(dl_target)
-        logging.error(msg)
-        SUMA_ERROR.append(msg)
-        module.fail_json(msg=SUMA_ERROR, suma_output=SUMA_OUTPUT)
+    dl_target = compute_dl_target(module, suma_params['download_dir'], lpp_source, nim_lpp_sources)
+    suma_params['DLTarget'] = dl_target
+    module.debug("DL target: {}".format(dl_target))
 
-    PARAMS['DLTarget'] = dl_target
-
-    logging.debug("DL target: {}".format(dl_target))
-
-    # display user message
-    logging.info("The builded lpp_source will be: {}.".format(lpp_source))
-    logging.info("The lpp_source location will be: {}.".format(dl_target))
-    logging.info("The lpp_source will be available to update machines from {}-00 to {}."
-                 .format(filter_ml, rq_name))
+    # user messages
+    results['meta']['messages'].append("lpp_source will be: {}.".format(lpp_source))
+    results['meta']['messages'].append("lpp_source location will be: {}.".format(dl_target))
+    results['meta']['messages'].append("lpp_source will be available to update machines from {}-00 to {}.".format(filter_ml, rq_name))
     if rq_type == 'Latest':
-        logging.info("{} is the Latest SP of TL {}."
-                     .format(rq_name, filter_ml))
+        msg = 'The latest SP of {} is: {}'.format(filter_ml, rq_name)
+        module.info(msg)
+        results['meta']['messages'].append(msg)
 
-    PARAMS['Comments'] = '"Updates from {} to {}, built by Ansible'\
-                         'Aix Automate infrastructure updates tools"'\
-                         .format(filter_ml, rq_name)
+    suma_params['comments'] = '"Updates from {} to {}, built by Ansible Aix Automate infrastructure updates tools"'.format(filter_ml, rq_name)
 
-    # ========================================================================
-    # Make lpp_source_dir='/usr/sys/inst.images/{}-lpp_source'.format(rq_name)
-    # ========================================================================
     if not os.path.exists(dl_target):
         os.makedirs(dl_target)
 
-    logging.debug("mkdir command:{}".format(dl_target))
-
-    # ========================================================================
     # SUMA command for preview
-    # ========================================================================
-    ret, stdout = suma_command(module, 'Preview')
-    logging.debug("SUMA preview stdout:{}".format(stdout))
+    stdout = suma_command(module, 'Preview', suma_params)
+    module.debug("SUMA preview stdout:{}".format(stdout))
 
     # parse output to see if there is something to download
     downloaded = 0
     failed = 0
     skipped = 0
-    for line in stdout.rstrip().split('\n'):
+    for line in stdout.rstrip().splitlines():
         line = line.rstrip()
         matched = re.match(r"^\s+(\d+)\s+downloaded$", line)
         if matched:
@@ -1071,152 +1054,146 @@ def suma_down_prev(module):
 
     msg = "Preview summary : {} to download, {} failed, {} skipped"\
           .format(downloaded, failed, skipped)
-    logging.info(msg)
-    SUMA_OUTPUT.append(msg)
+    module.info(msg)
 
-    # ========================================================================
     # If action is preview or nothing is available to download, we are done
-    # else dowload what is found and create associated NIM objects
-    # ========================================================================
-    if PARAMS['action'] == 'download':
+    if suma_params['action'] == 'preview':
+        results['meta']['messages'].append(msg)
+        return
+    if downloaded == 0 and skipped == 0:
+        return
+    # else continue
+    results['meta']['messages'].extend(stdout.rstrip().splitlines())
+    results['meta']['messages'].append(msg)
+
+    # SUMA command for download
+    if downloaded != 0:
+        stdout = suma_command(module, 'Download')
+        module.debug("SUMA dowload stdout:{}".format(stdout))
+
+        # parse output to see if there is something downloaded
+        downloaded = 0
+        failed = 0
+        skipped = 0
+        for line in stdout.rstrip().splitlines():
+            line = line.rstrip()
+            matched = re.match(r"^\s+(\d+)\s+downloaded$", line)
+            if matched:
+                downloaded = int(matched.group(1))
+                continue
+            matched = re.match(r"^\s+(\d+)\s+failed$", line)
+            if matched:
+                failed = int(matched.group(1))
+                continue
+            matched = re.match(r"^\s+(\d+)\s+skipped$", line)
+            if matched:
+                skipped = int(matched.group(1))
+
+        msg = "Download summary : {} downloaded, {} failed, {} skipped"\
+              .format(downloaded, failed, skipped)
+
+        if downloaded == 0 and skipped == 0:
+            # All expected download have failed
+            module.log(msg)
+            results['meta']['messages'].append(msg)
+            return
+
+        module.info(msg)
+        results['meta']['messages'].extend(stdout.rstrip().splitlines())
+        results['meta']['messages'].append(msg)
+
         if downloaded != 0:
+            results['changed'] = True
 
-            # ================================================================
-            # SUMA command for download
-            # ================================================================
-            ret, stdout = suma_command(module, 'Download')
-            logging.debug("SUMA dowload stdout:{}".format(stdout))
+    # Create the associated NIM resource if necessary
+    if not suma_params['download_only'] and lpp_source not in nim_lpp_sources:
+        # nim -o define command
+        cmd = ['/usr/sbin/nim', '-o', 'define', '-t', 'lpp_source', '-a', 'server=master']
+        cmd += ['-a', 'location={}'.format(suma_params['DLTarget'])]
+        cmd += ['-a', 'packages=all']
+        cmd += ['-a', 'comments={}'.format(suma_params['comments'])]
+        cmd += ['{}'.format(suma_params['LppSource'])]
 
-            # parse output to see if there is something downloaded
-            downloaded = 0
-            failed = 0
-            skipped = 0
-            for line in stdout.rstrip().split('\n'):
-                line = line.rstrip()
-                matched = re.match(r"^\s+(\d+)\s+downloaded$", line)
-                if matched:
-                    downloaded = int(matched.group(1))
-                    continue
-                matched = re.match(r"^\s+(\d+)\s+failed$", line)
-                if matched:
-                    failed = int(matched.group(1))
-                    continue
-                matched = re.match(r"^\s+(\d+)\s+skipped$", line)
-                if matched:
-                    skipped = int(matched.group(1))
+        rc, stdout, stderr = module.run_command(cmd)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        if rc != 0:
+            msg = "NIM command '{}' failed with return code {}".format(' '.join(cmd), rc)
+            module.log(msg + ", stderr:{}, stdout:{}".format(stderr, stdout))
+            results['msg'] = msg
+            module.fail_json(**results)
 
-            msg = "Download summary : {} downloaded, {} failed, {} skipped"\
-                  .format(downloaded, failed, skipped)
-            logging.info(msg)
-            SUMA_OUTPUT.append(msg)
-
-            if downloaded != 0:
-                SUMA_CHANGED = True
-
-        # ====================================================================
-        # Create the associated NIM resource if necessary
-        # ====================================================================
-        if lpp_source not in nim_lpp_sources:
-
-            # ================================================================
-            # nim -o define command
-            # ================================================================
-            ret, stdout = nim_command(module)
-
-            SUMA_CHANGED = True
-
-            logging.info("NIM operation succeeded - output:{}".format(stdout))
-            SUMA_OUTPUT.append("NIM operation succeeded - output:{}"
-                               .format(stdout))
+        results['changed'] = True
 
 
 ##############################################################################
 
 def main():
-
-    global SUMA_CHANGED
-    global PARAMS
-    global SUMA_OUTPUT
+    global results
+    suma_params = {}
 
     module = AnsibleModule(
         argument_spec=dict(
-            oslevel=dict(required=False, type='str'),
-            location=dict(required=False, type='str'),
-            targets=dict(required=False, type='str'),
-            task_id=dict(required=False, type='str'),
-            sched_time=dict(required=False, type='str'),
             action=dict(required=False,
                         choices=['download', 'preview', 'list', 'edit',
                                  'unschedule', 'delete', 'config', 'default'],
                         type='str', default='preview'),
+            targets=dict(required=False, type='list', elements='str'),
+            oslevel=dict(required=False, type='str', default='Latest'),
+            lpp_source_name=dict(required=False, type='str'),
+            download_dir=dict(required=False, type='path'),
+            download_only=dict(required=False, type='bool', default=False),
+            extend_fs=dict(required=False, type='bool', default=True),
+            task_id=dict(required=False, type='str'),
+            sched_time=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
+            metadata_dir=dict(required=False, type='path', default='/var/adm/ansible/metadata'),
         ),
         required_if=[
             ['action', 'edit', ['task_id']],
             ['action', 'delete', ['task_id']],
             ['action', 'unschedule', ['task_id']],
-            ['action', 'preview', ['location', 'oslevel']],
-            ['action', 'download', ['location', 'oslevel']],
+            ['action', 'preview', ['oslevel']],
+            ['action', 'download', ['oslevel']],
         ],
         supports_check_mode=True
     )
 
-    SUMA_CHANGED = False
+    results = dict(
+        changed=False,
+        msg='',
+        stdout='',
+        stderr='',
+        meta={'messages': []},
+        target_list=(),
+    )
 
-    # Open log file
-    logging.basicConfig(
-        filename='/tmp/ansible_suma_debug.log',
-        format='[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s',
-        level=logging.DEBUG)
-    logging.debug('*** START ***')
+    module.debug('*** START ***')
 
-    # ========================================================================
     # Get Module params
-    # ========================================================================
-    req_oslevel = module.params['oslevel']
-    location = module.params['location']
-    if location.upper() == 'DEFAULT':
-        location = ''
-    targets = ''
-    if 'targets' in module.params.keys():
-        targets = module.params['targets']
-        if targets is None:
-            targets = ''
-
-    task_id = module.params['task_id']
-    sched_time = module.params['sched_time']
     action = module.params['action']
+    suma_params['action'] = action
 
-    if module.params['description']:
-        description = module.params['description']
-    else:
-        description = "{} request for oslevel {}".format(action, req_oslevel)
+    suma_params['LppSource'] = ''
+    suma_params['target_clients'] = ()
 
-    PARAMS['Description'] = description
-    PARAMS['action'] = action
-    PARAMS['LppSource'] = ''
-    PARAMS['target_clients'] = ()
-    PARAMS['targets'] = targets
-
-    # ========================================================================
     # switch action
-    # ========================================================================
     if action == 'list':
-        PARAMS['task_id'] = task_id
-        suma_list(module)
+        suma_params['task_id'] = module.params['task_id']
+        suma_list(module, suma_params)
 
     elif action == 'edit':
-        PARAMS['task_id'] = task_id
-        PARAMS['sched_time'] = sched_time
-        suma_edit(module)
+        suma_params['task_id'] = module.params['task_id']
+        suma_params['sched_time'] = module.params['sched_time']
+        suma_edit(module, suma_params)
 
     elif action == 'unschedule':
-        PARAMS['task_id'] = task_id
+        suma_params['task_id'] = module.params['task_id']
         suma_unschedule(module)
 
     elif action == 'delete':
-        PARAMS['task_id'] = task_id
-        suma_delete(module)
+        suma_params['task_id'] = module.params['task_id']
+        suma_delete(module, suma_params)
 
     elif action == 'config':
         suma_config(module)
@@ -1225,20 +1202,29 @@ def main():
         suma_default(module)
 
     elif action == 'download' or action == 'preview':
-        PARAMS['req_oslevel'] = req_oslevel
-        PARAMS['location'] = location
-        PARAMS['targets'] = targets
-        suma_down_prev(module)
+        suma_params['targets'] = module.params['targets']
+        suma_params['download_dir'] = module.params['download_dir']
+        suma_params['download_only'] = module.params['download_only']
+        suma_params['lpp_source_name'] = module.params['lpp_source_name']
+        suma_params['extend_fs'] = module.params['extend_fs']
+        if suma_params['req_oslevel'].upper() == 'LATEST':
+            suma_params['req_oslevel'] = 'Latest'
+        else:
+            suma_params['req_oslevel'] = module.params['oslevel']
+        if module.params['description']:
+            suma_params['description'] = module.params['description']
+        else:
+            suma_params['description'] = "{} request for oslevel {}".format(action, suma_params['req_oslevel'])
+        suma_params['metadata_dir'] = module.params['metadata_dir']
+        suma_download(module, suma_params)
 
-    # ========================================================================
     # Exit
-    # ========================================================================
-    module.exit_json(
-        changed=SUMA_CHANGED,
-        msg="Suma {} completed successfully".format(action),
-        suma_output=SUMA_OUTPUT,
-        lpp_source_name=PARAMS['LppSource'],
-        target_list=" ".join(PARAMS['target_clients']))
+    msg = 'Suma {} completed successfully'.format(action)
+    module.info(msg)
+    results['msg'] = msg
+    results['lpp_source_name'] = suma_params['LppSource']
+    results['target_list'] = suma_params['target_clients']
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':

@@ -11,14 +11,16 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
-module: mount
+- AIX Development Team (@pbfinley1911)
+module: ibm_aix_mount
 short_description: Makes a file system available for use
 description:
 - This module makes a file system available for use at a specified location.
 - Builds other file trees made up of directory and file mounts.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   mount_all:
     description:
@@ -63,7 +65,7 @@ options:
 
 EXAMPLES = r'''
 - name: Specify the filesystems to be mounted
-  mount:
+  ibm_aix_mount:
     mount_dir=/dev/hd1
     mount_over_dir=/home
 '''
@@ -79,8 +81,8 @@ def main():
         argument_spec=dict(
             mount_all=dict(type='bool'),
             alternate_fs=dict(type='str'),
-            removable_fs=dict(type='str'),
-            read_only=dict(type='str'),
+            removable_fs=dict(type='bool'),
+            read_only=dict(type='bool'),
             fs_type=dict(type='str'),
             vfsname=dict(type='str'),
             options=dict(type='str'),
@@ -97,6 +99,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     cmd = ['mount']
@@ -124,12 +128,15 @@ def main():
         cmd += [mount_dir, mount_over_dir]
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
     result['changed'] = True
-    result['msg'] = stdout + stderr
     module.exit_json(**result)
 
 

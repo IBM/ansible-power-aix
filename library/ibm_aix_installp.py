@@ -11,13 +11,15 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: ibm_aix_installp
 short_description: Installs and updates software
 description:
 - Installs available software products in a compatible installation package.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   device:
     description:
@@ -28,7 +30,7 @@ options:
     - List of products to install
     - C(all) installs all products
     type: list
-    default: all
+    elements: str
   force:
     description:
     - Forces the installation of a software product even if there exists a previously
@@ -52,17 +54,17 @@ options:
     - Saves existing files that are replaced when installing or updating.
     type: bool
     default: yes
-  part:
+  parts:
     description:
     - Installs the specified part of the software product.
     - C(root)
     - C(share)
     - C(usr)
     type: list
-    default: [ root, share, usr ]
-  expand_fs:
+    elements: str
+  extend_fs:
     description:
-    - Attempts to expand any file systems where there is insufficient space to do the installation.
+    - Attempts to resize any file systems where there is insufficient space to do the installation.
     type: bool
     default: yes
   commit:
@@ -95,6 +97,7 @@ options:
       to the POWER processor-based platform.
     - C(all) specifies all packages.
     type: str
+    choices: [ POWER, neutral, all ]
     default: all
   action:
     description:
@@ -108,7 +111,7 @@ options:
     - C(list_fixes) to obtain a list of the Authorized Program Analysis Report (APAR) numbers and summaries.
     - C(list_applied) to list all software products and updates that have been applied but not committed.
     type: str
-    choices: [ apply, commit, reject, uninstall, list ]
+    choices: [ apply, commit, reject, deinstall, cleanup, list, list_fixes, list_applied ]
     default: apply
   agree_licenses:
     description:
@@ -131,7 +134,7 @@ EXAMPLES = r'''
 
 - name: Install all filesets within the bos.net software package and expand file systems if necessary
   ibm_aix_installp:
-    expand_fs: yes
+    extend_fs: yes
     device: /usr/sys/inst.images
     install_list: bos.net
 
@@ -158,19 +161,21 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             device=dict(type='str'),
-            install_list=dict(type='list', default=None),
+            install_list=dict(type='list', elements='str', default=None),
             force=dict(type='bool', default=False),
             bosboot=dict(type='bool', default=True),
-            delete=dict(type='bool', default=False),
+            delete_image=dict(type='bool', default=False),
             save=dict(type='bool', default=True),
-            parts=dict(type='list', default=[]),
-            expand_fs=dict(type='bool', default=True),
+            parts=dict(type='list', elements='str', default=None),
+            extend_fs=dict(type='bool', default=True),
             commit=dict(type='bool', default=False),
             dependencies=dict(type='bool', default=False),
             base_only=dict(type='bool', default=False),
             updates_only=dict(type='bool', default=False),
             platform=dict(type='str', default='all', choices=['POWER', 'neutral', 'all']),
-            action=dict(type='str', default='apply', choices=['apply', 'commit', 'reject', 'deinstall', 'cleanup', 'list', 'list_fixes', 'list_applied']),
+            action=dict(type='str', default='apply', choices=['apply', 'commit', 'reject',
+                                                              'deinstall', 'cleanup', 'list',
+                                                              'list_fixes', 'list_applied']),
             agree_licenses=dict(type='bool', default=False),
         ),
         required_if=[
@@ -186,6 +191,8 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        stdout='',
+        stderr='',
     )
 
     action = module.params['action']
@@ -199,7 +206,7 @@ def main():
 
     if not module.params['bosboot']:
         cmd += ['-b']
-    if module.params['expand_fs']:
+    if module.params['extend_fs']:
         cmd += ['-X']
     if module.params['updates_only']:
         cmd += ['-B']
@@ -229,7 +236,7 @@ def main():
             cmd += ['-c']
             if not module.params['save']:
                 cmd += ['-N']
-        if module.params['delete']:
+        if module.params['delete_image']:
             cmd += ['-D']
         if module.params['agree_licenses']:
             cmd += ['-Y']
@@ -261,11 +268,16 @@ def main():
             cmd += fileset.split(':', 1)
 
     rc, stdout, stderr = module.run_command(cmd)
+
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = stderr
+        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
-    result['msg'] = stdout
+    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+    if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
+        result['changed'] = True
     module.exit_json(**result)
 
 
