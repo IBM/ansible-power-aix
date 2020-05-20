@@ -230,11 +230,11 @@ def change_vg(module, vg_name, vg_state):
     elif critical_pvs is False:
         opt += "-e n "
 
-    if mpool_strict is 'strict':
+    if mpool_strict == 'strict':
         opt += "-M s "
-    elif mpool_strict is 'normal':
+    elif mpool_strict == 'normal':
         opt += "-M y "
-    elif mpool_strict is 'none':
+    elif mpool_strict == 'none':
         opt += "-M n "
 
     if multi_node_vary is True:
