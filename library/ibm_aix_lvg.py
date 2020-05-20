@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team
+- AIX Development Team (@pbfinley1911)
 module: ibm_aix_lvg
 short_description: Create/Modify/Remove a volume group
 description:
@@ -26,8 +26,9 @@ requirements: [ AIX ]
 options:
   vg_type:
     description:
-    - Specifies the type of the volume group. Choices are big/scalable/none
+    - Specifies the type of the volume group.
     type: str
+    choices: [ big, scalable, none ]
   enhanced_con_vg:
     description:
     - Specifies Enhanced Concurrent Capable volume group.
@@ -40,23 +41,23 @@ options:
     type: bool
   force:
     description:
-    - When state=present, forces the volume group to be created on the specified
+    - When I(state=present), forces the volume group to be created on the specified
       physical volume unless the physical volume is part of another volume group
       in the Device Configuration Database or a volume group that is active.
 
-      When state=absent, removes the requirement for user confirmation when
+      When I(state=absent), removes the requirement for user confirmation when
       delete_lvs has been specified
     type: bool
   delete_lvs:
     description:
-    - When state=absent, deallocates the existing logical volume partitions and
+    - When I(state=absent), deallocates the existing logical volume partitions and
       then deletes resultant empty logical volumes
     type: bool
   mpool_strict:
     description:
     - Enables mirror pool strictness for the volume group.
-      Choices are normal/strict/none
     type: str
+    choices: [ none, normal, strict ]
   multi_node_vary:
     description:
     - Creates a volume group that is allowed to varyon in non-concurrent mode in
@@ -111,18 +112,19 @@ options:
     required: true
   state:
     description:
-    - Specifies the action to be performed on a VG. Choices are 'present/absent/varyon/varyoff'.
-      State present - Create/Extends/Modifies VG,
-      State absent - Reduce/Remove VG,
-      State varyon - Varyon VG,
-      State varyoff - Varyoff VG
+    - Specifies the action to be performed on a VG.
+      I(present) - Create/Extends/Modifies VG,
+      I(absent) - Reduce/Remove VG,
+      I(varyon) - Varyon VG,
+      I(varyoff) - Varyoff VG
     type: str
-    default: 'present'
     required: true
+    choices: [ absent, present, varyoff, varyon ]
   pvs:
     description:
     - Comma separated list of physical volumes
     type: list
+    elements: str
 '''
 
 EXAMPLES = r'''
@@ -469,8 +471,8 @@ def main():
             num_lvs=dict(type='int'),
             delete_lvs=dict(type='bool'),
             vg_name=dict(type='str', required=True),
-            state=dict(type='str', default='present', choices=['absent', 'present', 'varyoff', 'varyon']),
-            pvs=dict(type='list')
+            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'], required=True),
+            pvs=dict(type='list', elements='str')
         ),
 
     )
