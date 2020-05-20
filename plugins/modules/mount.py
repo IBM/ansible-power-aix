@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: ibm_aix_mount
+module: mount
 short_description: Makes a file system available for use
 description:
 - This module makes a file system available for use at a specified location.
@@ -65,7 +65,7 @@ options:
 
 EXAMPLES = r'''
 - name: Specify the filesystems to be mounted
-  ibm_aix_mount:
+  mount:
     mount_dir=/dev/hd1
     mount_over_dir=/home
 '''

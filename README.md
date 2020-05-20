@@ -4,12 +4,12 @@
 <!-- Build Status, is a great thing to have at the top of your repository, it shows that you take your CI/CD as first class citizens -->
 <!-- [![Build Status](https://travis-ci.org/jjasghar/ibm-cloud-cli.svg?branch=master)](https://travis-ci.org/jjasghar/ibm-cloud-cli) -->
 
-<!-- Not always needed, but a scope helps the user understand in a short sentance like below, why this repo exists -->
+<!-- Not always needed, but a scope helps the user understand in a short sentence like below, why this repo exists -->
 ## Scope
 
-The purpose of this project is to provide modules (and playbook examples) that can be used to: manage configurations of, and deployments to, AIX systems.
+The purpose of this project is to provide modules (and playbook examples) that can be used to: manage configurations and deployments of POWER AIX systems.
 
-<!-- A more detailed Usage or detailed explaination of the repository here -->
+<!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
 
 This repository contains some example best practices for open source repositories:
@@ -90,6 +90,8 @@ Authors:
 - Vianney Robin <vrobin@us.ibm.com>
 - Damien Bergamini <dbergami@us.ibm.com>,
 - Alain Poncet <aponcet@us.ibm.com>, 
+- Kavana Bhat <kavana.bhat@in.ibm.com>,
+- Nitish Mishra <nitismis@in.ibm.com>, 
 - Patrice Jacquin <pjacquin@us.ibm.com>,
 - Pascal Oliva <poliva@us.ibm.com>,
 

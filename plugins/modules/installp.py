@@ -12,7 +12,7 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: ibm_aix_installp
+module: installp
 short_description: Installs and updates software
 description:
 - Installs available software products in a compatible installation package.
@@ -122,31 +122,31 @@ options:
 
 EXAMPLES = r'''
 - name: List all software products and installable options contained on an installation cartridge tape
-  ibm_aix_installp:
+  installp:
     action: list
     device: /dev/rmt0.1
 
 - name: List all customer-reported problems fixed by all software products on an installation tape
-  ibm_aix_installp:
+  installp:
     action: list_fixes
     device: /dev/rmt0.1
     install_list: all
 
 - name: Install all filesets within the bos.net software package and expand file systems if necessary
-  ibm_aix_installp:
+  installp:
     extend_fs: yes
     device: /usr/sys/inst.images
     install_list: bos.net
 
 - name: Reinstall and commit the NFS software product option that is already installed on the system at the same level
-  ibm_aix_installp:
+  installp:
     commit: yes
     force: yes
     device: /dev/rmt0.1
     install_list: bos.net.nfs.client:4.1.0.0
 
 - name: Remove a fileset named bos.net.tcp.server
-  ibm_aix_installp:
+  installp:
     action: deinstall
     install_list: bos.net.tcp.server
 '''
