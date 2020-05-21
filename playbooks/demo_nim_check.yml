@@ -1,6 +1,6 @@
 ---
 - name: "NIM check on AIX playbook"
-  hosts: nim
+  hosts: nimserver
   gather_facts: no
 
   tasks:

@@ -1,0 +1,12 @@
+# Contains jinja variables found throughout the nim_* playbooks
+
+# vars in demo_nim_install
+vm_targets: quimby01
+res_group: basic_res_grp
+
+# vars in demo_nim_flrtvc
+apar: all
+vm_targets: quimby01
+path: /export/nim/ansible
+download: no
+

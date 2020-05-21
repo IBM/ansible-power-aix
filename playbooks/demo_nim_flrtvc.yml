@@ -1,5 +1,5 @@
 - name: "NIM FLRTVC on AIX playbook"
-  hosts: nim
+  hosts: nimserver
   gather_facts: no
   vars:
     apar: all

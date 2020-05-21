@@ -1,0 +1,38 @@
+all: # keys must be unique, i.e. only one 'hosts' per group
+    hosts:
+    vars:
+    children:   # key order does not matter, indentation does
+        aix:
+            children:
+                nimserver:
+                    hosts:
+                        regency1c01:
+                            ansible_host: regency1c01.aus.stglabs.ibm.com
+                    vars:
+                        vm_targets: quimby01
+                nimclient:
+                    hosts:
+                        quimby01:
+                            ansible_host: quimby01.aus.stglabs.ibm.com
+                        quimby02:
+                            ansible_host: quimby02.aus.stglabs.ibm.com
+                        quimby03:
+                            ansible_host: quimby03.aus.stglabs.ibm.com
+                        quimby04:
+                            ansible_host: quimby04.aus.stglabs.ibm.com
+                        quimby05:
+                            ansible_host: quimby05.aus.stglabs.ibm.com
+                        quimby06:
+                            ansible_host: quimby06.aus.stglabs.ibm.com
+                    vars:
+                        res_group: basic_res_grp
+            hosts:
+                d68bay01:
+                    ansible_host: d68bay01.aus.stglabs.ibm.com
+        vios:
+            hosts:
+                quimby-vios1:
+                    ansible_host: quimby-vios1.aus.stglabs.ibm.com
+            vars:
+                res_group: vios_res_grp
+

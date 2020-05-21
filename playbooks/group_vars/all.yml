@@ -1,0 +1,43 @@
+# Contains jinja variables found throughout the sample playbooks
+
+# NOTE: modify the behavior of individual hosts by providing entries in host_vars
+
+# vars in demo_flrtvc
+apar:          sec
+path:          /usr/sys/inst.images
+check:         no
+download_only: yes
+increase:      yes
+
+# vars in demo_suma
+download_dir:  /usr/sys/inst.images
+download_only: False
+
+# vars in demo_yum
+name:    '*'
+state:   latest
+exclude: kernel*
+
+# vars in demo_yum_install_DB
+package: mariadb-server
+
+# vars in emgr
+install_v:      False
+ifix_package_v: "/usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z"
+ifix_label_v:   "IJ22714s1a"
+ifix_number_v:  ""
+ifix_vuid_v:    "00F7CD554C00021210023020"
+package_v:      "devices.fcp.disk.rte"
+list_file_v:    ""
+alt_dir_v:      "/usr/sys/inst.images"
+work_dir_v:     "/var/adm/ansible/work"
+mount_inst_v:   False
+from_epkg_v:    False
+commit_v:       False
+expand_fs_v:    True
+force_rm_v:     False
+overwrite_v:    False
+preview_v:      True
+quiet_v:        True
+bosboot_v:      "skip"
+verbose_v:      3

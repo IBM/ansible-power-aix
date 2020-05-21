@@ -86,14 +86,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
 
 Authors:
-- Paul B. Finley <pfinley@us.ibm.com>,
+- Paul B. Finley <pfinley@us.ibm.com>
 - Vianney Robin <vrobin@us.ibm.com>
-- Damien Bergamini <dbergami@us.ibm.com>,
-- Alain Poncet <aponcet@us.ibm.com>, 
-- Kavana Bhat <kavana.bhat@in.ibm.com>,
-- Nitish Mishra <nitismis@in.ibm.com>, 
-- Patrice Jacquin <pjacquin@us.ibm.com>,
-- Pascal Oliva <poliva@us.ibm.com>,
+- Damien Bergamini <dbergami@us.ibm.com>
+- Alain Poncet <aponcet@us.ibm.com>
+- Kavana Bhat <kavana.bhat@in.ibm.com>
+- Nitish Mishra <nitismis@in.ibm.com>
+- Patrice Jacquin <pjacquin@us.ibm.com>
+- Pascal Oliva <poliva@us.ibm.com>
 
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new
