@@ -13,7 +13,7 @@
         name: "wget"
         state: latest
     - name: "FLRTVC"
-      flrtvc:
+      ibm.power_aix.flrtvc:
         path: "{{ path }}"
         verbose: yes
         apar: "{{ apar }}"

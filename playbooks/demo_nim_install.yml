@@ -5,6 +5,8 @@
   vars:
     vm_targets: quimby01
     res_group: basic_res_grp
+  collections:
+  - ibm.power_aix
   tasks:
 
     - name: Install using group resource

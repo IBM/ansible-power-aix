@@ -23,6 +23,8 @@
     bosboot_v:      "skip"
     verbose_v:      3
 
+  collections:
+  - ibm.power_aix
   tasks:
 
   - name: List interim fix on the system

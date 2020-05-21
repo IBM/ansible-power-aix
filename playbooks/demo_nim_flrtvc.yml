@@ -6,6 +6,8 @@
     vm_targets: quimby01
     path: /export/nim/ansible
     download: no
+  collections:
+  - ibm.power_aix
   tasks:
     - name: "FLRTVC"
       nim_flrtvc:

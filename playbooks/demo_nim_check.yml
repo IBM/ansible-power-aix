@@ -3,6 +3,8 @@
   hosts: nimserver
   gather_facts: no
 
+  collections:
+  - ibm.power_aix
   tasks:
 
     - name: "AIX NIM"

@@ -28,7 +28,7 @@
     when: ansible_distribution == 'AIX'
 
   - name: Check for, and install, system updates
-    suma:
+    ibm.power_aix.suma:
       oslevel: 'latest'
       download_dir: "{{ download_dir }}"
       download_only: "{{ download_only }}"
