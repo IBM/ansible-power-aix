@@ -118,8 +118,8 @@ options:
       I(varyon) - Varyon VG,
       I(varyoff) - Varyoff VG
     type: str
-    required: true
     choices: [ absent, present, varyoff, varyon ]
+    default: present
   pvs:
     description:
     - Comma separated list of physical volumes
@@ -471,7 +471,7 @@ def main():
             num_lvs=dict(type='int'),
             delete_lvs=dict(type='bool'),
             vg_name=dict(type='str', required=True),
-            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'], required=True),
+            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'], default='present'),
             pvs=dict(type='list', elements='str')
         ),
 
