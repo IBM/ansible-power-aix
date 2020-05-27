@@ -147,12 +147,12 @@ results = None
 
 def min_oslevel(dic):
     """
-    Find the minimun value of a dictionnary.
+    Find the minimun value of a dictionary.
 
     arguments:
-        dict - Dictionnary {machine: oslevel}
+        dict - Dictionary {machine: oslevel}
     return:
-        minimun oslevel from the dictionnary
+        minimun oslevel from the dictionary
     """
     oslevel_min = None
 
@@ -168,9 +168,9 @@ def max_oslevel(dic):
     Find the maximum value of a the oslevel dictionary.
 
     arguments:
-        dic - Dictionnary {client: oslevel}
+        dic - Dictionary {client: oslevel}
     return:
-        maximum oslevel from the dictionnary
+        maximum oslevel from the dictionary
     """
     oslevel_max = None
 
@@ -185,7 +185,7 @@ def run_oslevel_cmd(module, machine, oslevels):
     """
     Run the oslevel command on target machine.
 
-    Stores the output in the dedicated slot of the oslevels dictionnary.
+    Stores the output in the dedicated slot of the oslevels dictionary.
 
     arguments:
         module      (dict): The Ansible module
@@ -205,7 +205,7 @@ def run_oslevel_cmd(module, machine, oslevels):
     if rc == 0:
         module.debug('{} oslevel stdout: "{}"'.format(machine, stdout))
         if stderr.rstrip():
-            module.warn('"{}" command stderr: {}'.format(' '.join(cmd), stderr))
+            module.log('[WARNING] "{}" command stderr: {}'.format(' '.join(cmd), stderr))
 
         # remove the rc of c_rsh with echo $?
         if machine != 'master':
@@ -331,7 +331,7 @@ def get_oslevels(module, targets):
     for process in threads:
         process.join(300)  # wait 5 min for c_rsh to timeout
         if process.is_alive():
-            module.warn('{} Not responding'.format(process))
+            module.log('[WARNING] {} Not responding'.format(process))
 
     return oslevels
 
@@ -480,7 +480,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             # warn the user if bigest and lowest tl do not belong
             # to the same release
             if re.match(r"^([0-9]{4})", tl_min).group(1) != re.match(r"^([0-9]{4})", tl_max).group(1):
-                module.warn("Error: Release level mismatch, only AIX {} SP/TL will be downloaded\n\n".format(tl_max[:2]))
+                module.log("[WARNING] release level mismatch, only AIX {} SP/TL will be downloaded\n\n".format(tl_max[:2]))
 
             # tl_max is used to get metadata then to get latest SP
             metadata_filter_ml = tl_max
@@ -976,7 +976,7 @@ def suma_download(module, suma_params):
 
     if removed_oslevel:
         msg = "Unavailable client: {}".format(removed_oslevel)
-        module.warn(msg)
+        module.log(msg)
         results['meta']['messages'].append(msg)
 
     # compute SUMA request type based on oslevel property

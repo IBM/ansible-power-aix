@@ -241,8 +241,8 @@ def get_nim_clients_info(module, lpar_type):
             #         info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
             #         info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             #     else:
-            #         module.warn('WARNING: VIOS {} management profile has not 3 elements: {}'.
-            #                     format(obj_key, match_mgmtprof.group(1)))
+            #         module.log('WARNING: VIOS {} management profile has not 3 elements: {}'.
+            #                    format(obj_key, match_mgmtprof.group(1)))
             #     continue
 
             # Get VIOS interface info in case we need c_rsh
@@ -362,13 +362,13 @@ def check_vios_targets(module, targets):
             msg = "VIOS {} is not client of the NIM master, will be ignored"\
                   .format(tuple_elts[0])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
         if tuple_len == 2 and tuple_elts[1] not in NIM_NODE['nim_vios']:
             msg = "VIOS {} is not client of the NIM master, will be ignored"\
                   .format(tuple_elts[1])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
 
         # check vios connectivity
@@ -658,16 +658,16 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
                 update_op_tab[vios_key] = "FAILURE-NO-PREV-STATUS"
                 OUTPUT.append("    {} vioses skipped (no previous status found)"
                               .format(vios_key))
-                module.warn("{} vioses skipped (no previous status found)"
-                            .format(vios_key))
+                module.log("[WARNING] {} vioses skipped (no previous status found)"
+                           .format(vios_key))
                 continue
 
             elif vios_status[vios_key] != 'SUCCESS-ALTDC':
                 update_op_tab[vios_key] = vios_status[vios_key]
                 OUTPUT.append("    {} vioses skipped (vios_status: {})"
                               .format(vios_key, vios_status[vios_key]))
-                module.warn("{} vioses skipped (vios_status: {})"
-                            .format(vios_key, vios_status[vios_key]))
+                module.log("[WARNING] {} vioses skipped (vios_status: {})"
+                           .format(vios_key, vios_status[vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -683,7 +683,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
         ret = get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab)
         if ret == 1:
             OUTPUT.append("    {} vioses skipped (bad SSP status)".format(vios_key))
-            module.warn('Update operation for {} vioses skipped due to bad SSP status'
+            module.log('[WARNING] Update operation for {} vioses skipped due to bad SSP status'
                         .format(vios_key))
             module.log('Update operation can only be done when both of the VIOSes have'
                        ' the same SSP status (or for a single VIOS, when the SSP status'
@@ -719,7 +719,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
                 if ret != 0:
                     if std_err.find('There are no uncommitted updates') == -1:
                         msg = 'Failed to commit lpps on {}'.format(vios)
-                        module.warn('{}, {} returned {} {}'.format(msg, cmd_commit, ret, std_err))
+                        module.log('[WARNING] {}, {} returned {} {}'.format(msg, cmd_commit, ret, std_err))
                         OUTPUT.append('    ' + msg)
                     else:
                         OUTPUT.append('    Nothing to commit on {}'.format(vios))

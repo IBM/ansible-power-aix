@@ -188,7 +188,7 @@ def run_oslevel_cmd(module, machine, result):
     """
     Run the oslevel command on target machine.
 
-    Stores the output in the dedicated slot of the result dictionnary.
+    Stores the output in the dedicated slot of the result dictionary.
 
     arguments:
         machine (str): The machine name
@@ -260,8 +260,8 @@ def get_nim_clients_info(module, lpar_type):
                 info_hash[obj_key]['mgmt_id'] = mgmt_elts[1]
                 info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             else:
-                module.warn('{} management profile does not have 3 elements: {}'.
-                            format(obj_key, match_mgmtprof.group(1)))
+                module.log('[WARNING] {} management profile does not have 3 elements: {}'
+                           .format(obj_key, match_mgmtprof.group(1)))
             continue
 
         match_if = re.match(r"^\s+if1\s+=\s+\S+\s+(\S+)\s+.*$", line)
@@ -318,7 +318,7 @@ def get_oslevels(module, targets):
     for process in threads:
         process.join(300)  # wait 5 min for c_rsh to timeout
         if process.is_alive():
-            module.warn('{} Not responding'.format(process))
+            module.log('[WARNING] {} Not responding'.format(process))
 
     return oslevels
 
@@ -357,7 +357,7 @@ def get_nim_lpp_source(module):
 
 def build_nim_node(module):
     """
-    Build nim_node dictionnary containing nim clients info and lpp sources info.
+    Build nim_node dictionary containing nim clients info and lpp sources info.
     """
 
     global nim_node
@@ -754,7 +754,7 @@ def nim_update(module, params):
                                     or lpp_source == 'latest_sp'
                                     or lpp_source == 'next_tl'
                                     or lpp_source == 'next_sp')):
-        module.warn('Force customization synchronously')
+        module.log('[WARNING] Force customization synchronously')
         async_update = 'no'
 
     target_list = expand_targets(params['targets'])
@@ -772,8 +772,8 @@ def nim_update(module, params):
                 module.log("Continue to remove as many interim fixes we can")
             for fix in fixes:
                 remove_fix(target, fix, module)
-                module.warn("Interim fix {} has been automatically removed from {}"
-                            .format(fix, target))
+                module.log("[WARNING] Interim fix {} has been automatically removed from {}"
+                           .format(fix, target))
 
     if async_update == 'yes':   # async update
         if lpp_source not in nim_node['lpp_source']:
@@ -806,7 +806,7 @@ def nim_update(module, params):
                 cur_oslevel = nim_node['standalone'][target]['oslevel']
             module.debug('NIM - current oslevel: {}'.format(cur_oslevel))
             if (cur_oslevel is None) or (not cur_oslevel.strip()):
-                module.warn('Cannot get oslevel for machine {}'.format(target))
+                module.log('[WARNING] Cannot get oslevel for machine {}'.format(target))
                 continue
             cur_oslevel_elts = cur_oslevel.split('-')
 
@@ -838,18 +838,18 @@ def nim_update(module, params):
             if matched:
                 oslevel_elts = matched.group(1).split('-')
             else:
-                module.warn('Cannot get oslevel from lpp source name {}'
-                            .format(new_lpp_source))
+                module.log('[WARNING] Cannot get oslevel from lpp source name {}'
+                           .format(new_lpp_source))
                 continue
 
             if cur_oslevel_elts[0] != oslevel_elts[0]:
-                module.warn('Machine {} has different release than {}'
-                            .format(target, oslevel_elts[0]))
+                module.log('[WARNING] Machine {} has different release than {}'
+                           .format(target, oslevel_elts[0]))
                 continue
             elif (cur_oslevel_elts[1] > oslevel_elts[1]
                   or cur_oslevel_elts[1] == oslevel_elts[1] and cur_oslevel_elts[2] >= oslevel_elts[2]):
-                module.warn('Machine {} is already at same or higher level than {}'
-                            .format(target, '-'.join(oslevel_elts)))
+                module.log('[WARNING] Machine {} is already at same or higher level than {}'
+                           .format(target, '-'.join(oslevel_elts)))
                 continue
             else:
                 module.log('Machine {} needs upgrade from {} to {}'
@@ -1301,8 +1301,8 @@ def nim_reset(module, params):
             targets_discarded.append(target)
 
     if targets_discarded:
-        module.warn('The following targets are already in a correct state: {}'
-                    .format(','.join(targets_discarded)))
+        module.log('[WARNING] The following targets are already in a correct state: {}'
+                   .format(','.join(targets_discarded)))
 
     if targets_to_reset:
         cmd = ['nim']
@@ -1348,7 +1348,7 @@ def nim_reboot(module, params):
     module.debug('NIM - Target list: {}'.format(target_list))
 
     if 'master' in target_list:
-        module.warn('master can not be rebooted, master is discarded from the target list')
+        module.log('[WARNING] master can not be rebooted, master is discarded from the target list')
         target_list.remove('master')
         if not target_list:
             return

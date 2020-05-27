@@ -541,8 +541,8 @@ def health_check(module, targets):
         if hmc_id not in NIM_NODE['nim_hmc']:
             OUTPUT.append('    VIOS {} refers to an inexistant hmc {}'
                           .format(vios1, hmc_id))
-            module.warn("VIOS {} refers to an inexistant hmc {}"
-                        .format(vios1, hmc_id))
+            module.log("[WARNING] VIOS {} refers to an inexistant hmc {}"
+                       .format(vios1, hmc_id))
             health_tab[vios_key] = 'FAILURE-HC'
             continue
 
@@ -559,8 +559,8 @@ def health_check(module, targets):
             if ret != 0:
                 OUTPUT.append('    Unable to get UUIDs of {} and {}, ret: {}'
                               .format(vios1, vios2, ret))
-                module.warn("Unable to get UUIDs of {} and {}, ret: {}"
-                            .format(vios1, vios2, ret))
+                module.log("[WARNING] Unable to get UUIDs of {} and {}, ret: {}"
+                           .format(vios1, vios2, ret))
                 health_tab[vios_key] = 'FAILURE-HC'
                 continue
 
@@ -568,7 +568,7 @@ def health_check(module, targets):
            or tup_len == 2 and 'vios_uuid' not in NIM_NODE['nim_vios'][vios2]:
             # vios uuid's not found
             OUTPUT.append('    One VIOS UUID not found')
-            module.warn("Unable to find one vios_uuid in NIM_NODE")
+            module.log("[WARNING] Unable to find one vios_uuid in NIM_NODE")
             health_tab[vios_key] = 'FAILURE-HC'
 
         else:
@@ -634,7 +634,7 @@ def main():
     ret = check_vios_targets(module, targets)
     if (ret is None) or (not ret):
         OUTPUT.append('    Warning: Empty target list')
-        module.warn('Empty target list: "{}"'.format(targets))
+        module.log('[WARNING] Empty target list: "{}"'.format(targets))
     else:
         target_list = ret
         OUTPUT.append('    Targets list: {}'.format(target_list))

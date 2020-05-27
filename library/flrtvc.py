@@ -1097,8 +1097,8 @@ def increase_fs(dest):
             module.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
             return True
 
-    module.warn('{}: cmd:{} failed rc={} stdout:{} stderr:{}'
-                .format(mount_point, cmd, rc, stdout, stderr))
+    module.log('[WARNING] {}: cmd:{} failed rc={} stdout:{} stderr:{}'
+               .format(mount_point, cmd, rc, stdout, stderr))
     msg = 'Cannot increase filesystem for {}.'.format(dest)
     results['meta']['messages'].append(msg)
     return False
@@ -1181,7 +1181,7 @@ def main():
             os.remove(flrtvc_path)
         except OSError as exc:
             msg = 'Exception removing {}, exception={}'.format(flrtvc_path, exc)
-            module.warn(msg)
+            module.log(msg)
             results['meta']['messages'].append(msg)
 
     flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))

@@ -301,8 +301,8 @@ def get_nim_clients_info(module, lpar_type):
             #         info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
             #         info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             #     else:
-            #         module.warn('VIOS {} management profile has not 3 elements: {}'
-            #                     .format(obj_key, match_mgmtprof.group(1)))
+            #         module.log('VIOS {} management profile has not 3 elements: {}'
+            #                    .format(obj_key, match_mgmtprof.group(1)))
             #     continue
 
             # Get VIOS interface info in case we need c_rsh
@@ -361,13 +361,13 @@ def check_vios_targets(module, targets):
             msg = 'VIOS {} is not client of the NIM master, will be ignored'\
                   .format(tuple_elts[0])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
         if tuple_len == 2 and tuple_elts[1] not in module.nim_node['nim_vios']:
             msg = 'VIOS {} is not client of the NIM master, will be ignored'\
                   .format(tuple_elts[1])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
 
         # check vios connectivity
@@ -431,7 +431,7 @@ def nim_set_infofile(module):
                     msg = 'Existing email "{}" found in "{}", skip this setting'\
                           .format(match_key.group(1), file_path)
                     if match_key.group(1) != module.params['email']:
-                        module.warn(msg)
+                        module.log(msg)
                         OUTPUT.append(msg)
                     else:
                         module.log(msg)
@@ -490,16 +490,16 @@ def nim_backup(module):
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 OUTPUT.append('    {} vioses skipped (no previous status found)'
                               .format(vios_key))
-                module.warn('{} vioses skipped (no previous status found)'
-                            .format(vios_key))
+                module.log('[WARNING] {} vioses skipped (no previous status found)'
+                           .format(vios_key))
                 continue
 
             elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {} vioses skipped (vios_status: {})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
-                module.warn('{} vioses skipped (vios_status: {})'
-                            .format(vios_key, module.params['vios_status'][vios_key]))
+                module.log('[WARNING] {} vioses skipped (vios_status: {})'
+                           .format(vios_key, module.params['vios_status'][vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -636,16 +636,16 @@ def nim_viosbr(module):
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 OUTPUT.append('    {} vioses skipped (no previous status found)'
                               .format(vios_key))
-                module.warn('{} vioses skipped (no previous status found)'
-                            .format(vios_key))
+                module.log('[WARNING] {} vioses skipped (no previous status found)'
+                           .format(vios_key))
                 continue
 
             elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {} vioses skipped (vios_status: {})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
-                module.warn('{} vioses skipped (vios_status: {})'
-                            .format(vios_key, module.params['vios_status'][vios_key]))
+                module.log('[WARNING] {} vioses skipped (vios_status: {})'
+                           .format(vios_key, module.params['vios_status'][vios_key]))
                 continue
 
         # check if there is time to handle this tuple
@@ -794,7 +794,7 @@ def nim_migvios_all(module):
 
     # for th in threads:
     #     if th.isAlive():
-    #         module.warn('{} is still alive'.format(th.getName()))
+    #         module.log('{} is still alive'.format(th.getName()))
 
     return 0
 
@@ -843,7 +843,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
             if vios_key not in module.params['vios_status']:
                 module.status[vios_key] = 'FAILURE-NO-PREV-STATUS'
                 msg = '{} vioses skipped (no previous status found)'.format(vios_key)
-                module.warn(msg)
+                module.log(msg)
                 OUTPUT.append('    ' + msg)
                 continue
 
@@ -851,7 +851,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 msg = '{} vioses skipped (vios_status: {})'\
                       .format(vios_key, module.params['vios_status'][vios_key])
-                module.warn(msg)
+                module.log(msg)
                 OUTPUT.append('    ' + msg)
                 continue
 
