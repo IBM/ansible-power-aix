@@ -684,7 +684,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
         if ret == 1:
             OUTPUT.append("    {} vioses skipped (bad SSP status)".format(vios_key))
             module.log('[WARNING] Update operation for {} vioses skipped due to bad SSP status'
-                        .format(vios_key))
+                       .format(vios_key))
             module.log('Update operation can only be done when both of the VIOSes have'
                        ' the same SSP status (or for a single VIOS, when the SSP status'
                        ' is inactive) and belong to the same SSP')
