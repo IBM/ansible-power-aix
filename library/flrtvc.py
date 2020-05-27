@@ -1162,7 +1162,7 @@ def main():
     clean = module.params['clean']
     check_only = module.params['check_only']
     download_only = module.params['download_only']
-    resize_fs = module.params['increase_fs']
+    resize_fs = module.params['extend_fs']
 
     # Create working directory if needed
     workdir = os.path.abspath(os.path.join(flrtvc_params['dst_path'], 'work'))
