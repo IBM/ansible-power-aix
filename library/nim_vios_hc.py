@@ -330,7 +330,7 @@ def check_vios_targets(module, targets):
         res = 0
         for vios in tuple_elts:
             cmd = ['true']
-            ret, stdout, stderr = nim_exec(module, vios, cmd)
+            ret, stdout, stderr = nim_exec(module, NIM_NODE['nim_vios'][vios]['vios_ip'], cmd)
             if ret != 0:
                 res = 1
                 msg = 'skipping {}: cannot reach {} with c_rsh: {}, {}, {}'\
