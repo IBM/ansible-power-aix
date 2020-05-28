@@ -140,8 +140,11 @@ def nim_exec(module, node, command):
         - stderr  stderr of the command
     """
 
-    rcmd = '( LANG=C {} ); echo rc=$?'.format(' '.join(command))
+    rcmd = '( LC_ALL=C {} ); echo rc=$?'.format(' '.join(command))
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    module.debug('exec command:{}'.format(cmd))
+
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         return (ret, stdout, stderr)
@@ -151,6 +154,8 @@ def nim_exec(module, node, command):
         ret = int(s.group(1))
         # remove the rc of c_rsh with echo $?
         stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('exec command rc:{}, output:{}, stderr:{}'.format(ret, stdout, stderr))
 
     return (ret, stdout, stderr)
 
