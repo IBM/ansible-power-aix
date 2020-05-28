@@ -976,7 +976,7 @@ def suma_download(module, suma_params):
 
     if removed_oslevel:
         msg = "Unavailable client: {}".format(removed_oslevel)
-        module.log(msg)
+        module.log('[WARNING] ' + msg)
         results['meta']['messages'].append(msg)
 
     # compute SUMA request type based on oslevel property
@@ -1022,7 +1022,7 @@ def suma_download(module, suma_params):
     results['meta']['messages'].append("lpp_source will be available to update machines from {}-00 to {}.".format(filter_ml, rq_name))
     if rq_type == 'Latest':
         msg = 'The latest SP of {} is: {}'.format(filter_ml, rq_name)
-        module.info(msg)
+        module.log(msg)
         results['meta']['messages'].append(msg)
 
     suma_params['comments'] = '"Updates from {} to {}, built by Ansible Aix Automate infrastructure updates tools"'.format(filter_ml, rq_name)
@@ -1054,7 +1054,7 @@ def suma_download(module, suma_params):
 
     msg = "Preview summary : {} to download, {} failed, {} skipped"\
           .format(downloaded, failed, skipped)
-    module.info(msg)
+    module.log(msg)
 
     # If action is preview or nothing is available to download, we are done
     if suma_params['action'] == 'preview':
@@ -1098,7 +1098,7 @@ def suma_download(module, suma_params):
             results['meta']['messages'].append(msg)
             return
 
-        module.info(msg)
+        module.log(msg)
         results['meta']['messages'].extend(stdout.rstrip().splitlines())
         results['meta']['messages'].append(msg)
 
@@ -1207,7 +1207,7 @@ def main():
         suma_params['download_only'] = module.params['download_only']
         suma_params['lpp_source_name'] = module.params['lpp_source_name']
         suma_params['extend_fs'] = module.params['extend_fs']
-        if suma_params['req_oslevel'].upper() == 'LATEST':
+        if module.params['oslevel'].upper() == 'LATEST':
             suma_params['req_oslevel'] = 'Latest'
         else:
             suma_params['req_oslevel'] = module.params['oslevel']
@@ -1220,7 +1220,7 @@ def main():
 
     # Exit
     msg = 'Suma {} completed successfully'.format(action)
-    module.info(msg)
+    module.log(msg)
     results['msg'] = msg
     results['lpp_source_name'] = suma_params['LppSource']
     results['target_list'] = suma_params['target_clients']
