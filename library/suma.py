@@ -345,6 +345,7 @@ def suma_command(action):
     cmd += ['-a', 'Action={}'.format(action)]
     cmd += ['-a', 'DLTarget={}'.format(suma_params['DLTarget'])]
     cmd += ['-a', 'DisplayName={}'.format(suma_params['description'])]
+    cmd += ['-a', 'FilterDir={}'.format(suma_params['DLTarget'])]
 
     if rq_type != 'Latest':
         cmd += ['-a', 'RqName={}'.format(suma_params['RqName'])]

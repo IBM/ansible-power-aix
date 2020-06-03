@@ -483,6 +483,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
         cmd += ['-a', 'FilterML={}'.format(metadata_filter_ml)]
         cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
+        cmd += ['-a', 'FilterDir={}'.format(suma_params['metadata_dir'])]
 
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
@@ -528,6 +529,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
             cmd += ['-a', 'FilterML={}'.format(metadata_filter_ml)]
             cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
+            cmd += ['-a', 'FilterDir={}'.format(suma_params['metadata_dir'])]
 
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
@@ -674,6 +676,7 @@ def suma_command(module, action, suma_params):
     cmd += ['-a', 'DLTarget={}'.format(suma_params['DLTarget'])]
     cmd += ['-a', 'RqName={}'.format(suma_params['RqName'])]
     cmd += ['-a', 'DisplayName={}'.format(suma_params['description'])]
+    cmd += ['-a', 'FilterDir={}'.format(suma_params['DLTarget'])]
 
     if suma_params['extend_fs']:
         cmd += ['-a', 'Extend=y']
