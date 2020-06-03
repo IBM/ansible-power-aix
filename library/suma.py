@@ -186,7 +186,7 @@ def compute_rq_type(oslevel, last_sp):
         return 'SP'
     if re.match(r"^([0-9]{4}-[0-9]{2})(|-00|-00-0000)$", oslevel):
         if last_sp:
-            msg = "Parameter last_sp={} is ignored when oslevel is a TL {}.".format(last_sp, oslevel)
+            msg = "Parameter last_sp={0} is ignored when oslevel is a TL {1}.".format(last_sp, oslevel)
             module.log(msg)
             results['meta']['messages'].append(msg)
         return 'TL'
@@ -205,16 +205,16 @@ def find_sp_version(file):
        sp_version   value found or None
     """
     sp_version = None
-    module.debug("opening file: {}".format(file))
+    module.debug("opening file: {0}".format(file))
     myfile = open(file, "r")
     for line in myfile:
-        # module.debug("line: {}".format(line.rstrip()))
+        # module.debug("line: {0}".format(line.rstrip()))
         match_item = re.match(
             r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
             line.rstrip())
         if match_item:
             version = match_item.group(1)
-            module.debug("matched line: {}, version={}".format(line.rstrip(), version))
+            module.debug("matched line: {0}, version={1}".format(line.rstrip(), version))
             if sp_version is None or version > sp_version:
                 sp_version = version
             break
@@ -264,7 +264,7 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         # Build the FilterML for metadata request from the oslevel
         metadata_filter_ml = oslevel[:7]
         if not metadata_filter_ml:
-            msg = "Cannot build minimum level filter based on the target OS level {}".format(oslevel)
+            msg = "Cannot build minimum level filter based on the target OS level {0}".format(oslevel)
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
@@ -274,20 +274,20 @@ def compute_rq_name(rq_type, oslevel, last_sp):
 
         # Build suma command to get metadata
         cmd = ['/usr/sbin/suma', '-x', '-a', 'Action=Metadata', '-a', 'RqType=Latest']
-        cmd += ['-a', 'DLTarget={}'.format(suma_params['metadata_dir'])]
-        cmd += ['-a', 'FilterML={}'.format(metadata_filter_ml)]
-        cmd += ['-a', 'DisplayName="{}"'.format(suma_params['description'])]
-        cmd += ['-a', 'FilterDir={}'.format(suma_params['metadata_dir'])]
+        cmd += ['-a', 'DLTarget={0}'.format(suma_params['metadata_dir'])]
+        cmd += ['-a', 'FilterML={0}'.format(metadata_filter_ml)]
+        cmd += ['-a', 'DisplayName="{0}"'.format(suma_params['description'])]
+        cmd += ['-a', 'FilterDir={0}'.format(suma_params['metadata_dir'])]
 
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
-            msg = "Suma metadata command '{}' failed with return code {}".format(' '.join(cmd), rc)
-            module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+            msg = "Suma metadata command '{0}' failed with return code {1}".format(' '.join(cmd), rc)
+            module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
             results['stdout'] = stdout
             results['stderr'] = stderr
             results['msg'] = msg
             module.fail_json(**results)
-        module.debug("SUMA command '{}' rc:{}, stdout:{}".format(' '.join(cmd), rc, stdout))
+        module.debug("SUMA command '{0}' rc:{1}, stdout:{2}".format(' '.join(cmd), rc, stdout))
 
         sp_version = None
         if len(oslevel) == 10:
@@ -298,14 +298,14 @@ def compute_rq_name(rq_type, oslevel, last_sp):
             # find latest SP build number for the TL
             file_name = suma_params['metadata_dir'] + "/installp/ppc/" + "*.xml"
             files = glob.glob(file_name)
-            module.debug("searching SP in files: {}".format(files))
+            module.debug("searching SP in files: {0}".format(files))
             for cur_file in files:
                 version = find_sp_version(cur_file)
                 if sp_version is None or version > sp_version:
                     sp_version = version
 
         if sp_version is None or not sp_version.strip():
-            msg = "Cannot determine SP version for OS level {}: 'SP name' not found in metadata files {}".format(oslevel, files)
+            msg = "Cannot determine SP version for OS level {0}: 'SP name' not found in metadata files {1}".format(oslevel, files)
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
@@ -313,12 +313,12 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         shutil.rmtree(suma_params['metadata_dir'])
 
         rq_name = sp_version
-        msg = 'Suma metadata: {} is the latest SP of {}'.format(rq_name, oslevel)
+        msg = 'Suma metadata: {0} is the latest SP of {1}'.format(rq_name, oslevel)
         module.log(msg)
         results['meta']['messages'].append(msg)
 
     if not rq_name or not rq_name.strip():  # should never happen
-        msg = "OS level {} does not match any fixes".format(oslevel)
+        msg = "OS level {0} does not match any fixes".format(oslevel)
         module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
@@ -341,14 +341,14 @@ def suma_command(action):
     global suma_params
 
     rq_type = suma_params['RqType']
-    cmd = ['/usr/sbin/suma', '-x', '-a', 'RqType={}'.format(rq_type)]
-    cmd += ['-a', 'Action={}'.format(action)]
-    cmd += ['-a', 'DLTarget={}'.format(suma_params['DLTarget'])]
-    cmd += ['-a', 'DisplayName={}'.format(suma_params['description'])]
-    cmd += ['-a', 'FilterDir={}'.format(suma_params['DLTarget'])]
+    cmd = ['/usr/sbin/suma', '-x', '-a', 'RqType={0}'.format(rq_type)]
+    cmd += ['-a', 'Action={0}'.format(action)]
+    cmd += ['-a', 'DLTarget={0}'.format(suma_params['DLTarget'])]
+    cmd += ['-a', 'DisplayName={0}'.format(suma_params['description'])]
+    cmd += ['-a', 'FilterDir={0}'.format(suma_params['DLTarget'])]
 
     if rq_type != 'Latest':
-        cmd += ['-a', 'RqName={}'.format(suma_params['RqName'])]
+        cmd += ['-a', 'RqName={0}'.format(suma_params['RqName'])]
 
     if suma_params['extend_fs']:
         cmd += ['-a', 'Extend=y']
@@ -359,15 +359,15 @@ def suma_command(action):
     if suma_params['action'].upper() == action.upper() and suma_params['save_task']:
         cmd += ['-w']
 
-    module.debug("SUMA - Command:{}".format(' '.join(cmd)))
-    results['meta']['messages'].append("SUMA - Command: {}".format(' '.join(cmd)))
+    module.debug("SUMA - Command:{0}".format(' '.join(cmd)))
+    results['meta']['messages'].append("SUMA - Command: {0}".format(' '.join(cmd)))
 
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     if rc != 0:
-        msg = "Suma {} command '{}' failed with return code {}".format(action, ' '.join(cmd), rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma {0} command '{1}' failed with return code {2}".format(action, ' '.join(cmd), rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -395,8 +395,8 @@ def suma_list():
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma list command '{}' failed with return code {}".format(' '.join(cmd), rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma list command '{0}' failed with return code {1}".format(' '.join(cmd), rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -449,22 +449,22 @@ def suma_edit():
            and check_time(day, 1, 31) and check_time(month, 1, 12) \
            and check_time(weekday, 0, 6):
 
-            cmd += ' -s "{}"'.format(suma_params['sched_time'])
+            cmd += ' -s "{0}"'.format(suma_params['sched_time'])
         else:
-            msg = "Suma edit command '{}' failed: Bad schedule time '{}'".format(' '.join(cmd), suma_params['sched_time'])
+            msg = "Suma edit command '{0}' failed: Bad schedule time '{1}'".format(' '.join(cmd), suma_params['sched_time'])
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
 
-    cmd += ' {}'.format(suma_params['task_id'])
+    cmd += ' {0}'.format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma edit command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma edit command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -478,15 +478,15 @@ def suma_unschedule():
     """
     global results
 
-    cmd = "/usr/sbin/suma -u {}".format(suma_params['task_id'])
+    cmd = "/usr/sbin/suma -u {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma unschedule command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma unschedule command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -500,15 +500,15 @@ def suma_delete():
     """
     global results
 
-    cmd = "/usr/sbin/suma -d {}".format(suma_params['task_id'])
+    cmd = "/usr/sbin/suma -d {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma delete command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma delete command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -522,15 +522,15 @@ def suma_run():
     """
     global results
 
-    cmd = "/usr/sbin/suma -x {}".format(suma_params['task_id'])
+    cmd = "/usr/sbin/suma -x {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma run command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma run command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -551,8 +551,8 @@ def suma_config():
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma config command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma config command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -573,8 +573,8 @@ def suma_default():
     results['stderr'] = stderr
 
     if rc != 0:
-        msg = "Suma list default command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
+        msg = "Suma list default command '{0}' failed with return code {1}".format(cmd, rc)
+        module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -601,13 +601,13 @@ def suma_download():
         suma_params['oslevel'] = 'Latest'
     else:
         if re.match(r"^[0-9]{4}(|-00|-00-00|-00-00-0000)$", suma_params['oslevel']):
-            msg = "Bad parameter: oslevel is '{}', specify a non 0 value for the Technical Level or the Service Pack"\
+            msg = "Bad parameter: oslevel is '{0}', specify a non 0 value for the Technical Level or the Service Pack"\
                   .format(suma_params['oslevel'])
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
         elif not re.match(r"^[0-9]{4}-[0-9]{2}(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$", suma_params['oslevel']):
-            msg = "Bad parameter: oslevel is '{}', should repect the format: xxxx-xx or xxxx-xx-xx or xxxx-xx-xx-xxxx"\
+            msg = "Bad parameter: oslevel is '{0}', should repect the format: xxxx-xx or xxxx-xx-xx or xxxx-xx-xx-xxxx"\
                   .format(suma_params['oslevel'])
             module.log(msg)
             results['msg'] = msg
@@ -618,32 +618,32 @@ def suma_download():
     # =========================================================================
     rq_type = compute_rq_type(suma_params['oslevel'], suma_params['last_sp'])
     if rq_type == 'ERROR':
-        msg = "Bad parameter: oslevel is '{}', parsing error".format(suma_params['oslevel'])
+        msg = "Bad parameter: oslevel is '{0}', parsing error".format(suma_params['oslevel'])
         module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
 
     suma_params['RqType'] = rq_type
-    module.debug("SUMA req Type: {}".format(rq_type))
+    module.debug("SUMA req Type: {0}".format(rq_type))
 
     # =========================================================================
     # compute SUMA request name based on metadata info
     # =========================================================================
     suma_params['RqName'] = compute_rq_name(rq_type, suma_params['oslevel'], suma_params['last_sp'])
-    module.debug("Suma req Name: {}".format(suma_params['RqName']))
+    module.debug("Suma req Name: {0}".format(suma_params['RqName']))
 
     # =========================================================================
     # compute suma dl target
     # =========================================================================
     if not suma_params['download_dir']:
-        msg = "Bad parameter: action is {} but download_dir is '{}'".format(suma_params['action'], suma_params['download_dir'])
+        msg = "Bad parameter: action is {0} but download_dir is '{1}'".format(suma_params['action'], suma_params['download_dir'])
         module.log(msg)
         results['msg'] = msg
         module.fail_json(**results)
     else:
         suma_params['DLTarget'] = suma_params['download_dir'].rstrip('/')
 
-    module.log("The download location will be: {}.".format(suma_params['DLTarget']))
+    module.log("The download location will be: {0}.".format(suma_params['DLTarget']))
     if not os.path.exists(suma_params['DLTarget']):
         os.makedirs(suma_params['DLTarget'])
 
@@ -651,7 +651,7 @@ def suma_download():
     # SUMA command for preview
     # ========================================================================
     rc, stdout = suma_command('Preview')
-    module.debug("SUMA preview stdout:{}".format(stdout))
+    module.debug("SUMA preview stdout:{0}".format(stdout))
 
     # parse output to see if there is something to download
     downloaded = 0
@@ -671,7 +671,7 @@ def suma_download():
         if matched:
             skipped = int(matched.group(1))
 
-    msg = "Preview summary : {} to download, {} failed, {} skipped"\
+    msg = "Preview summary : {0} to download, {1} failed, {2} skipped"\
           .format(downloaded, failed, skipped)
     module.log(msg)
 
@@ -690,7 +690,7 @@ def suma_download():
     # ================================================================
     if downloaded != 0:
         rc, stdout = suma_command('Download')
-        module.debug("SUMA dowload stdout:{}".format(stdout))
+        module.debug("SUMA dowload stdout:{0}".format(stdout))
 
         # parse output to see if something has been downloaded
         downloaded = 0
@@ -710,7 +710,7 @@ def suma_download():
             if matched:
                 skipped = int(matched.group(1))
 
-        msg = "Download summary : {} downloaded, {} failed, {} skipped"\
+        msg = "Download summary : {0} downloaded, {1} failed, {2} skipped"\
               .format(downloaded, failed, skipped)
 
         if downloaded == 0 and skipped == 0:
@@ -730,9 +730,9 @@ def suma_download():
     # Install updates
     # ===========================================================
     if not suma_params['download_only']:
-        cmd = "/usr/sbin/install_all_updates -Yd {}".format(suma_params['DLTarget'])
+        cmd = "/usr/sbin/install_all_updates -Yd {0}".format(suma_params['DLTarget'])
 
-        module.debug("SUMA command:{}".format(cmd))
+        module.debug("SUMA command:{0}".format(cmd))
         results['meta']['messages'].append(msg)
 
         rc, stdout, stderr = module.run_command(cmd)
@@ -742,12 +742,12 @@ def suma_download():
         results['changed'] = True
 
         if rc != 0:
-            msg = "Suma install command '{}' failed with return code {}.".format(cmd, rc)
-            module.log(msg + ", stderr:{}, stdout:{}".format(stderr, stdout))
+            msg = "Suma install command '{0}' failed with return code {1}.".format(cmd, rc)
+            module.log(msg + ", stderr:{0}, stdout:{1}".format(stderr, stdout))
             results['msg'] = msg
             module.fail_json(**results)
 
-        module.log("Suma install command output: {}".format(stdout))
+        module.log("Suma install command output: {0}".format(stdout))
 
 
 ##############################################################################
@@ -837,13 +837,13 @@ def main():
         if module.params['description']:
             suma_params['description'] = module.params['description']
         else:
-            suma_params['description'] = "{} request for oslevel {}".format(action, module.params['oslevel'])
+            suma_params['description'] = "{0} request for oslevel {1}".format(action, module.params['oslevel'])
 
         suma_params['action'] = action
         suma_download()
 
     # Exit
-    msg = 'Suma {} completed successfully'.format(action)
+    msg = 'Suma {0} completed successfully'.format(action)
     module.log(msg)
     results['msg'] = msg
     module.exit_json(**results)
