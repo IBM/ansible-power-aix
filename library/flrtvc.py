@@ -21,7 +21,7 @@ description:
   downloads the fixes, checks their versions and if some files are locked. Then
   it installs the remaining fixes. In case of inter-locking file you could run
   this several times.
-version_added: '2.8'
+version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
