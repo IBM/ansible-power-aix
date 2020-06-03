@@ -945,24 +945,25 @@ def run_downloader(urls, dst_path, resize_fs=True):
                 if not os.path.exists(tar_dir):
                     os.makedirs(tar_dir)
                 for epkg in epkgs:
-                    try:
-                        tar.extract(epkg, tar_dir)
-                    except (OSError, IOError, tarfile.TarError) as exc:
-                        if resize_fs and increase_fs(tar_dir):
-                            try:
-                                tar.extract(epkg, tar_dir)
-                            except (OSError, IOError, tarfile.TarError) as exc:
-                                msg = 'Cannot extract tar file {}'.format(epkg)
+                    for attempt in range(3):
+                        try:
+                            tar.extract(epkg, tar_dir)
+                        except (OSError, IOError, tarfile.TarError) as exc:
+                            if resize_fs:
+                                increase_fs(tar_dir)
+                            else:
+                                msg = 'Cannot extract tar file {} to {}'.format(epkg, tar_dir)
                                 module.log(msg)
                                 module.log('EXCEPTION {}'.format(exc))
                                 results['meta']['messages'].append(msg)
-                                continue
+                                break
                         else:
-                            msg = 'Cannot extract tar file {}'.format(epkg)
-                            module.log(msg)
-                            module.log('EXCEPTION {}'.format(exc))
-                            results['meta']['messages'].append(msg)
-                            continue
+                            break
+                    else:
+                        msg = 'Cannot extract tar file {} to {}'.format(epkg, tar_dir)
+                        module.log(msg)
+                        results['meta']['messages'].append(msg)
+                        continue
                     out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
         else:  # URL as a Directory
@@ -1024,24 +1025,25 @@ def run_installer(epkgs, dst_path, resize_fs=True):
     # copy efix destpath lpp source
     epkgs_base = []
     for epkg in epkgs:
-        try:
-            shutil.copy(epkg, destpath)
-        except (IOError, shutil.Error) as exc:
-            if resize_fs and increase_fs(destpath):
-                try:
-                    shutil.copy(epkg, destpath)
-                except (IOError, shutil.Error) as exc:
+        for attempt in range(3):
+            try:
+                shutil.copy(epkg, destpath)
+            except (IOError, shutil.Error) as exc:
+                if resize_fs:
+                    increase_fs(destpath)
+                else:
                     msg = 'Cannot copy file {} to {}'.format(epkg, destpath)
                     module.log(msg)
                     module.log('EXCEPTION {}'.format(exc))
                     results['meta']['messages'].append(msg)
-                    continue
+                    break
             else:
-                msg = 'Cannot copy file {} to {}'.format(epkg, destpath)
-                module.log(msg)
-                module.log('EXCEPTION {}'.format(exc))
-                results['meta']['messages'].append(msg)
-                continue
+                break
+        else:
+            msg = 'Cannot copy file {} to {}'.format(epkg, destpath)
+            module.log(msg)
+            results['meta']['messages'].append(msg)
+            continue
         epkgs_base.append(os.path.basename(epkg))
 
     # return error if we have nothing to install
