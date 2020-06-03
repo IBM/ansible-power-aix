@@ -17,7 +17,8 @@ short_description: Download fixes, SP or TL on an AIX server
 description:
 - Creates a task to automate the download of technology level (TL) and
   service pack (SP) from a fix server using the Service Update Management
-  Assistant (SUMA). Log file is /var/adm/ansible/nim_suma_debug.log.
+  Assistant (SUMA). It can create the NIM resource.
+- Log file is /var/adm/ansible/nim_suma_debug.log.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -28,14 +29,8 @@ options:
     - Controls what is performed.
     - C(download) to download fixes and define the NIM resource.
     - C(preview)  to execute all the checks without downloading the fixes.
-    - C(list) to list all SUMA tasks.
-    - C(edit) to edit an exiting SUMA task.
-    - C(unschedule) to remove any scheduling information for the specified SUMA task.
-    - C(delete) to delete a SUMA task and remove any schedules for this task.
-    - C(config) to list global SUMA configuration settings.
-    - C(default) to list default SUMA tasks.
     type: str
-    choices: [ download, preview, list, edit, unschedule, delete, config, default ]
+    choices: [ download, preview ]
     default: preview
   targets:
     description:
@@ -62,7 +57,7 @@ options:
   download_dir:
     description:
     - Absolute directory path where to download the packages on the NIM server.
-    - If not set it looks for existing NIM ressource mattching I(lpp_source_name) and use its location.
+    - If not set it looks for existing NIM ressource matching I(lpp_source_name) and use its location.
     - If no NIM ressource is found, the path is set to /usr/sys/inst.images
     - Can be used if I(action=download) or C(action=preview).
     type: path
@@ -78,17 +73,6 @@ options:
     - Can be used if I(action=download) or C(action=preview).
     type: bool
     default: yes
-  task_id:
-    description:
-    - SUMA task identification number.
-    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=unschedule).
-    - Required when I(action=edit) or I(action=delete) or I(action=unschedule).
-    type: str
-  sched_time:
-    description:
-    - Schedule time. Specifying an empty or space filled string results in unscheduling the task. If not set, it saves the task.
-    - Can be used if I(action=edit).
-    type: str
   description:
     description:
     - Display name for SUMA task.
@@ -98,7 +82,7 @@ options:
   metadata_dir:
     description:
     - Directory where metadata files are downloaded.
-    - Can be used if I(action=download) or C(action=preview) when I(last_sp=yes) or I(oslevel) is not exact, for example I(oslevel=Latest).
+    - Can be used if I(action=download) or C(action=preview) when I(oslevel) is not exact, for example I(oslevel=Latest).
     type: path
     default: /var/adm/ansible/metadata
 '''
@@ -708,199 +692,6 @@ def suma_command(module, action, suma_params):
     return stdout
 
 
-def suma_list(module, suma_params):
-    """
-    List all SUMA tasks or the task associated with the given task ID
-
-    arguments:
-        module      (dict): The Ansible module
-        suma_params (dict): parameters to build the suma command
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    task = suma_params['task_id']
-    if task is None or task.strip() == '':
-        task = ''
-
-    cmd = "/usr/sbin/suma -l {}".format(task)
-    rc, stdout, stderr = module.run_command(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if rc != 0:
-        msg = "Suma list command: '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
-def check_time(val, mini, maxi):
-    """
-    Check a value is equal to '*' or is a numeric value in the
-    [mini, maxi] range
-    """
-    if val == '*':
-        return True
-
-    if val.isdigit() and mini <= int(val) and maxi >= int(val):
-        return True
-
-    return False
-
-
-def suma_edit(module, suma_params):
-    """
-    Edit a SUMA task associated with the given task ID
-
-    Depending on the shed_time parameter value, the task wil be scheduled,
-        unscheduled or saved
-
-    arguments:
-        module      (dict): The Ansible module
-        suma_params (dict): parameters to build the suma command
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    cmd = '/usr/sbin/suma'
-    if suma_params['sched_time'] is None:
-        # save
-        cmd += ' -w'
-
-    elif not suma_params['sched_time'].strip():
-        # unschedule
-        cmd += ' -u'
-
-    else:
-        # schedule
-        minute, hour, day, month, weekday = suma_params['sched_time'].split(' ')
-
-        if check_time(minute, 0, 59) and check_time(hour, 0, 23) \
-           and check_time(day, 1, 31) and check_time(month, 1, 12) \
-           and check_time(weekday, 0, 6):
-
-            cmd += ' -s "{}"'.format(suma_params['sched_time'])
-        else:
-            msg = "Suma edit command '{}': bad schedule time '{}'".format(cmd, suma_params['sched_time'])
-            module.log(msg)
-            results['msg'] = msg
-            module.fail_json(**results)
-
-    if suma_params['task_id']:
-        cmd += ' {}'.format(suma_params['task_id'])
-
-    rc, stdout, stderr = module.run_command(cmd)
-
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-
-    if rc != 0:
-        msg = "Suma edit command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
-def suma_unschedule(module, suma_params):
-    """
-    Unschedule a SUMA task associated with the given task ID
-
-    arguments:
-        module      (dict): The Ansible module
-        suma_params (dict): parameters to build the suma command
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    cmd = "/usr/sbin/suma -u {}".format(suma_params['task_id'])
-    rc, stdout, stderr = module.run_command(cmd)
-
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-
-    if rc != 0:
-        msg = "Suma unschedule command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
-def suma_delete(module, suma_params):
-    """
-    Delete the SUMA task associated with the given task ID
-
-    arguments:
-        module      (dict): The Ansible module
-        suma_params (dict): parameters to build the suma command
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    cmd = "/usr/sbin/suma -d {}".format(suma_params['task_id'])
-    rc, stdout, stderr = module.run_command(cmd)
-
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-
-    if rc != 0:
-        msg = "Suma delete command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
-def suma_config(module):
-    """
-    List the SUMA global configuration settings
-
-    arguments:
-        module  (dict): The Ansible module
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    cmd = '/usr/sbin/suma -c'
-    rc, stdout, stderr = module.run_command(cmd)
-
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-
-    if rc != 0:
-        msg = "Suma config command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
-def suma_default(module):
-    """
-    List default SUMA tasks
-
-    arguments:
-        module  (dict): The Ansible module
-    note:
-        Exits with fail_json in case of error
-    """
-    global results
-
-    cmd = '/usr/sbin/suma -D'
-    rc, stdout, stderr = module.run_command(cmd)
-
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-
-    if rc != 0:
-        msg = "Suma default command '{}' failed with return code {}".format(cmd, rc)
-        module.log(msg + ", stderr: {}, stdout:{}".format(stderr, stdout))
-        results['msg'] = msg
-        module.fail_json(**results)
-
-
 def suma_download(module, suma_params):
     """
     Dowload (or preview) action
@@ -1135,8 +926,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(required=False,
-                        choices=['download', 'preview', 'list', 'edit',
-                                 'unschedule', 'delete', 'config', 'default'],
+                        choices=['download', 'preview'],
                         type='str', default='preview'),
             targets=dict(required=False, type='list', elements='str'),
             oslevel=dict(required=False, type='str', default='Latest'),
@@ -1144,18 +934,9 @@ def main():
             download_dir=dict(required=False, type='path'),
             download_only=dict(required=False, type='bool', default=False),
             extend_fs=dict(required=False, type='bool', default=True),
-            task_id=dict(required=False, type='str'),
-            sched_time=dict(required=False, type='str'),
             description=dict(required=False, type='str'),
             metadata_dir=dict(required=False, type='path', default='/var/adm/ansible/metadata'),
         ),
-        required_if=[
-            ['action', 'edit', ['task_id']],
-            ['action', 'delete', ['task_id']],
-            ['action', 'unschedule', ['task_id']],
-            ['action', 'preview', ['oslevel']],
-            ['action', 'download', ['oslevel']],
-        ],
         supports_check_mode=True
     )
 
@@ -1170,53 +951,29 @@ def main():
 
     module.debug('*** START ***')
 
-    # Get Module params
-    action = module.params['action']
-    suma_params['action'] = action
-
     suma_params['LppSource'] = ''
     suma_params['target_clients'] = ()
 
-    # switch action
-    if action == 'list':
-        suma_params['task_id'] = module.params['task_id']
-        suma_list(module, suma_params)
+    # Get Module params
+    action = module.params['action']
+    suma_params['action'] = action
+    suma_params['targets'] = module.params['targets']
+    suma_params['download_dir'] = module.params['download_dir']
+    suma_params['download_only'] = module.params['download_only']
+    suma_params['lpp_source_name'] = module.params['lpp_source_name']
+    suma_params['extend_fs'] = module.params['extend_fs']
+    if module.params['oslevel'].upper() == 'LATEST':
+        suma_params['req_oslevel'] = 'Latest'
+    else:
+        suma_params['req_oslevel'] = module.params['oslevel']
+    if module.params['description']:
+        suma_params['description'] = module.params['description']
+    else:
+        suma_params['description'] = "{} request for oslevel {}".format(action, suma_params['req_oslevel'])
+    suma_params['metadata_dir'] = module.params['metadata_dir']
 
-    elif action == 'edit':
-        suma_params['task_id'] = module.params['task_id']
-        suma_params['sched_time'] = module.params['sched_time']
-        suma_edit(module, suma_params)
-
-    elif action == 'unschedule':
-        suma_params['task_id'] = module.params['task_id']
-        suma_unschedule(module)
-
-    elif action == 'delete':
-        suma_params['task_id'] = module.params['task_id']
-        suma_delete(module, suma_params)
-
-    elif action == 'config':
-        suma_config(module)
-
-    elif action == 'default':
-        suma_default(module)
-
-    elif action == 'download' or action == 'preview':
-        suma_params['targets'] = module.params['targets']
-        suma_params['download_dir'] = module.params['download_dir']
-        suma_params['download_only'] = module.params['download_only']
-        suma_params['lpp_source_name'] = module.params['lpp_source_name']
-        suma_params['extend_fs'] = module.params['extend_fs']
-        if module.params['oslevel'].upper() == 'LATEST':
-            suma_params['req_oslevel'] = 'Latest'
-        else:
-            suma_params['req_oslevel'] = module.params['oslevel']
-        if module.params['description']:
-            suma_params['description'] = module.params['description']
-        else:
-            suma_params['description'] = "{} request for oslevel {}".format(action, suma_params['req_oslevel'])
-        suma_params['metadata_dir'] = module.params['metadata_dir']
-        suma_download(module, suma_params)
+    # Run Suma preview or download
+    suma_download(module, suma_params)
 
     # Exit
     msg = 'Suma {} completed successfully'.format(action)
