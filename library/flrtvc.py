@@ -279,6 +279,40 @@ def wait_threaded(thds):
     return wait_threaded_wrapper
 
 
+@wait_threaded(THRDS)
+def wait_all():
+    """
+    Do nothing
+    """
+    pass
+
+
+def increase_fs(dest):
+    """
+    Increase filesystem by 100Mb
+    args:
+        dst (str): The absolute filename
+    return:
+        True if increase succeeded
+        False otherwise
+    """
+    cmd = ['/bin/df', '-c', dest]
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        mount_point = stdout.splitlines()[1].split(':')[6]
+        cmd = ['chfs', '-a', 'size=+100M', mount_point]
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc == 0:
+            module.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
+            return True
+
+    module.log('[WARNING] {}: cmd:{} failed rc={} stdout:{} stderr:{}'
+               .format(mount_point, cmd, rc, stdout, stderr))
+    msg = 'Cannot increase filesystem for {}.'.format(dest)
+    results['meta']['messages'].append(msg)
+    return False
+
+
 def download(src, dst, resize_fs=True):
     """
     Download efix from url to directory
@@ -496,9 +530,7 @@ def check_epkgs(epkg_list, lpps, efixes):
                 'reject': False}
 
         # get efix information
-        stdout = ''
-        cmd = '/usr/sbin/emgr -dXv3 -e {} | /bin/grep -p -e PREREQ -e PACKAG'\
-              .format(epkg['path'])
+        cmd = '/usr/sbin/emgr -dXv3 -e {} | /bin/grep -p -e PREREQ -e PACKAG'.format(epkg['path'])
         rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
         if rc != 0:
             msg = 'Cannot get efix information {}'.format(epkg['path'])
@@ -566,8 +598,7 @@ def check_epkgs(epkg_list, lpps, efixes):
             # check filseset prerequisite is present
             minlvl_i = list(map(int, epkg['prereq'][prereq]['minlvl'].split('.')))
             maxlvl_i = list(map(int, epkg['prereq'][prereq]['maxlvl'].split('.')))
-            if lpps[prereq]['int'] < minlvl_i\
-               or lpps[prereq]['int'] > maxlvl_i:
+            if lpps[prereq]['int'] < minlvl_i or lpps[prereq]['int'] > maxlvl_i:
                 epkg['reject'] = '{}: prerequisite {} levels do not match: {} < {} < {}'\
                                  .format(os.path.basename(epkg['path']),
                                          prereq,
@@ -788,9 +819,7 @@ def run_flrtvc(flrtvc_path, params, force):
         params     (dict): The parameters to pass to flrtvc command
         force      (bool): The flag to automatically remove efixes
     note:
-        Create and build
-            results['meta']['0.report']
-            results['meta']['1.parse']
+        Create and build results['meta']['0.report']
     return:
         True if flrtvc succeeded
         False otherwise
@@ -799,8 +828,6 @@ def run_flrtvc(flrtvc_path, params, force):
 
     if force:
         remove_efix()
-
-    results['meta']['0.report'] = []
 
     # Run 'lslpp -Lcq' on the system and save to file
     lslpp_file = os.path.join(workdir, 'lslpp.txt')
@@ -845,7 +872,6 @@ def run_flrtvc(flrtvc_path, params, force):
         module.log('stdout:{}'.format(stdout))
         module.log('stderr:{}'.format(stderr))
         results['meta']['messages'].append(msg + " stderr: {}".format(stderr))
-        results['meta']['0.report'].append(msg)
         return False
 
     results['meta'].update({'0.report': stdout.splitlines()})
@@ -920,7 +946,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
         if '.epkg.Z' in name:  # URL as an efix file
             module.debug('treat url as an epkg file')
-            out['2.discover'].extend(name)
+            out['2.discover'].append(name)
 
             # download epkg file
             epkg = os.path.abspath(os.path.join(dst_path, name))
@@ -1072,40 +1098,6 @@ def run_installer(epkgs, dst_path, resize_fs=True):
     return True
 
 
-@wait_threaded(THRDS)
-def wait_all():
-    """
-    Do nothing
-    """
-    pass
-
-
-def increase_fs(dest):
-    """
-    Increase filesystem by 100Mb
-    args:
-        dst (str): The absolute filename
-    return:
-        True if increase succeeded
-        False otherwise
-    """
-    cmd = ['/bin/df', '-c', dest]
-    rc, stdout, stderr = module.run_command(cmd)
-    if rc == 0:
-        mount_point = stdout.splitlines()[1].split(':')[6]
-        cmd = ['chfs', '-a', 'size=+100M', mount_point]
-        rc, stdout, stderr = module.run_command(cmd)
-        if rc == 0:
-            module.debug('{}: increased 100Mb: {}'.format(mount_point, stdout))
-            return True
-
-    module.log('[WARNING] {}: cmd:{} failed rc={} stdout:{} stderr:{}'
-               .format(mount_point, cmd, rc, stdout, stderr))
-    msg = 'Cannot increase filesystem for {}.'.format(dest)
-    results['meta']['messages'].append(msg)
-    return False
-
-
 ###################################################################################################
 
 def main():
@@ -1231,7 +1223,7 @@ def main():
     # Download and check efixes
     # ===========================================
     module.debug('*** DOWNLOAD ***')
-    run_downloader(results['meta']['1.parse'], flrtvc_params['dst_path'], resize_fs)
+    run_downloader(results['meta']['1.parse'], workdir, resize_fs)
 
     if download_only:
         if clean and os.path.exists(workdir):
@@ -1243,7 +1235,7 @@ def main():
     # Install efixes
     # ===========================================
     module.debug('*** UPDATE ***')
-    if not run_installer(results['meta']['4.2.check'], flrtvc_params['dst_path'], resize_fs):
+    if not run_installer(results['meta']['4.2.check'], workdir, resize_fs):
         msg = 'Failed to install fixes, please check meta and log data.'
         results['msg'] = msg
         if clean and os.path.exists(workdir):
