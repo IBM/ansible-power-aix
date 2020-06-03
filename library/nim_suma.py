@@ -40,6 +40,7 @@ options:
     - C(*) or C(all) designates all the NIM clients.
     type: list
     elements: str
+    required: true
   oslevel:
     description:
     - Specifies the Operating System level to update to;
@@ -862,7 +863,7 @@ def suma_download(module, suma_params):
 
     # SUMA command for download
     if downloaded != 0:
-        stdout = suma_command(module, 'Download')
+        stdout = suma_command(module, 'Download', suma_params)
         module.debug("SUMA dowload stdout:{}".format(stdout))
 
         # parse output to see if there is something downloaded
@@ -931,7 +932,7 @@ def main():
             action=dict(required=False,
                         choices=['download', 'preview'],
                         type='str', default='preview'),
-            targets=dict(required=False, type='list', elements='str'),
+            targets=dict(required=True, type='list', elements='str'),
             oslevel=dict(required=False, type='str', default='Latest'),
             lpp_source_name=dict(required=False, type='str'),
             download_dir=dict(required=False, type='path'),
