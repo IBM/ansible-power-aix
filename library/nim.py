@@ -846,14 +846,13 @@ def nim_update(module, params):
                 module.log('[WARNING] Machine {0} has different release than {1}'
                            .format(target, oslevel_elts[0]))
                 continue
-            elif (cur_oslevel_elts[1] > oslevel_elts[1]
-                  or cur_oslevel_elts[1] == oslevel_elts[1] and cur_oslevel_elts[2] >= oslevel_elts[2]):
+            if (cur_oslevel_elts[1] > oslevel_elts[1] or cur_oslevel_elts[1] == oslevel_elts[1] and cur_oslevel_elts[2] >= oslevel_elts[2]):
                 module.log('[WARNING] Machine {0} is already at same or higher level than {1}'
                            .format(target, '-'.join(oslevel_elts)))
                 continue
-            else:
-                module.log('Machine {0} needs upgrade from {1} to {2}'
-                           .format(target, cur_oslevel, '-'.join(oslevel_elts)))
+
+            module.log('Machine {0} needs upgrade from {1} to {2}'
+                       .format(target, cur_oslevel, '-'.join(oslevel_elts)))
 
             module.log('NIM - perform synchronous software customization for client(s) {0} '
                        'with resource {1}'.format(target, new_lpp_source))
