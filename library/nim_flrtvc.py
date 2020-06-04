@@ -1073,7 +1073,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
         else:  # URL as a Directory
             module.debug('{0}: treat url as a directory'.format(machine))
             # pylint: disable=protected-access
-            response = open_url(url)
+            response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
             epkgs = [epkg for epkg in re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())]
