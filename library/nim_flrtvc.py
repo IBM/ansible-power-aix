@@ -252,8 +252,6 @@ import os
 import re
 import csv
 import threading
-import urllib
-import ssl
 import shutil
 import tarfile
 import zipfile
@@ -262,6 +260,7 @@ import time
 import calendar
 from collections import OrderedDict
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import open_url
 
 module = None
 results = None
@@ -1074,7 +1073,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
         else:  # URL as a Directory
             module.debug('{0}: treat url as a directory'.format(machine))
             # pylint: disable=protected-access
-            response = urllib.urlopen(url, context=ssl._create_unverified_context())
+            response = open_url(url)
 
             # find all epkg in html body
             epkgs = [epkg for epkg in re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())]
