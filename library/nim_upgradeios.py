@@ -213,18 +213,22 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
         errout = re.sub(r'rc=[-\d]+\n$', '', exc.output)  # remove the rc of c_rsh with echo $?
         ret = exc.returncode
 
-    except OSError as exc:
+    except (OSError, IOError) as exc:
         myfile.close()
-        errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
-        ret = exc.args[0]
-
-    except IOError as exc:
-        # generic exception
-        myfile.close()
-        msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
-        ret = 1
-        module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
-                         debug_output=DEBUG_DATA, status=module.status)
+        if exc.args:
+            match = re.match(r'rc=[-\d]+\n$', exc.args[1])
+            if match:
+                errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
+                ret = exc.args[0]
+            else:
+                msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+                ret = 1
+                module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
+                                 debug_output=DEBUG_DATA, status=module.status)
+        else:
+            msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+            ret = 1
+            module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
 
     # check for error message
     if os.path.getsize(stderr_file) > 0:
@@ -494,7 +498,7 @@ def nim_backup(module):
                            .format(vios_key))
                 continue
 
-            elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
+            if not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {0} vioses skipped (vios_status: {1})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
@@ -567,12 +571,12 @@ def nim_backup(module):
                     module.status[vios_key] = 'FAILURE-BCKP2'
                 error_nb += 1
                 break  # next tuple
-            else:
-                module.nim_node['nim_vios'][vios]['backup'] = backup_info.copy()
-                msg = 'VIOS {0} successfully backed up'.format(vios)
-                module.log(msg)
-                OUTPUT.append('    ' + msg)
-                # CHANGED = True
+
+            module.nim_node['nim_vios'][vios]['backup'] = backup_info.copy()
+            msg = 'VIOS {0} successfully backed up'.format(vios)
+            module.log(msg)
+            OUTPUT.append('    ' + msg)
+            # CHANGED = True
 
     return error_nb
 
@@ -640,7 +644,7 @@ def nim_viosbr(module):
                            .format(vios_key))
                 continue
 
-            elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
+            if not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 OUTPUT.append('    {0} vioses skipped (vios_status: {1})'
                               .format(vios_key, module.params['vios_status'][vios_key]))
@@ -703,20 +707,20 @@ def nim_viosbr(module):
                     module.status[vios_key] = 'FAILURE-{0}{1}'.format(action_label, '2')
                 error_nb += 1
                 break  # next tuple
-            else:
-                if module.params['action'] == 'view_backup':
-                    msg = 'VIOS {0} backup info:'.format(vios)
-                    module.log(msg)
-                    module.log(std_out)
-                    OUTPUT.append('    ' + msg)
-                    OUTPUT.append(map(lambda x: '      ' + str(x), std_out.split('\n')))
-                    # CHANGED = True
-                elif module.params['action'] == 'restore_backup'\
-                        or module.params['action'] == 'all':
-                    msg = 'VIOS {0} backup successfully restored'.format(vios)
-                    module.log(msg)
-                    OUTPUT.append('    ' + msg)
-                    CHANGED = True
+
+            if module.params['action'] == 'view_backup':
+                msg = 'VIOS {0} backup info:'.format(vios)
+                module.log(msg)
+                module.log(std_out)
+                OUTPUT.append('    ' + msg)
+                OUTPUT.append(map(lambda x: '      ' + str(x), std_out.split('\n')))
+                # CHANGED = True
+            elif module.params['action'] == 'restore_backup'\
+                    or module.params['action'] == 'all':
+                msg = 'VIOS {0} backup successfully restored'.format(vios)
+                module.log(msg)
+                OUTPUT.append('    ' + msg)
+                CHANGED = True
 
     return error_nb
 
@@ -847,7 +851,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
                 OUTPUT.append('    ' + msg)
                 continue
 
-            elif not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
+            if not re.match(r"^SUCCESS", module.params['vios_status'][vios_key]):
                 module.status[vios_key] = module.params['vios_status'][vios_key]
                 msg = '{0} vioses skipped (vios_status: {1})'\
                       .format(vios_key, module.params['vios_status'][vios_key])
@@ -1111,12 +1115,12 @@ def nim_wait_migvios(module, vios):
            curr_states['Cstate'] != 'ready for a NIM operation' and \
            curr_states['prev_state'] != 'customization is being performed':
             continue
-        else:
-            msg = 'VIOS {0} successfully upgraded'.format(vios)
-            module.log(msg)
-            OUTPUT.append('    ' + msg)
-            CHANGED = True
-            return 0
+
+        msg = 'VIOS {0} successfully upgraded'.format(vios)
+        module.log(msg)
+        OUTPUT.append('    ' + msg)
+        CHANGED = True
+        return 0
 
     msg = 'VIOS {0} upgrade shown no progress for {1} hours, NIM state:'\
           .format(vios, _TIMEOUT_NIMSTATE % 3600)

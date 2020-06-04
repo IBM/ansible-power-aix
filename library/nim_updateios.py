@@ -161,17 +161,21 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
         errout = re.sub(r'rc=[-\d]+\n$', '', exc.output)  # remove the rc of c_rsh with echo $?
         ret = exc.returncode
 
-    except OSError as exc:
+    except (OSError, IOError) as exc:
         myfile.close()
-        errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
-        ret = exc.args[0]
-
-    except IOError as exc:
-        # generic exception
-        myfile.close()
-        msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
-        ret = 1
-        module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
+        if exc.args:
+            match = re.match(r'rc=[-\d]+\n$', exc.args[1])
+            if match:
+                errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
+                ret = exc.args[0]
+            else:
+                msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+                ret = 1
+                module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
+        else:
+            msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+            ret = 1
+            module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
 
     # check for error message
     if os.path.getsize(stderr_file) > 0:
@@ -651,7 +655,7 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
                            .format(vios_key))
                 continue
 
-            elif vios_status[vios_key] != 'SUCCESS-ALTDC':
+            if vios_status[vios_key] != 'SUCCESS-ALTDC':
                 update_op_tab[vios_key] = vios_status[vios_key]
                 OUTPUT.append("    {0} vioses skipped (vios_status: {1})"
                               .format(vios_key, vios_status[vios_key]))
@@ -736,9 +740,8 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
                     module.log('VIOS update status for {0}: {1}'
                                .format(vios_key, update_op_tab[vios_key]))
                     break  # cannot continue
-                else:
-                    restart_needed = True
-                    module.log(' {0}: {1}'.format(vios_key, update_op_tab[vios_key]))
+                restart_needed = True
+                module.log(' {0}: {1}'.format(vios_key, update_op_tab[vios_key]))
 
             skip_next_target = False
 

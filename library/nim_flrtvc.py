@@ -1076,7 +1076,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
-            epkgs = [epkg for epkg in re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())]
+            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())
 
             epkgs = list(set(epkgs))
 
