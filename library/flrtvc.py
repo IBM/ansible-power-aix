@@ -993,7 +993,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
         else:  # URL as a Directory
             module.debug('treat url as a directory')
-            # pylint: disable=protected-access
+
             response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
