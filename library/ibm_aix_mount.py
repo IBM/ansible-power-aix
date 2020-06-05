@@ -132,10 +132,10 @@ def main():
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+        result['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
         module.fail_json(**result)
 
-    result['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+    result['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
     result['changed'] = True
     module.exit_json(**result)
 

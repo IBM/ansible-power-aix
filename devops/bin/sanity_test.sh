@@ -35,20 +35,19 @@ cp $DIR/library/*.py $ANSIBLE_DIR/lib/ansible/modules/
 set +e
 
 rc=0
+echo "-------- sanity test for python 2.7 --------"
 for f in $DIR/library/*.py; do
     f="${f##*/}"
-    echo "-------- compile for $f --------"
-    ansible-test sanity --test compile ${f%%.py} --python 2.7
+    ansible-test sanity ${f%%.py} --python 2.7
     rc=$(($rc + $?))
-    ansible-test sanity --test compile ${f%%.py} --python 3.7
-    rc=$(($rc + $?))
-
-    echo "-------- validate-modules for $f --------"
-    ansible-test sanity --test validate-modules ${f%%.py}
-    rc=$(($rc + $?))
-
 done
 
+echo "-------- sanity test for python 3.7 --------"
+for f in $DIR/library/*.py; do
+    f="${f##*/}"
+    ansible-test sanity ${f%%.py} --python 3.7
+    rc=$(($rc + $?))
+done
 
 set -e
 

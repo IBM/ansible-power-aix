@@ -93,7 +93,7 @@ def get_hmc_info(module):
     cmd = ['lsnim', '-t', 'hmc', '-l']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        msg = 'Failed to get HMC NIM info, lsnim returned {}: {}'.format(ret, stderr)
+        msg = 'Failed to get HMC NIM info, lsnim returned {0}: {1}'.format(ret, stderr)
         module.log(msg)
         OUTPUT.append(msg)
         return info_hash
@@ -145,7 +145,7 @@ def get_nim_cecs_info(module):
     cmd = ['lsnim', '-t', 'cec', '-l']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        msg = 'Failed to get CEC NIM info, lsnim returned {}: {}'.format(ret, stderr)
+        msg = 'Failed to get CEC NIM info, lsnim returned {0}: {1}'.format(ret, stderr)
         module.log(msg)
         OUTPUT.append(msg)
         return info_hash
@@ -181,7 +181,7 @@ def get_nim_clients_info(module, lpar_type):
     cmd = ['lsnim', '-t', lpar_type, '-l']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        msg = 'Failed to get NIM clients info, lsnim returned: {}'.format(stderr)
+        msg = 'Failed to get NIM clients info, lsnim returned: {0}'.format(stderr)
         module.log(msg)
         OUTPUT.append(msg)
         return info_hash
@@ -230,7 +230,7 @@ def build_nim_node(module):
     # =========================================================================
     nim_hmc = get_hmc_info(module)
     NIM_NODE['nim_hmc'] = nim_hmc
-    module.debug('NIM HMC: {}'.format(nim_hmc))
+    module.debug('NIM HMC: {0}'.format(nim_hmc))
 
     # =========================================================================
     # Build CEC info list
@@ -251,7 +251,7 @@ def build_nim_node(module):
             nim_vios[key]['mgmt_cec_serial'] = nim_cec[mgmt_cec]['serial']
 
     NIM_NODE['nim_vios'] = nim_vios
-    module.debug('NIM VIOS: {}'.format(nim_vios))
+    module.debug('NIM VIOS: {0}'.format(nim_vios))
 
 
 def nim_exec(module, node, command):
@@ -264,8 +264,11 @@ def nim_exec(module, node, command):
         - stderr  stderr of the command
     """
 
-    rcmd = '( LANG=C {} ); echo rc=$?'.format(' '.join(command))
+    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    module.debug('exec command:{0}'.format(cmd))
+
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         return (ret, stdout, stderr)
@@ -275,6 +278,8 @@ def nim_exec(module, node, command):
         ret = int(s.group(1))
         # remove the rc of c_rsh with echo $?
         stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('exec command rc:{0}, output:{1}, stderr:{2}'.format(ret, stdout, stderr))
 
     return (ret, stdout, stderr)
 
@@ -302,27 +307,27 @@ def check_vios_targets(module, targets):
     # ===========================================
     for vios_tuple in targets:
 
-        module.debug('vios_tuple: {}'.format(vios_tuple))
+        module.debug('vios_tuple: {0}'.format(vios_tuple))
 
         tuple_elts = set(vios_tuple.split(','))
         tuple_len = len(tuple_elts)
 
         if tuple_len != 1 and tuple_len != 2:
-            module.log('Malformed VIOS targets {}. Tuple {} should have one or two elements.'
+            module.log('Malformed VIOS targets {0}. Tuple {1} should have one or two elements.'
                        .format(targets, tuple_elts))
             return None
 
         # check vios not already exists in the target list
         if tuple_elts[0] in vios_list or (tuple_len == 2 and (tuple_elts[1] in vios_list
                                                               or tuple_elts[0] == tuple_elts[1])):
-            module.log('Malformed VIOS targets {}. Duplicated VIOS'
+            module.log('Malformed VIOS targets {0}. Duplicated VIOS'
                        .format(targets))
             return None
 
         # check vios is known by the NIM master - if not ignore it
         if tuple_elts[0] not in NIM_NODE['nim_vios'] or \
            (tuple_len == 2 and tuple_elts[1] not in NIM_NODE['nim_vios']):
-            module.log('skipping {} as VIOS not known by the NIM master.'
+            module.log('skipping {0} as VIOS not known by the NIM master.'
                        .format(vios_tuple))
             continue
 
@@ -330,10 +335,10 @@ def check_vios_targets(module, targets):
         res = 0
         for vios in tuple_elts:
             cmd = ['true']
-            ret, stdout, stderr = nim_exec(module, vios, cmd)
+            ret, stdout, stderr = nim_exec(module, NIM_NODE['nim_vios'][vios]['vios_ip'], cmd)
             if ret != 0:
                 res = 1
-                msg = 'skipping {}: cannot reach {} with c_rsh: {}, {}, {}'\
+                msg = 'skipping {0}: cannot reach {1} with c_rsh: {2}, {3}, {4}'\
                       .format(vios_tuple, vios, res, stdout, stderr)
                 module.log(msg)
                 continue
@@ -366,7 +371,7 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
     return: 0 if ok,
             1 otherwise
     """
-    module.debug('hmc_ip: {} vios_uuids: {}'.format(hmc_ip, vios_uuids))
+    module.debug('hmc_ip: {0} vios_uuids: {1}'.format(hmc_ip, vios_uuids))
 
     # Build the vioshc cmd
     cmd = [vioshc_cmd, '-i', hmc_ip, '-m', mgmt_sys_uuid]
@@ -379,20 +384,20 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
 
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        OUTPUT.append('    VIOS Health check failed, vioshc returned: {}'
+        OUTPUT.append('    VIOS Health check failed, vioshc returned: {0}'
                       .format(stderr))
-        module.log('VIOS Health check failed, vioshc returned: {} {}'
+        module.log('VIOS Health check failed, vioshc returned: {0} {1}'
                    .format(ret, stderr))
         OUTPUT.append('    VIOS can NOT be updated')
-        module.log('vioses {} can NOT be updated'.format(vios_uuids))
+        module.log('vioses {0} can NOT be updated'.format(vios_uuids))
         ret = 1
     elif re.search(r'Pass rate of 100%', stdout, re.M):
         OUTPUT.append('    VIOS Health check passed')
-        module.log('vioses {} can be updated'.format(vios_uuids))
+        module.log('vioses {0} can be updated'.format(vios_uuids))
         ret = 0
     else:
         OUTPUT.append('    VIOS can NOT be updated')
-        module.log('vioses {} can NOT be updated'.format(vios_uuids))
+        module.log('vioses {0} can NOT be updated'.format(vios_uuids))
         ret = 1
 
     return ret
@@ -409,7 +414,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
     global results
     global OUTPUT
 
-    module.debug('hmc_id: {}, hmc_ip: {}'.format(hmc_id, hmc_ip))
+    module.debug('hmc_id: {0}, hmc_ip: {1}'.format(hmc_id, hmc_ip))
 
     # Call the vioshc.py script a first time to collect UUIDs
     cmd = [vioshc_cmd, '-i', hmc_ip, '-l', 'a']
@@ -420,13 +425,13 @@ def vios_health_init(module, hmc_id, hmc_ip):
 
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        OUTPUT.append('    Failed to get the VIOS information, vioshc returned: {}'
+        OUTPUT.append('    Failed to get the VIOS information, vioshc returned: {0}'
                       .format(stderr))
-        module.log('Failed to get the VIOS information, vioshc returned: {} {}'
+        module.log('Failed to get the VIOS information, vioshc returned: {0} {1}'
                    .format(ret, stderr))
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Failed to get the VIOS information, vioshc returned: {}'.format(ret)
+        results['msg'] = 'Failed to get the VIOS information, vioshc returned: {0}'.format(ret)
         module.fail_json(**results)
 
     # Parse the output and store the UUIDs
@@ -437,7 +442,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
     for line in stdout.split('\n'):
         line = line.rstrip()
         # TBC - remove?
-        module.debug('--------line {}'.format(line))
+        module.debug('--------line {0}'.format(line))
         if vios_section == 0:
             # skip the header
             match_key = re.match(r"^-+\s+-+$", line)
@@ -453,7 +458,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
                 cec_uuid = match_key.group(1)
                 cec_serial = match_key.group(2)
 
-                module.debug('New managed system section:{},{}'
+                module.debug('New managed system section:{0},{1}'
                              .format(cec_uuid, cec_serial))
                 continue
 
@@ -471,7 +476,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
         if match_key:
             vios_uuid = match_key.group(1)
             vios_part_id = match_key.group(2)
-            module.debug('new vios partitionsection:{},{}'
+            module.debug('new vios partitionsection:{0},{1}'
                          .format(vios_uuid, vios_part_id))
 
             # retrieve the vios with the vios_part_id and the cec_serial value
@@ -495,13 +500,13 @@ def vios_health_init(module, hmc_id, hmc_ip):
             vios_section = 0
             continue
 
-        OUTPUT.append('    Bad command output for the hmc: {}'.format(hmc_id))
-        module.log('vioshc command, bad output line: {}'.format(line))
-        results['msg'] = 'Health init check failed. Bad vioshc.py command output for the {} hmc - output: {}'\
+        OUTPUT.append('    Bad command output for the hmc: {0}'.format(hmc_id))
+        module.log('vioshc command, bad output line: {0}'.format(line))
+        results['msg'] = 'Health init check failed. Bad vioshc.py command output for the {0} hmc - output: {1}'\
                          .format(hmc_id, line)
         module.fail_json(**results)
 
-    module.debug('vioshc output: {}'.format(line))
+    module.debug('vioshc output: {0}'.format(line))
     return ret
 
 
@@ -518,31 +523,31 @@ def health_check(module, targets):
     """
     global NIM_NODE
 
-    module.debug('targets: {}'.format(targets))
+    module.debug('targets: {0}'.format(targets))
 
     health_tab = {}
     vios_key = []
     for target_tuple in targets:
-        OUTPUT.append('Checking: {}'.format(target_tuple))
-        module.debug('target_tuple: {}'.format(target_tuple))
+        OUTPUT.append('Checking: {0}'.format(target_tuple))
+        module.debug('target_tuple: {0}'.format(target_tuple))
 
         tup_len = len(target_tuple)
         vios1 = target_tuple[0]
         if tup_len == 2:
             vios2 = target_tuple[1]
-            vios_key = "{}-{}".format(vios1, vios2)
+            vios_key = "{0}-{1}".format(vios1, vios2)
         else:
             vios_key = vios1
 
-        module.debug('vios1: {}'.format(vios1))
+        module.debug('vios1: {0}'.format(vios1))
         # cec_serial = NIM_NODE['nim_vios'][vios1]['mgmt_cec_serial']
         hmc_id = NIM_NODE['nim_vios'][vios1]['mgmt_hmc_id']
 
         if hmc_id not in NIM_NODE['nim_hmc']:
-            OUTPUT.append('    VIOS {} refers to an inexistant hmc {}'
+            OUTPUT.append('    VIOS {0} refers to an inexistant hmc {1}'
                           .format(vios1, hmc_id))
-            module.warn("VIOS {} refers to an inexistant hmc {}"
-                        .format(vios1, hmc_id))
+            module.log("[WARNING] VIOS {0} refers to an inexistant hmc {1}"
+                       .format(vios1, hmc_id))
             health_tab[vios_key] = 'FAILURE-HC'
             continue
 
@@ -557,10 +562,10 @@ def health_check(module, targets):
 
             ret = vios_health_init(module, hmc_id, hmc_ip)
             if ret != 0:
-                OUTPUT.append('    Unable to get UUIDs of {} and {}, ret: {}'
+                OUTPUT.append('    Unable to get UUIDs of {0} and {1}, ret: {2}'
                               .format(vios1, vios2, ret))
-                module.warn("Unable to get UUIDs of {} and {}, ret: {}"
-                            .format(vios1, vios2, ret))
+                module.log("[WARNING] Unable to get UUIDs of {0} and {1}, ret: {2}"
+                           .format(vios1, vios2, ret))
                 health_tab[vios_key] = 'FAILURE-HC'
                 continue
 
@@ -568,7 +573,7 @@ def health_check(module, targets):
            or tup_len == 2 and 'vios_uuid' not in NIM_NODE['nim_vios'][vios2]:
             # vios uuid's not found
             OUTPUT.append('    One VIOS UUID not found')
-            module.warn("Unable to find one vios_uuid in NIM_NODE")
+            module.log("[WARNING] Unable to find one vios_uuid in NIM_NODE")
             health_tab[vios_key] = 'FAILURE-HC'
 
         else:
@@ -584,14 +589,14 @@ def health_check(module, targets):
 
             if ret == 0:
                 OUTPUT.append('    Health check succeeded')
-                module.log("Health check succeeded for {}".format(vios_key))
+                module.log("Health check succeeded for {0}".format(vios_key))
                 health_tab[vios_key] = 'SUCCESS-HC'
             else:
                 OUTPUT.append('    Health check failed')
-                module.log("Health check failed for {}".format(vios_key))
+                module.log("Health check failed for {0}".format(vios_key))
                 health_tab[vios_key] = 'FAILURE-HC'
 
-    module.debug('health_tab: {}'. format(health_tab))
+    module.debug('health_tab: {0}'. format(health_tab))
     return health_tab
 
 
@@ -621,7 +626,7 @@ def main():
     # =========================================================================
     targets = module.params['targets']
 
-    OUTPUT.append('VIOS Health Check operation for {}'.format(targets))
+    OUTPUT.append('VIOS Health Check operation for {0}'.format(targets))
 
     target_list = []
     targets_health_status = {}
@@ -634,23 +639,23 @@ def main():
     ret = check_vios_targets(module, targets)
     if (ret is None) or (not ret):
         OUTPUT.append('    Warning: Empty target list')
-        module.warn('Empty target list: "{}"'.format(targets))
+        module.log('[WARNING] Empty target list: "{0}"'.format(targets))
     else:
         target_list = ret
-        OUTPUT.append('    Targets list: {}'.format(target_list))
-        module.debug('Targets list: {}'.format(target_list))
+        OUTPUT.append('    Targets list: {0}'.format(target_list))
+        module.debug('Targets list: {0}'.format(target_list))
 
         # Check vioshc script is present, fail_json if not
         vioshc_cmd = module.get_bin_path('vioshc.py', required=True)
-        module.debug('Using vioshc.py script at {}'.format(vioshc_cmd))
+        module.debug('Using vioshc.py script at {0}'.format(vioshc_cmd))
 
         targets_health_status = health_check(module, target_list)
 
         OUTPUT.append('VIOS Health Check status:')
         module.log('VIOS Health Check status:')
         for vios_key in targets_health_status.keys():
-            OUTPUT.append("    {} : {}".format(vios_key, targets_health_status[vios_key]))
-            module.log('    {} : {}'.format(vios_key, targets_health_status[vios_key]))
+            OUTPUT.append("    {0} : {1}".format(vios_key, targets_health_status[vios_key]))
+            module.log('    {0} : {1}'.format(vios_key, targets_health_status[vios_key]))
 
     results['targets'] = target_list
     results['nim_node'] = NIM_NODE
