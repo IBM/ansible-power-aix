@@ -26,11 +26,7 @@ license:
 
 # Collection Tags
 tags:
-- ibm
-- aix
-- aix_os
-- power
-- power_aix
+- infrastructure
 
 # Collection Dependencies
 dependencies: {}
