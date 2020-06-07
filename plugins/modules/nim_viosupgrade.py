@@ -183,26 +183,26 @@ def viosupgrade_query(module):
     ret = 0
 
     if module.param['target_file_name']:
-        cmd = '/usr/sbin/viosupgrade -q -f {}'\
+        cmd = '/usr/sbin/viosupgrade -q -f {0}'\
               .format(module.param['target_file_name'])
         (ret, stdout, stderr) = module.run_command(cmd)
 
-        module.log("[STDOUT] {}".format(stdout))
+        module.log("[STDOUT] {0}".format(stdout))
         if ret == 0:
-            module.log("[STDERR] {}".format(stderr))
+            module.log("[STDERR] {0}".format(stderr))
         else:
-            module.log("command {} failed: {}".format(cmd, stderr))
+            module.log("command {0} failed: {1}".format(cmd, stderr))
             ret = 1
     else:
         for target in module.param['targets']:
-            cmd = '/usr/sbin/viosupgrade -q -n {}'.format(target)
+            cmd = '/usr/sbin/viosupgrade -q -n {0}'.format(target)
             (rc, stdout, stderr) = module.run_command(cmd)
 
-            module.log("[STDOUT] {}".format(stdout))
+            module.log("[STDOUT] {0}".format(stdout))
             if rc == 0:
-                module.log("[STDERR] {}".format(stderr))
+                module.log("[STDERR] {0}".format(stderr))
             else:
-                module.log("command {} failed: {}".format(cmd, stderr))
+                module.log("command {0} failed: {1}".format(cmd, stderr))
                 ret += 1
     return ret
 
@@ -240,11 +240,11 @@ def viosupgrade_file(module, filename):
     (ret, stdout, stderr) = module.run_command(cmd)
 
     CHANGED = True  # don't really know
-    module.log("[STDOUT] {}".format(stdout))
+    module.log("[STDOUT] {0}".format(stdout))
     if ret == 0:
-        module.log("[STDERR] {}".format(stderr))
+        module.log("[STDERR] {0}".format(stderr))
     else:
-        module.log("command {} failed: {}".format(cmd, stderr))
+        module.log("command {0} failed: {1}".format(cmd, stderr))
 
     return ret
 
@@ -336,19 +336,19 @@ def viosupgrade_list(module, targets):
                          'res_file_res', 'res_image_data', 'res_log']
         for res in supported_res:
             if target in module.param[res]:
-                cmd += ' -e {}:{}'.format(res, module.param[res][target])
+                cmd += ' -e {0}:{1}'.format(res, module.param[res][target])
             elif 'all' in module.param[res]:
-                cmd += ' -e {}:{}'.format(res, module.param[res]['all'])
+                cmd += ' -e {0}:{1}'.format(res, module.param[res]['all'])
 
         # run the command
         (rc, stdout, stderr) = module.run_command(cmd)
 
         CHANGED = True  # don't really know
-        module.log("[STDOUT] {}".format(stdout))
+        module.log("[STDOUT] {0}".format(stdout))
         if rc == 0:
-            module.log("[STDERR] {}".format(stderr))
+            module.log("[STDERR] {0}".format(stderr))
         else:
-            module.log("command {} failed: {}".format(cmd, stderr))
+            module.log("command {0} failed: {1}".format(cmd, stderr))
             ret += 1
 
     return ret
@@ -409,7 +409,7 @@ def main():
         ),
         mutually_exclusive=[['targets', 'target_file_name']],
         required_one_of=[['targets', 'target_file_name']],
-        # TODO: VRO determine mandatory attributes
+        # TODO: determine mandatory attributes
         required_if=[],
     )
 
@@ -422,8 +422,8 @@ def main():
 
     MODULE.debug('*** START NIM VIOSUPGRADE OPERATION ***')
 
-    OUTPUT.append('VIOSUpgrade operation for {}'.format(MODULE.params['targets']))
-    MODULE.log('Action {} for {} targets'
+    OUTPUT.append('VIOSUpgrade operation for {0}'.format(MODULE.params['targets']))
+    MODULE.log('Action {0} for {1} targets'
                .format(MODULE.params['action'], MODULE.params['targets']))
 
     # build NIM node info (if needed)
@@ -432,7 +432,7 @@ def main():
     # TODO: remove this, not needed, except maybe for hostname
     # if 'nim_vios' not in MODULE.nim_node:
     #     MODULE.nim_node['nim_vios'] = get_nim_clients_info(MODULE, 'vios')
-    # MODULE.debug('NIM VIOS: {}'.format(MODULE.nim_node['nim_vios']))
+    # MODULE.debug('NIM VIOS: {0}'.format(MODULE.nim_node['nim_vios']))
 
     if MODULE.params['target_file_name']:
         try:
@@ -442,7 +442,7 @@ def main():
                 MODULE.targets.append(line[0].strip())
             myfile.close()
         except IOError as e:
-            msg = 'Failed to parse file {}: {}.'.format(e.filename, e.strerror)
+            msg = 'Failed to parse file {0}: {1}.'.format(e.filename, e.strerror)
             MODULE.log(msg)
             MODULE.fail_json(changed=CHANGED, msg=msg, output=OUTPUT,
                              debug_output=DEBUG_DATA, status=MODULE.status)
@@ -453,7 +453,7 @@ def main():
     if not MODULE.targets:
         msg = 'Empty target list'
         OUTPUT.append(msg)
-        MODULE.warn(msg + ': {}'.format(MODULE.params['targets']))
+        MODULE.warn(msg + ': {0}'.format(MODULE.params['targets']))
         MODULE.exit_json(
             changed=False,
             msg=msg,
@@ -462,8 +462,8 @@ def main():
             output=OUTPUT,
             status=MODULE.status)
 
-    OUTPUT.append('Targets list:{}'.format(MODULE.targets))
-    MODULE.debug('Target list: {}'.format(MODULE.targets))
+    OUTPUT.append('Targets list:{0}'.format(MODULE.targets))
+    MODULE.debug('Target list: {0}'.format(MODULE.targets))
 
     if MODULE.params['target_file_name']:
         if MODULE.params['action'] != 'get_status':
@@ -487,13 +487,13 @@ def main():
 
     # # Prints status for each targets
     # nb_error = 0
-    # msg = 'VIOSUpgrade {} operation status:'.format(MODULE.params['action'])
+    # msg = 'VIOSUpgrade {0} operation status:'.format(MODULE.params['action'])
     # if MODULE.status:
     #     OUTPUT.append(msg)
     #     MODULE.log(msg)
     #     for vios_key in MODULE.status:
-    #         OUTPUT.append('    {} : {}'.format(vios_key, MODULE.status[vios_key]))
-    #         MODULE.log('    {} : {}'.format(vios_key, MODULE.status[vios_key]))
+    #         OUTPUT.append('    {0} : {1}'.format(vios_key, MODULE.status[vios_key]))
+    #         MODULE.log('    {0} : {1}'.format(vios_key, MODULE.status[vios_key]))
     #         if not re.match(r"^SUCCESS", MODULE.status[vios_key]):
     #             nb_error += 1
     # else:
@@ -503,12 +503,12 @@ def main():
 
     # # Prints a global result statement
     # if nb_error == 0:
-    #     msg = 'VIOSUpgrade {} operation succeeded'\
+    #     msg = 'VIOSUpgrade {0} operation succeeded'\
     #           .format(MODULE.params['action'])
     #     OUTPUT.append(msg)
     #     MODULE.log(msg)
     # else:
-    #     msg = 'VIOSUpgrade {} operation failed: {} errors'\
+    #     msg = 'VIOSUpgrade {0} operation failed: {1} errors'\
     #           .format(MODULE.params['action'], nb_error)
     #     OUTPUT.append(msg)
     #     MODULE.log(msg)

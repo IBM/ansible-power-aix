@@ -225,11 +225,11 @@ def param_one_of(one_of_list, required=True, exclusive=True):
             count += 1
             break
     if count == 0 and required:
-        results['msg'] = 'Missing parameter: action is {} but one of the following is missing: '.format(module.params['action'])
+        results['msg'] = 'Missing parameter: action is {0} but one of the following is missing: '.format(module.params['action'])
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
     if count > 1 and exclusive:
-        results['msg'] = 'Invalid parameter: action is {} supports only one of the following: '.format(module.params['action'])
+        results['msg'] = 'Invalid parameter: action is {0} supports only one of the following: '.format(module.params['action'])
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
 
@@ -290,7 +290,7 @@ def main():
                 cmd += ['-e', module.params['ifix_package']]
             else:
                 if module.params['bosboot'] and module.params['bosboot'] == 'skip':
-                    results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to {}'.format(module.params['bosboot'])
+                    results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to {0}'.format(module.params['bosboot'])
                     module.fail_json(**results)
                 if module.params['ifix_package']:   # this test is optional thanks to param_one_of check.
                     cmd += ['-i', module.params['ifix_package']]
@@ -318,7 +318,7 @@ def main():
         # Usage: emgr -C -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-kpIqX]
         param_one_of(['ifix_label', 'ifix_package', 'list_file'])
         if module.params['bosboot'] == 'skip':
-            results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to {}'.format(module.params['bosboot'])
+            results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to {0}'.format(module.params['bosboot'])
             module.fail_json(**results)
 
         cmd += ['-C']
@@ -367,7 +367,7 @@ def main():
         if module.params['extend_fs']:
             cmd += ['-X']
         if action == 'check' and module.params['verbose'] is not None:
-            cmd += ['-v', '{}'.format(module.params['verbose'])]
+            cmd += ['-v', '{0}'.format(module.params['verbose'])]
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
@@ -428,7 +428,7 @@ def main():
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
         if module.params['verbose'] is not None:
-            cmd += ['-v', '{}'.format(module.params['verbose'])]
+            cmd += ['-v', '{0}'.format(module.params['verbose'])]
         if module.params['extend_fs']:
             cmd += ['-X']
 
@@ -443,7 +443,7 @@ def main():
         elif module.params['ifix_vuid']:
             cmd += ['-u', module.params['ifix_vuid']]
         if module.params['verbose'] is not None:
-            cmd += ['-v', '{}'.format(module.params['verbose'])]
+            cmd += ['-v', '{0}'.format(module.params['verbose'])]
         if module.params['extend_fs']:
             cmd += ['-X']
         if module.params['alternate_dir']:
@@ -461,14 +461,14 @@ def main():
         results['stdout'] = stdout
         results['stderr'] = stderr
         if rc != 0:
-            results['msg'] = 'Command \'{}\' failed with return code {}.'.format(' '.join(cmd), rc)
+            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
             module.fail_json(**results)
 
-        results['msg'] = 'Command \'{}\' successful.'.format(' '.join(cmd))
+        results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode:
             results['changed'] = True
     else:
-        results['msg'] = 'Command \'{}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
+        results['msg'] = 'Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
         results['stdout'] = 'No stdout as execution has been skipped.'
 
     module.exit_json(**results)

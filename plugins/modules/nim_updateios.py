@@ -145,11 +145,11 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     errout = ''
 
     th_id = threading.current_thread().ident
-    stderr_file = '/tmp/ansible_updateios_cmd_stderr_{}'.format(th_id)
+    stderr_file = '/tmp/ansible_updateios_cmd_stderr_{0}'.format(th_id)
 
-    module.debug('command:{}'.format(cmd))
+    module.debug('command:{0}'.format(cmd))
     if debug_data is True:
-        DEBUG_DATA.append('exec_cmd:{}'.format(cmd))
+        DEBUG_DATA.append('exec_cmd:{0}'.format(cmd))
     try:
         myfile = open(stderr_file, 'w')
         output = subprocess.check_output(cmd, stderr=myfile, shell=shell)
@@ -164,17 +164,21 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
         errout = re.sub(r'rc=[-\d]+\n$', '', exc.output)  # remove the rc of c_rsh with echo $?
         ret = exc.returncode
 
-    except OSError as exc:
+    except (OSError, IOError) as exc:
         myfile.close()
-        errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
-        ret = exc.args[0]
-
-    except IOError as exc:
-        # generic exception
-        myfile.close()
-        msg = 'Command: {} Exception: {}'.format(cmd, exc)
-        ret = 1
-        module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
+        if exc.args:
+            match = re.match(r'rc=[-\d]+\n$', exc.args[1])
+            if match:
+                errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
+                ret = exc.args[0]
+            else:
+                msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+                ret = 1
+                module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
+        else:
+            msg = 'Command: {0} Exception: {1}'.format(cmd, exc)
+            ret = 1
+            module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
 
     # check for error message
     if os.path.getsize(stderr_file) > 0:
@@ -184,14 +188,11 @@ def exec_cmd(cmd, module, exit_on_error=False, debug_data=True, shell=False):
     os.remove(stderr_file)
 
     if debug_data is True:
-        DEBUG_DATA.append('exec_cmd rc:{}, output:{} errout:{}'
-                          .format(ret, output, errout))
-        module.debug('retrun rc:{}, output:{} errout:{}'
-                     .format(ret, output, errout))
+        DEBUG_DATA.append('exec_cmd rc:{0}, output:{1} errout:{2}'.format(ret, output, errout))
+        module.debug('retrun rc:{0}, output:{1} errout:{2}'.format(ret, output, errout))
 
     if ret != 0 and exit_on_error is True:
-        msg = 'Command: {} RetCode:{} ... stdout:{} stderr:{}'\
-              .format(cmd, ret, output, errout)
+        msg = 'Command: {0} RetCode:{1} ... stdout:{2} stderr:{3}'.format(cmd, ret, output, errout)
         module.fail_json(changed=CHANGED, msg=msg, output=OUTPUT)
 
     return (ret, output, errout)
@@ -210,10 +211,10 @@ def get_nim_clients_info(module, lpar_type):
     std_out = ''
     info_hash = {}
 
-    cmd = 'LC_ALL=C lsnim -t {} -l'.format(lpar_type)
+    cmd = 'LC_ALL=C lsnim -t {0} -l'.format(lpar_type)
     (ret, std_out, std_err) = exec_cmd(cmd, module, shell=True)
     if ret != 0:
-        msg = 'Cannot list NIM {} objects: {}'.format(lpar_type, std_err)
+        msg = 'Cannot list NIM {0} objects: {1}'.format(lpar_type, std_err)
         module.log(msg)
         module.fail_json(changed=CHANGED, msg=msg, meta=OUTPUT)
 
@@ -244,8 +245,8 @@ def get_nim_clients_info(module, lpar_type):
             #         info_hash[obj_key]['mgmt_vios_id'] = mgmt_elts[1]
             #         info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
             #     else:
-            #         module.warn('WARNING: VIOS {} management profile has not 3 elements: {}'.
-            #                     format(obj_key, match_mgmtprof.group(1)))
+            #         module.log('WARNING: VIOS {0} management profile has not 3 elements: {1}'.
+            #                    format(obj_key, match_mgmtprof.group(1)))
             #     continue
 
             # Get VIOS interface info in case we need c_rsh
@@ -277,7 +278,7 @@ def build_nim_node(module):
     nim_vios = get_nim_clients_info(module, 'vios')
 
     NIM_NODE['nim_vios'] = nim_vios
-    module.debug('NIM VIOS: {}'.format(nim_vios))
+    module.debug('NIM VIOS: {0}'.format(nim_vios))
 
 
 def check_lpp_source(module, lpp_source):
@@ -296,8 +297,7 @@ def check_lpp_source(module, lpp_source):
     cmd = ['lsnim', '-a', 'location', lpp_source]
     (ret, std_out, std_err) = exec_cmd(cmd, module)
     if ret != 0:
-        msg = 'Cannot find location of lpp_source {}, lsnim returns: {}'\
-              .format(lpp_source, std_err)
+        msg = 'Cannot find location of lpp_source {0}, lsnim returns: {1}'.format(lpp_source, std_err)
         module.log(msg)
         OUTPUT.append(msg)
         module.fail_json(changed=CHANGED, msg=msg, meta=OUTPUT)
@@ -307,8 +307,7 @@ def check_lpp_source(module, lpp_source):
     cmd = ['/bin/find', location]
     (ret, std_out, std_err) = exec_cmd(cmd, module)
     if ret != 0:
-        msg = 'Cannot find location of lpp_source {}: {}'\
-              .format(lpp_source, std_err)
+        msg = 'Cannot find location of lpp_source {0}: {1}'.format(lpp_source, std_err)
         module.log(msg)
         OUTPUT.append(msg)
         module.fail_json(changed=CHANGED, msg=msg, meta=OUTPUT)
@@ -339,39 +338,35 @@ def check_vios_targets(module, targets):
     # Build targets list
     # ===========================================
     for vios_tuple in vios_list_tuples[1:]:
-        module.log('Checking vios_tuple: {}'.format(vios_tuple))
+        module.log('Checking vios_tuple: {0}'.format(vios_tuple))
 
         tuple_elts = list(vios_tuple[:-1].split(','))
         tuple_len = len(tuple_elts)
 
         if tuple_len != 1 and tuple_len != 2:
-            OUTPUT.append('Malformed VIOS targets {}. Tuple {} should be a 1 or 2 elements.'
+            OUTPUT.append('Malformed VIOS targets {0}. Tuple {1} should be a 1 or 2 elements.'
                           .format(targets, tuple_elts))
-            module.log('Malformed VIOS targets {}. Tuple {} should be a 1 or 2 elements.'
+            module.log('Malformed VIOS targets {0}. Tuple {1} should be a 1 or 2 elements.'
                        .format(targets, tuple_elts))
             return None
 
         # check vios not already exists in the target list
         if tuple_elts[0] in vios_list or (tuple_len == 2 and (tuple_elts[1] in vios_list
                                                               or tuple_elts[0] == tuple_elts[1])):
-            OUTPUT.append('Malformed VIOS targets {}. Duplicated VIOS'
-                          .format(targets))
-            module.log('Malformed VIOS targets {}. Duplicated VIOS'
-                       .format(targets))
+            OUTPUT.append('Malformed VIOS targets {0}. Duplicated VIOS'.format(targets))
+            module.log('Malformed VIOS targets {0}. Duplicated VIOS'.format(targets))
             return None
 
         # check vios is knowed by the NIM master - if not ignore it
         if tuple_elts[0] not in NIM_NODE['nim_vios']:
-            msg = "VIOS {} is not client of the NIM master, will be ignored"\
-                  .format(tuple_elts[0])
+            msg = "VIOS {0} is not client of the NIM master, will be ignored".format(tuple_elts[0])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
         if tuple_len == 2 and tuple_elts[1] not in NIM_NODE['nim_vios']:
-            msg = "VIOS {} is not client of the NIM master, will be ignored"\
-                  .format(tuple_elts[1])
+            msg = "VIOS {0} is not client of the NIM master, will be ignored".format(tuple_elts[1])
             OUTPUT.append(msg)
-            module.warn(msg)
+            module.log(msg)
             continue
 
         # check vios connectivity
@@ -382,7 +377,7 @@ def check_vios_targets(module, targets):
             (ret, std_out, std_err) = exec_cmd(cmd, module)
             if ret != 0:
                 res = 1
-                msg = 'skipping {}: cannot reach {} with c_rsh: {}, {}, {}'\
+                msg = 'skipping {0}: cannot reach {1} with c_rsh: {2}, {3}, {4}'\
                       .format(vios_tuple, elem, res, std_out, std_err)
                 module.log(msg)
                 continue
@@ -437,8 +432,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
         if ret != 0:
             std_out = std_out.rstrip()
             if std_out.find('Cluster does not exist') != -1:
-                module.debug('There is no cluster or the node {} is DOWN'
-                             .format(vios))
+                module.debug('There is no cluster or the node {0} is DOWN'.format(vios))
                 NIM_NODE['nim_vios'][vios]['vios_ssp_status'] = 'DOWN'
                 if tuple_len == 1:
                     return 0
@@ -446,9 +440,9 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
                     continue
             else:
                 update_op_tab[vios_key] = err_label
-                OUTPUT.append('    Failed to get the SSP status for {}: {} {}'
+                OUTPUT.append('    Failed to get the SSP status for {0}: {1} {2}'
                               .format(vios, std_out, std_err))
-                module.log('Failed to get the SSP status for {}: {} {} {}'
+                module.log('Failed to get the SSP status for {0}: {1} {2} {3}'
                            .format(vios, ret, std_out, std_err))
                 return 1
         cluster_found = True
@@ -465,7 +459,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
             line = line.rstrip()
             match_key = re.match(r"^(\S+):(\S+):(\S+):\S+:\S+:(\S+):.*", line)
             if not match_key:
-                module.debug('cluster line: "{}" does not match'.format(line))
+                module.debug('cluster line: "{0}" does not match'.format(line))
                 continue
 
             if match_key.group(3) not in target_tuple:
@@ -481,8 +475,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
             # single VIOS case
             if tuple_len == 1:
                 if cur_vios_ssp_status == 'OK':
-                    err_msg = 'SSP is active for the single VIOS: {}.'\
-                              ' VIOS cannot be updated'\
+                    err_msg = 'SSP is active for the single VIOS: {0}. VIOS cannot be updated'\
                               .format(cur_vios_name)
                     OUTPUT.append('    ' + err_msg)
                     module.log(err_msg)
@@ -499,7 +492,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
 
             # both VIOSes found
             if vios_ssp_status != cur_vios_ssp_status:
-                err_msg = '{} cannot be updated: SSP status differ: {}:{}, {}:{}'\
+                err_msg = '{0} cannot be updated: SSP status differ: {1}:{2}, {3}:{4}'\
                           .format(vios_key, vios_name, vios_ssp_status,
                                   cur_vios_name, cur_vios_ssp_status)
                 OUTPUT.append('    ' + err_msg)
@@ -507,7 +500,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
                 update_op_tab[vios_key] = err_label
                 return 1
             elif ssp_name != cur_ssp_name and cur_vios_ssp_status == 'OK':
-                err_msg = '{} cannot be updated: both VIOSes must belong to the same SSP'\
+                err_msg = '{0} cannot be updated: both VIOSes must belong to the same SSP'\
                           .format(vios_key)
                 OUTPUT.append('    ' + err_msg)
                 module.log(err_msg)
@@ -516,7 +509,7 @@ def get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab):
             return 0
 
     if cluster_found is True:
-        err_msg = '{} cannot be updated: only one VIOS belongs to an SSP'.format(vios_key)
+        err_msg = '{0} cannot be updated: only one VIOS belongs to an SSP'.format(vios_key)
         OUTPUT.append('    ' + err_msg)
         module.log(err_msg)
         update_op_tab[vios_key] = err_label
@@ -535,13 +528,13 @@ def ssp_stop_start(module, target_tuple, vios, action):
     global NIM_NODE
     global OUTPUT
 
-    module.debug("ssp_start_stop {},{},{}".format(target_tuple, vios, action))
+    module.debug("ssp_start_stop {0},{1},{2}".format(target_tuple, vios, action))
     # if action is start SSP,  find the first node running SSP
     node = vios
     if action == "start":
         module.debug("search the vios runing ssp")
         for cur_node in target_tuple:
-            module.debug("vios:{} ssp status is {}".
+            module.debug("vios:{0} ssp status is {1}".
                          format(cur_node, NIM_NODE['nim_vios'][cur_node]['vios_ssp_status']))
 
             if NIM_NODE['nim_vios'][cur_node]['vios_ssp_status'] == "OK":
@@ -550,12 +543,12 @@ def ssp_stop_start(module, target_tuple, vios, action):
 
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
            NIM_NODE['nim_vios'][node]['vios_ip'],
-           '"/usr/sbin/clctrl -{} -n {} -m {}; echo rc=$?"'
+           '"/usr/sbin/clctrl -{0} -n {1} -m {2}; echo rc=$?"'
            .format(action, NIM_NODE['nim_vios'][vios]['ssp_name'], vios)]
 
     (ret, std_out, std_err) = exec_cmd(cmd, module)
     if ret != 0:
-        msg = 'Failed to {} SSP cluster {} on {}: {}'\
+        msg = 'Failed to {0} SSP cluster {1} on {2}: {3}'\
               .format(action, NIM_NODE['nim_vios'][vios]['ssp_name'], vios, std_err)
         OUTPUT.append('    ' + msg)
         module.log(msg)
@@ -566,7 +559,7 @@ def ssp_stop_start(module, target_tuple, vios, action):
     else:
         NIM_NODE['nim_vios'][vios]['vios_ssp_status'] = 'OK'
 
-    msg = '{} SSP cluster {} on {} succeeded'\
+    msg = '{0} SSP cluster {1} on {2} succeeded'\
           .format(action, NIM_NODE['nim_vios'][vios]['ssp_name'], vios)
     OUTPUT.append('    ' + msg)
     module.log(msg)
@@ -607,12 +600,12 @@ def get_updateios_cmd(module):
         else:
             msg = '"filesets" parameter or "installp_bundle" parameter'\
                   ' is mandatory with the "remove" action'
-            module.log('{}'.format(msg))
-            OUTPUT.append('{}'.format(msg))
+            module.log('{0}'.format(msg))
+            OUTPUT.append('{0}'.format(msg))
             module.fail_json(changed=CHANGED, msg=msg, meta=OUTPUT)
     else:
         if module.params['filesets'] or module.params['installp_bundle']:
-            module.log('Discarding attribute filesets {} and installp_bundle {}'
+            module.log('Discarding attribute filesets {0} and installp_bundle {1}'
                        .format(module.params['filesets'], module.params['installp_bundle']))
             OUTPUT.append('Discarding installp_bundle or filesets')
 
@@ -641,53 +634,53 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
 
     vios_key = []
     for target_tuple in targets_list:
-        OUTPUT.append('Processing tuple: {}'.format(target_tuple))
-        module.debug('Processing target_tuple: {}'.format(target_tuple))
+        OUTPUT.append('Processing tuple: {0}'.format(target_tuple))
+        module.debug('Processing target_tuple: {0}'.format(target_tuple))
 
         tup_len = len(target_tuple)
         vios1 = target_tuple[0]
         if tup_len == 2:
             vios2 = target_tuple[1]
-            vios_key = "{}-{}".format(vios1, vios2)
+            vios_key = "{0}-{1}".format(vios1, vios2)
         else:
             vios_key = vios1
 
-        module.debug('vios_key: {}'.format(vios_key))
+        module.debug('vios_key: {0}'.format(vios_key))
 
         # if health check status is known, check the vios tuple has passed
         # the health check successfuly
         if vios_status is not None:
             if vios_key not in vios_status:
                 update_op_tab[vios_key] = "FAILURE-NO-PREV-STATUS"
-                OUTPUT.append("    {} vioses skipped (no previous status found)"
+                OUTPUT.append("    {0} vioses skipped (no previous status found)"
                               .format(vios_key))
-                module.warn("{} vioses skipped (no previous status found)"
-                            .format(vios_key))
+                module.log("[WARNING] {0} vioses skipped (no previous status found)"
+                           .format(vios_key))
                 continue
 
-            elif vios_status[vios_key] != 'SUCCESS-ALTDC':
+            if vios_status[vios_key] != 'SUCCESS-ALTDC':
                 update_op_tab[vios_key] = vios_status[vios_key]
-                OUTPUT.append("    {} vioses skipped (vios_status: {})"
+                OUTPUT.append("    {0} vioses skipped (vios_status: {1})"
                               .format(vios_key, vios_status[vios_key]))
-                module.warn("{} vioses skipped (vios_status: {})"
-                            .format(vios_key, vios_status[vios_key]))
+                module.log("[WARNING] {0} vioses skipped (vios_status: {1})"
+                           .format(vios_key, vios_status[vios_key]))
                 continue
 
         # check if there is time to handle this tuple
         if not (time_limit is None) and time.localtime(time.time()) >= time_limit:
             time_limit_str = time.strftime("%m/%d/%Y %H:%M", time_limit)
-            OUTPUT.append("    Time limit {} reached, no further operation"
+            OUTPUT.append("    Time limit {0} reached, no further operation"
                           .format(time_limit_str))
-            module.log('Time limit {} reached, no further operation'
+            module.log('Time limit {0} reached, no further operation'
                        .format(time_limit_str))
             return 0
 
         # check if SSP is defined for this VIOSes tuple.
         ret = get_vios_ssp_status(module, target_tuple, vios_key, update_op_tab)
         if ret == 1:
-            OUTPUT.append("    {} vioses skipped (bad SSP status)".format(vios_key))
-            module.warn('Update operation for {} vioses skipped due to bad SSP status'
-                        .format(vios_key))
+            OUTPUT.append("    {0} vioses skipped (bad SSP status)".format(vios_key))
+            module.log('[WARNING] Update operation for {0} vioses skipped due to bad SSP status'
+                       .format(vios_key))
             module.log('Update operation can only be done when both of the VIOSes have'
                        ' the same SSP status (or for a single VIOS, when the SSP status'
                        ' is inactive) and belong to the same SSP')
@@ -695,9 +688,9 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
 
         # TBC - Begin: Uncomment for testing without effective update operation
         # OUTPUT.append('Warning: testing without effective update operation')
-        # OUTPUT.append('NIM Command: {} '.format(updateios_cmd))
+        # OUTPUT.append('NIM Command: {0} '.format(updateios_cmd))
         # ret = 0
-        # std_out = 'NIM Command: {} '.format(updateios_cmd)
+        # std_out = 'NIM Command: {0} '.format(updateios_cmd)
         # update_op_tab[vios_key] = "SUCCESS-UPDT"
         # continue
         # TBC - End
@@ -707,32 +700,32 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
         for vios in target_tuple:
             # Commit applied lpps if necessay
             if module.params['preview'] and module.params['preview'] == 'no':
-                OUTPUT.append('    Commit all applied lpps before the update on {}'
+                OUTPUT.append('    Commit all applied lpps before the update on {0}'
                               .format(vios))
-                module.log('Commit all applied lpps before the update on {}'
+                module.log('Commit all applied lpps before the update on {0}'
                            .format(vios))
 
                 cmd_commit = 'LC_ALL=C /usr/sbin/nim -o updateios '\
-                             '-a updateios_flags=-commit -a filesets=all {} 2>&1'\
+                             '-a updateios_flags=-commit -a filesets=all {0} 2>&1'\
                              .format(vios)
-                module.debug('NIM - Command:{}'.format(cmd_commit))
+                module.debug('NIM - Command:{0}'.format(cmd_commit))
 
                 (ret, std_out, std_err) = exec_cmd(cmd_commit, module, shell=True)
 
                 if ret != 0:
                     if std_err.find('There are no uncommitted updates') == -1:
-                        msg = 'Failed to commit lpps on {}'.format(vios)
-                        module.warn('{}, {} returned {} {}'.format(msg, cmd_commit, ret, std_err))
+                        msg = 'Failed to commit lpps on {0}'.format(vios)
+                        module.log('[WARNING] {0}, {1} returned {2} {3}'.format(msg, cmd_commit, ret, std_err))
                         OUTPUT.append('    ' + msg)
                     else:
-                        OUTPUT.append('    Nothing to commit on {}'.format(vios))
+                        OUTPUT.append('    Nothing to commit on {0}'.format(vios))
                 else:
-                    module.debug('All applied updates are now committed: {}'
+                    module.debug('All applied updates are now committed: {0}'
                                  .format(std_out))
                     OUTPUT.append('    All applied updates are now committed')
                     CHANGED = True
 
-                OUTPUT.append('    Updating VIOS: {}'.format(vios))
+                OUTPUT.append('    Updating VIOS: {0}'.format(vios))
 
             # set the error label to be used in sub routines
             err_label = "FAILURE-UPDT1"
@@ -744,15 +737,14 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
             if NIM_NODE['nim_vios'][vios]['vios_ssp_status'] == 'OK':
                 ret = ssp_stop_start(module, target_tuple, vios, 'stop')
                 if ret == 1:
-                    module.log('SSP stop operation failure for VIOS {}'
+                    module.log('SSP stop operation failure for VIOS {0}'
                                .format(vios))
                     update_op_tab[vios_key] = err_label
-                    module.log('VIOS update status for {}: {}'
+                    module.log('VIOS update status for {0}: {1}'
                                .format(vios_key, update_op_tab[vios_key]))
                     break  # cannot continue
-                else:
-                    restart_needed = True
-                    module.log(' {}: {}'.format(vios_key, update_op_tab[vios_key]))
+                restart_needed = True
+                module.log(' {0}: {1}'.format(vios_key, update_op_tab[vios_key]))
 
             skip_next_target = False
 
@@ -760,30 +752,30 @@ def nim_updateios(module, targets_list, vios_status, update_op_tab, time_limit):
             (ret, std_out, std_err) = exec_cmd(cmd, module)
 
             if ret != 0:
-                module.log('NIM Command: {} failed rc:{} stdout:{} stderr:{}'
+                module.log('NIM Command: {0} failed rc:{1} stdout:{2} stderr:{3}'
                            .format(cmd, ret, std_out, std_err))
-                OUTPUT.append('    Failed to update VIOS {} with NIM: {} failed: {}'
+                OUTPUT.append('    Failed to update VIOS {0} with NIM: {1} failed: {2}'
                               .format(vios, cmd, std_err))
                 update_op_tab[vios_key] = err_label
                 # in case of failure try to restart the SSP if needed
                 skip_next_target = True
             else:
-                module.log('VIOS {} successfully updated'.format(vios))
-                OUTPUT.append("    VIOS {} successfully updated".format(vios))
+                module.log('VIOS {0} successfully updated'.format(vios))
+                OUTPUT.append("    VIOS {0} successfully updated".format(vios))
                 CHANGED = True
 
             # if needed restart the SSP for the VIOS
             if restart_needed:
                 ret = ssp_stop_start(module, target_tuple, vios, 'start')
                 if ret == 1:
-                    module.log('SSP start operation failure for VIOS {}'
+                    module.log('SSP start operation failure for VIOS {0}'
                                .format(vios))
                     update_op_tab[vios_key] = err_label
-                    module.log('VIOS update status for {}: {}'
+                    module.log('VIOS update status for {0}: {1}'
                                .format(vios_key, update_op_tab[vios_key]))
                     break  # cannot continue
 
-                module.log(' {}: {}'.format(vios_key, update_op_tab[vios_key]))
+                module.log(' {0}: {1}'.format(vios_key, update_op_tab[vios_key]))
 
             if skip_next_target:
                 break
@@ -842,14 +834,14 @@ def main():
         if match_key:
             time_limit = time.strptime(MODULE.params['time_limit'], '%m/%d/%Y %H:%M')
         else:
-            msg = 'Malformed time limit "{}", please use mm/dd/yyyy hh:mm format.'\
+            msg = 'Malformed time limit "{0}", please use mm/dd/yyyy hh:mm format.'\
                   .format(MODULE.params['time_limit'])
             MODULE.fail_json(msg=msg)
 
     MODULE.debug('*** START NIM UPDATE VIOS OPERATION ***')
 
-    OUTPUT.append('Updateios operation for {}'.format(MODULE.params['targets']))
-    MODULE.log('Action {} for {} targets'.format(MODULE.params['action'], targets))
+    OUTPUT.append('Updateios operation for {0}'.format(MODULE.params['targets']))
+    MODULE.log('Action {0} for {1} targets'.format(MODULE.params['action'], targets))
 
     # =========================================================================
     # build nim node info
@@ -865,11 +857,11 @@ def main():
     ret = check_vios_targets(MODULE, targets)
     if (not ret) or (ret is None):
         OUTPUT.append('Empty target list')
-        MODULE.warn('Warning: Empty target list: "{}"'.format(targets))
+        MODULE.warn('Warning: Empty target list: "{0}"'.format(targets))
     else:
         targets_list = ret
-        OUTPUT.append('Targets list:{}'.format(targets_list))
-        MODULE.debug('Target list: {}'.format(targets_list))
+        OUTPUT.append('Targets list:{0}'.format(targets_list))
+        MODULE.debug('Target list: {0}'.format(targets_list))
 
         # =========================================================================
         # Perfom the update
@@ -881,9 +873,9 @@ def main():
             OUTPUT.append('NIM updateios operation status:')
             MODULE.log('NIM updateios operation status:')
             for vios_key in targets_update_status:
-                OUTPUT.append("    {} : {}".format(vios_key, targets_update_status[vios_key]))
-                MODULE.log('    {} : {}'.format(vios_key, targets_update_status[vios_key]))
-            MODULE.log('NIM updateios operation result: {}'.format(targets_update_status))
+                OUTPUT.append("    {0} : {1}".format(vios_key, targets_update_status[vios_key]))
+                MODULE.log('    {0} : {1}'.format(vios_key, targets_update_status[vios_key]))
+            MODULE.log('NIM updateios operation result: {0}'.format(targets_update_status))
         else:
             MODULE.log('NIM updateios operation: status table is empty')
             OUTPUT.append('NIM updateios operation: Error getting the status')

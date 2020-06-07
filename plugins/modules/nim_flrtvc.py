@@ -19,6 +19,12 @@ module: nim_flrtvc
 short_description: Generate flrtvc report, download and install efix
 description:
 - Generate flrtvc report, download and install efix.
+- Check targets vulnerability against available fixes, and apply necessary fixes.
+  It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker
+  Script to generates a report. It parses the report, downloads the fixes,
+  checks their versions and if some files are locked. Then it installs the
+  remaining fixes. In case of inter-locking file you could run this several
+  times.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -26,8 +32,12 @@ requirements:
 options:
   targets:
     description:
-    - NIM targets.
-    type: str
+    - Specifies the NIM clients to perform the action on.
+    - C(foo*) designates all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) designates all the NIM clients.
+    type: list
+    elements: str
     required: true
   apar:
     description:
@@ -49,9 +59,16 @@ options:
     type: str
   path:
     description:
-    - Specifies the working directory used for temporary files. It will contain FLRTVC reports,
-      previously installed filesets and fixes lists and downloaded fixes.
+    - Specifies the directory to save the FLRTVC report. All temporary files such as
+      previously installed filesets, fixes lists and downloaded fixes files will be
+      stored in the working subdirectory named 'I(path)/work'.
     type: str
+    default: /var/adm/ansible
+  save_report:
+    description:
+    - Specifies to save the FLRTVC report in file 'I(path)/flrtvc_<nim_client_name>.txt'.
+    type: bool
+    default: no
   verbose:
     description:
     - Generate full FLRTVC reporting (verbose mode).
@@ -64,7 +81,8 @@ options:
     default: no
   clean:
     description:
-    - Cleanup working directory with all downloaded files at the end of execution.
+    - Cleanup working directory 'I(path)/work' with all temporary and downloaded files
+      at the end of execution.
     type: bool
     default: no
   check_only:
@@ -78,6 +96,12 @@ options:
     - Specifies to perform check and download operation, do not install anything.
     type: bool
     default: no
+  extend_fs:
+    description:
+    - Specifies to increase filesystem size of the working directory if needed.
+    - If set a filesystem of the host could have increased even if it returns I(changed=False).
+    type: bool
+    default: yes
 '''
 
 EXAMPLES = r'''
@@ -88,18 +112,149 @@ EXAMPLES = r'''
     verbose: yes
     apar: sec
     download_only: yes
+
+- name: Install both sec and hyper patches for all filesets starting with devices.fcp
+  nim_flrtvc:
+    targets: nimclient02
+    path: /usr/sys/inst
+    filesets: devices.fcp.*
+    verbose: yes
+    force: no
+    clean: no
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+meta:
+    description: Detailed information on the module execution.
+    returned: always
+    type: dict
+    contains:
+        messages:
+            description: Details on errors/warnings not related to a specific machine
+            returned: always
+            type: list
+            elements: str
+            sample: see below
+        <target>:
+            description: Detailed information on the execution on the <target>.
+            returned: when target is actually a NIM client or master
+            type: dict
+            contains:
+                messages:
+                    description: Details on errors/warnings
+                    returned: always
+                    type: list
+                    elements: str
+                    sample: see below
+                0.report:
+                    description: Output of the FLRTVC script, report or details on flrtvc error if any.
+                    returned: if the FLRTVC script run succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                1.parse:
+                    description: List of URLs to download or details on parsing error if any.
+                    returned: if the parsing succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                2.discover:
+                    description: List of epkgs found in URLs.
+                    returned: if the discovery succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                3.download:
+                    description: List of downloaded epkgs.
+                    returned: if download succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                4.1.reject:
+                    description: List of epkgs rejected, refer to messages and log file for reason.
+                    returned: if check succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                4.2.check:
+                    description: List of epkgs following prerequisites.
+                    returned: if check succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                5.install:
+                    description: List of epkgs actually installed.
+                    returned: if install succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+    sample:
+        "meta": {
+            "messages": [
+                "Exception removing /usr/bin/flrtvc.ksh, exception=Access is denied",
+                ...,
+            ],
+            "nimclient01": {
+                "0.report": [
+                    "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|
+                     Last Update|Fixed In",
+                    "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|
+                     IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|\
+                     ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
+                    ...,
+                ],
+                "1.parse": [
+                    "ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar",
+                    "ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar",
+                    ...,
+                ],
+                "2.discover": [
+                    "ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                    "ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                    ...,
+                    "tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                    "tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                    ...,
+                ],
+                "3.download": [
+                    "/usr/sys/inst.images/tardir/ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                    "/usr/sys/inst.images/tardir/ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                    ...,
+                    "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                    "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                    ...,
+                ],
+                "4.1.reject": [
+                    "102p_fix: prerequisite openssl.base levels do not match: 1.0.2.1600 < 1.0.2.1500 < 1.0.2.1600",
+                    ...,
+                    "IJ12983m2a: locked by previous efix to install",
+                    ...,
+                    "IJ17059m9b: prerequisite missing: ntp.rte",
+                    ...,
+                ],
+                "4.2.check": [
+                    "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                    ...,
+                ],
+                "5.install": [
+                    "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                    ...,
+                ],
+                "messages": [
+                    "a previous efix to install will lock a file of IJ20785s3a preventing its installation, install it manually or run the task again.",
+                    ...,
+                ]
+            },
+            "nimclient02": {
+                ...,
+            }
+        }
+'''
 
-import logging
 import os
 import re
 import csv
-import subprocess
 import threading
-import urllib
-import ssl
 import shutil
 import tarfile
 import zipfile
@@ -107,9 +262,12 @@ import stat
 import time
 import calendar
 from collections import OrderedDict
-
-# Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import open_url
+
+module = None
+results = None
+workdir = ''
 
 # Threading
 THRDS = []
@@ -128,7 +286,7 @@ def start_threaded(thds):
             Decorator inner wrapper for thread start
             """
             thd = threading.Thread(target=func, args=(args))
-            logging.debug('Start thread {}'.format(func.__name__))
+            module.debug('Start thread {0}'.format(func.__name__))
             thd.start()
             thds.append(thd)
         return start_threaded_inner_wrapper
@@ -154,12 +312,75 @@ def wait_threaded(thds):
     return wait_threaded_wrapper
 
 
-def download(src, dst, output):
+@wait_threaded(THRDS)
+def wait_all():
+    """
+    Do nothing
+    """
+    pass
+
+
+def compute_c_rsh_rc(machine, rc, stdout):
+    """
+    Extract the rc of c_rsh command from the stdout.
+
+    When running a remote command over c_rsh, we can echo rc=$? to get
+    the actual return code on the nim master (not the c_rsh return code).
+
+    args:
+        machine (str): The NIM host we executed run_command against
+        rc      (int): The run_command return code
+        stdout  (str): The run_command stdout
+    return:
+        rc      (int): The return code of the actual command
+        stdout  (str): The command stdout without the "rc=$?" string
+    """
+    if machine != 'master':
+        s = re.search(r'rc=([-\d]+)$', stdout)
+        if s:
+            if rc == 0:
+                rc = int(s.group(1))
+            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+    return rc, stdout
+
+
+def increase_fs(module, output, dest):
+    """
+    Increase filesystem by 100Mb
+    args:
+        module  (dict): The Ansible module
+        output (dict): The result of the execution for the target host
+        dst      (str): The absolute filename
+    return:
+        True if increase succeeded
+        False otherwise
+    """
+    cmd = ['/bin/df', '-c', dest]
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        mount_point = stdout.splitlines()[1].split(':')[6]
+        cmd = ['chfs', '-a', 'size=+100M', mount_point]
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc == 0:
+            module.debug('{0}: increased 100Mb: {1}'.format(mount_point, stdout))
+            return True
+
+    module.log('[WARNING] {0}: cmd:{1} failed rc={2} stdout:{3} stderr:{4}'
+               .format(mount_point, cmd, rc, stdout, stderr))
+    msg = 'Cannot increase filesystem: {0}.'.format(mount_point)
+    output['messages'].append(msg)
+    return False
+
+
+def download(module, output, src, dst, resize_fs=True):
     """
     Download efix from url to directory
     args:
-        src (str): The url to download
-        dst (str): The absolute destination filename
+        module (dict): The Ansible module
+        output (dict): The result of the execution for the target host
+        src     (str): The url to download
+        dst     (str): The absolute destination filename
+        resize_fs (bool): Increase the filesystem size if needed
     return:
         True if download succeeded
         False otherwise
@@ -167,56 +388,66 @@ def download(src, dst, output):
     res = True
     wget = '/bin/wget'
     if not os.path.isfile(dst):
-        logging.debug('downloading {} to {}...'.format(src, dst))
-        if not os.path.exists(wget):
-            msg = 'Error: Unable to locate {} ...'.format(wget)
-            logging.warning(msg)
+        module.debug('downloading {0} to {1}...'.format(src, dst))
+        if os.path.exists(wget):
+            cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc == 3:
+                if resize_fs and increase_fs(module, output, dst):
+                    os.remove(dst)
+                    return download(module, output, src, dst, resize_fs)
+            elif rc != 0:
+                msg = 'Cannot download {0}'.format(src)
+                module.log(msg)
+                module.log('cmd={0} rc={1} stdout:{2} stderr:{3}'
+                           .format(cmd, rc, stdout, stderr))
+                output['messages'].append(msg)
+                res = False
+        else:
+            msg = 'Cannot locate {0}, please install related package.'.format(wget)
+            module.log(msg)
             output['messages'].append(msg)
             res = False
-        else:
-            try:
-                cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
-                subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError as exc:
-                logging.warning('EXCEPTION cmd={} rc={} output={}'
-                                .format(exc.cmd, exc.returncode, exc.output))
-                res = False
-                if exc.returncode == 3:
-                    increase_fs(dst)
-                    os.remove(dst)
-                    res = download(src, dst, output)
     else:
-        logging.debug('{} already exists'.format(dst))
+        module.debug('{0} already exists'.format(dst))
     return res
 
 
-def unzip(src, dst):
+def unzip(module, output, src, dst, resize_fs=True):
     """
     Unzip source into the destination directory
     args:
-        src (str): The url to unzip
-        dst (str): The absolute destination path
+        module (dict): The Ansible module
+        output (dict): The result of the execution for the target host
+        src     (str): The url to unzip
+        dst     (str): The absolute destination path
     """
     try:
         zfile = zipfile.ZipFile(src)
         zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
-        logging.warning('EXCEPTION {}'.format(exc))
-        increase_fs(dst)
-        unzip(src, dst)
+        if resize_fs and increase_fs(module, output, dst):
+            return unzip(module, output, src, dst, resize_fs)
+        else:
+            msg = 'Cannot unzip {0}, exception:{1}'.format(src, exc)
+            module.log(msg)
+            output['messages'].append(msg)
+            return False
+    return True
 
 
-def remove_efix(machine, output):
+def remove_efix(module, output, machine):
     """
     Remove efix with the given label on the machine
     args:
+        module (dict): The Ansible module
+        output (dict): The result of the execution for the target host
         machine (str): The target machine
-        output (dict): The result of the command
     return:
         0 if remove succeeded, 1 otherwise
     """
-    res = 0
-    logging.debug('{}: Removing all installed efix'.format(machine))
+    failed_rm = 0
+    module.debug('{0}: Removing all installed efix'.format(machine))
 
     if 'master' in machine:
         cmd = []
@@ -227,26 +458,34 @@ def remove_efix(machine, output):
             r' for i in `/usr/sbin/emgr -P |/usr/bin/tail -n +4 |/usr/bin/awk \'{print \$NF}\'`;'
             ' do /usr/sbin/emgr -r -L $i || (( rc = rc | $? )); done; echo rc=$rc"']
 
-    (ret, stdout, stderr) = exec_cmd(cmd, output)
+    rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+    if rc != 0:
+        msg = 'Cannot remove efix on {0}, command \'{1}\' returned rc: {2}'.format(machine, ' '.join(cmd), rc)
+        output['messages'].append(msg)
+        module.log('[WARNING] ' + machine + ': ' + msg)
+        return rc
+    rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
 
     for line in stdout.splitlines():
         match = re.match(r'^\d+\s+(\S+)\s+REMOVE\s+(\S+)\s*$', line)
         if match:
             if 'SUCCESS' in match.group(2):
-                msg = 'efix {} removed, please check if you want to reinstall it'\
+                msg = 'efix {0} removed, please check if you want to reinstall it'\
                       .format(match.group(1))
-                logging.info(machine + ': ' + msg)
+                module.log(machine + ': ' + msg)
                 output['messages'].append(msg)
             else:
-                msg = 'Cannot remove efix {}, see logs for details'.format(match.group(1))
+                msg = 'Cannot remove efix {0}, see logs for details'.format(match.group(1))
                 output['messages'].append(msg)
-                logging.warning(machine + ': ' + msg)
-                res += 1
-    if res:
-        logging.warning('{}: {} efix removal failed:'.format(machine, res))
-        logging.warning('{}: stderr: {}, stdout: {}'.format(machine, stdout, stderr))
+                module.log('[WARNING] ' + machine + ': ' + msg)
+                failed_rm += 1
+    if failed_rm or rc:
+        msg = 'failed to remove {0} efix(es)'.format(failed_rm)
+        output['messages'].append(msg)
+        module.log('[WARNING] {0}: {1}'.format(machine, msg))
+        module.log('[WARNING] {0}: stderr: {1}, stdout: {2}'.format(machine, stdout, stderr))
 
-    return res or ret
+    return failed_rm or rc
 
 
 def to_utc_epoch(date):
@@ -279,11 +518,11 @@ def to_utc_epoch(date):
     # if no time zone, consider it's UTC
     match = re.match(r'^(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+)\s+(\d{4})$', date)
     if match:
-        date = '{} UTC {}'.format(match.group(1), match.group(2))
+        date = '{0} UTC {1}'.format(match.group(1), match.group(2))
     else:
         match = re.match(r'^(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+(\d{4})$', date)
         if match:
-            date = '{} UTC {}'.format(match.group(1), match.group(3))
+            date = '{0} UTC {1}'.format(match.group(1), match.group(3))
             TZ = match.group(2)
         else:  # should not happen
             return (-1, 'bad packaging date format')
@@ -303,7 +542,7 @@ def to_utc_epoch(date):
     return (sec_from_epoch, msg)
 
 
-def check_epkgs(epkg_list, lpps, efixes, machine, output):
+def check_epkgs(module, output, machine, epkg_list, lpps, efixes):
     """
     For each epkg get the label, packaging date, filset and check prerequisites
     based on fileset current level and build a list ordered by packaging date
@@ -312,11 +551,12 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     Note: in case of parsing error, keep the epkg (best effort)
 
     args:
-        epkg_list (list): The list of efixes to check
-        lpps_lvl  (dict): The current lpps levels
-        efixes    (dict): The current efixes info
+        module (dict): The Ansible module
+        output    (dict): The result of the command
         machine   (str) : The target machine
-        output    (dict): The result of the command (use only before exit)
+        epkg_list (list): The list of efixes to check
+        lpps      (dict): The current lpps levels
+        efixes    (dict): The current efixes info
     returns:
         The list of epkg to install (ordered by packaging date)
         The list of epkg to rejected with the reason (ordered by label)
@@ -332,8 +572,7 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
         for file in efixes[efix]['files']:
             if file not in locked_files:
                 locked_files[file] = efix
-
-    logging.debug('{}: locked_files: {}'.format(machine, locked_files))
+    module.debug('{0}: locked_files: {1}'.format(machine, locked_files))
 
     # Get information on efix we want to install
     # and check it could be installed
@@ -348,15 +587,14 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
                 'reject': False}
 
         # get efix information
-        stdout = ''
-        try:
-            cmd = 'LC_ALL=C /usr/sbin/emgr -dXv3 -e {} | /bin/grep -p -e PREREQ -e PACKAG'\
-                  .format(epkg['path'])
-            stdout = subprocess.check_output(args=cmd, shell=True, stderr=subprocess.STDOUT)
-
-        except subprocess.CalledProcessError as exc:
-            logging.warning('EXCEPTION cmd={} rc={} output={}'
-                            .format(exc.cmd, exc.returncode, exc.output))
+        cmd = '/usr/sbin/emgr -dXv3 -e {0} | /bin/grep -p -e PREREQ -e PACKAG'.format(epkg['path'])
+        rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+        if rc != 0:
+            msg = 'Cannot get efix information {0}'.format(epkg['path'])
+            module.log(msg)
+            module.log('cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
+                       .format(cmd, rc, stdout, stderr))
+            output['messages'].append(msg)
             # do not break or continue, we keep this efix, will try to install it anyway
 
         # ordered parsing: expecting the following line order:
@@ -410,22 +648,21 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
             # parsing done
             # check filseset prerequisite is present
             if prereq not in lpps:
-                epkg['reject'] = '{}: prerequisite missing: {}'.format(epkg['label'], prereq)
-                logging.info('{}: reject {}'.format(machine, epkg['reject']))
+                epkg['reject'] = '{0}: prerequisite missing: {1}'.format(os.path.basename(epkg['path']), prereq)
+                module.log('{0}: reject {1}'.format(machine, epkg['reject']))
                 break  # stop parsing
 
             # check filseset prerequisite is present
             minlvl_i = list(map(int, epkg['prereq'][prereq]['minlvl'].split('.')))
             maxlvl_i = list(map(int, epkg['prereq'][prereq]['maxlvl'].split('.')))
-            if lpps[prereq]['int'] < minlvl_i\
-               or lpps[prereq]['int'] > maxlvl_i:
-                epkg['reject'] = '{}: prerequisite {} levels do not match: {} < {} < {}'\
-                                 .format(epkg['label'],
+            if lpps[prereq]['int'] < minlvl_i or lpps[prereq]['int'] > maxlvl_i:
+                epkg['reject'] = '{0}: prerequisite {1} levels do not match: {2} < {3} < {4}'\
+                                 .format(os.path.basename(epkg['path']),
                                          prereq,
                                          epkg['prereq'][prereq]['minlvl'],
                                          lpps[prereq]['str'],
                                          epkg['prereq'][prereq]['maxlvl'])
-                logging.info('{}: reject {}'.format(machine, epkg['reject']))
+                module.log('{0}: reject {1}'.format(machine, epkg['reject']))
                 break
         if epkg['reject']:
             epkgs_reject.append(epkg['reject'])
@@ -434,13 +671,13 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
         # check file locked by efix already installed on the machine
         for file in epkg['files']:
             if file in locked_files:
-                output['messages'].append('installed efix {} is locking {} preventing the '
-                                          'installation of {}, remove it manually or set the '
+                output['messages'].append('installed efix {0} is locking {1} preventing the '
+                                          'installation of {2}, remove it manually or set the '
                                           '"force" option.'
-                                          .format(locked_files[file], file, epkg['label']))
-                epkg['reject'] = '{}: installed efix {} is locking {}'\
-                                 .format(epkg['label'], locked_files[file], file)
-                logging.info('{}: reject {}'.format(machine, epkg['reject']))
+                                          .format(locked_files[file], file, os.path.basename(epkg['path'])))
+                epkg['reject'] = '{0}: installed efix {1} is locking {2}'\
+                                 .format(os.path.basename(epkg['path']), locked_files[file], file)
+                module.log('{0}: reject {1}'.format(machine, epkg['reject']))
                 epkgs_reject.append(epkg['reject'])
                 continue
         if epkg['reject']:
@@ -450,9 +687,8 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
         if epkg['pkg_date']:
             (sec_from_epoch, msg) = to_utc_epoch(epkg['pkg_date'])
             if sec_from_epoch == -1:
-                logging.warning('{}: {}: "{}" for epkg:{} '
-                                .format(machine, msg, epkg['pkg_date'], epkg))
-            epkg['sec_from_epoch'] = sec_from_epoch
+                module.log('[WARNING] {0}: {1}: "{2}" for epkg:{3} '.format(machine, msg, epkg['pkg_date'], epkg))
+            epkg['sec_flogepoch'] = sec_from_epoch
 
         epkgs_info[epkg['path']] = epkg.copy()
 
@@ -467,12 +703,16 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     for epkg in sorted_epkgs:
         if set(epkgs_info[epkg]['files']).isdisjoint(set(global_file_locks)):
             global_file_locks.extend(epkgs_info[epkg]['files'])
-            logging.info('{}: keep {}, files: {}'
-                         .format(machine, epkgs_info[epkg]['label'], epkgs_info[epkg]['files']))
+            module.log('{0}: keep {1}, files: {2}'
+                       .format(machine, os.path.basename(epkgs_info[epkg]['path']), epkgs_info[epkg]['files']))
         else:
-            epkgs_info[epkg]['reject'] = '{}: locked by previous efix to install'\
-                                         .format(epkgs_info[epkg]['label'])
-            logging.info('{}: reject {}'.format(machine, epkgs_info[epkg]['reject']))
+            output['messages'].append('a previous efix to install will lock a file of {0} '
+                                      'preventing its installation, install it manually or '
+                                      'run the task again.'
+                                      .format(os.path.basename(epkgs_info[epkg]['path'])))
+            epkgs_info[epkg]['reject'] = '{0}: locked by previous efix to install'\
+                                         .format(os.path.basename(epkgs_info[epkg]['path']))
+            module.log('{0}: reject {1}'.format(machine, epkgs_info[epkg]['reject']))
             epkgs_reject.append(epkgs_info[epkg]['reject'])
             removed_epkg.append(epkg)
     for epkg in removed_epkg:
@@ -483,23 +723,28 @@ def check_epkgs(epkg_list, lpps, efixes, machine, output):
     return (sorted_epkgs, epkgs_reject)
 
 
-def parse_lpps_info(machine, out):
+def parse_lpps_info(module, output, machine):
     """
     Parse the lslpp output and build a dictionary with lpps current levels
     args:
+        module (dict): The Ansible module
         machine (str): The remote machine name
-        output (dict): The result of the command (use only before exit)
+    returns:
+        The list of epkg to install (ordered by packaging date)
     """
+    global workdir
+
     lpps_lvl = {}
-    lslpp_file = os.path.join(WORKDIR, 'lslpp_{}.txt'.format(machine))
+    lslpp_file = os.path.join(workdir, 'lslpp_{0}.txt'.format(machine))
 
     with open(os.path.abspath(os.path.join(os.sep, lslpp_file)), 'r') as myfile:
         for myline in myfile:
             # beginning of line: "bos:bos.rte:7.1.5.0: : :C: :Base Operating System Runtime"
             mylist = myline.split(':')
             if len(mylist) < 3:
-                logging.error('{} file {} is malformed: got line: "{}"'
-                              .format(machine, lslpp_file, myline))
+                msg = 'file {0} is malformed: got line: "{1}"'.format(lslpp_file, myline)
+                module.log('{0}: {1}'.format(machine, msg))
+                output['messages'].append(msg)
                 continue
             lpps_lvl[mylist[1]] = {'str': mylist[2]}
             mylist[2] = re.sub(r'-', '.', mylist[2])
@@ -508,42 +753,52 @@ def parse_lpps_info(machine, out):
     return lpps_lvl
 
 
-def run_lslpp(machine, filename, output):
+@start_threaded(THRDS)
+def run_lslpp(module, output, machine, filename):
     """
-    Run command lslpp on a target system
+    Use lslpp on a target system to list filesets and write into provided file.
     args:
+        module  (dict): The Ansible module
+        output  (dict): The result of the command
         machine  (str): The remote machine name
         filename (str): The filename to store output
-        output  (dict): The result of the command
     """
     if 'master' in machine:
         cmd = ['/bin/lslpp', '-Lcq']
     else:
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
                '"/bin/lslpp -Lcq; echo rc=$?"']
-    (res, stdout, stderr) = exec_cmd(cmd, output)
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
+        if rc == 0:
+            with open(filename, 'w') as myfile:
+                myfile.write(stdout)
+            return rc
 
-    if res == 0:
-        with open(filename, 'w') as myfile:
-            myfile.write(stdout)
-    else:
-        msg = '{}: Failed to list fileset, command "{}" failed: "{} {}"'\
-              .format(machine, ' '.join(cmd), stdout, stderr)
-        logging.error(msg)
-        output['messages'].append(msg)
+    msg = 'Failed to list fileset'
+    module.log(msg)
+    module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+    module.log('stdout:{0}'.format(stdout))
+    module.log('stderr:{0}'.format(stderr))
+    output['messages'].append(msg)
+    return rc
 
 
-def parse_emgr(machine, out):
+def parse_emgr(machine):
     """
     Parse the emgr output and build a dictionary with efix data
     args:
         machine (str): The remote machine name
-        output (dict): The result of the command (use only before exit)
+    return:
+        The dictionary with efixe data as the following structure:
+            efixes[label]['files'][file]
+            efixes[label]['packages'][package]
     """
-    global WORKDIR
+    global workdir
 
     efixes = {}
-    emgr_file = os.path.join(WORKDIR, 'emgr_{}.txt'.format(machine))
+    emgr_file = os.path.join(workdir, 'emgr_{0}.txt'.format(machine))
     label = ''
     file = ''
     package = ''
@@ -586,155 +841,144 @@ def parse_emgr(machine, out):
                 package = match_key.group(1)
                 efixes[label]['packages'][package] = package
                 continue
-
     return efixes
 
 
-def run_emgr(machine, f_efix, output):
+@start_threaded(THRDS)
+def run_emgr(module, output, machine, f_efix):
     """
     Use the interim fix manager to list detailed information of
     installed efix and locked packages on the target machine
+    and write into provided file.
     args:
+        module  (dict): The Ansible module
+        output  (dict): The result of the command
         machine      (str): The remote machine name
         f_efix       (str): The filename to store output of emgr -lv3
-        f_locked_pkg (str): The filename to store output of emgr -P
-        output      (dict): The result of the command
+    return:
+        True if emgr succeeded
+        False otherwise
     """
-
     # list efix information
     if 'master' in machine:
         cmd = ['/usr/sbin/emgr', '-lv3']
     else:
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
                '"/usr/sbin/emgr -lv3; echo rc=$?"']
-    (res, stdout, stderr) = exec_cmd(cmd, output)
-    if res == 0:
-        with open(f_efix, 'w') as myfile:
-            myfile.write(stdout)
-    else:
-        msg = 'Failed to list interim fix information, command "{}" failed: "{} {}"'\
-              .format(' '.join(cmd), stdout, stderr)
-        logging.error('{}: {}'.format(machine, msg))
-        output['messages'].append(msg)
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
+        if rc == 0:
+            with open(f_efix, 'w') as myfile:
+                myfile.write(stdout)
+            return True
+
+    msg = 'Failed to list interim fix information'
+    module.log(msg)
+    module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+    module.log('stdout:{0}'.format(stdout))
+    module.log('stderr:{0}'.format(stderr))
+    output['messages'].append(msg)
+    return False
 
 
-# @start_threaded(THRDS)
-def run_flrtvc(machine, output, params, force):
+def run_flrtvc(module, output, machine, flrtvc_path, params, force):
     """
     Run command flrtvc on a target system
     args:
-        machine  (str): The remote machine name
-        output  (dict): The result of the command
-        params  (dict): The parameters to pass to flrtvc command
-        force   (bool): The flag to automatically remove efixes
-    note: exit_json if flrtvc fails
+        module     (dict): The Ansible module
+        output     (dict): The result of the execution for the target host
+        machine     (str): The remote machine name
+        flrtvc_path (str): The path to the flrtvc script to run
+        params     (dict): The parameters to pass to flrtvc command
+        force      (bool): The flag to automatically remove efixes
+    note:
+        Create and build output['0.report']
     return:
-        0 if flrtvc succeeded
-        1 otherwise
+        True if flrtvc succeeded
+        False otherwise
     """
-
-    global WORKDIR
+    global workdir
 
     if force:
-        remove_efix(machine, output)
+        remove_efix(module, output, machine)
 
     # Run 'lslpp -Lcq' on the remote machine and save to file
-    lslpp_file = os.path.join(WORKDIR, 'lslpp_{}.txt'.format(machine))
+    lslpp_file = os.path.join(workdir, 'lslpp_{0}.txt'.format(machine))
     if os.path.exists(lslpp_file):
         os.remove(lslpp_file)
-    thd1 = threading.Thread(target=run_lslpp, args=(machine, lslpp_file, output))
-    thd1.start()
+    run_lslpp(module, output, machine, lslpp_file)
 
     # Run 'emgr -lv3' on the remote machine and save to file
-    emgr_file = os.path.join(WORKDIR, 'emgr_{}.txt'.format(machine))
+    emgr_file = os.path.join(workdir, 'emgr_{0}.txt'.format(machine))
     if os.path.exists(emgr_file):
         os.remove(emgr_file)
-    thd2 = threading.Thread(target=run_emgr, args=(machine, emgr_file, output))
-    thd2.start()
+    run_emgr(module, output, machine, emgr_file)
 
     # Wait threads to finish
-    thd1.join()
-    thd2.join()
+    wait_all()
 
     if not os.path.exists(lslpp_file) or not os.path.exists(emgr_file):
         if not os.path.exists(lslpp_file):
-            output.update({'0.report': 'Failed to list filsets (lslpp) on {}, {} does not exist'
-                                       .format(machine, lslpp_file)})
+            output['messages'].append('Failed to list filsets (lslpp), {0} does not exist'
+                                      .format(lslpp_file))
         if not os.path.exists(emgr_file):
-            output.update({'0.report': 'Failed to list fixes (emgr) on {}, {} does not exist'
-                                       .format(machine, emgr_file)})
-        return 1
+            output['messages'].append('Failed to list fixes (emgr), {0} does not exist'
+                                      .format(emgr_file))
+        return False
 
-    try:
-        # Prepare flrtvc command
-        cmd = ['LC_ALL=C /usr/bin/flrtvc.ksh', '-e', emgr_file, '-l', lslpp_file]
-        if params['apar_type'] and params['apar_type'] != 'all':
-            cmd += ['-t', params['apar_type']]
-        if params['apar_csv']:
-            cmd += ['-f', params['apar_csv']]
-        if params['filesets']:
-            cmd += ['-g', params['filesets']]
+    # Prepare flrtvc command
+    cmd = [flrtvc_path, '-e', emgr_file, '-l', lslpp_file]
+    if params['apar_type'] and params['apar_type'] != 'all':
+        cmd += ['-t', params['apar_type']]
+    if params['apar_csv']:
+        cmd += ['-f', params['apar_csv']]
+    if params['filesets']:
+        cmd += ['-g', params['filesets']]
 
-        # Run flrtvc in compact mode
-        logging.debug('{}: run cmd "{}"'.format(machine, ' '.join(cmd)))
-        (res, stdout, stderr) = exec_cmd(' '.join(cmd), output, False, True)
-        if res != 0:
-            msg = 'flrtvc failed: "{}"'.format(stderr)
-            logging.error('{}: {}'.format(machine, msg))
-            output['messages'].append(msg)
-        output.update({'0.report': stdout.splitlines()})
+    # Run flrtvc in compact mode
+    module.debug('{0}: run flrtvc in compact mode: cmd="{1}"'.format(machine, ' '.join(cmd)))
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0 and rc != 2:
+        msg = 'Failed to get flrtvc report, rc={0}'.format(rc)
+        module.log(msg)
+        module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+        module.log('stdout:{0}'.format(stdout))
+        module.log('stderr:{0}'.format(stderr))
+        output['messages'].append(msg + " stderr: {0}".format(stderr))
+        return False
 
-        # flrtvc_stderr = os.path.join(WORKDIR, 'flrtvc_stderr_{}.txt'.format(machine))
-        # myfile = open(flrtvc_stderr, 'w')
-        # stdout_c = subprocess.check_output(args=cmd, stderr=myfile, shell=True)
-        # output.update({'0.report': stdout_c.splitlines()})
-        # myfile.close()
-        # # check for error message
-        # if os.path.getsize(flrtvc_stderr) > 0:
-        #     with open(flrtvc_stderr, 'r') as myfile:
-        #         msg = ' '.join([line.rstrip('\n') for line in myfile])
-        #         msg = '{}: {}'.format(machine, msg)
-        #         logging.error(msg)
-        #         output['messages'].append(msg)
-        # os.remove(flrtvc_stderr)
+    output.update({'0.report': stdout.splitlines()})
 
-        # Save to file
-        if params['dst_path']:
-            if not os.path.exists(params['dst_path']):
-                os.makedirs(params['dst_path'])
-            filename = os.path.join(params['dst_path'], 'flrtvc_{}.txt'.format(machine))
-            with open(filename, 'w') as myfile:
-                if params['verbose']:
-                    cmd += ['-v']
-                    logging.debug('{}: run cmd "{}"'.format(machine, ' '.join(cmd)))
-                    (res, stdout, stderr) = exec_cmd(' '.join(cmd), output, False, True)
-                    if res != 0:
-                        msg = 'flrtvc failed: "{}"'.format(stderr)
-                        logging.error('{}: {}'.format(machine, msg))
-                        output['messages'].append(msg)
-                myfile.write(stdout)
+    # Save to file
+    if params['save_report']:
+        filename = os.path.join(params['dst_path'], 'flrtvc_{0}.txt'.format(machine))
+        with open(filename, 'w') as myfile:
+            if params['verbose']:
+                cmd += ['-v']
 
-    except subprocess.CalledProcessError as exc:
-        logging.warning('{}: EXCEPTION cmd={} rc={} output={}'
-                        .format(machine, exc.cmd, exc.returncode, exc.output))
-        output['messages'].append(exc.output)
-        output.update({'0.report': []})
-        MODULE.exit_json(changed=CHANGED, msg='error executing flrtvc', meta=output)
+            module.debug('{0}: write flrtvc report to file, cmd "{1}"'.format(machine, ' '.join(cmd)))
+            rc, stdout, stderr = module.run_command(cmd)
+            # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
+            if rc != 0 and rc != 2:
+                msg = 'Failed to save flrtvc report in file, rc={0}'.format(rc)
+                module.log(machine + ': ' + msg)
+                module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+                module.log('stdout:{0}'.format(stdout))
+                module.log('stderr:{0}'.format(stderr))
+                output['messages'].append(msg)
+            myfile.write(stdout)
 
-    except OSError as exc:
-        logging.warning('{}: EXCEPTION cmd={} Exception={}'
-                        .format(machine, cmd, exc))
-        output['messages'].append(exc)
-        output.update({'0.report': []})
-        MODULE.exit_json(changed=CHANGED, msg='error executing flrtvc', meta=output)
-    return 0
+    return True
 
 
-# @start_threaded(THRDS)
-def run_parser(machine, output, report):
+def run_parser(module, machine, output, report):
     """
     Parse report by extracting URLs
+    note:
+        Create and build output['1.parse']
     args:
+        module (dict): The Ansible module
         machine (str): The remote machine name
         output (dict): The result of the command
         report  (str): The compact report
@@ -742,28 +986,36 @@ def run_parser(machine, output, report):
     dict_rows = csv.DictReader(report, delimiter='|')
     pattern = re.compile(r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
                          r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$')
-
     rows = []
     for row in dict_rows:
         rows.append(row['Download URL'])
     selected_rows = [row for row in rows if pattern.match(row) is not None]
 
     rows = list(set(selected_rows))  # remove duplicates
-    logging.debug('{}: extract {} urls in the report'.format(machine, len(rows)))
+    module.debug('{0}: extract {1} urls in the report'.format(machine, len(rows)))
     output.update({'1.parse': rows})
 
 
 @start_threaded(THRDS)
-def run_downloader(machine, output, urls):
+def run_downloader(module, machine, output, urls, resize_fs=True):
     """
     Download URLs and check efixes
     args:
-        machine (str): The remote machine name
-        output (dict): The result of the command
-        urls   (list): The list of URLs to download
+        module (dict): The Ansible module
+        machine    (str): The remote machine name
+        output    (dict): The result of the command
+        urls      (list): The list of URLs to download
+        resize_fs (bool): Increase the filesystem size if needed
+    note:
+        Create and build
+            output['2.discover']
+            output['3.download']
+            output['4.1.reject']
+            output['4.2.check']
+        for the provided machine.
     """
+    global workdir
 
-    global WORKDIR
     out = {'messages': output['messages'],
            '2.discover': [],
            '3.download': [],
@@ -772,257 +1024,224 @@ def run_downloader(machine, output, urls):
 
     for url in urls:
         protocol, srv, rep, name = re.search(r'^(.*?)://(.*?)/(.*)/(.*)$', url).groups()
-        logging.debug('{}: protocol={}, srv={}, rep={}, name={}'
-                      .format(machine, protocol, srv, rep, name))
+        module.debug('{0}: protocol={1}, srv={2}, rep={3}, name={4}'.format(machine, protocol, srv, rep, name))
 
         if '.epkg.Z' in name:  # URL as an efix file
-            logging.debug('{}: treat url as an epkg file'.format(machine))
-            out['2.discover'].extend(name)
+            module.debug('{0}: treat url as an epkg file'.format(machine))
+            out['2.discover'].append(name)
 
             # download epkg file
-            epkg = os.path.abspath(os.path.join(WORKDIR, name))
-            if download(url, epkg, out):
-                out['3.download'].extend(epkg)
+            epkg = os.path.abspath(os.path.join(workdir, name))
+            if download(module, out, url, epkg, resize_fs):
+                out['3.download'].append(epkg)
 
         elif '.tar' in name:  # URL as a tar file
-            logging.debug('{}: treat url as a tar file'.format(machine))
-            dst = os.path.abspath(os.path.join(WORKDIR, name))
+            module.debug('{0}: treat url as a tar file'.format(machine))
+            dst = os.path.abspath(os.path.join(workdir, name))
 
             # download and open tar file
-            download(url, dst, out)
-            tar = tarfile.open(dst, 'r')
+            if download(module, out, url, dst, resize_fs):
+                tar = tarfile.open(dst, 'r')
 
-            # find all epkg in tar file
-            epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
-            out['2.discover'].extend(epkgs)
-            logging.debug('{}: found {} epkg.Z file in tar file'.format(machine, len(epkgs)))
+                # find all epkg in tar file
+                epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
+                out['2.discover'].extend(epkgs)
+                module.debug('{0}: found {1} epkg.Z file in tar file'.format(machine, len(epkgs)))
 
-            # extract epkg
-            tar_dir = os.path.join(WORKDIR, 'tardir')
-            if not os.path.exists(tar_dir):
-                os.makedirs(tar_dir)
-            for epkg in epkgs:
-                try:
-                    tar.extract(epkg, tar_dir)
-                except (OSError, IOError, tarfile.TarError) as exc:
-                    logging.warning('EXCEPTION {}'.format(exc))
-                    increase_fs(tar_dir)
-                    tar.extract(epkg, tar_dir)
-            epkgs = [os.path.abspath(os.path.join(tar_dir, epkg)) for epkg in epkgs]
-            out['3.download'].extend(epkgs)
+                # extract epkg
+                tar_dir = os.path.join(workdir, 'tardir')
+                if not os.path.exists(tar_dir):
+                    os.makedirs(tar_dir)
+                for epkg in epkgs:
+                    for attempt in range(3):
+                        try:
+                            tar.extract(epkg, tar_dir)
+                        except (OSError, IOError, tarfile.TarError) as exc:
+                            if resize_fs:
+                                increase_fs(module, out, tar_dir)
+                            else:
+                                msg = 'Cannot extract tar file {0} to {1}: {2}'.format(epkg, tar_dir, exc)
+                                module.log('[WARNING] {0}: {1}', machine, msg)
+                                out['messages'].append(msg)
+                                break
+                        else:
+                            break
+                    else:
+                        msg = 'Cannot extract tar file {0} to {1}'.format(epkg, tar_dir)
+                        module.log('[WARNING] {0}: {1}', machine, msg)
+                        out['messages'].append(msg)
+                        continue
+                    out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
         else:  # URL as a Directory
-            logging.debug('{}: treat url as a directory'.format(machine))
-            # pylint: disable=protected-access
-            response = urllib.urlopen(url, context=ssl._create_unverified_context())
+            module.debug('{0}: treat url as a directory'.format(machine))
+
+            response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
-            epkgs = [epkg for epkg in re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())]
+            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())
 
             epkgs = list(set(epkgs))
 
             out['2.discover'].extend(epkgs)
-            logging.debug('{}: found {} epkg.Z file in html body'.format(machine, len(epkgs)))
+            module.debug('{0}: found {1} epkg.Z file in html body'.format(machine, len(epkgs)))
 
             # download epkg
-            epkgs = [os.path.abspath(os.path.join(WORKDIR, epkg)) for epkg in epkgs
-                     if download(os.path.join(url, epkg),
-                                 os.path.abspath(os.path.join(WORKDIR, epkg)), out)]
+            epkgs = [os.path.abspath(os.path.join(workdir, epkg)) for epkg in epkgs
+                     if download(module, out, os.path.join(url, epkg),
+                                 os.path.abspath(os.path.join(workdir, epkg)), resize_fs)]
             out['3.download'].extend(epkgs)
 
     # Get installed filesets' levels
-    lpps_lvl = parse_lpps_info(machine, out)
+    lpps_lvl = parse_lpps_info(module, output, machine)
 
     # Build the dict of current fileset with their level
-    curr_efixes = parse_emgr(machine, out)
+    curr_efixes = parse_emgr(machine)
 
     # check prerequisite
-    (out['4.2.check'], out['4.1.reject']) = check_epkgs(out['3.download'],
-                                                        lpps_lvl, curr_efixes,
-                                                        machine, out)
+    (out['4.2.check'], out['4.1.reject']) = check_epkgs(module, out, machine,
+                                                        out['3.download'],
+                                                        lpps_lvl, curr_efixes)
     output.update(out)
 
 
 @start_threaded(THRDS)
-def run_installer(machine, output, epkgs):
+def run_installer(module, machine, output, epkgs, resize_fs=True):
     """
     Install epkgs efixes
     args:
+        module (dict): The Ansible module
         machine (str): The remote machine name
         output (dict): The result of the command
         epkgs  (list): The list of efixes to install
-    note: epkgs should be output[machine]['4.2.check'] which is
-          sorted against packaging date. Do not change the order.
+        resize_fs (bool): Increase the filesystem size if needed
+    return:
+        True if install succeeded
+        False otherwise
+    note:
+        epkgs should be results['meta']['4.2.check'] which is
+        sorted against packaging date. Do not change the order.
+        Create and build results['meta']['5.install']
     """
-
-    global CHANGED
-    global WORKDIR
+    global workdir
+    global results
 
     if not epkgs:
-        return 0
+        return True
 
-    destpath = os.path.abspath(os.path.join(WORKDIR))
+    destpath = os.path.abspath(os.path.join(workdir))
     destpath = os.path.join(destpath, 'flrtvc_lpp_source', machine, 'emgr', 'ppc')
     # create lpp source location
     if not os.path.exists(destpath):
         os.makedirs(destpath)
     # copy efix destpath lpp source
+    epkgs_base = []
     for epkg in epkgs:
-        try:
-            shutil.copy(epkg, destpath)
-        except (IOError, shutil.Error) as exc:
-            logging.warning('EXCEPTION {}'.format(exc))
-            increase_fs(destpath)
-            shutil.copy(epkg, destpath)
-    epkgs_base = [os.path.basename(epkg) for epkg in epkgs]
+        for attempt in range(3):
+            try:
+                shutil.copy(epkg, destpath)
+            except (IOError, shutil.Error) as exc:
+                if resize_fs:
+                    increase_fs(module, output, destpath)
+                else:
+                    msg = 'Cannot copy file {0} to {1}: {2}'.format(epkg, destpath, exc)
+                    module.log('[WARNING] {0}: {1}', machine, msg)
+                    output['messages'].append(msg)
+                    break
+            else:
+                break
+        else:
+            msg = 'Cannot copy file {0} to {1}'.format(epkg, destpath)
+            module.log('[WARNING] {0}: {1}', machine, msg)
+            output['messages'].append(msg)
+            continue
+        epkgs_base.append(os.path.basename(epkg))
+
+    # return error if we have nothing to install
+    if not epkgs_base:
+        return False
 
     efixes = ' '.join(epkgs_base)
     lpp_source = machine + '_lpp_source'
 
     # define lpp source
-    if subprocess.call(args=['/usr/sbin/lsnim', '-l', lpp_source]) > 0:
-        try:
-            cmd = '/usr/sbin/nim -o define -t lpp_source -a server=master'
-            cmd += ' -a location={} -a packages=all {}'.format(destpath, lpp_source)
-            subprocess.check_output(args=cmd, shell=True, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logging.warning('{}: EXCEPTION cmd={} rc={} output={}'
-                            .format(machine, exc.cmd, exc.returncode, exc.output))
+    cmd = ['/usr/sbin/lsnim', '-l', lpp_source]
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc > 0:
+        cmd = ['/usr/sbin/nim', '-o', 'define', '-t', lpp_source, '-a', 'server=master']
+        cmd += [' -a', 'location={0}'.format(destpath)]
+        cmd += ['-a', 'packages=all', lpp_source]
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc != 0:
+            msg = 'Cannot define NIM lpp_source resource {0} for location \'{1}\''.format(lpp_source, destpath)
+            module.log('[WARNING] {0}: {1}', machine, msg)
+            output['messages'].append(msg)
+            return False
 
     # perform customization
-    stdout = ''
-    try:
-        cmd = '/usr/sbin/lsnim {}'.format(machine)
-        lsnim = subprocess.check_output(args=cmd, shell=True, stderr=subprocess.STDOUT)
-        nimtype = lsnim.split()[2]
+    install_ok = False
+    cmd = ['/usr/sbin/lsnim', machine]
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        nimtype = stdout.split()[2]
         if 'master' in nimtype:
-            cmd = '/usr/sbin/geninstall -d {} {}'.format(destpath, efixes)
+            cmd = '/usr/sbin/geninstall -d {0} {1}'.format(destpath, efixes)
         elif 'standalone' in nimtype:
-            cmd = '/usr/sbin/nim -o cust -a lpp_source={} -a filesets="{}" {}' \
-                  .format(lpp_source, efixes, machine)
+            cmd = '/usr/sbin/nim -o cust -a lpp_source={0} -a filesets="{1}" {2}'.format(lpp_source, efixes, machine)
         elif 'vios' in nimtype:
-            cmd = '/usr/sbin/nim -o updateios -a preview=no -a lpp_source={} {}' \
-                  .format(lpp_source, machine)
-        stdout = subprocess.check_output(args=cmd, shell=True, stderr=subprocess.STDOUT)
-        logging.debug('{}: customization result is {}'.format(machine, stdout))
-        CHANGED = True
-    except subprocess.CalledProcessError as exc:
-        logging.warning('{}: EXCEPTION cmd={} rc={} output={}'
-                        .format(machine, exc.cmd, exc.returncode, exc.output))
-        stdout = exc.output
-    output.update({'5.install': stdout.splitlines()})
+            cmd = '/usr/sbin/nim -o updateios -a preview=no -a lpp_source={0} {1}'.format(lpp_source, machine)
+
+        rc, stdout, stderr = module.run_command(cmd)
+        module.debug('{0}: customization result is {1}'.format(machine, stdout))
+        if rc == 0:
+            install_ok = True
+
+        output.update({'5.install': stdout.splitlines()})
+        results['changed'] = True
+    else:
+        msg = 'Cannot list NIM resource for \'{0}\''.format(machine)
+        module.log('[WARNING] {0}', msg)
+        module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
+                   .format(cmd, rc, stdout, stderr))
+        output['messages'].append(msg)
 
     # remove lpp source
-    if subprocess.call(args=['/usr/sbin/lsnim', '-l', lpp_source]) == 0:
-        try:
-            cmd = '/usr/sbin/nim -o remove {}'.format(lpp_source)
-            subprocess.check_output(args=cmd, shell=True, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            logging.warning('{}: EXCEPTION cmd={} rc={} output={}'
-                            .format(machine, exc.cmd, exc.returncode, exc.output))
+    cmd = ['/usr/sbin/lsnim', '-l', lpp_source]
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        cmd = ['/usr/sbin/lsnim', '-o', 'remove', lpp_source]
+        rc, stdout, stderr = module.run_command(cmd)
+        msg = 'Cannot remove NIM resource \'{0}\''.format(lpp_source)
+        module.log('[WARNING] {0}', msg)
+        module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
+                   .format(cmd, rc, stdout, stderr))
+
+    return install_ok
 
 
-@wait_threaded(THRDS)
-def wait_all():
+def get_nim_clients_info(module):
     """
-    Do nothing
-    """
-    pass
-
-
-def exec_cmd(cmd, output, exit_on_error=False, shell=False):
-    """
-    Execute the given command
-
-    Note: If executed in thread, fail_json does not exit the parent
-
+    Build client list (standalone and vios) with
+    all NIM info from lsnim -c machines -l command
     args:
-        cmd           (list or str): command with parameters
-        output        (dict): result of the command to display in case of exception
-        exit_on_error (bool): use fail_json if set and cmd failed
-        shell         (bool): execute cmd through the shell if set (vulnerable to shell
-                              injection when cmd is from user inputs). If cmd is a string
-                              string, the string specifies the command to execute through
-                              the shell. If cmd is a list, the first item specifies the
-                              command, and other items are arguments to the shell itself.
-    return:
-        res      return code of the command
-        stdout   command stdout
-        errout   command stderr
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    returns:
+        NIM client dictionary
+
     """
-    global MODULE
-    global CHANGED
-    global WORKDIR
-    res = 0
-    stdout = ''
-    errout = ''
-    th_id = threading.current_thread().ident
-    stderr_file = os.path.join(WORKDIR, 'cmd_stderr_{}'.format(th_id))
-
-    try:
-        myfile = open(stderr_file, 'w')
-        stdout = subprocess.check_output(cmd, stderr=myfile, shell=shell)
-        myfile.close()
-        s = re.search(r'rc=([-\d]+)$', stdout)
-        if s:
-            res = int(s.group(1))
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)  # remove the rc of c_rsh with echo $?
-
-    except subprocess.CalledProcessError as exc:
-        myfile.close()
-        errout = re.sub(r'rc=[-\d]+\n$', '', exc.output)  # remove the rc of c_rsh with echo $?
-        res = exc.returncode
-
-    except OSError as exc:
-        myfile.close
-        errout = re.sub(r'rc=[-\d]+\n$', '', exc.args[1])  # remove the rc of c_rsh with echo $?
-        res = exc.args[0]
-
-    except IOError as exc:
-        # generic exception
-        myfile.close
-        msg = 'Command: {} Exception: {}'.format(cmd, exc)
-        MODULE.fail_json(changed=CHANGED, msg=msg, meta=output)
-
-    # check for error message
-    if os.path.getsize(stderr_file) > 0:
-        myfile = open(stderr_file, 'r')
-        errout += ''.join(myfile)
-        myfile.close()
-    os.remove(stderr_file)
-
-    if res != 0 and exit_on_error is True:
-        msg = 'Error executing command {} RetCode:{} ... stdout:{} stderr:{}'\
-              .format(cmd, res, stdout, errout)
-        MODULE.fail_json(changed=CHANGED, msg=msg, meta=output)
-
-    return (res, stdout, errout)
-
-
-# TODO: write or remove parse_nim_info?
-def parse_nim_info(output):
-    """
-    Build client nim info dictionary from output of lsnim command.
-    """
-    # obj_key = ''
-
-
-def client_list():
-    """
-    Build client list (standalone and vios)
-    """
-    stdout = ''
     info = {}
-    try:
-        cmd = ['lsnim', '-c', 'machines', '-l']
-        stdout = subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
 
-    except subprocess.CalledProcessError as exc:
-        logging.warning('EXCEPTION cmd={} rc={} output={}'
-                        .format(exc.cmd, exc.returncode, exc.output))
-        return info
+    cmd = ['lsnim', '-c', 'machines', '-l']
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        module.fail_json(**results)
 
-    for line in stdout.split('\n'):
+    for line in stdout.rstrip().splitlines():
         line = line.rstrip()
         match_key = re.match(r"^(\S+):", line)
         if match_key:
@@ -1038,11 +1257,11 @@ def client_list():
     return info
 
 
-def expand_targets(targets_list, nim_clients):
+def expand_targets(module, targets, nim_clients):
     """
-    Expand the list of the targets.
+    Expand the list of target patterns.
 
-    a taget name could be of the following form:
+    A taget name can be of the following form:
         target*       all the nim client machines whose name starts
                           with 'target'
         target[n1:n2] where n1 and n2 are numeric: target<n1> to target<n2>
@@ -1053,21 +1272,19 @@ def expand_targets(targets_list, nim_clients):
         sample:  target[1:5] target12 other_target*
 
     arguments:
-        machine (str): The name machine
-        result  (dict): The result of the command
+        module       (dict): The Ansible module
+        targets      (list): List of requested target partterns
+        nim_clients  (list): List of NIM clients
 
-    return: the list of the existing machines matching the target list
+    return: the list of the existing NIM client matching the target list
     """
     clients = []
 
-    for target in targets_list:
+    for target in targets:
 
-        # -----------------------------------------------------------
         # Build target(s) from: range i.e. quimby[7:12]
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
-
             name = rmatch.group(1)
             start = rmatch.group(2)
             end = rmatch.group(3)
@@ -1077,235 +1294,257 @@ def expand_targets(targets_list, nim_clients):
                 curr_name = name + str(i)
                 if curr_name in nim_clients:
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: val*. i.e. quimby*
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
-
             name = rmatch.group(1)
 
             for curr_name in nim_clients:
                 if re.match(r"^%s\.*" % name, curr_name):
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: all or *
-        # -----------------------------------------------------------
         if target.upper() == 'ALL' or target == '*':
             clients = nim_clients
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: quimby05 quimby08 quimby12
-        # -----------------------------------------------------------
         if (target in nim_clients) or (target == 'master'):
             clients.append(target)
 
     return list(set(clients))
 
 
-def check_targets(targets_list, nim_clients, output):
+def check_targets(module, output, targets, nim_clients):
     """
     Check if each target in the target list can be reached.
     Build a new target list with reachable target only.
 
     arguments:
-        targets_list (str): list of existing machines
-        nim_clients (dict): nim info of all clients
+        module       (dict): The Ansible module
         output      (dict): result of the command
+        targets      (str): list of existing machines
+        nim_clients (dict): nim info of all clients
 
     """
     targets = []
 
-    for machine in targets_list:
+    for machine in targets:
         if machine == 'master':
             targets.append(machine)
             continue
 
         if nim_clients[machine]['Cstate'] != 'ready for a NIM operation':
-            logging.warning('Machine: {} is not ready for NIM operation'.format(machine))
+            module.log('[WARNING] {0} is not ready for NIM operation'.format(machine))
             continue
 
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
                '"/usr/bin/ls /dev/null; echo rc=$?"']
-        (res, stdout, stderr) = exec_cmd(cmd, output)
-        if res == 0:
-            targets.append(machine)
+
+        rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+        if rc != 0:
+            msg = 'Cannot check {0} connectivity with c_rsh: command \'{1}\' returned rc: {2}'.format(machine, ' '.join(cmd), rc)
+            module.log('[WARNING] ' + msg)
+            output['messages'].append(msg)
+
+        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
+        if rc != 0:
+            msg = 'Cannot reach {0} with c_rsh, rc:{1}, stderr:{2}'.format(machine, rc, stderr)
+            module.log('[WARNING] ' + msg)
+            output[machine]['message'].append(msg)
         else:
-            msg = 'Cannot reach {} with c_rsh: {}, {}, {}'\
-                  .format(machine, res, stdout, stderr)
-            logging.warning(msg)
-            output[machine].update({'0.report': msg})
+            targets.append(machine)
 
     return list(set(targets))
-
-
-def increase_fs(dest):
-    """
-    Increase filesystem by 100Mb
-    """
-    try:
-        cmd = ['df', '-c', dest]
-        stdout = subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
-        mount_point = stdout.splitlines()[1].split(':')[6]
-        cmd = ['chfs', '-a', 'size=+100M', mount_point]
-        stdout = subprocess.check_output(args=cmd, stderr=subprocess.STDOUT)
-        logging.debug('{}: {}'.format(mount_point, stdout))
-    except subprocess.CalledProcessError as exc:
-        logging.warning('EXCEPTION cmd={} rc={} output={}'
-                        .format(exc.cmd, exc.returncode, exc.output))
 
 
 ###################################################################################################
 
 
 def main():
-    MODULE = AnsibleModule(
+    global module
+    global results
+    global workdir
+
+    module = AnsibleModule(
         argument_spec=dict(
-            targets=dict(required=True, type='str'),
-            apar=dict(required=False, choices=['sec', 'hiper', 'all', None], default=None),
+            targets=dict(required=True, type='list', elements='str'),
+            apar=dict(required=False, type='str', choices=['sec', 'hiper', 'all', None], default=None),
             filesets=dict(required=False, type='str'),
             csv=dict(required=False, type='str'),
-            path=dict(required=False, type='str'),
+            path=dict(required=False, type='str', default='/var/adm/ansible'),
+            save_report=dict(required=False, type='bool', default=False),
             verbose=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
             clean=dict(required=False, type='bool', default=False),
             check_only=dict(required=False, type='bool', default=False),
             download_only=dict(required=False, type='bool', default=False),
+            extend_fs=dict(required=False, type='bool', default=True),
         ),
         supports_check_mode=True
     )
 
-    CHANGED = False
+    results = dict(
+        changed=False,
+        msg='',
+        meta={'messages': []}
+        # meta structure will be updated as follow:
+        # meta={
+        #   target_name:{
+        #       'messages': [],     detail execution messages
+        #       '0.report': [],     run_flrtvc reports the vulnerabilities
+        #       '1.parse': [],      run_parser builds the list of URLs
+        #       '2.discover': [],   run_downloader builds the list of epkgs found in URLs
+        #       '3.download': [],   run_downloader builds the list of downloaded epkgs
+        #       '4.1.reject': [],   check_epkgs builds the list of rejected epkgs
+        #       '4.2.check': [],    check_epkgs builds the list of epkgs checking prerequisites
+        #       '5.install': [],    run_installer builds the list of installed epkgs
+        #   }
+        # }
+    )
 
-    # Logging
-    LOGNAME = '/tmp/ansible_flrtvc_debug.log'
-    LOGFRMT = '[%(asctime)s] %(levelname)s: [%(funcName)s:%(thread)d] %(message)s'
-    logging.basicConfig(filename=LOGNAME, format=LOGFRMT, level=logging.DEBUG)
-
-    logging.debug('*** START ***')
-
-    # ===========================================
-    # Get client list
-    # ===========================================
-    logging.debug('*** OHAI ***')
-    NIM_CLIENTS = client_list()
-    logging.debug('Nim clients are: {}'.format(NIM_CLIENTS))
+    module.debug('*** START ***')
+    module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # ===========================================
     # Get module params
     # ===========================================
-    logging.debug('*** INIT ***')
-    logging.debug('required targets are:{}'.format(MODULE.params['targets']))
-    TARGETS = expand_targets(re.split(r'[,\s]', MODULE.params['targets']), NIM_CLIENTS.keys())
-    logging.debug('Nim client targets are:{}'.format(TARGETS))
-    FLRTVC_PARAMS = {'apar_type': MODULE.params['apar'],
-                     'apar_csv': MODULE.params['csv'],
-                     'filesets': MODULE.params['filesets'],
-                     'dst_path': MODULE.params['path'],
-                     'verbose': MODULE.params['verbose']}
-    FORCE = MODULE.params['force']
-    CLEAN = MODULE.params['clean']
-    CHECK_ONLY = MODULE.params['check_only']
-    DOWNLOAD_ONLY = MODULE.params['download_only']
+    module.debug('*** INIT ***')
+    targets = module.params['targets']
+    flrtvc_params = {'apar_type': module.params['apar'],
+                     'apar_csv': module.params['csv'],
+                     'filesets': module.params['filesets'],
+                     'dst_path': module.params['path'],
+                     'save_report': module.params['save_report'],
+                     'verbose': module.params['verbose']}
+    force = module.params['force']
+    clean = module.params['clean']
+    check_only = module.params['check_only']
+    download_only = module.params['download_only']
+    resize_fs = module.params['extend_fs']
 
-    if (FLRTVC_PARAMS['dst_path'] is None) or (not FLRTVC_PARAMS['dst_path'].strip()):
-        FLRTVC_PARAMS['dst_path'] = '/tmp/ansible'
-    WORKDIR = os.path.join(FLRTVC_PARAMS['dst_path'], 'work')
+    workdir = os.path.abspath(os.path.join(flrtvc_params['dst_path'], 'work'))
+    if not os.path.exists(workdir):
+        os.makedirs(workdir, mode=0o744)
 
-    if not os.path.exists(WORKDIR):
-        os.makedirs(WORKDIR, mode=0o744)
+    # ===========================================
+    # Compute targets
+    # ===========================================
+    # Get client list and keep targets that are part of it
+    module.debug('*** OHAI ***')
+    module.debug('requested targets are: "{0}"'.format(targets))
+    nim_clients = get_nim_clients_info(module)
+    module.debug('Nim clients are: {0}'.format(nim_clients))
+    targets = expand_targets(module, targets, nim_clients.keys())
+    module.debug('Nim client targets are:{0}'.format(targets))
 
-    # metadata
-    OUTPUT = {}
-    for MACHINE in TARGETS:
-        OUTPUT[MACHINE] = {'messages': []}  # first time init
+    # Init metadata dictionary
+    results['meta'] = {'messages': []}
+    for machine in targets:
+        results['meta'][machine] = {'messages': []}  # first time init
 
-    # check connectivity
-    TARGETS = check_targets(TARGETS, NIM_CLIENTS, OUTPUT)
-    logging.debug('Available target machines are:{}'.format(TARGETS))
-    if not TARGETS:
-        logging.warning('Empty target list')
+    # Check connectivity
+    targets = check_targets(module, results['meta'], targets, nim_clients)
+    module.debug('Available target machines are:{0}'.format(targets))
+    if not targets:
+        module.log('[WARNING] Empty target list')
 
     # ===========================================
     # Install flrtvc script
     # ===========================================
-    logging.debug('*** INSTALL ***')
-    _FLRTVCPATH = os.path.abspath(os.path.join(os.sep, 'usr', 'bin'))
-    _FLRTVCFILE = os.path.join(_FLRTVCPATH, 'flrtvc.ksh')
-    if not os.path.exists(_FLRTVCFILE):
-        _DESTNAME = os.path.abspath(os.path.join(os.sep, 'FLRTVC-latest.zip'))
-        if not download('https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip', _DESTNAME, OUTPUT):
-            if CLEAN and os.path.exists(WORKDIR):
-                shutil.rmtree(WORKDIR, ignore_errors=True)
-            MODULE.fail_json(changed=CHANGED, msg='Failed to download FLRTVC-latest.zip', meta=OUTPUT)
-        unzip(_DESTNAME, os.path.abspath(os.path.join(os.sep, 'usr', 'bin')))
-    _STAT = os.stat(_FLRTVCFILE)
-    if not _STAT.st_mode & stat.S_IEXEC:
-        os.chmod(_FLRTVCFILE, _STAT.st_mode | stat.S_IEXEC)
+    module.debug('*** INSTALL ***')
+    flrtvc_dir = os.path.abspath(os.path.join(os.sep, 'usr', 'bin'))
+    flrtvc_path = os.path.abspath(os.path.join(flrtvc_dir, 'flrtvc.ksh'))
+
+    # remove previous version if any
+    if os.path.exists(flrtvc_path):
+        try:
+            os.remove(flrtvc_path)
+        except OSError as exc:
+            msg = 'Cannot remove {0}, exception:{1}'.format(flrtvc_path, exc)
+            module.log('[WARNING] ' + msg)
+            results['meta']['messages'].append(msg)
+
+    flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))
+    if not download(module, results['meta'],
+                    'https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip',
+                    flrtvc_dst, resize_fs):
+        if clean and os.path.exists(workdir):
+            shutil.rmtree(workdir, ignore_errors=True)
+        results['msg'] = 'Failed to download FLRTVC-latest.zip'
+        module.fail_json(**results)
+
+    if not unzip(module, results['meta'], flrtvc_dst,
+                 os.path.abspath(os.path.join(os.sep, 'usr', 'bin')), resize_fs):
+        if clean and os.path.exists(workdir):
+            shutil.rmtree(workdir, ignore_errors=True)
+        results['msg'] = 'Failed to unzip FLRTVC-latest.zip'
+        module.fail_json(**results)
+
+    flrtvc_stat = os.stat(flrtvc_path)
+    if not flrtvc_stat.st_mode & stat.S_IEXEC:
+        os.chmod(flrtvc_path, flrtvc_stat.st_mode | stat.S_IEXEC)
 
     # ===========================================
     # Run flrtvc script
     # ===========================================
-    logging.debug('*** REPORT ***')
+    module.debug('*** REPORT ***')
     wrong_targets = []
-    for MACHINE in TARGETS:
-        rc = run_flrtvc(MACHINE, OUTPUT[MACHINE], FLRTVC_PARAMS, FORCE)
-        if rc == 1:
-            wrong_targets.append(MACHINE)
-    wait_all()
+    for machine in targets:
+        if not run_flrtvc(module, results['meta'][machine], machine, flrtvc_path, flrtvc_params, force):
+            wrong_targets.append(machine)
     for machine in wrong_targets:
-        msg = 'Machine: {} will not be updated (flrtvc report failed)'.format(machine)
-        logging.warning(msg)
-        OUTPUT[MACHINE]['messages'].append(msg)
-        TARGETS.remove(machine)
-    if CHECK_ONLY:
-        if CLEAN and os.path.exists(WORKDIR):
-            shutil.rmtree(WORKDIR, ignore_errors=True)
-        MODULE.exit_json(changed=CHANGED, msg='exit on check only', meta=OUTPUT)
+        msg = 'Failed to get vulnerabilities report, {0} will not be updated'.format(machine)
+        module.log('[WARNING] ' + msg)
+        results['meta'][machine]['messages'].append(msg)
+        targets.remove(machine)
+    if check_only:
+        if clean and os.path.exists(workdir):
+            shutil.rmtree(workdir, ignore_errors=True)
+        results['msg'] = 'exit on check only'
+        module.exit_json(**results)
 
     # ===========================================
     # Parse flrtvc report
     # ===========================================
-    logging.debug('*** PARSE ***')
-    for MACHINE in TARGETS:
-        run_parser(MACHINE, OUTPUT[MACHINE], OUTPUT[MACHINE]['0.report'])
+    module.debug('*** PARSE ***')
+    for machine in targets:
+        run_parser(module, machine, results['meta'][machine], results['meta'][machine]['0.report'])
     wait_all()
 
     # ===========================================
     # Download and check efixes
     # ===========================================
-    logging.debug('*** DOWNLOAD ***')
-    for MACHINE in TARGETS:
-        run_downloader(MACHINE, OUTPUT[MACHINE], OUTPUT[MACHINE]['1.parse'])
+    module.debug('*** DOWNLOAD ***')
+    for machine in targets:
+        run_downloader(module, machine, results['meta'][machine], results['meta'][machine]['1.parse'], resize_fs)
     wait_all()
 
-    if DOWNLOAD_ONLY:
-        if CLEAN and os.path.exists(WORKDIR):
-            shutil.rmtree(WORKDIR, ignore_errors=True)
-        MODULE.exit_json(changed=CHANGED, msg='exit on download only', meta=OUTPUT)
+    if download_only:
+        if clean and os.path.exists(workdir):
+            shutil.rmtree(workdir, ignore_errors=True)
+        results['msg'] = 'exit on download only'
+        module.exit_json(**results)
 
     # ===========================================
     # Install efixes
     # ===========================================
-    logging.debug('*** UPDATE ***')
-    for MACHINE in TARGETS:
-        run_installer(MACHINE, OUTPUT[MACHINE], OUTPUT[MACHINE]['4.2.check'])
+    module.debug('*** UPDATE ***')
+    for machine in targets:
+        if not run_installer(module, machine, results['meta'][machine], results['meta'][machine]['4.2.check'], resize_fs):
+            msg = 'Failed to install fixes, please check meta and log data.'
+            results[machine]['messages'].append(msg)
     wait_all()
 
-    if CLEAN and os.path.exists(WORKDIR):
-        shutil.rmtree(WORKDIR, ignore_errors=True)
+    if clean and os.path.exists(workdir):
+        shutil.rmtree(workdir, ignore_errors=True)
 
-    MODULE.exit_json(
-        changed=CHANGED,
-        msg='FLRTVC completed successfully',
-        meta=OUTPUT)
+    results['msg'] = 'FLRTVC completed successfully'
+    module.log(results['msg'])
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
