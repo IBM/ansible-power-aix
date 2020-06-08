@@ -1,5 +1,5 @@
 <!-- This should be the location of the title of the repository, normally the short name -->
-# ansible-power-aix
+# IBM POWER AIX Collection
 
 <!-- Build Status, is a great thing to have at the top of your repository, it shows that you take your CI/CD as first class citizens -->
 <!-- [![Build Status](https://travis-ci.org/jjasghar/ibm-cloud-cli.svg?branch=master)](https://travis-ci.org/jjasghar/ibm-cloud-cli) -->
@@ -7,7 +7,7 @@
 <!-- Not always needed, but a scope helps the user understand in a short sentence like below, why this repo exists -->
 ## Scope
 
-The purpose of this project is to provide modules (and playbook examples) that can be used to: manage configurations and deployments of POWER AIX systems.
+The purpose of this project is to provide modules that can be used to manage configurations and deployments of POWER AIX systems.
 
 <!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
@@ -39,10 +39,14 @@ This repository contains some example best practices for open source repositorie
 ### Ansible
 
 - Requires Ansible 2.0 or newer
+- For help installing Ansible, refer to the [Installing Ansible] section of the Ansible Documentation
+- For help installing the ibm.power_aix collection, refer to [install](docs/source/installation.rst) page of this project
 
 ### Python
 
-- Support Python 2.7 or newer
+- Requires Python 2.7 or newer
+- To install (or upgrade) Python on AIX, you must first configure [YUM].  As part of YUM installation, Python2 will be installed by default
+- After setting up and installing YUM, you may update all the packages to the latest level using the yum update command
 
 ## Resources
 
@@ -97,4 +101,6 @@ Authors:
 
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new
+[YUM]: https://developer.ibm.com/articles/configure-yum-on-aix/
 [pages]: https://ansible-aix.github.io/ansible-power-aix/
+[Installing Ansible]: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html

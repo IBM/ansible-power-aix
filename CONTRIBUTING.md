@@ -70,15 +70,3 @@ git commit -s
 
 ## Communication
 **FIXME** Please feel free to connect with us on our [Slack channel](link).
-
-## Setup
-**FIXME** Please add any special setup instructions for your project to help the developer
-become productive quickly.
-
-## Testing
-**FIXME** Please provide information that helps the developer test any changes they make
-before submitting.
-
-## Coding style guidelines
-**FIXME** Optional, but recommended: please share any specific style guidelines you might
-have for your project.
