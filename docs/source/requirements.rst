@@ -57,18 +57,17 @@ easy to install RPM format.
 
 **Download information**
 
-* This software is offered on an "as-is" basis. Refer to the `licensing
-  and information instructons`_ for further information.
+* This software is offered on an "as-is" basis. Refer to the
+  `licensing and information instructons`_ for further information.
 * These packages are available for installation using the rpm package
-  manager. Download the `AIX install image for the rpm package manager
-  for POWER`_.
+  manager. Download the `AIX install image for the rpm package manager for POWER`_.
 * For further information, installation tips, and news, please refer to
   the `AIX Toolbox for Linux Applications ReadMe`_.
 
 .. _licensing and information instructons:
    https://www.ibm.com/support/pages/node/883794
 .. _AIX install image for the rpm package manager for POWER:
-   ftp://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/rpm.rte
+   https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/rpm.rte
 .. _AIX Toolbox for Linux Applications ReadMe:
-   ftp://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/README.txt
+   https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/README.txt
 
