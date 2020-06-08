@@ -32,7 +32,6 @@ This repository contains some example best practices for open source repositorie
 
 ### Platforms
 
-- AIX 6.1
 - AIX 7.1
 - AIX 7.2
 
