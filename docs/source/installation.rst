@@ -177,7 +177,7 @@ Local build
 -----------
 
 You can use the ``ansible-galaxy collection install`` command to install a
-collection built from source. Verion builds are available in the `builds`
+collection built from source. Version builds are available in the ``builds``
 directory of the IBM ansible-power-aix Git repository. The archives can be
 installed locally without having to use Hub or Galaxy.
 
