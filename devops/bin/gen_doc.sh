@@ -19,13 +19,13 @@ DOC_DIR="$DIR/documentation"
 
 # place the modules in the appropriate folder
 [[ ! -d $MODULE_DIR ]] && mkdir -p $MODULE_DIR
-cp $DIR/library/*.py $MODULE_DIR/
+cp $DIR/plugins/modules/*.py $MODULE_DIR/
 
 # generate the documentation
 [[ ! -d $DOC_DIR ]] && mkdir -p $DOC_DIR
 set +e
 rc=0
-for f in $DIR/library/*.py; do
+for f in $DIR/plugins/modules/*.py; do
     f="${f##*/}"
     echo "-------- ansible-doc for $f --------"
     ansible-doc -t module ${f%%.py} >$DOC_DIR/${f%%.py}.txt
