@@ -1,0 +1,76 @@
+> MKTCPIP    (/home/travis/.ansible/plugins/modules/mktcpip.py)
+
+        This module sets the required minimal values required for
+        using TCP/IP on a host machine. These values are written to
+        the configuration database.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= address
+        Sets the Internet address of the host.
+
+        type: str
+
+- domain
+        Specifies the domain name of the name server the host should
+        use for name resolution.
+        [Default: (null)]
+        type: str
+
+- gateway
+        Adds the default gateway address to the routing table.
+        [Default: (null)]
+        type: str
+
+= hostname
+        Sets the name of the host.
+
+        type: str
+
+= interface
+        Specifies a particular network interface.
+
+        type: str
+
+- nameserver
+        Specifies the Internet address of the name server the host
+        uses for name resolution.
+        [Default: (null)]
+        type: str
+
+- netmask
+        Specifies the mask the gateway should use in determining the
+        appropriate subnetwork for routing.
+        [Default: (null)]
+        type: str
+
+- start_daemons
+        Starts the TCP/IP daemons.
+        [Default: False]
+        type: bool
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Set the required values for starting TCP/IP
+  mktcpip:
+    hostname: fred.austin.century.com
+    address: 192.9.200.4
+    interface: en0
+    nameserver: 192.9.200.1
+    domain: austin.century.com
+    start_daemons: yes
+
+
+RETURN VALUES:
+ # 

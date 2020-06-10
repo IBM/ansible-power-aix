@@ -1,0 +1,123 @@
+> NIM_VIOS_ALT_DISK    (/home/travis/.ansible/plugins/modules/nim_vios_alt_disk.py)
+
+        Copy the rootvg to an alternate disk or cleanup an existing
+        one.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= action
+        Specifies the operation to perform on the VIOS.
+        `alt_disk_copy' to perform and alternate disk copy.
+        `alt_disk_clean' to cleanup an existing alternate disk copy.
+        (Choices: alt_disk_copy, alt_disk_clean)
+        type: str
+
+- disk_size_policy
+        Specifies how to choose the alternate disk if not specified.
+        `minimize' smallest disk that can be selected.
+        `upper' first disk found bigger than the rootvg disk.
+        `lower' disk size less than rootvg disk size but big enough to
+        contain the used PPs.
+        `nearest'
+        (Choices: minimize, upper, lower, nearest)[Default: nearest]
+        type: str
+
+- force
+        Forces action.
+        [Default: False]
+        type: bool
+
+- nim_node
+        Allows to pass along NIM node info from a task to another so
+        that it discovers NIM info only one time for all tasks.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+= targets
+        NIM VIOS target.
+        Use a tuple format with the 1st element the VIOS and the 2nd
+        element the disk used for the alternate disk copy.
+        "vios1,disk1,vios2,disk2" for dual VIOSes. "vios1,disk1" for
+        single VIOS.
+
+        elements: str
+        type: list
+
+- time_limit
+        Before starting the action, the actual date is compared to
+        this parameter value; if it is greater then the task is
+        stopped; the format is `mm/dd/yyyy hh:mm'.
+        [Default: (null)]
+        type: str
+
+- vars
+        Specifies additional parameters.
+        [Default: (null)]
+        type: dict
+
+- vios_status
+        Specifies the result of a previous operation.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+
+NOTES:
+      * `alt_disk_copy' only backs up mounted file systems.
+        Mount all file systems that you want to back up.
+      * copy is performed only on one alternate hdisk even if
+        the rootvg contains multiple hdisks
+      * error if several `altinst_rootvg' exist for cleanup
+        operation in automatic mode
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Perform an alternate disk copy of the rootvg to hdisk1
+  nim_vios_alt_disk:
+    action: alt_disk_copy
+    targets:
+    - nimvios01,hdisk1
+
+- name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
+  nim_vios_alt_disk:
+    action: alt_disk_copy
+    disk_size_policy: minimize
+    targets:
+    - nimvios01,,nimvios02,
+    - nimvios03,
+
+
+RETURN VALUES:
+
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOS tuples.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+

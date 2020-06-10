@@ -1,0 +1,149 @@
+> NIM_VIOSUPGRADE    (/home/travis/.ansible/plugins/modules/nim_viosupgrade.py)
+
+        Tool to upgrade VIOSes in NIM environment.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= action
+        Specifies the operation to perform.
+        `altdisk_install' to perform and alternate disk install.
+        `alt_disk_clean' to cleanup an existing alternate disk
+        install.
+        `get_status' to get the status of the upgrade.
+        (Choices: altdisk_install, bos_install, get_status)
+        type: str
+
+- backup_file
+        Backup file name.
+        [Default: (null)]
+        type: dict
+
+- cluster_exists
+        Check if cluster exists.
+        [Default: (null)]
+        type: dict
+
+- mksysb_name
+        mksysb name.
+        [Default: (null)]
+        type: dict
+
+- res_fb_script
+        NIM fb_script resource name.
+        [Default: (null)]
+        type: dict
+
+- res_file_res
+        NIM file_res resource name.
+        [Default: (null)]
+        type: dict
+
+- res_image_data
+        NIM image_data resource name.
+        [Default: (null)]
+        type: dict
+
+- res_log
+        NIM log resource name.
+        [Default: (null)]
+        type: dict
+
+- res_resolv_conf
+        NIM resolv_conf resource name.
+        [Default: (null)]
+        type: dict
+
+- res_script
+        NIM script resource name.
+        [Default: (null)]
+        type: dict
+
+- rootvg_clone_disk
+        Clone disk name.
+        [Default: (null)]
+        type: dict
+
+- rootvg_install_disk
+        Install disk name.
+        [Default: (null)]
+        type: dict
+
+- skip_rootvg_cloning
+        Skip rootvg cloning.
+        [Default: (null)]
+        type: dict
+
+- spot_name
+        SPOT name.
+        [Default: (null)]
+        type: dict
+
+- target_file_name
+        File name containing NIM targets in CSV format.
+        [Default: (null)]
+        type: str
+
+- targets
+        NIM targets.
+        [Default: (null)]
+        elements: str
+        type: list
+
+- validate_input_data
+        Validate input data.
+        [Default: (null)]
+        type: dict
+
+- vars
+        Specifies additional parameters.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+- vios_status
+        Specifies the result of a previous operation.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Perform an upgrade of nimvios01
+  nim_viosupgrade:
+    targets: nimvios01
+    action: altdisk_install
+
+
+RETURN VALUES:
+
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOSes.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+

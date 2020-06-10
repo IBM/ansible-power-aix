@@ -1,0 +1,153 @@
+> NIM_UPGRADEIOS    (/home/travis/.ansible/plugins/modules/nim_upgradeios.py)
+
+        Tool to upgrade one or a pair of VIOSes.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= action
+        Specifies the operation to perform.
+        `backup' to create a backup.
+        `view_backup' to view existing backups.
+        `restore_backup' to restore an existing backup.
+        `upgrade_restore' to upgrade and restore target VIOS.
+        (Choices: backup, view_backup, restore_backup,
+        upgrade_restore, all)
+        type: str
+
+- backup_prefix
+        Prefix of the ios_backup NIM resource.
+        The name of the target VIOS is added to this prefix.
+        [Default: (null)]
+        type: str
+
+- boot_client
+        Boots the clients of the target VIOS after the upgrade and
+        restore operation.
+        (Choices: yes, no)[Default: no]
+        type: str
+
+- bosinst_data_prefix
+        Prefix of the bosinst_data NIM resource that contains the BOS
+        installation program to use.
+        The NIM name of the target VIOS is added to this prefix to
+        find the actual NIM resource, like:
+        "<bosinst_data_prefix>_<vios_name>".
+        [Default: (null)]
+        type: str
+
+- email
+        Email address to set in the NIM master's /etc/niminfo file if
+        not already set.
+        [Default: (null)]
+        type: str
+
+- force
+        Removes any existing ios_backup NIM resource prior to creating
+        the backup.
+        (Choices: yes, no)[Default: no]
+        type: str
+
+- location
+        Existing directory to store the ios_backup on the NIM master.
+        [Default: (null)]
+        type: str
+
+- mksysb_prefix
+        Prefix of the mksysb NIM resource to use for the VIOS
+        installation.
+        The NIM name of the target VIOS is added to this prefix to
+        find the actual NIM resource, like:
+        "<mksysb_prefix>_<vios_name>".
+        [Default: (null)]
+        type: str
+
+- nim_node
+        Allows to pass along NIM node info from a task to another so
+        that it discovers NIM info only one time for all tasks.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+- resolv_conf
+        NIM resource to use for the VIOS installation.
+        [Default: (null)]
+        type: str
+
+- spot_prefix
+        Prefix of the Shared Product Object Tree (SPOT) NIM resource
+        to use for the VIOS installation.
+        The NIM name of the target VIOS is added to find the actual
+        NIM resource, like: "<spot_prefix>_<vios_name>".
+        [Default: (null)]
+        type: str
+
+= targets
+        NIM target.
+        To perform an action on dual VIOSes, specify the list as a
+        tuple with the following format: "(vios1, vios2) (vios3,
+        vios4)".
+        To specify a single VIOS, use the following format: "(vios1)".
+
+        type: str
+
+- time_limit
+        Before starting the action, the actual date is compared to
+        this parameter value; if it is greater then the task is
+        stopped; the format is `mm/dd/yyyy hh:mm'.
+        [Default: (null)]
+        type: str
+
+- vars
+        Specifies additional parameters.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+- vios_status
+        Specifies the result of a previous operation.
+        [Default: (null)]
+        suboptions: null
+        
+        type: dict
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Perform a backup of nimvios01
+  nim_upgradeios:
+    targets: "(nimvios01)"
+    action: backup
+
+
+RETURN VALUES:
+
+msg:
+    description: Status information.
+    returned: always
+    type: str
+targets:
+    description: List of VIOSes.
+    returned: always
+    type: list
+    elements: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+status:
+    description: Status for each VIOS (dicionnary key).
+    returned: always
+    type: dict
+

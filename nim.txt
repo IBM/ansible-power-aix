@@ -1,0 +1,187 @@
+> NIM    (/home/travis/.ansible/plugins/modules/nim.py)
+
+        Server setup, install packages, update SP or TL.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+= action
+        Specifies the action to perform.
+        `update' to update NIM clients with a specified `lpp_source'.
+        `master_setup' to setup a NIM master.
+        `check' to retrieve the `Cstate' of each NIM client.
+        `compare' to compare installation inventories of the NIM
+        clients.
+        `script' to apply a script to customize NIM clients.
+        `allocate' to allocate a resource to specified NIM clients.
+        `deallocate' to deallocate a resource for specified NIM
+        clients.
+        `bos_inst' to install a given list of NIM clients.
+        `define_script' to define a script NIM resource.
+        `remove' to remove a specified NIM resource.
+        `reset' to reset the `Cstate' of a NIM client.
+        `reboot' to reboot the given NIM clients if they are running.
+        `maintenance' to perform a maintenance operation on NIM
+        clients.
+        (Choices: update, master_setup, check, compare, script,
+        allocate, deallocate, bos_inst, define_script, remove, reset,
+        reboot, maintenance)
+        type: str
+
+- asynchronous
+        If set to `no', NIM client will be completely installed before
+        starting the installation of another NIM client.
+        [Default: False]
+        type: bool
+
+- description
+        Describes the NIM operation (informational only).
+        [Default: (null)]
+        type: str
+
+- device
+        The device (or directory) where to find the lpp source to
+        install.
+        [Default: (null)]
+        type: str
+
+- force
+        Forces action.
+        [Default: False]
+        type: bool
+
+- group
+        NIM group resource.
+        [Default: (null)]
+        type: str
+
+- location
+        Specifies the full path name of the script resource file.
+        [Default: (null)]
+        type: str
+
+- lpp_source
+        Indicates the lpp_source to apply to the targets.
+        `latest_tl', `latest_sp', `next_tl' and `next_sp' can be
+        specified; based on the NIM server resources, nim will
+        determine the actual oslevel necessary to update the targets.
+        [Default: (null)]
+        type: str
+
+- operation
+        NIM maintenance operation.
+        [Default: (null)]
+        type: str
+
+- resource
+        NIM resource.
+        [Default: (null)]
+        type: str
+
+- script
+        NIM script resource.
+        [Default: (null)]
+        type: str
+
+- targets
+        Specifies the NIM clients to perform the action on.
+        `foo*' designates all the NIM clients with name starting by
+        `foo'.
+        `foo[2:4]' designates the NIM clients among foo2, foo3 and
+        foo4.
+        `*' or `ALL' designates all the NIM clients.
+        [Default: (null)]
+        elements: str
+        type: list
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Install using group resource
+  nim:
+    action: bos_inst
+    targets: nimclient01
+    group: basic_res_grp
+
+- name: Check the Cstate of all NIM clients
+  nim:
+    action: check
+
+- name: Define a script resource on NIM master
+  nim:
+    action: define_script
+    resource: myscript
+    location: /tmp/myscript.sh
+
+- name: Execute a script on all NIM clients synchronously
+  nim:
+    action: script
+    script: myscript
+    asynchronous: no
+    targets: all
+
+
+RETURN VALUES:
+
+msg:
+    description: Status information.
+    returned: always
+    type: str
+nim_output:
+    description: Output from nim commands.
+    returned: always
+    type: str
+nim_node:
+    description: NIM node info.
+    returned: always
+    type: dict
+    contains:
+        lpp_source:
+            description: List of lpp sources.
+            returned: always
+            type: dict
+        master:
+            description: NIM master.
+            returned: always
+            type: dict
+        standalone:
+            description: List of standalone NIM resources.
+            returned: always
+            type: dict
+        vios:
+            description: List of VIOS NIM resources.
+            returned: always
+            type: dict
+    sample:
+        "nim_node": {
+            "lpp_source": {
+                "723lpp_res": "/export/nim/lpp_source/723lpp_res"
+            },
+            "master": {
+                "cstate": "ready for a NIM operation",
+                "type": "master"
+            },
+            "standalone": {
+                "nimclient01": {
+                    "cstate": "ready for a NIM operation",
+                    "ip": "nimclient01.mydomain.com",
+                    "type": "standalone"
+                },
+                "nimclient02": {
+                    "cstate": "ready for a NIM operation",
+                    "ip": "nimclient02.mydomain.com",
+                    "type": "standalone"
+                }
+            },
+            "vios": {}
+        }
+

@@ -1,0 +1,71 @@
+> GENINSTALL    (/home/travis/.ansible/plugins/modules/geninstall.py)
+
+        A generic installer that installs software products of various
+        packaging formats. For example, installp, RPM, SI, and ISMP.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+- action
+        Controls what is performed.
+        `install' performs an install of the specified software.
+        `uninstall' performs an uninstall of the specified software.
+        `list' lists the contents of the media.
+        (Choices: install, uninstall, list)[Default: install]
+        type: str
+
+- agree_licenses
+        Agrees to required software license agreements for software to
+        be installed.
+        [Default: False]
+        type: bool
+
+- device
+        The name of the device or directory.
+        [Default: (null)]
+        type: str
+
+- force
+        Forces action.
+        [Default: False]
+        type: bool
+
+- install_list
+        List of products to install
+        `all' installs all products
+        `update_all' updates all products
+        [Default: []]
+        elements: str
+        type: list
+
+- installp_flags
+        Specifies the installp flags to use when calling the installp
+        command.
+        [Default: (null)]
+        type: str
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Install all the products on a CD media
+  geninstall:
+    device: /dev/cd0
+    install_list: all
+
+- name: Install an interim fix located in /images/emgr/ppc directory
+  geninstall:
+    device: /images
+    install_list: IV12345.160101.epkg.Z
+
+
+RETURN VALUES:
+ # 

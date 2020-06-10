@@ -1,0 +1,80 @@
+> MOUNT    (/home/travis/.ansible/plugins/modules/mount.py)
+
+        This module makes a file system available for use at a
+        specified location. Builds other file trees made up of
+        directory and file mounts.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+- alternate_fs
+        Mounts on a file of an alternate file system, other than the
+        /etc/file systems file
+        [Default: (null)]
+        type: str
+
+- fs_type
+        Mounts all stanzas in the /etc/filesystems file that contain
+        the type=fs_type attribute
+        [Default: (null)]
+        type: str
+
+- mount_all
+        Mounts all file systems in the /etc/filesystems file with
+        stanzas that contain the true mount attribute
+        [Default: False]
+        type: bool
+
+- mount_dir
+        Directory path to be mounted.
+        [Default: (null)]
+        type: str
+
+- mount_over_dir
+        Directory path on which the mount_dir should be mounted.
+        [Default: (null)]
+        type: str
+
+- options
+        Specifies options. Options should be of the form <option-
+        name>=<value> and multiple options should be separated only by
+        a comma.
+        [Default: (null)]
+        type: str
+
+- read_only
+        Mounts a file system as a read-only file system
+        [Default: False]
+        type: bool
+
+- removable_fs
+        Mounts a file system as a removable file system
+        [Default: False]
+        type: bool
+
+- vfsname
+        Specifies that the file system is defined by the vfsname
+        parameter in the /etc/vfs file
+        [Default: (null)]
+        type: str
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Specify the filesystems to be mounted
+  mount:
+    mount_dir=/dev/hd1
+    mount_over_dir=/home
+
+
+RETURN VALUES:
+ # 

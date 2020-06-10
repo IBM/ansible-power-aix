@@ -1,0 +1,258 @@
+> NIM_FLRTVC    (/home/travis/.ansible/plugins/modules/nim_flrtvc.py)
+
+        Generate flrtvc report, download and install efix. Check
+        targets vulnerability against available fixes, and apply
+        necessary fixes. It downloads and uses the Fix Level
+        Recommendation Tool Vulnerability Checker Script to generates
+        a report. It parses the report, downloads the fixes, checks
+        their versions and if some files are locked. Then it installs
+        the remaining fixes. In case of inter-locking file you could
+        run this several times.
+
+  * This module is maintained by The Ansible Community
+OPTIONS (= is mandatory):
+
+- apar
+        Type of APAR to check or download.
+        `sec' Security vulnerabilities.
+        `hiper' Corrections to High Impact PERvasive threats.
+        `all' Same behavior as None, both `sec' and `hiper'
+        vulnerabilities.
+        (Choices: sec, hiper, all, None)[Default: (null)]
+        type: str
+
+- check_only
+        Specifies to only check if fixes are already applied on the
+        targets. No download or install operations.
+        [Default: False]
+        type: bool
+
+- clean
+        Cleanup working directory '`path'/work' with all temporary and
+        downloaded files at the end of execution.
+        [Default: False]
+        type: bool
+
+- csv
+        Path to a APAR CSV file containing the description of the
+        `sec' and `hiper' fixes.
+        This file is usually transferred from the fix server; this
+        rather big transfer can be avoided by specifying an already
+        transferred file.
+        [Default: (null)]
+        type: str
+
+- download_only
+        Specifies to perform check and download operation, do not
+        install anything.
+        [Default: False]
+        type: bool
+
+- extend_fs
+        Specifies to increase filesystem size of the working directory
+        if needed.
+        If set a filesystem of the host could have increased even if
+        it returns `changed=False'.
+        [Default: True]
+        type: bool
+
+- filesets
+        Filter filesets for specific phrase. Only fixes on the
+        filesets specified will be checked and updated.
+        [Default: (null)]
+        type: str
+
+- force
+        Specifies to remove currently installed ifix before running
+        the FLRTVC script.
+        [Default: False]
+        type: bool
+
+- path
+        Specifies the directory to save the FLRTVC report. All
+        temporary files such as previously installed filesets, fixes
+        lists and downloaded fixes files will be stored in the working
+        subdirectory named '`path'/work'.
+        [Default: /var/adm/ansible]
+        type: str
+
+- save_report
+        Specifies to save the FLRTVC report in file
+        '`path'/flrtvc_<nim_client_name>.txt'.
+        [Default: False]
+        type: bool
+
+= targets
+        Specifies the NIM clients to perform the action on.
+        `foo*' designates all the NIM clients with name starting by
+        `foo'.
+        `foo[2:4]' designates the NIM clients among foo2, foo3 and
+        foo4.
+        `*' or `ALL' designates all the NIM clients.
+
+        elements: str
+        type: list
+
+- verbose
+        Generate full FLRTVC reporting (verbose mode).
+        [Default: False]
+        type: bool
+
+
+REQUIREMENTS:  AIX >= 7.1 TL3, Python >= 2.7
+
+AUTHOR: AIX Development Team (@pbfinley1911)
+        METADATA:
+          status:
+          - preview
+          supported_by: community
+        
+
+EXAMPLES:
+
+- name: Download patches for security vulnerabilities
+  nim_flrtvc:
+    targets: nimclient01
+    path: /usr/sys/inst.images
+    verbose: yes
+    apar: sec
+    download_only: yes
+
+- name: Install both sec and hyper patches for all filesets starting with devices.fcp
+  nim_flrtvc:
+    targets: nimclient02
+    path: /usr/sys/inst
+    filesets: devices.fcp.*
+    verbose: yes
+    force: no
+    clean: no
+
+
+RETURN VALUES:
+
+meta:
+    description: Detailed information on the module execution.
+    returned: always
+    type: dict
+    contains:
+        messages:
+            description: Details on errors/warnings not related to a specific machine
+            returned: always
+            type: list
+            elements: str
+            sample: see below
+        <target>:
+            description: Detailed information on the execution on the <target>.
+            returned: when target is actually a NIM client or master
+            type: dict
+            contains:
+                messages:
+                    description: Details on errors/warnings
+                    returned: always
+                    type: list
+                    elements: str
+                    sample: see below
+                0.report:
+                    description: Output of the FLRTVC script, report or details on flrtvc error if any.
+                    returned: if the FLRTVC script run succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                1.parse:
+                    description: List of URLs to download or details on parsing error if any.
+                    returned: if the parsing succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                2.discover:
+                    description: List of epkgs found in URLs.
+                    returned: if the discovery succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                3.download:
+                    description: List of downloaded epkgs.
+                    returned: if download succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                4.1.reject:
+                    description: List of epkgs rejected, refer to messages and log file for reason.
+                    returned: if check succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                4.2.check:
+                    description: List of epkgs following prerequisites.
+                    returned: if check succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+                5.install:
+                    description: List of epkgs actually installed.
+                    returned: if install succeeds
+                    type: list
+                    elements: str
+                    sample: see below
+    sample:
+        "meta": {
+            "messages": [
+                "Exception removing /usr/bin/flrtvc.ksh, exception=Access is denied",
+                ...,
+            ],
+            "nimclient01": {
+                "0.report": [
+                    "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|
+                     Last Update|Fixed In",
+                    "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|
+                     IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|\
+                     ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
+                    ...,
+                ],
+                "1.parse": [
+                    "ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar",
+                    "ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar",
+                    ...,
+                ],
+                "2.discover": [
+                    "ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                    "ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                    ...,
+                    "tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                    "tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                    ...,
+                ],
+                "3.download": [
+                    "/usr/sys/inst.images/tardir/ntp_fix12/IJ17059m9b.190719.epkg.Z",
+                    "/usr/sys/inst.images/tardir/ntp_fix12/IJ17060m9a.190628.epkg.Z",
+                    ...,
+                    "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978s9a.190215.epkg.Z",
+                    "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
+                    ...,
+                ],
+                "4.1.reject": [
+                    "102p_fix: prerequisite openssl.base levels do not match: 1.0.2.1600 < 1.0.2.1500 < 1.0.2.1600",
+                    ...,
+                    "IJ12983m2a: locked by previous efix to install",
+                    ...,
+                    "IJ17059m9b: prerequisite missing: ntp.rte",
+                    ...,
+                ],
+                "4.2.check": [
+                    "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                    ...,
+                ],
+                "5.install": [
+                    "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
+                    ...,
+                ],
+                "messages": [
+                    "a previous efix to install will lock a file of IJ20785s3a preventing its installation, install it manually or run the task again.",
+                    ...,
+                ]
+            },
+            "nimclient02": {
+                ...,
+            }
+        }
+
