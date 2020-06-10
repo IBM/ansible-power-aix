@@ -1061,14 +1061,14 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
                                 increase_fs(module, out, tar_dir)
                             else:
                                 msg = 'Cannot extract tar file {0} to {1}: {2}'.format(epkg, tar_dir, exc)
-                                module.log('[WARNING] {0}: {1}', machine, msg)
+                                module.log('[WARNING] {0}: {1}'.format(machine, msg))
                                 out['messages'].append(msg)
                                 break
                         else:
                             break
                     else:
                         msg = 'Cannot extract tar file {0} to {1}'.format(epkg, tar_dir)
-                        module.log('[WARNING] {0}: {1}', machine, msg)
+                        module.log('[WARNING] {0}: {1}'.format(machine, msg))
                         out['messages'].append(msg)
                         continue
                     out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
@@ -1145,14 +1145,14 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
                     increase_fs(module, output, destpath)
                 else:
                     msg = 'Cannot copy file {0} to {1}: {2}'.format(epkg, destpath, exc)
-                    module.log('[WARNING] {0}: {1}', machine, msg)
+                    module.log('[WARNING] {0}: {1}'.format(machine, msg)
                     output['messages'].append(msg)
                     break
             else:
                 break
         else:
             msg = 'Cannot copy file {0} to {1}'.format(epkg, destpath)
-            module.log('[WARNING] {0}: {1}', machine, msg)
+            module.log('[WARNING] {0}: {1}'.format(machine, msg))
             output['messages'].append(msg)
             continue
         epkgs_base.append(os.path.basename(epkg))
@@ -1168,13 +1168,13 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
     cmd = ['/usr/sbin/lsnim', '-l', lpp_source]
     rc, stdout, stderr = module.run_command(cmd)
     if rc > 0:
-        cmd = ['/usr/sbin/nim', '-o', 'define', '-t', lpp_source, '-a', 'server=master']
-        cmd += [' -a', 'location={0}'.format(destpath)]
+        cmd = ['/usr/sbin/nim', '-o', 'define', '-t', 'lpp_source', '-a', 'server=master']
+        cmd += ['-a', 'location={0}'.format(destpath)]
         cmd += ['-a', 'packages=all', lpp_source]
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
             msg = 'Cannot define NIM lpp_source resource {0} for location \'{1}\''.format(lpp_source, destpath)
-            module.log('[WARNING] {0}: {1}', machine, msg)
+            module.log('[WARNING] {0}: {1}'.format(machine, msg))
             output['messages'].append(msg)
             return False
 
@@ -1200,7 +1200,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         results['changed'] = True
     else:
         msg = 'Cannot list NIM resource for \'{0}\''.format(machine)
-        module.log('[WARNING] {0}', msg)
+        module.log('[WARNING] {0}'.format(msg))
         module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
                    .format(cmd, rc, stdout, stderr))
         output['messages'].append(msg)
@@ -1212,7 +1212,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         cmd = ['/usr/sbin/lsnim', '-o', 'remove', lpp_source]
         rc, stdout, stderr = module.run_command(cmd)
         msg = 'Cannot remove NIM resource \'{0}\''.format(lpp_source)
-        module.log('[WARNING] {0}', msg)
+        module.log('[WARNING] {0}'.format(msg))
         module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
                    .format(cmd, rc, stdout, stderr))
 
@@ -1330,11 +1330,11 @@ def check_targets(module, output, targets, nim_clients):
         nim_clients (dict): nim info of all clients
 
     """
-    targets = []
+    targets_ok = []
 
     for machine in targets:
         if machine == 'master':
-            targets.append(machine)
+            targets_ok.append(machine)
             continue
 
         if nim_clients[machine]['Cstate'] != 'ready for a NIM operation':
@@ -1356,9 +1356,9 @@ def check_targets(module, output, targets, nim_clients):
             module.log('[WARNING] ' + msg)
             output[machine]['message'].append(msg)
         else:
-            targets.append(machine)
+            targets_ok.append(machine)
 
-    return list(set(targets))
+    return list(set(targets_ok))
 
 
 ###################################################################################################
@@ -1450,7 +1450,9 @@ def main():
     targets = check_targets(module, results['meta'], targets, nim_clients)
     module.debug('Available target machines are:{0}'.format(targets))
     if not targets:
-        module.log('[WARNING] Empty target list')
+        msg = 'Empty target list'
+        results['meta']['messages'].append(msg)
+        module.log(msg)
 
     # ===========================================
     # Install flrtvc script
