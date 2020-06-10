@@ -1145,7 +1145,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
                     increase_fs(module, output, destpath)
                 else:
                     msg = 'Cannot copy file {0} to {1}: {2}'.format(epkg, destpath, exc)
-                    module.log('[WARNING] {0}: {1}'.format(machine, msg)
+                    module.log('[WARNING] {0}: {1}'.format(machine, msg))
                     output['messages'].append(msg)
                     break
             else:
@@ -1209,12 +1209,13 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
     cmd = ['/usr/sbin/lsnim', '-l', lpp_source]
     rc, stdout, stderr = module.run_command(cmd)
     if rc == 0:
-        cmd = ['/usr/sbin/lsnim', '-o', 'remove', lpp_source]
+        cmd = ['/usr/sbin/nim', '-o', 'remove', lpp_source]
         rc, stdout, stderr = module.run_command(cmd)
-        msg = 'Cannot remove NIM resource \'{0}\''.format(lpp_source)
-        module.log('[WARNING] {0}'.format(msg))
-        module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
-                   .format(cmd, rc, stdout, stderr))
+        if rc != 0:
+            msg = 'Cannot remove NIM resource \'{0}\''.format(lpp_source)
+            module.log('[WARNING] {0}'.format(msg))
+            module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
+                       .format(cmd, rc, stdout, stderr))
 
     return install_ok
 
@@ -1538,7 +1539,7 @@ def main():
     for machine in targets:
         if not run_installer(module, machine, results['meta'][machine], results['meta'][machine]['4.2.check'], resize_fs):
             msg = 'Failed to install fixes, please check meta and log data.'
-            results[machine]['messages'].append(msg)
+            results['meta'][machine]['messages'].append(msg)
     wait_all()
 
     if clean and os.path.exists(workdir):
