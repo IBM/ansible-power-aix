@@ -30,12 +30,12 @@ pip install -r docs/docsite/requirements.txt
 [[ -e $(find test/ -name sanity.txt) ]] && pip install -r $(find test/ -name sanity.txt)
 
 # place the modules in the appropriate folder
-cp $DIR/library/*.py $ANSIBLE_DIR/lib/ansible/modules/
+cp $DIR/plugins/modules/*.py $ANSIBLE_DIR/lib/ansible/modules/
 
 set +e
 
 rc=0
-for f in $DIR/library/*.py; do
+for f in $DIR/plugins/modules/*.py; do
     f="${f##*/}"
     echo "-------- compile for $f --------"
     ansible-test sanity --test compile ${f%%.py} --python 2.7
