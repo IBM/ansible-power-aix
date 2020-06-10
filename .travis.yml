@@ -19,15 +19,15 @@ install:
 
 env:
   global:
-    secure: kqXVcPMZ5RrHvtRV3sv6e/cI3y1WPPdjoBN9W395WRc7dGKq89tg6aYL4zrwmlE+IcmJEf6Nt0r1nFOdtYDLpJvuavI9wGq3opnFxyj16owgAdghLb9tb8EsZc5kd4Ga0D0hxvbnHsyvaYSBlsZBUczMPrXFAPDg7fRp9sW2Bejs7AAJy16hhIwWQgsM9/biGbh+N8Co+EzTsN7OjYlzakkUliikgg1bevvdEWNuyoN/QqT/W6s2E5ZQgEYsXL/YOa37nutF+NNoGf1pGL/h9II8bdDcV1PEbNsNfk8I8/R5ryQu2OZVS/TDzuJweEABwwXAaCGypXd85ZPYLnUbXuuWafG1aaiEqGWsZw1+nXDcmSZszs801RZOgd70o6hztN1NpjZUIoFWP2RDxzMnUVr0h05vMlbnqvOwfqFhVJjTsMNH1uOlIaKTBjp5H66yGNu4qlJC+3Cc3ybt1xUB5MQ7WLNoVlqVBinKLE3mlesx+MZEuTGucm/ohsZhg16fkwPjJpDfP9tgu5Kx/9fKyXyy/e+bnG7WjgrOKPg1jJrBiI9oRDJ+3KUDkhT60geH+1g1SSlxXOfnt+RJtB42rnXQ4Y37rYjyrkFTGrSou6wTmITmGRWyaAavUKt/fCHIRFL9ICGIhZghBfH+7NL8mc+d+SNhfnpr/n6vSQadmfI=
-
+    secure: tK8BlMX+G8su+bH8Qbrfq182UWYkdE0R3KTQNcAsiRVz0PjYldQglMkZk7oNGiiy/g2X6HTysrcWpiQEwxHK7soMKgZvD7e0fuZRQbfmHRFT70MNl7z9LkhFqbvD3DQKTUwvvuGSygNLHgGaAFnQaqKyBbMEQ7sxDC8+YsUypYWMFN6YhHySG1b7AOkgsBybA53o6O2cMg7XGiSHV2ImObJztQi9YiV4KCb7E3eeSrU+Mz9e2thM+8XQ1a+7iLHH1KvZG/UPSqYSBgmAFrCHtBpucvWyYgJ3I8b2qXMLs3QsoOPlAs/eF5g4k4NrYvz40aNaS6T/eJUGs0CFn6xmdQMC5+Vsrjmn2xJB25S0/XB6dtyz+iqHBTG461MTdlj+eMYz5FTL5njH32Ud0Up/9jd35ZYxvtrSdFtvclvqQMHnRzGJZHYEJE8+Z76KKiap5qIQXrzfuhnIMNPnfi+dWlyXD/RZ7mNXDNHEUpHkB9820iDM5oukJ0NUFYD5gxJXWO7gn1zju+hgwyNt/cpdLIiiGeX2TxYfBA/jHfwYE7ttOjysnaxyhvd3KrsF+b+GWNKI/9sksHEerAA0Ciuh4VbXrQ4n7mNrlK3gdAl7wEA06wTaad9JghN6SEpyEMAE23aA1nuW3PpcLFGrOd2EKt7VDqusoXFVeERD8Lb1OK8=
+    
 # command to run tests
 script:
 
   # With flake ignore
   #  E402: <module> level import not at top of file (as per Ansible module developement)
   #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
-  - flake8 library/* --max-line-length=160 --ignore=E402,W503
+  - flake8 plugins/modules/* --max-line-length=160 --ignore=E402,W503
 
   # checking yaml syntax is not relevant since there are just examples.
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
@@ -44,4 +44,4 @@ deploy:
     local_dir: documentation
     keep_history: true
     on:
-        branch: master
+        branch: dev-collection
