@@ -37,12 +37,10 @@ options:
     description:
     - Specifies additional parameters.
     type: dict
-    suboptions:
   vios_status:
     description:
     - Specifies the result of a previous operation.
     type: dict
-    suboptions:
   targets:
     description:
     - NIM targets.

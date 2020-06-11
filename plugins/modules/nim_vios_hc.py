@@ -43,7 +43,6 @@ options:
     description:
     - Specifies additional parameters.
     type: dict
-    suboptions:
 notes:
   - Requires vioshc.py available at U(https://github.com/aixoss/vios-health-checker).
 '''
