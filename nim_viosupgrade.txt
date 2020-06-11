@@ -98,15 +98,11 @@ OPTIONS (= is mandatory):
 - vars
         Specifies additional parameters.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 - vios_status
         Specifies the result of a previous operation.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 

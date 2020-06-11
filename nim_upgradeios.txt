@@ -66,8 +66,6 @@ OPTIONS (= is mandatory):
         Allows to pass along NIM node info from a task to another so
         that it discovers NIM info only one time for all tasks.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 - resolv_conf
@@ -102,15 +100,11 @@ OPTIONS (= is mandatory):
 - vars
         Specifies additional parameters.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 - vios_status
         Specifies the result of a previous operation.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 

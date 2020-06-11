@@ -22,8 +22,6 @@ OPTIONS (= is mandatory):
 - vars
         Specifies additional parameters.
         [Default: (null)]
-        suboptions: null
-        
         type: dict
 
 
