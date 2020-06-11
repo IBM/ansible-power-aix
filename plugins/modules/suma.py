@@ -135,6 +135,19 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Suma preview completed successfully'
+stdout:
+    description: The standard output.
+    returned: always
+    type: str
+stderr:
+    description: The standard error.
+    returned: always
+    type: str
 meta:
     description: Detailed information on the module execution.
     returned: always

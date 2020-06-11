@@ -96,7 +96,33 @@ EXAMPLES = r'''
     lpp_source: /lpp_source
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'NIM updateios operation completed successfully'
+targets:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: '[nimclient01, nimclient02, ...]'
+output:
+    description: output of executed commands.
+    returned: always
+    type: str
+status:
+    description: The execution message.
+    returned: always
+    type: dict
+    contains:
+        <target>:
+            description: Status of the execution on the <target>.
+            returned: when target is actually a NIM client
+            type: str
+            sample: 'SUCCESS-UPDT'
+    sample: "{ vios01: 'SUCCESS-UPDT', vios02: 'SUCCESS-ALTDC' }"
+'''
 
 import os
 import re

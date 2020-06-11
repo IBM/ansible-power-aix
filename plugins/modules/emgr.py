@@ -194,7 +194,46 @@ EXAMPLES = r'''
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Missing parameter: force remove requires: ifix_label'
+stdout:
+    description: The standard output
+    returned: always
+    type: str
+    sample: '
+        ID  STATE LABEL      INSTALL TIME      UPDATED BY ABSTRACT\n
+        === ===== ========== ================= ========== ======================================\n
+        1    S    IJ20785s2a 04/30/20 11:03:46            tcpdump CVEs fixed                    \n
+        2    S    IJ17065m3a 04/30/20 11:03:57            IJ17065 is for AIX 7.2 TL03           \n
+        3   *Q*   IJ09625s2a 04/30/20 11:04:14            IJ09624 7.2.3.2                       \n
+        4    S    IJ11550s0a 04/30/20 11:04:34            Xorg Security Vulnerability fix       \n
+        \n
+        STATE codes:\n
+         S = STABLE\n
+         M = MOUNTED\n
+         U = UNMOUNTED\n
+         Q = REBOOT REQUIRED\n
+         B = BROKEN\n
+         I = INSTALLING\n
+         R = REMOVING\n
+         T = TESTED\n
+         P = PATCHED\n
+         N = NOT PATCHED\n
+         SP = STABLE + PATCHED\n
+         SN = STABLE + NOT PATCHED\n
+         QP = BOOT IMAGE MODIFIED + PATCHED\n
+         QN = BOOT IMAGE MODIFIED + NOT PATCHED\n
+         RQ = REMOVING + REBOOT REQUIRED'
+stderr:
+    description: The standard error
+    returned: always
+    type: str
+    sample: 'There is no efix data on this system.'
+'''
 
 import os
 
