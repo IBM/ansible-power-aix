@@ -73,7 +73,33 @@ EXAMPLES = r'''
     mount_over_dir=/home
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: "Command 'mount myfs' failed with return code 1"
+stdout:
+    description: The standard output.
+    returned: always
+    type: str
+    sample: '  node       mounted        mounted over    vfs       date        options      \n
+             -------- ---------------  ---------------  ------ ------------ --------------- \n
+                      /dev/hd4         /                jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n
+                      /dev/hd2         /usr             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n
+                      /dev/hd9var      /var             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n
+                      /dev/hd3         /tmp             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n
+                      /dev/hd1         /home            jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n
+                      /dev/hd11admin   /admin           jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n
+                      /proc            /proc            procfs Jun 09 04:38 rw              \n
+                      /dev/hd10opt     /opt             jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n
+                      /dev/fslv01      /tftpboot        jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n'
+stderr:
+    description: The standard error.
+    returned: always
+    type: str
+    sample: 'mount: myfs is not a known file system'
+'''
 
 from ansible.module_utils.basic import AnsibleModule
 

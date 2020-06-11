@@ -74,7 +74,28 @@ EXAMPLES = r'''
     start_daemons: yes
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: "Command 'mktcpip -h quimby01.aus.stglabs.ibm.com -a 9.3.149.150 -i en1' successful."
+stdout:
+    description: The standard output.
+    returned: always
+    type: str
+    sample: 'en1\n
+             quimby01.aus.stglabs.ibm.com\n
+             inet0 changed\n
+             en1 changed'
+stderr:
+    description: The standard error.
+    returned: always
+    type: str
+    sample: 'en1\n
+             x.x.x.x is an invalid address.\n
+             /usr/sbin/mktcpip: Problem with command: hostent, return code = 1\n'
+'''
 
 from ansible.module_utils.basic import AnsibleModule
 

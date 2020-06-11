@@ -143,7 +143,25 @@ EXAMPLES = r'''
     state=varyon
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: "Volume group 'rootvg' is in varyon state."
+stdout:
+    description: The standard output
+    returned: always
+    type: str
+    sample: 'datavg'
+stderr:
+    description: The standard error
+    returned: always
+    type: str
+    sample: '0516-321 mkvg: Physical volume rootvg is not configured.\n
+             0516-306 mkvg: Unable to find physical volume hdisk3 in the Device Configuration Database.\n
+             0516-862 mkvg: Unable to create volume group.'
+'''
 
 from ansible.module_utils.basic import AnsibleModule
 

@@ -74,7 +74,23 @@ EXAMPLES = r'''
     install_list: IV12345.160101.epkg.Z
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Invalid parameter: install_list cannot be empty'
+stdout:
+    description: The standard output
+    returned: always
+    type: str
+    sample: 'bin:bin:::J:::::::bin Product::::\nsbin:sbin:::J:::::::sbin Product::::'
+stderr:
+    description: The standard error
+    returned: always
+    type: str
+    sample: '0503-105 geninstall: The device or directory: /dev/cd0 does not exist.'
+'''
 
 from ansible.module_utils.basic import AnsibleModule
 

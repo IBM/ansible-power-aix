@@ -124,6 +124,11 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+    sample: 'exit on download only'
 meta:
     description: Detailed information on the module execution.
     returned: always

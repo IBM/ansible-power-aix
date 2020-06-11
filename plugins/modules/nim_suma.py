@@ -101,6 +101,22 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: Status information.
+    returned: always
+    type: str
+    sample: 'Suma preview completed successfully'
+lpp_source_name:
+    description: Name of the NIM Lpp Source resource used.
+    returned: always
+    type: str
+    sample: 'quimby01_lpp_source'
+target_list:
+    description: Status information.
+    returned: always
+    type: list
+    elements: str
+    sample: [nimclient01, nimclient02, ...]
 meta:
     description: Detailed information on the module execution.
     returned: always

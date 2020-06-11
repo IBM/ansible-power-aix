@@ -112,6 +112,11 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'FLRTVC completed successfully'
 meta:
     description: Detailed information on the module execution.
     returned: always
