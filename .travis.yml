@@ -19,7 +19,7 @@ install:
 
 env:
   global:
-	 secure: LN1GNTkhBKFqgfPJod9xRr8mPvJH2pls04PXY7L/9bI46FMDldWLUYSxdh5sxqqAflWIi6Tby6qcyYxI0Ppfzy6xB5Qz0GPovgkRN07gy3bxhwcjyJBAqkTF4+hSLnLZDCFsP7RDc4wwUsbTN1TEsrEsPkj+IWzlZCKbMZGmcQn2NWOT9MFoXDCH7Wr8LKWqFkUosIM7nSX0e9v5g5LMyXe2i8LidkFSZkESKVEchD12iad/1xTNnBsYZVzGVHNOPXlkpTjhSEalnd4tkTc8LwlUEl/XppJxUE1rHhlKv7GaVyMDoSw2BAT7RmWVWmI0Fl8/I39/KcZQUQeFwJX+J5/my1Y+6gu1RKpq4+re3sQ5bBpw8QFWe300XMNGRXqGNSBg3RYrlxsRcYFBAwr3DADzk/uTJHed+o76YFO3NeAPa7FMEn4H/XQu9a6hNO4WisFHQAUf01beIltIcucsM4e376gF5zNQzGBaaWfZr6O6ANmt1mdKN0uEdHjggarb7RQnTIq3wK+vuecEJabc8ytYQ/R2goBAhinYXehDF8ka3w0SWbrU10k3P2+ZHvbvGP1FSdEFHx/iMggx5r7vdIgK1kIg/fmWWYGHz1sIMq36uYhsloKfd9uMuznFoIQfgLBQH4gKEAkvO8/D6qM1NsTRc2spSWWQLHAJeWirhNo=
+    secure: tK8BlMX+G8su+bH8Qbrfq182UWYkdE0R3KTQNcAsiRVz0PjYldQglMkZk7oNGiiy/g2X6HTysrcWpiQEwxHK7soMKgZvD7e0fuZRQbfmHRFT70MNl7z9LkhFqbvD3DQKTUwvvuGSygNLHgGaAFnQaqKyBbMEQ7sxDC8+YsUypYWMFN6YhHySG1b7AOkgsBybA53o6O2cMg7XGiSHV2ImObJztQi9YiV4KCb7E3eeSrU+Mz9e2thM+8XQ1a+7iLHH1KvZG/UPSqYSBgmAFrCHtBpucvWyYgJ3I8b2qXMLs3QsoOPlAs/eF5g4k4NrYvz40aNaS6T/eJUGs0CFn6xmdQMC5+Vsrjmn2xJB25S0/XB6dtyz+iqHBTG461MTdlj+eMYz5FTL5njH32Ud0Up/9jd35ZYxvtrSdFtvclvqQMHnRzGJZHYEJE8+Z76KKiap5qIQXrzfuhnIMNPnfi+dWlyXD/RZ7mNXDNHEUpHkB9820iDM5oukJ0NUFYD5gxJXWO7gn1zju+hgwyNt/cpdLIiiGeX2TxYfBA/jHfwYE7ttOjysnaxyhvd3KrsF+b+GWNKI/9sksHEerAA0Ciuh4VbXrQ4n7mNrlK3gdAl7wEA06wTaad9JghN6SEpyEMAE23aA1nuW3PpcLFGrOd2EKt7VDqusoXFVeERD8Lb1OK8=
 
 # command to run tests
 script:
@@ -27,7 +27,7 @@ script:
   # With flake ignore
   #  E402: <module> level import not at top of file (as per Ansible module developement)
   #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
-  - flake8 library/* --max-line-length=160 --ignore=E402,W503
+  - flake8 plugins/modules/* --max-line-length=160 --ignore=E402,W503
 
   # checking yaml syntax is not relevant since there are just examples.
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
@@ -44,4 +44,4 @@ deploy:
     local_dir: documentation
     keep_history: true
     on:
-        branch: master
+        branch: dev-collection
