@@ -55,13 +55,11 @@ options:
     description:
     - Specifies the result of a previous operation.
     type: dict
-    suboptions:
   nim_node:
     description:
     - Allows to pass along NIM node info from a task to another so that it
       discovers NIM info only one time for all tasks.
     type: dict
-    suboptions:
   disk_size_policy:
     description:
     - Specifies how to choose the alternate disk if not specified.

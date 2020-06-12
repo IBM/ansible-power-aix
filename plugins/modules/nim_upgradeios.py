@@ -101,18 +101,15 @@ options:
     description:
     - Specifies additional parameters.
     type: dict
-    suboptions:
   vios_status:
     description:
     - Specifies the result of a previous operation.
     type: dict
-    suboptions:
   nim_node:
     description:
     - Allows to pass along NIM node info from a task to another so that it
       discovers NIM info only one time for all tasks.
     type: dict
-    suboptions:
 '''
 
 EXAMPLES = r'''

@@ -1,0 +1,168 @@
+.. _lvg_module:
+
+
+lvg -- Create/Modify/Remove a volume group
+==========================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates a. Creation of a volume group b. Modification of attributes of an existing volume group c. Extension of a volume group d. Varyon/Varyoff of a volume group e. Reduction/Removal of a volume group
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX
+
+
+
+Parameters
+----------
+
+  mpool_strict (optional, str, None)
+    Enables mirror pool strictness for the volume group.
+
+
+  multi_node_vary (optional, bool, None)
+    Creates a volume group that is allowed to varyon in non-concurrent mode in more than one node at the same time
+
+
+  num_lvs (optional, int, None)
+    Number of logical volumes that can be created. This attribute is valid for only scalable volume groups
+
+
+  force (optional, bool, None)
+    When *state=present*, forces the volume group to be created on the specified physical volume unless the physical volume is part of another volume group in the Device Configuration Database or a volume group that is active.
+When *state=absent*, removes the requirement for user confirmation when delete_lvs has been specified
+
+
+  major_num (optional, int, None)
+    Specifies the major number of the volume group that is created
+
+
+  pvs (optional, list, None)
+    Comma separated list of physical volumes
+
+
+  sysstart_avail (optional, bool, None)
+    Specifies that the volume group is automatically available during a system restart
+
+
+  critical_vg (optional, bool, None)
+    Enables the Critical VG option of the volume group
+
+
+  delete_lvs (optional, bool, None)
+    When *state=absent*, deallocates the existing logical volume partitions and then deletes resultant empty logical volumes
+
+
+  retry (optional, bool, None)
+    Enables the infinite retry option of the logical volume.
+
+
+  enhanced_con_vg (optional, bool, None)
+    Specifies Enhanced Concurrent Capable volume group.
+
+
+  num_partitions (optional, int, None)
+    Total number of partitions in the volume group This attribute is valid for scalable volume groups.
+
+
+  vg_type (optional, str, None)
+    Specifies the type of the volume group.
+
+
+  state (optional, str, present)
+    Specifies the action to be performed on a VG. *present* - Create/Extends/Modifies VG, *absent* - Reduce/Remove VG, *varyon* - Varyon VG, *varyoff* - Varyoff VG
+
+
+  vg_name (True, str, None)
+    Specifies the volume group name
+
+
+  critical_pvs (optional, bool, None)
+    Specifies the Critical PVs option for the volume group. If write request failures occur in the mirrored logical volume, the PV is marked as missing and it stops sending I/O requests to the failed mirrored logical volume.
+
+
+  mpool (optional, str, None)
+    Assigns each of the physical volumes that are being added to the specified mirror pool
+
+
+  pp_size (optional, int, None)
+    Sets the number of megabytes in each physical partition, which is expressed in units of megabytes from 1 (1 MB) through 131072 (128 GB)
+
+
+  pp_limit (optional, int, None)
+    Changes the limit of the number of physical partitions per physical volume. It must be 1 - 16 for 32 PV volume groups and 1 and 64 for 128 PV volume groups
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Extend a volume group
+      lvg:
+        pvs=hdisk1
+        vg_name=datavg
+        state=present
+
+    - name: Varyon a volume group
+      lvg:
+        vg_name=datavg
+        state=varyon
+
+
+
+Return Values
+-------------
+
+msg (always, str, Volume group 'rootvg' is in varyon state.)
+  The execution message.
+
+
+stderr (always, str, 0516-321 mkvg: Physical volume rootvg is not configured.\n 0516-306 mkvg: Unable to find physical volume hdisk3 in the Device Configuration Database.\n 0516-862 mkvg: Unable to create volume group.)
+  The standard error
+
+
+stdout (always, str, datavg)
+  The standard output
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

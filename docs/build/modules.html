@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Playbooks" href="playbooks.html" />
+    <link rel="next" title="emgr – The interim fix manager installs and manages system interim fixes." href="modules/emgr.html" />
     <link rel="prev" title="Quickstart" href="quickstart.html" /> 
 </head>
 
@@ -85,18 +85,41 @@
               <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p class="caption"><span class="caption-text">References</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-reference">Module reference</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#module-reference">Module reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="playbooks.html">Playbooks</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Releases</a></li>
 </ul>
 
             
@@ -165,7 +188,7 @@
             
   <div class="section" id="modules">
 <h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<p>The IBM POWER AIX collection contains modules that can be used in a playbook
+<p>The IBM Power Systems AIX collection contains modules that can be used in a playbook
 to automate tasks on AIX. Ansible executes each module on the target node and
 returns the result back to the controller. While different modules perform
 different tasks, their interfaces and responses follow similar patterns.</p>
@@ -174,6 +197,20 @@ different tasks, their interfaces and responses follow similar patterns.</p>
 <p>Reference material for each module contains documentation on the accepted
 parameters and their expected values.</p>
 <div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+</ul>
 </div>
 </div>
 </div>
@@ -186,7 +223,7 @@ parameters and their expected values.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="playbooks.html" class="btn btn-neutral float-right" title="Playbooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="modules/emgr.html" class="btn btn-neutral float-right" title="emgr – The interim fix manager installs and manages system interim fixes." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -37,7 +37,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Modules" href="modules.html" /> 
+    <link rel="next" title="Contributing" href="community_guides.html" />
+    <link rel="prev" title="suma – Download/Install fixes, SP or TL on an AIX server." href="modules/suma.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,10 +85,9 @@
               <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p class="caption"><span class="caption-text">References</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Playbooks</a><ul>
@@ -95,9 +95,22 @@
 <li class="toctree-l2"><a class="reference internal" href="#sample-configuration-and-setup">Sample Configuration and Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#inventory">Inventory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#group-vars">Group_vars</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#run-the-playbook">Run the playbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-playbooks">Run the playbooks</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Releases</a></li>
 </ul>
 
             
@@ -166,20 +179,20 @@
             
   <div class="section" id="playbooks">
 <h1>Playbooks<a class="headerlink" href="#playbooks" title="Permalink to this headline">¶</a></h1>
-<p>The sample playbooks that are <strong>included</strong> in the <strong>IBM POWER AIX collection</strong>
+<p>The sample playbooks that are <strong>included</strong> in the <strong>IBM Power Systems AIX collection</strong>
 demonstrate how to use the collection content.</p>
 <div class="section" id="playbook-documentation">
 <h2>Playbook Documentation<a class="headerlink" href="#playbook-documentation" title="Permalink to this headline">¶</a></h2>
 <p>An <a class="reference external" href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html#playbooks-intro">Ansible playbook</a> consists of organized instructions that define work for
 a managed node (host) to be managed with Ansible.</p>
 <p>A <a class="reference external" href="https://github.com/IBM/ansible-power-aix/tree/dev-collection/playbooks">playbooks directory</a> that contains a sample playbook is included in the
-<strong>IBM POWER AIX collection</strong>. The sample playbook can be run with the
+<strong>IBM Power Systems AIX collection</strong>. The sample playbook can be run with the
 <code class="docutils literal notranslate"><span class="pre">ansible-playbook</span></code> command with some modification to the <strong>inventory</strong>
 and <strong>group_vars</strong>.</p>
 <p>You can find the playbook content that is included with the collection in the
 same location where the collection is installed. For more information, refer to
 the <a class="reference external" href="installation.html">installation documentation</a>. In the following examples, this document will
-refer to the installation path as <code class="docutils literal notranslate"><span class="pre">~/.ansible/collections/ibm/power_aix</span></code>.</p>
+refer to the installation path as <code class="docutils literal notranslate"><span class="pre">~/.ansible/collections/ansible_collections/ibm/power_aix</span></code>.</p>
 </div>
 <div class="section" id="sample-configuration-and-setup">
 <h2>Sample Configuration and Setup<a class="headerlink" href="#sample-configuration-and-setup" title="Permalink to this headline">¶</a></h2>
@@ -229,11 +242,13 @@ and group variables files may help you organize your variable values more
 easily. Included with the sample playbook are sample variables files <a class="reference external" href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/playbooks/group_vars/all.yml">all.yml</a>
 and <a class="reference external" href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/playbooks/group_vars/nimserver.yml">nimserver.yml</a>.</p>
 </div>
-<div class="section" id="run-the-playbook">
-<h2>Run the playbook<a class="headerlink" href="#run-the-playbook" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="run-the-playbooks">
+<h2>Run the playbooks<a class="headerlink" href="#run-the-playbooks" title="Permalink to this headline">¶</a></h2>
+<p>The sample playbooks must be run from the <a class="reference external" href="https://github.com/IBM/ansible-power-aix/tree/dev-collection/playbooks">playbooks directory</a> of the installed
+collection: <code class="docutils literal notranslate"><span class="pre">~/.ansible/collections/ansible_collections/ibm/power_aix/playbooks/</span></code>.</p>
 <p>Access the sample Ansible playbook and ensure that you are within the collection
 playbooks directory where the sample files are included:
-<code class="docutils literal notranslate"><span class="pre">~/.ansible/collections/ibm/power_aix/playbooks/</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">~/.ansible/collections/ansible_collections/ibm/power_aix/playbooks/</span></code>.</p>
 <p>Use the Ansible command <code class="docutils literal notranslate"><span class="pre">ansible-playbook</span></code> to run the sample playbooks.  The
 command syntax is <code class="docutils literal notranslate"><span class="pre">ansible-playbook</span> <span class="pre">-i</span> <span class="pre">&lt;inventory&gt;</span> <span class="pre">&lt;playbook&gt;</span></code>; for example,
 <code class="docutils literal notranslate"><span class="pre">ansible-playbook</span> <span class="pre">-i</span> <span class="pre">inventory</span> <span class="pre">demo_flrtvc.yml</span></code>.</p>
@@ -280,8 +295,10 @@ configuration.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="community_guides.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="modules/suma.html" class="btn btn-neutral float-left" title="suma – Download/Install fixes, SP or TL on an AIX server." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

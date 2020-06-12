@@ -5,7 +5,7 @@
 Installation
 ============
 
-You can install the **IBM POWER AIX collection** using one of these options:
+You can install the **IBM Power Systems AIX collection** using one of these options:
 Ansible Galaxy, Ansible Automation Hub, or a local build.
 
 For more information on installing collections, see `using collections`_.
@@ -32,7 +32,7 @@ The ansible-galaxy command ignores any pre-release versions unless
 the ``==`` range identifier is set to that pre-release version.
 A pre-release version is denoted by appending a hyphen and a series of
 dot separated identifiers immediately following the patch version. The
-**IBM POWER AIX collection** releases collections with the pre-release
+**IBM Power Systems AIX collection** releases collections with the pre-release
 naming convention such as **1.0.0-beta1** that would require a range identifier.
 
 Here is an example of installing a pre-release collection:
@@ -45,7 +45,7 @@ Here is an example of installing a pre-release collection:
 If you have installed a prior version, you must overwrite an existing
 collection with the ``--force`` option.
 
-Here are a few examples of installing the **IBM POWER AIX collection**:
+Here are a few examples of installing the **IBM Power Systems AIX collection**:
 
 .. code-block:: sh
 

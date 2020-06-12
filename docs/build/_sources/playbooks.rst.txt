@@ -5,7 +5,7 @@
 Playbooks
 =========
 
-The sample playbooks that are **included** in the **IBM POWER AIX collection**
+The sample playbooks that are **included** in the **IBM Power Systems AIX collection**
 demonstrate how to use the collection content.
 
 Playbook Documentation
@@ -15,14 +15,14 @@ An `Ansible playbook`_ consists of organized instructions that define work for
 a managed node (host) to be managed with Ansible.
 
 A `playbooks directory`_ that contains a sample playbook is included in the
-**IBM POWER AIX collection**. The sample playbook can be run with the
+**IBM Power Systems AIX collection**. The sample playbook can be run with the
 ``ansible-playbook`` command with some modification to the **inventory**
 and **group_vars**.
 
 You can find the playbook content that is included with the collection in the
 same location where the collection is installed. For more information, refer to
 the `installation documentation`_. In the following examples, this document will
-refer to the installation path as ``~/.ansible/collections/ibm/power_aix``.
+refer to the installation path as ``~/.ansible/collections/ansible_collections/ibm/power_aix``.
 
 .. _Ansible playbook:
    https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html#playbooks-intro
@@ -113,12 +113,15 @@ and `nimserver.yml`_.
 
 
 
-Run the playbook
-----------------
+Run the playbooks
+-----------------
+
+The sample playbooks must be run from the `playbooks directory`_ of the installed
+collection: ``~/.ansible/collections/ansible_collections/ibm/power_aix/playbooks/``.
 
 Access the sample Ansible playbook and ensure that you are within the collection
 playbooks directory where the sample files are included:
-``~/.ansible/collections/ibm/power_aix/playbooks/``.
+``~/.ansible/collections/ansible_collections/ibm/power_aix/playbooks/``.
 
 Use the Ansible command ``ansible-playbook`` to run the sample playbooks.  The
 command syntax is ``ansible-playbook -i <inventory> <playbook>``; for example,
@@ -154,6 +157,9 @@ ERROR, DEBUG.
    easy to determine if a sample has access to the host's resources.
    Review the playbook notes sections for additional details and
    configuration.
+
+.. _playbooks directory:
+   https://github.com/IBM/ansible-power-aix/tree/dev-collection/playbooks
 
 .. _ask-pass documentation:
    https://linux.die.net/man/1/sshpass

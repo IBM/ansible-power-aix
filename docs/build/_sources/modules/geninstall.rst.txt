@@ -1,0 +1,127 @@
+.. _geninstall_module:
+
+
+geninstall -- Generic installer for various packaging formats
+=============================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+A generic installer that installs software products of various packaging formats.
+
+For example, installp, RPM, SI, and ISMP.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  installp_flags (optional, str, None)
+    Specifies the installp flags to use when calling the installp command.
+
+
+  force (optional, bool, False)
+    Forces action.
+
+
+  install_list (optional, list, [])
+    List of products to install
+
+    ``all`` installs all products
+
+    ``update_all`` updates all products
+
+
+  agree_licenses (optional, bool, False)
+    Agrees to required software license agreements for software to be installed.
+
+
+  device (optional, str, None)
+    The name of the device or directory.
+
+
+  action (optional, str, install)
+    Controls what is performed.
+
+    ``install`` performs an install of the specified software.
+
+    ``uninstall`` performs an uninstall of the specified software.
+
+    ``list`` lists the contents of the media.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Install all the products on a CD media
+      geninstall:
+        device: /dev/cd0
+        install_list: all
+
+    - name: Install an interim fix located in /images/emgr/ppc directory
+      geninstall:
+        device: /images
+        install_list: IV12345.160101.epkg.Z
+
+
+
+Return Values
+-------------
+
+msg (always, str, Invalid parameter: install_list cannot be empty)
+  The execution message.
+
+
+stderr (always, str, 0503-105 geninstall: The device or directory: /dev/cd0 does not exist.)
+  The standard error
+
+
+stdout (always, str, bin:bin:::J:::::::bin Product::::\nsbin:sbin:::J:::::::sbin Product::::)
+  The standard output
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

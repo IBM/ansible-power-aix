@@ -18,7 +18,7 @@ authors:
 - Paul B. Finley (@pbfinley1911)
 
 # Collection Description
-description: Ansible collection of modules and roles used to manage and deploy Power AIX.
+description: Ansible collection of modules and roles used to manage and deploy Power Systems AIX.
 
 # Collection License
 license:

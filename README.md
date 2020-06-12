@@ -1,5 +1,5 @@
 <!-- This should be the location of the title of the repository, normally the short name -->
-# IBM POWER AIX Collection
+# IBM Power Systems AIX Collection
 
 <!-- Build Status, is a great thing to have at the top of your repository, it shows that you take your CI/CD as first class citizens -->
 <!-- [![Build Status](https://travis-ci.org/jjasghar/ibm-cloud-cli.svg?branch=master)](https://travis-ci.org/jjasghar/ibm-cloud-cli) -->
@@ -7,7 +7,7 @@
 <!-- Not always needed, but a scope helps the user understand in a short sentence like below, why this repo exists -->
 ## Scope
 
-The purpose of this project is to provide modules that can be used to manage configurations and deployments of POWER AIX systems.
+The purpose of this project is to provide modules that can be used to manage configurations and deployments of Power AIX systems.
 
 <!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
