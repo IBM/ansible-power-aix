@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mount – Makes a file system available for use &mdash; IBM POWER AIX collection 0.4.1 documentation</title>
+  <title>nim_updateios – Update a single or a pair of Virtual I/O Servers &mdash; IBM POWER AIX collection 0.4.1 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim – Server setup, install packages, update SP or TL." href="nim.html" />
-    <link rel="prev" title="mktcpip – Sets the required values for starting TCP/IP on a host" href="mktcpip.html" /> 
+    <link rel="next" title="nim_upgradeios – Perform a VIOS upgrade with NIM" href="nim_upgradeios.html" />
+    <link rel="prev" title="nim_suma – Download fixes, SP or TL on an AIX server" href="nim_suma.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,7 +97,11 @@
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Makes a file system available for use</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_updateios – Update a single or a pair of Virtual I/O Servers</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -106,10 +110,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Update a single or a pair of Virtual I/O Servers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
@@ -180,14 +180,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mount – Makes a file system available for use</li>
+      <li>nim_updateios – Update a single or a pair of Virtual I/O Servers</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/mount.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim_updateios.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -201,8 +201,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mount-makes-a-file-system-available-for-use">
-<span id="mount-module"></span><h1>mount – Makes a file system available for use<a class="headerlink" href="#mount-makes-a-file-system-available-for-use" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="nim-updateios-update-a-single-or-a-pair-of-virtual-i-o-servers">
+<span id="nim-updateios-module"></span><h1>nim_updateios – Update a single or a pair of Virtual I/O Servers<a class="headerlink" href="#nim-updateios-update-a-single-or-a-pair-of-virtual-i-o-servers" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></li>
@@ -215,8 +215,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module makes a file system available for use at a specified location.</p>
-<p>Builds other file trees made up of directory and file mounts.</p>
+<p>Performs updates and customization to the Virtual I/O Server (VIOS).</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -230,45 +229,65 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="docutils">
-<dt>read_only (optional, bool, False)</dt>
-<dd>Mounts a file system as a read-only file system</dd>
-<dt>mount_dir (optional, str, None)</dt>
-<dd>Directory path to be mounted.</dd>
-<dt>mount_over_dir (optional, str, None)</dt>
-<dd>Directory path on which the mount_dir should be mounted.</dd>
-<dt>vfsname (optional, str, None)</dt>
-<dd>Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file</dd>
-<dt>fs_type (optional, str, None)</dt>
-<dd>Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute</dd>
-<dt>alternate_fs (optional, str, None)</dt>
-<dd>Mounts on a file of an alternate file system, other than the /etc/file systems file</dd>
-<dt>options (optional, str, None)</dt>
-<dd>Specifies options. Options should be of the form &lt;option-name&gt;=&lt;value&gt; and multiple options should be separated only by a comma.</dd>
-<dt>mount_all (optional, bool, False)</dt>
-<dd>Mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</dd>
-<dt>removable_fs (optional, bool, False)</dt>
-<dd>Mounts a file system as a removable file system</dd>
+<dt>time_limit (optional, str, None)</dt>
+<dd>Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped; the format is <code class="docutils literal notranslate"><span class="pre">mm/dd/yyyy</span> <span class="pre">hh:mm</span></code>.</dd>
+<dt>nim_node (optional, dict, None)</dt>
+<dd>Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.</dd>
+<dt>filesets (optional, str, None)</dt>
+<dd>Specifies a list of file sets to remove from the target.</dd>
+<dt>vars (optional, dict, None)</dt>
+<dd>Specifies additional parameters.</dd>
+<dt>lpp_source (optional, str, None)</dt>
+<dd>Identifies the <em>lpp_source</em> resource that will provide the installation images for the operation.</dd>
+<dt>installp_bundle (optional, str, None)</dt>
+<dd>Specifies an <em>installp_bundle</em> resource that lists file sets to remove on the target.</dd>
+<dt>action (True, str, None)</dt>
+<dd><p class="first">Operation to perform on the targets.</p>
+<p><code class="docutils literal notranslate"><span class="pre">install</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">commit</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">reject</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cleanup</span></code>.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">remove</span></code>.</p>
+</dd>
+<dt>preview (optional, str, None)</dt>
+<dd>Specifies a preview operation.</dd>
+<dt>accept_licenses (optional, str, None)</dt>
+<dd>Specifies whether the software licenses should be automatically accepted during the installation.</dd>
+<dt>vios_status (optional, dict, None)</dt>
+<dd>Specifies the result of a previous operation.</dd>
+<dt>log_file (optional, str, None)</dt>
+<dd>Specifies path to log file.</dd>
+<dt>targets (True, str, None)</dt>
+<dd>NIM targets.</dd>
 </dl>
 </div></blockquote>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Specify the filesystems to be mounted</span>
-  <span class="nt">mount</span><span class="p">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_dir=/dev/hd1</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_over_dir=/home</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Update a pair of VIOSes</span>
+  <span class="nt">nim_updateios</span><span class="p">:</span>
+    <span class="nt">targets</span><span class="p">:</span> <span class="s">&quot;(nimvios01,</span><span class="nv"> </span><span class="s">nimvios02)&quot;</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">install</span>
+    <span class="nt">lpp_source</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/lpp_source</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>msg (always, str, Command ‘mount myfs’ failed with return code 1)</dt>
+<dt>msg (always, str, NIM updateios operation completed successfully)</dt>
 <dd>The execution message.</dd>
-<dt>stderr (always, str, mount: myfs is not a known file system)</dt>
-<dd>The standard error.</dd>
-<dt>stdout (always, str,   node       mounted        mounted over    vfs       date        options      n ——– —————  —————  —— ———— ————— n /dev/hd4         /                jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd2         /usr             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd9var      /var             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd3         /tmp             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd1         /home            jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/hd11admin   /admin           jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /proc            /proc            procfs Jun 09 04:38 rw              n /dev/hd10opt     /opt             jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/fslv01      /tftpboot        jfs2   Jun 09 04:38 rw,log=/dev/hd8 n)</dt>
-<dd>The standard output.</dd>
+<dt>output (always, str, )</dt>
+<dd>output of executed commands.</dd>
+<dt>status (always, dict, { vios01: ‘SUCCESS-UPDT’, vios02: ‘SUCCESS-ALTDC’ })</dt>
+<dd><p class="first">The execution message.</p>
+<dl class="last docutils">
+<dt>&lt;target&gt; (when target is actually a NIM client, str, SUCCESS-UPDT)</dt>
+<dd>Status of the execution on the &lt;target&gt;.</dd>
+</dl>
+</dd>
+<dt>targets (always, str, [nimclient01, nimclient02, …])</dt>
+<dd>The execution message.</dd>
 </dl>
 </div>
 <div class="section" id="status">
@@ -294,10 +313,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim.html" class="btn btn-neutral float-right" title="nim – Server setup, install packages, update SP or TL." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nim_upgradeios.html" class="btn btn-neutral float-right" title="nim_upgradeios – Perform a VIOS upgrade with NIM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mktcpip.html" class="btn btn-neutral float-left" title="mktcpip – Sets the required values for starting TCP/IP on a host" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nim_suma.html" class="btn btn-neutral float-left" title="nim_suma – Download fixes, SP or TL on an AIX server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

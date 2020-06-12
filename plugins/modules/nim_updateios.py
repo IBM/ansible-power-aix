@@ -70,10 +70,10 @@ options:
     description:
     - Specifies additional parameters.
     type: dict
-      log_file:
-        description:
-        - Specifies path to log file.
-        type: str
+  log_file:
+    description:
+    - Specifies path to log file.
+    type: str
   vios_status:
     description:
     - Specifies the result of a previous operation.

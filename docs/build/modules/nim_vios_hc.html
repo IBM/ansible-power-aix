@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mount – Makes a file system available for use &mdash; IBM POWER AIX collection 0.4.1 documentation</title>
+  <title>nim_vios_hc – Check if a pair of VIOSes can be updated &mdash; IBM POWER AIX collection 0.4.1 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim – Server setup, install packages, update SP or TL." href="nim.html" />
-    <link rel="prev" title="mktcpip – Sets the required values for starting TCP/IP on a host" href="mktcpip.html" /> 
+    <link rel="next" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" href="nim_viosupgrade.html" />
+    <link rel="prev" title="nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk" href="nim_vios_alt_disk.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,22 +97,23 @@
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Makes a file system available for use</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Makes a file system available for use</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Update a single or a pair of Virtual I/O Servers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_vios_hc – Check if a pair of VIOSes can be updated</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
 </ul>
@@ -180,14 +181,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mount – Makes a file system available for use</li>
+      <li>nim_vios_hc – Check if a pair of VIOSes can be updated</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/mount.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim_vios_hc.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -201,22 +202,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mount-makes-a-file-system-available-for-use">
-<span id="mount-module"></span><h1>mount – Makes a file system available for use<a class="headerlink" href="#mount-makes-a-file-system-available-for-use" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated">
+<span id="nim-vios-hc-module"></span><h1>nim_vios_hc – Check if a pair of VIOSes can be updated<a class="headerlink" href="#nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></li>
 <li><a class="reference internal" href="#requirements" id="id2">Requirements</a></li>
 <li><a class="reference internal" href="#parameters" id="id3">Parameters</a></li>
-<li><a class="reference internal" href="#examples" id="id4">Examples</a></li>
-<li><a class="reference internal" href="#return-values" id="id5">Return Values</a></li>
-<li><a class="reference internal" href="#status" id="id6">Status</a></li>
+<li><a class="reference internal" href="#notes" id="id4">Notes</a></li>
+<li><a class="reference internal" href="#examples" id="id5">Examples</a></li>
+<li><a class="reference internal" href="#return-values" id="id6">Return Values</a></li>
+<li><a class="reference internal" href="#status" id="id7">Status</a></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module makes a file system available for use at a specified location.</p>
-<p>Builds other file trees made up of directory and file mounts.</p>
+<p>Check if a pair of Virtual I/O Servers can be updated.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -230,49 +231,54 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="docutils">
-<dt>read_only (optional, bool, False)</dt>
-<dd>Mounts a file system as a read-only file system</dd>
-<dt>mount_dir (optional, str, None)</dt>
-<dd>Directory path to be mounted.</dd>
-<dt>mount_over_dir (optional, str, None)</dt>
-<dd>Directory path on which the mount_dir should be mounted.</dd>
-<dt>vfsname (optional, str, None)</dt>
-<dd>Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file</dd>
-<dt>fs_type (optional, str, None)</dt>
-<dd>Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute</dd>
-<dt>alternate_fs (optional, str, None)</dt>
-<dd>Mounts on a file of an alternate file system, other than the /etc/file systems file</dd>
-<dt>options (optional, str, None)</dt>
-<dd>Specifies options. Options should be of the form &lt;option-name&gt;=&lt;value&gt; and multiple options should be separated only by a comma.</dd>
-<dt>mount_all (optional, bool, False)</dt>
-<dd>Mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</dd>
-<dt>removable_fs (optional, bool, False)</dt>
-<dd>Mounts a file system as a removable file system</dd>
+<dt>action (True, str, None)</dt>
+<dd><p class="first">Specifies the operation to perform.</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">health_check</span></code> to perform a health check.</p>
+</dd>
+<dt>targets (True, list, None)</dt>
+<dd><p class="first">NIM target.</p>
+<p class="last">To perform a health check on dual VIOSes specify a tuple with the following format: “vios1,vios2”.</p>
+</dd>
+<dt>vars (optional, dict, None)</dt>
+<dd>Specifies additional parameters.</dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Requires vioshc.py available at <a class="reference external" href="https://github.com/aixoss/vios-health-checker">https://github.com/aixoss/vios-health-checker</a>.</li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Specify the filesystems to be mounted</span>
-  <span class="nt">mount</span><span class="p">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_dir=/dev/hd1</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_over_dir=/home</span>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a health check on dual VIOSes vios1,vios2 and on VIOS vios3</span>
+  <span class="nt">nim_vios_hc</span><span class="p">:</span>
+    <span class="nt">targets</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios1,vios2</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios3</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">health_check</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
-<dt>msg (always, str, Command ‘mount myfs’ failed with return code 1)</dt>
-<dd>The execution message.</dd>
-<dt>stderr (always, str, mount: myfs is not a known file system)</dt>
-<dd>The standard error.</dd>
-<dt>stdout (always, str,   node       mounted        mounted over    vfs       date        options      n ——– —————  —————  —— ———— ————— n /dev/hd4         /                jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd2         /usr             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd9var      /var             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd3         /tmp             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd1         /home            jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/hd11admin   /admin           jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /proc            /proc            procfs Jun 09 04:38 rw              n /dev/hd10opt     /opt             jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/fslv01      /tftpboot        jfs2   Jun 09 04:38 rw,log=/dev/hd8 n)</dt>
-<dd>The standard output.</dd>
+<dt>msg (always, str, )</dt>
+<dd>Status information.</dd>
+<dt>status (always, dict, )</dt>
+<dd>Status for each VIOS (dictionary key).</dd>
+<dt>nim_node (always, dict, )</dt>
+<dd>NIM node info.</dd>
+<dt>targets (always, list, )</dt>
+<dd>List of VIOS tuples.</dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></li>
 <li>This module is maintained by community.</li>
@@ -294,10 +300,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim.html" class="btn btn-neutral float-right" title="nim – Server setup, install packages, update SP or TL." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nim_viosupgrade.html" class="btn btn-neutral float-right" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mktcpip.html" class="btn btn-neutral float-left" title="mktcpip – Sets the required values for starting TCP/IP on a host" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nim_vios_alt_disk.html" class="btn btn-neutral float-left" title="nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
