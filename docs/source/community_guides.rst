@@ -11,16 +11,17 @@ you to open `git issues`_ for bugs, comments or feature requests.
 Review this content periodically to learn when and how to make contributions in
 the future.
 
-.. _git issues:
-   https://github.com/IBM/ansible-power-aix/issues
-
 Helpful Links
 =============
 
-* Getting Started `Ansible guide`_.
+* `Ansible Guide`_
+* `IBM Knowledge Center`_
 
-.. _Ansible guide:
+
+.. _git issues:
+   https://github.com/IBM/ansible-power-aix/issues
+.. _Ansible Guide:
    https://docs.ansible.com/ansible/latest/user_guide/intro_getting_started.html
-
-
+.. _IBM Knowledge Center:
+   https://www.ibm.com/support/knowledgecenter/ssw_aix
 
