@@ -67,7 +67,6 @@ options:
     description:
     - While modifying device, specifies the parent device of the device to be
       updated.
-
       For unconfigure/stop operation, specifies the parent device whose
       children needs to be unconfigured recursively.
     type: str
@@ -101,7 +100,24 @@ EXAMPLES = r'''
     state: defined
 '''
 
-RETURN = r''' # '''
+RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+rc':
+    description: The return code.
+    returned: If the command failed.
+    type: int
+stdout':
+    description: The standard output.
+    returned: If the command failed.
+    type: str
+stderr':
+    description: The standard error.
+    returned: If the command failed.
+    type: str
+'''
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -118,7 +134,8 @@ def get_device_state(module, device):
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        module.fail_json("Command '%s' failed." % cmd)
+        msg = "Command '%s' failed." % cmd
+        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if stdout:
         device_state = stdout.split()[1]
