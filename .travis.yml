@@ -15,6 +15,9 @@ install:
   - pip3 install pyyaml     # for ansible-test
   - pip3 install voluptuous # for ansible-test
   - pip install pyyaml      # for compile test with Python2
+  - pip3 install ansible-doc-extractor
+  - pip install sphinx
+  - pip install sphinx_rtd_theme
   - ansible --version
 
 env:
@@ -41,7 +44,7 @@ deploy:
     provider: pages
     skip_cleanup: true
     github_token: $GITHUB_API_KEY
-    local_dir: documentation
+    local_dir: docs/build
     keep_history: true
     on:
         branch: dev-collection
