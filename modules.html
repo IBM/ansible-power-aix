@@ -1,0 +1,278 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Modules &mdash; IBM POWER AIX collection 0.4.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="devices – Configure/Modify/Unconfigure devices" href="modules/devices.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> IBM POWER AIX collection
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-reference">Module reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_updateios.html">nim_updateios – Update a single or a pair of Virtual I/O Servers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="playbooks.html">Playbooks</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Releases</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IBM POWER AIX collection</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
+<p>The IBM Power Systems AIX collection contains modules that can be used in a playbook
+to automate tasks on AIX. Ansible executes each module on the target node and
+returns the result back to the controller. While different modules perform
+different tasks, their interfaces and responses follow similar patterns.</p>
+<div class="section" id="module-reference">
+<h2>Module reference<a class="headerlink" href="#module-reference" title="Permalink to this headline">¶</a></h2>
+<p>Reference material for each module contains documentation on the accepted
+parameters and their expected values.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_updateios.html">nim_updateios – Update a single or a pair of Virtual I/O Servers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules/devices.html" class="btn btn-neutral float-right" title="devices – Configure/Modify/Unconfigure devices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, IBM
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
