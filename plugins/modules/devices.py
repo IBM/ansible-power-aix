@@ -191,7 +191,7 @@ def cfgdev(module, device):
             msg - message
     """
     cmd = "cfgmgr "
-    if device is not 'all':
+    if device != 'all':
         cmd += "-l %s " % device
 
     rc, out, err = module.run_command(cmd)
@@ -217,7 +217,7 @@ def rmdev(module, device):
     recursive = module.params["recursive"]
     rmtype = module.params["rmtype"]
 
-    if device is 'all':
+    if device == 'all':
         device = None
 
     opts = ""
@@ -311,6 +311,7 @@ def main():
         msg = "Invalid state '%s'" % current_state
 
     module.exit_json(changed=changed, msg=msg)
+
 
 if __name__ == '__main__':
     main()
