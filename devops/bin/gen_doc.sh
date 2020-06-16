@@ -14,53 +14,18 @@ err_report() {
 trap 'err_report "$BASH_COMMAND" $? $LINENO' ERR
 
 DIR="$(pwd)"
-MODULE_DIR="$HOME/.ansible/plugins/modules"
-DOC_DIR="$DIR/documentation"
+MODULE_DIR="$DIR/plugins/modules"
+DOC_DIR="$DIR/docs"
+DOC_SRC_DIR="$DIR/docs/source"
+DOC_BLD_DIR="$DIR/docs/build"
+DOC_TEMPLATE="$DIR/docs/templates/module.rst.j2"
 
-# place the modules in the appropriate folder
-[[ ! -d $MODULE_DIR ]] && mkdir -p $MODULE_DIR
-cp $DIR/plugins/modules/*.py $MODULE_DIR/
-
-# generate the documentation
-[[ ! -d $DOC_DIR ]] && mkdir -p $DOC_DIR
-set +e
-rc=0
-for f in $DIR/plugins/modules/*.py; do
-    f="${f##*/}"
-    echo "-------- ansible-doc for $f --------"
-    ansible-doc -t module ${f%%.py} >$DOC_DIR/${f%%.py}.txt
-    rc=$(($rc + $?))
-done
-set -e
-
-echo "Building index.html with TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG"
-cat > $DOC_DIR/index.html <<- _EOF_
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Ansible for power AIX</title>
-  </head>
-  <body>
-    <h1>Ansible for power AIX</h1>
-    <h2>Modules documentation</h2>
-    <ul id="doc_list">
-    </ul>
-    <script>
-      (async () => {
-        const response = await fetch('https://api.github.com/repos/$TRAVIS_REPO_SLUG/contents?ref=gh-pages');
-        const data = await response.json();
-        let htmlString = '<ul>';
-        for (let file of data) {
-          if (file.path == 'index.html') continue;
-          const fileName = file.path.replace('.txt', '');
-          htmlString += \`<li><a href="\${file.path}">\${fileName}</a></li>\`;
-        }
-        htmlString += '</ul>';
-        document.getElementById('doc_list').innerHTML = htmlString;
-      })()
-    </script>
-  <body>
-</html>
-_EOF_
+# There is an issue with templates/module.rst.j2
+# ansible-doc-extractor --template $DOC_TEMPLATE $DOC_SRC_DIR $MODULE_DIR/*.py
+[[ ! -d $DOC_SRC_DIR ]] && mkdir -p $DOC_SRC_DIR
+[[ ! -d $DOC_BLD_DIR ]] && mkdir -p $DOC_BLD_DIR
+ansible-doc-extractor $DOC_SRC_DIR/modules $MODULE_DIR/*.py
+sphinx-build -b html $DOC_SRC_DIR $DOC_BLD_DIR
+touch $DOC_BLD_DIR/.nojekyll
 
 exit $rc
