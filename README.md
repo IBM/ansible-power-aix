@@ -7,7 +7,9 @@
 <!-- Not always needed, but a scope helps the user understand in a short sentence like below, why this repo exists -->
 ## Scope
 
-The purpose of this project is to provide modules that can be used to manage configurations and deployments of Power AIX systems.
+The **IBM Power Systems AIX collection** provides modules that can be used to manage configurations and
+deployments of Power AIX systems. The collection content helps to include workloads on
+Power platforms as part of an enterprise automation strategy through the Ansible ecosystem.
 
 <!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
@@ -39,7 +41,7 @@ This repository contains some example best practices for open source repositorie
 
 - Requires Ansible 2.0 or newer
 - For help installing Ansible, refer to the [Installing Ansible] section of the Ansible Documentation
-- For help installing the ibm.power_aix collection, refer to the [install](docs/source/installation.rst) page of this project
+- For help installing the ibm.power\_aix collection, refer to the [install](docs/source/installation.rst) page of this project
 
 ### Python
 
@@ -101,5 +103,5 @@ Authors:
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new
 [YUM]: https://developer.ibm.com/articles/configure-yum-on-aix/
-[pages]: https://ansible-aix.github.io/ansible-power-aix/
+[pages]: https://ibm.github.io/ansible-power-aix/
 [Installing Ansible]: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
