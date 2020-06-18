@@ -18,14 +18,14 @@ authors:
 - Paul B. Finley (@pbfinley1911)
 
 # Collection Description
-description: Ansible collection of modules and roles used to manage and deploy Power Systems AIX.
+description: The IBM Power Systems AIX collection of modules is used to manage and deploy Power Systems AIX.
 
 # Collection License
 license:
 - GPL-3.0-only
 
 # Collection Tags
-tags: [infrastructure]
+tags: [infrastructure, ibm, power, aix]
 
 # Collection Dependencies
 dependencies: {}
@@ -34,7 +34,7 @@ dependencies: {}
 repository: https://github.com/IBM/ansible-power-aix
 
 # The URL to any online docs
-documentation: https://ansible-aix.github.io/ansible-power-aix
+documentation: https://ibm.github.io/ansible-power-aix/index.html
 
 # The URL to the homepage of the collection/project
 homepage: https://github.com/IBM
