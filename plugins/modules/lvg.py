@@ -14,7 +14,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = r'''
 ---
 author:
-- AIX Development Team (@s-man-g)
+- AIX Development Team (@pbfinley1911)
 module: lvg
 short_description: Create/Modify/Remove a volume group
 description:
