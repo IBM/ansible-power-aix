@@ -52,7 +52,7 @@ documentation can be accessed from the command line by using the
 ``ansible-doc`` command.
 
 Here's how to use the ``ansible-doc`` command after you install the
-**IBM POWER AIX collection**: ``ansible-doc ibm.power_aix.suma``
+**IBM Power Systems AIX collection**: ``ansible-doc ibm.power_aix.suma``
 
 .. code-block:: sh
 
@@ -67,7 +67,7 @@ Here's how to use the ``ansible-doc`` command after you install the
 
 
 For more information on using the ``ansible-doc`` command, refer
-to `Ansible guide`_.
+to the `Ansible guide`_.
 
 .. _Ansible guide:
    https://docs.ansible.com/ansible/latest/cli/ansible-doc.html#ansible-doc
