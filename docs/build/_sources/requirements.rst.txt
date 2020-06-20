@@ -7,7 +7,7 @@ Requirements
 
 A control node is any machine with Ansible installed. From the control node,
 you can run commands and playbooks from a laptop, desktop, or server.
-However, you cannot run **IBM POWER AIX** on a Windows system.
+However, you cannot run **IBM Power Systems AIX collection** on a Windows system.
 
 A managed node is often referred to as a target node, or host, and it is managed
 by Ansible. Ansible is not required on a managed node, but SSH must be enabled.
@@ -49,7 +49,7 @@ Python on AIX
 --------------
 
 AIX® Toolbox for Linux® Applications contains a collection of open source
-and GNU software built for AIX IBM Systems (including Python).
+and GNU software built for IBM Power Systems AIX (including Python).
 
 These tools provide the basis of the development environment of choice for
 many Linux application developers. All the tools are packaged using the
