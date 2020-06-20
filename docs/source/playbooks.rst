@@ -144,9 +144,10 @@ user's password each time a playbook is run; for example,
 Optionally, you can configure the console logging verbosity during playbook
 execution. This is helpful in situations where communication is failing and
 you want to obtain more details. To adjust the logging verbosity, append more
-letter `v`'s; for example, `-v`, `-vv`, `-vvv`, or `-vvvv`. Each letter `v`
-increases logging verbosity similar to traditional logging levels INFO, WARN,
-ERROR, DEBUG.
+letter `v`'s; for example, `-v`, `-vv`, `-vvv`, or `-vvvv`.
+
+Each letter `v` increases logging verbosity similar to traditional logging
+levels INFO, WARN, ERROR, DEBUG.
 
 .. note::
    It is a good practice to review the playbook samples before executing them.

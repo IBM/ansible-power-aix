@@ -15,12 +15,12 @@
 # Project information
 ##############################################################################
 
-project = 'IBM POWER AIX collection'
+project = 'IBM Power Systems AIX'
 copyright = '2020, IBM'
 author = 'IBM'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.1'
+release = '0.4.2'
 
 # Disable the Copyright footer for Read the docs at the bottom of the page
 # by setting property html_show_copyright = False
@@ -30,7 +30,9 @@ html_show_copyright = True
 # "Built with Sphinx using a theme provided by Read the Docs. "
 html_show_sphinx = False
 
-# -- General configuration ---------------------------------------------------
+##############################################################################
+# General configuration
+##############################################################################
 
 # # Add any Sphinx extension module names here, as strings. They can be extensions
 # # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -44,6 +46,9 @@ html_show_sphinx = False
 extensions = [
     'sphinx.ext.autosectionlabel'
 ]
+
+# Add any paths that contain templates here, relative to this directory.
+# templates_path = ['../templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
