@@ -5,6 +5,23 @@
 Releases
 ========
 
+Version 1.0.0-beta1
+-------------------
+Notes
+  * Update recommended
+  * Improved test and security coverage
+  * Documentation updates
+
+Availability
+  * `Galaxy v1.0.0`_
+  * `GitHub v1.0.0`_
+
+.. _Galaxy v1.0.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.0.0-beta1.tar.gz
+
+.. _GitHub v1.0.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.0/ibm-power_aix-1.0.0-beta1.tar.gz
+
 Version 0.4.2
 -------------
 Notes
