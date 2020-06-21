@@ -21,8 +21,6 @@ This repository contains some example best practices for open source repositorie
 * [CONTRIBUTING.md](CONTRIBUTING.md)
 * [MAINTAINERS.md](MAINTAINERS.md)
 * [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for more details you should [read this][coc].
-* [CHANGELOG.md](CHANGELOG.md)
-<!-- A Changelog allows you to track major changes and things that happen, https://github.com/github-changelog-generator/github-changelog-generator can help automate the process -->
 
 <!-- The following are OPTIONAL, but strongly suggested to have in your repository. -->
 * [travis.yml](.travis.yml) - Look https://docs.travis-ci.com/user/tutorial/ for more details.

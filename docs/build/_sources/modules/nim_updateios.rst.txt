@@ -66,10 +66,6 @@ Parameters
     ``remove``.
 
 
-  preview (optional, str, None)
-    Specifies a preview operation.
-
-
   accept_licenses (optional, str, None)
     Specifies whether the software licenses should be automatically accepted during the installation.
 
@@ -78,8 +74,8 @@ Parameters
     Specifies the result of a previous operation.
 
 
-  log_file (optional, str, None)
-    Specifies path to log file.
+  preview (optional, str, None)
+    Specifies a preview operation.
 
 
   targets (True, str, None)

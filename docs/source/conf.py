@@ -20,7 +20,7 @@ copyright = '2020, IBM'
 author = 'IBM'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.2'
+release = '1.0.0-beta1'
 
 # Disable the Copyright footer for Read the docs at the bottom of the page
 # by setting property html_show_copyright = False
