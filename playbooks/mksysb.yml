@@ -25,11 +25,10 @@
       state: mounted
    - name: "Run mksysb backup"
      mksysb:
-      name: "{{ansible_hostname}}_mksysb_{{ansible_facts['date_time']['date']}}"
+      name: "{{ansible_hostname}}_mksysb_{{ansible_date_time.date}}"
       storage_path: "{{ mksysb_dir }}"
       exclude_files: yes
      when: ansible_distribution == 'AIX'
-     register: output
 ## due to some reasons aix_filesystem module did not work for mounting NFS for me hence using commad module
 #   - name: "Check NFS Filesystem Mount"
 #     aix_filesystem:
@@ -52,7 +51,7 @@
      register: nfsmount
    - name: "Copy files from local Directory to NFS"
      copy:
-      src: '"{{ mksysb_dir }}"/"{{ansible_hostname}}_mksysb_{{ansible_facts['date_time']['date']}}"'
+      src: '"{{ mksysb_dir }}"/"{{ansible_hostname}}_mksysb_{{ansible_date_time.date}}"'
       dest: "{{ NFS_mount }}"
       remote_src: yes
      when: nfsmount is succeeded
