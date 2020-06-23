@@ -753,7 +753,19 @@ def parse_lpps_info(module, output, machine):
                 continue
             lpps_lvl[mylist[1]] = {'str': mylist[2]}
             mylist[2] = re.sub(r'-', '.', mylist[2])
-            lpps_lvl[mylist[1]]['int'] = list(map(int, mylist[2].split('.')))
+
+            lpps_lvl[mylist[1]]['int'] = []
+            for version in mylist[2].split('.'):
+                match_key = re.match(r"^(\d+)(\D+\S*)?$", version)
+                if match_key:
+                    lpps_lvl[mylist[1]]['int'].append(int(match_key.group(1)))
+                    if match_key.group(2):
+                        module.log('file {0}: got version "{1}", ignoring "{2}"'.format(lslpp_file, mylist[2], match_key.group(2)))
+                else:
+                    msg = 'file {0} is malformed'.format(lslpp_file)
+                    module.log('{0}: got version: "{1}"'.format(msg, version))
+                    results['meta']['messages'].append(msg)
+                    continue
 
     return lpps_lvl
 
