@@ -21,6 +21,7 @@ cd $ANSIBLE_DIR
 git clone https://github.com/ansible/ansible.git
 cd ansible
 ANSIBLE_DIR="$(pwd)"
+SANITY_IGNORE="$ANSIBLE_DIR/test/sanity/ignore.txt"
 
 python3 -m venv venv
 . venv/bin/activate
@@ -31,6 +32,7 @@ pip install -r docs/docsite/requirements.txt
 
 # place the modules in the appropriate folder
 cp $DIR/plugins/modules/*.py $ANSIBLE_DIR/lib/ansible/modules/
+
 
 set +e
 
@@ -44,6 +46,8 @@ for f in $DIR/plugins/modules/*.py; do
     rc=$(($rc + $?))
 
     echo "-------- validate-modules for $f --------"
+    # remove potential ignore lines of core module
+    grep "${f%%.py}" $SANITY_IGNORE && sed "/$f/d" $SANITY_IGNORE >$SANITY_IGNORE
     ansible-test sanity --test validate-modules ${f%%.py}
     rc=$(($rc + $?))
 
