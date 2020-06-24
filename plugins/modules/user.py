@@ -4,7 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
@@ -35,13 +34,13 @@ options:
     - C(absent) to delete user with provided I(name). If username is not present then message will be displayed.
     type: str
     choices: [ present, absent ]
-    required: true
+    required: True
   name:
     description:
     - Specifies the user name for which the action is to be taken.
     type: str
     aliases: user
-    required: true
+    required: True
   attributes:
     description:
     - Specifies the attributes to be changed or created for the user.
