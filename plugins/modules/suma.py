@@ -53,25 +53,25 @@ options:
   download_dir:
     description:
     - Directory where updates are downloaded.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: path
     default: /usr/sys/inst.images
   download_only:
     description:
     - Download only. Do not perform installation of updates.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: no
   last_sp:
     description:
     - Specifies to download the last SP of the TL specified in I(oslevel). If no is specified only the TL is downloaded.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: no
   extend_fs:
     description:
     - Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: yes
   task_id:
@@ -88,7 +88,7 @@ options:
   save_task:
     description:
     - Saves the SUMA task. The task is saved, allowing scheduling information to be added later.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the saving time.
     type: bool
     default: no
@@ -101,7 +101,7 @@ options:
   metadata_dir:
     description:
     - Directory where metadata files are downloaded.
-    - Can be used if I(action=download) or C(action=preview) when I(last_sp=yes) or I(oslevel) is not exact, for example I(oslevel=Latest).
+    - Can be used if I(action=download) or I(action=preview) when I(last_sp=yes) or I(oslevel) is not exact, for example I(oslevel=Latest).
     type: path
     default: /var/adm/ansible/metadata
 '''
