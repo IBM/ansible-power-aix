@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'], 
+                    'status': ['preview'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = r'''
@@ -30,38 +30,34 @@ options:
     description:
     - Specifies the action to be performed for the user.
     - C(present) to create user with provided I(name) and I(attributes) in the system. If username is already
-    present then attributes specified for the name will be changed with the provided values.
+      present then attributes specified for the name will be changed with the provided values.
     - C(absent) to delete user with provided I(name). If username is not present then message will be displayed.
     type: str
     choices: [ present, absent ]
-    required: True
+    required: true
   name:
-    description:
-    - Specifies the user name for which the action is to be taken.
+    description: Specifies the user name for which the action is to be taken.
     type: str
-    aliases: user
-    required: True
+    aliases: [ user ]
+    required: true
   attributes:
-    description:
-    - Specifies the attributes to be changed or created for the user.
+    description: Specifies the attributes to be changed or created for the user.
     type: dict
-    default: None
   remove_password:
-    description: Specifies if the password information should be deleted from the system's password
-    file while performing the delete operation on username.
+    description:
+    - Specifies if the password information should be deleted from the system's password
+      file while performing the delete operation on username.
     type: bool
     default: True
   change_passwd_on_login:
     description:
     - Specifies if the user is required to change the password when logging in the first time
-    after the password change operation is performed.
+      after the password change operation is performed.
     type: bool
     default: False
   password:
-    description:
-    - Specifies the encrypted string for the password to create or change the password.
+    description: Specifies the encrypted string for the password to create or change the password.
     type: str
-    default: None
 '''
 
 EXAMPLES = r'''
@@ -263,10 +259,10 @@ def main():
         argument_spec=dict(
             state=dict(type='str', required=True, choices=['present', 'absent']),
             name=dict(type='str', required=True, aliases=['user']),
-            attributes=dict(type='dict', default=None),
+            attributes=dict(type='dict'),
             remove_password=dict(type='bool', default=True),
             change_passwd_on_login=dict(type='bool', default=False),
-            password=dict(type='str', default=None),
+            password=dict(type='str'),
         ),
         supports_check_mode=False
     )
