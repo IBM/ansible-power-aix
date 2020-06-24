@@ -11,6 +11,9 @@ The **IBM Power Systems AIX collection** provides modules that can be used to ma
 deployments of Power AIX systems. The collection content helps to include workloads on
 Power platforms as part of an enterprise automation strategy through the Ansible ecosystem.
 
+The **IBM Power Systems AIX collection** is included as an upstream collection under the
+**Ansible Content for IBM Power Systems** umbrella of community content.
+
 <!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
 

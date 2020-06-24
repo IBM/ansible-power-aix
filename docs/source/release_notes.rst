@@ -5,6 +5,26 @@
 Releases
 ========
 
+Version 1.0.0
+-------------
+Notes
+  * Official release of patch management capability
+  * Update recommended
+
+Availability
+  * `Automation Hub v1.0.0`_
+  * `Galaxy v1.0.0`_
+  * `GitHub v1.0.0`_
+
+.. _Automation Hub v1.0.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.0.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.0.0.tar.gz
+
+.. _GitHub v1.0.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.0/ibm-power_aix-1.0.0.tar.gz
+
 Version 1.0.0-beta1
 -------------------
 Notes
@@ -13,13 +33,13 @@ Notes
   * Documentation updates
 
 Availability
-  * `Galaxy v1.0.0`_
-  * `GitHub v1.0.0`_
+  * `Galaxy v1.0.0-beta`_
+  * `GitHub v1.0.0-beta`_
 
-.. _Galaxy v1.0.0:
+.. _Galaxy v1.0.0-beta:
    https://galaxy.ansible.com/download/ibm-power_aix-1.0.0-beta1.tar.gz
 
-.. _GitHub v1.0.0:
+.. _GitHub v1.0.0-beta:
    https://github.com/IBM/ansible-power-aix/releases/download/v1.0.0/ibm-power_aix-1.0.0-beta1.tar.gz
 
 Version 0.4.2
