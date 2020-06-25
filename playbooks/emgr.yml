@@ -85,4 +85,3 @@
       ifix_package: "{{ ifix_package_v }}"
     register: output
   - debug: var=output
-

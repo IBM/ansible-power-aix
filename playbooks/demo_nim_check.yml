@@ -13,4 +13,3 @@
         description: 'NIM check'
       register: nim_output
     - debug: var=nim_output
-

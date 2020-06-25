@@ -35,4 +35,3 @@ all: # keys must be unique, i.e. only one 'hosts' per group
                     ansible_host: quimby-vios1.aus.stglabs.ibm.com
             vars:
                 res_group: vios_res_grp
-
