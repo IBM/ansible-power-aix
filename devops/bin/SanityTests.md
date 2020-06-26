@@ -7,7 +7,7 @@ To install Docker Engine on Ubuntu refers to: [docker docs - Install Docker Engi
 
 #### New container
 You can look for images on the [TravisCI Docker hub](https://hub.docker.com/u/travisci) page.<br>
-Or look in the TravisCI build log, open the show more button for WORKER INFORMATION and find the INSTANCE line: 
+Or look in the TravisCI build log, open the show more button for WORKER INFORMATION and find the INSTANCE line:
 ```
 instance: travis-job-0f6264ed-5682-4548-864e-1786307cc2ba travis-ci-ubuntu-1804-1582576938-a9b1ae58 (via amqp)
 ```
@@ -128,5 +128,3 @@ pip install sphinx
 pip install sphinx_rtd_theme
 sphinx-build -b html $DOC_SRC_DIR $DOC_BLD_DIR
 ```
-
-
