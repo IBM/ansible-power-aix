@@ -33,7 +33,7 @@ options:
   device:
     description:
     - Specifies the device logical name in the Customized Devices object class.
-      I(all) - specifies all devices to be configured when I(state=available)
+      I(all) - specifies all devices to be configured when I(state=available).
     type: str
     default: all
   force:
@@ -50,19 +50,19 @@ options:
     description:
     - Specifies the action to be performed on the device.
       I(available) - If the device is in 'defined' state, configure device
-                     else change device attributes when in 'available' state
-      I(defined) - If the device is in 'available state', Unconfigure/Stop device
-                   else change device attributes when in ''defined' state
+                     else change device attributes when in 'available' state.
+      I(defined) - If the device is in 'available' state, Unconfigure/Stop device
+                   else change device attributes when in 'defined' state.
     type: str
     choices: [ available, defined ]
     default: available
   chtype:
     description:
     - Specifies the change type.
-      I(reboot) - Changes are applied to the device when the system is rebooted
-      I(current) - Changes the current state of the device temporarily
+      I(reboot) - Changes are applied to the device when the system is rebooted.
+      I(current) - Changes the current state of the device temporarily.
       I(both) - Changes are applied both to the current state of the device
-                and the device database
+                and the device database.
     type: str
     choices: [ reboot, current, both ]
     default: both
@@ -76,8 +76,8 @@ options:
   rmtype:
     description:
     - Specifies whether to unconfigure/stop the device.
-      I(unconfigure) - Changes are applied to the device when the system is rebooted
-      I(stop) - Changes the current state of the device temporarily
+      I(unconfigure) - Changes are applied to the device when the system is rebooted.
+      I(stop) - Changes the current state of the device temporarily.
     type: str
     choices: [ unconfigure, stop ]
     default: unconfigure
@@ -108,15 +108,15 @@ msg:
     description: The execution message.
     returned: always
     type: str
-rc':
+rc:
     description: The return code.
     returned: If the command failed.
     type: int
-stdout':
+stdout:
     description: The standard output.
     returned: If the command failed.
     type: str
-stderr':
+stderr:
     description: The standard error.
     returned: If the command failed.
     type: str
