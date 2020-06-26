@@ -1567,6 +1567,10 @@ def main():
     module.debug('*** DOWNLOAD ***')
     for machine in targets:
         run_downloader(module, machine, results['meta'][machine], results['meta'][machine]['1.parse'], resize_fs)
+        if '4.2.check' not in results['meta'][machine]:
+            msg = 'Error downloading some fixes, {0} will not be updated'.format(machine)
+            results['meta'][machine]['messages'].append(msg)
+            results['status'][machine] = 'FAILURE'
     wait_all()
 
     if download_only:
@@ -1580,7 +1584,8 @@ def main():
     # ===========================================
     module.debug('*** UPDATE ***')
     for machine in targets:
-        run_installer(module, machine, results['meta'][machine], results['meta'][machine]['4.2.check'], resize_fs)
+        if '4.2.check' in results['meta'][machine]:
+            run_installer(module, machine, results['meta'][machine], results['meta'][machine]['4.2.check'], resize_fs)
     wait_all()
 
     if clean and os.path.exists(workdir):
