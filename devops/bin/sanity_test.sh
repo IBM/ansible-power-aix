@@ -1,12 +1,13 @@
 #!/bin/bash
 
 echo "======== $0 ========"
-set -x
+#set -x
 set -e
 set -o pipefail
 set -o errtrace
 
 OUTPUTDIR=./documentation
+PY_VERSIONS="2.7 3.6 3.7 3.8"
 
 err_report() {
     echo "Error running '$1' [rc=$2] line $3 "
@@ -37,22 +38,20 @@ cp $DIR/plugins/modules/*.py $ANSIBLE_DIR/lib/ansible/modules/
 set +e
 
 rc=0
+errored=""
 for f in $DIR/plugins/modules/*.py; do
     f="${f##*/}"
-    echo "-------- compile for $f --------"
-    ansible-test sanity --test compile ${f%%.py} --python 2.7
-    rc=$(($rc + $?))
-    ansible-test sanity --test compile ${f%%.py} --python 3.7
-    rc=$(($rc + $?))
+    for version in $PY_VERSIONS; do
+        echo "-------- sanity tests for $f ($version) --------"
+        # remove potential ignore lines of core module
+        grep "${f%%.py}" $SANITY_IGNORE && sed "/$f/d" $SANITY_IGNORE >$SANITY_IGNORE
+        ansible-test sanity ${f%%.py} --python $version
+        rc=$(($rc + $?))
 
-    echo "-------- validate-modules for $f --------"
-    # remove potential ignore lines of core module
-    grep "${f%%.py}" $SANITY_IGNORE && sed "/$f/d" $SANITY_IGNORE >$SANITY_IGNORE
-    ansible-test sanity --test validate-modules ${f%%.py}
-    rc=$(($rc + $?))
-
+        (( $rc )) && errored+="$f "
+    done
 done
-
+(( $rc )) && echo "-------- module in error --------\n$errored\n"
 
 set -e
 
