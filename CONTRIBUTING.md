@@ -12,6 +12,8 @@ Before embarking on a more ambitious contribution, please quickly [get in touch]
 requires extensive rework (by you or by us), sits in backlog for a long time, or
 cannot be accepted at all!**
 
+Please run sanity tests and check the documentation syntax locally prior to sumit a pull request: [SanityTests.md](devops/bin/SanityTests.md).
+
 ### Proposing new features
 
 If you would like to implement a new feature, please [raise an issue](https://github.com/ibm/ansible-power-aix/issues)
