@@ -41,15 +41,15 @@ rc=0
 errored=""
 for f in $DIR/plugins/modules/*.py; do
     f="${f##*/}"
+    m_rc=0
     for version in $PY_VERSIONS; do
         echo "-------- sanity tests for $f ($version) --------"
         # remove potential ignore lines of core module
         grep "${f%%.py}" $SANITY_IGNORE && sed "/$f/d" $SANITY_IGNORE >$SANITY_IGNORE
         ansible-test sanity ${f%%.py} --python $version
-        rc=$(($rc + $?))
-
-        (( $rc )) && errored+="$f "
+        (( $? )) && $m_rc=1 && rc=$(($rc + $m_rc))
     done
+    (( $m_rc )) && errored+="$f "
 done
 (( $rc )) && echo "-------- module in error --------\n$errored\n"
 
