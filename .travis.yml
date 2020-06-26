@@ -15,6 +15,7 @@ install:
   - pip3 install pyyaml     # for ansible-test
   - pip3 install voluptuous # for ansible-test
   - pip install pyyaml      # for compile test with Python2
+  - pip install pycodestyle pylint yamllint
   - pip3 install ansible-doc-extractor
   - pip install sphinx
   - pip install sphinx_rtd_theme
