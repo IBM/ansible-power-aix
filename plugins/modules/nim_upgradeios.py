@@ -1000,7 +1000,7 @@ def nim_migvios(module, vios):
         if 'backup' in module.nim_node['nim_vios'][vios]:
             module.nim_node['nim_vios'][vios]['backup']['name'] = backup_name
         else:
-            module.nim_node['nim_vios'][vios]['backup'] = {1}
+            module.nim_node['nim_vios'][vios]['backup'] = {}
             module.nim_node['nim_vios'][vios]['backup']['name'] = backup_name
         msg = 'VIOS {0} upgrade successfully initiated'.format(vios)
         module.log(msg)
