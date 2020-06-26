@@ -32,7 +32,7 @@ Parameters
 
 
   device (optional, str, all)
-    Specifies the device logical name in the Customized Devices object class. *all* - specifies all devices to be configured when *state=available*
+    Specifies the device logical name in the Customized Devices object class. *all* - specifies all devices to be configured when *state=available*.
 
 
   force (optional, bool, False)
@@ -44,11 +44,11 @@ Parameters
 
 
   state (optional, str, available)
-    Specifies the action to be performed on the device. *available* - If the device is in 'defined' state, configure device else change device attributes when in 'available' state *defined* - If the device is in 'available state', Unconfigure/Stop device else change device attributes when in ''defined' state
+    Specifies the action to be performed on the device. *available* - If the device is in 'defined' state, configure device else change device attributes when in 'available' state. *defined* - If the device is in 'available' state, Unconfigure/Stop device else change device attributes when in 'defined' state.
 
 
   chtype (optional, str, both)
-    Specifies the change type. *reboot* - Changes are applied to the device when the system is rebooted *current* - Changes the current state of the device temporarily *both* - Changes are applied both to the current state of the device and the device database
+    Specifies the change type. *reboot* - Changes are applied to the device when the system is rebooted. *current* - Changes the current state of the device temporarily. *both* - Changes are applied both to the current state of the device and the device database.
 
 
   parent_device (optional, str, None)
@@ -56,7 +56,7 @@ Parameters
 
 
   rmtype (optional, str, unconfigure)
-    Specifies whether to unconfigure/stop the device. *unconfigure* - Changes are applied to the device when the system is rebooted *stop* - Changes the current state of the device temporarily
+    Specifies whether to unconfigure/stop the device. *unconfigure* - Changes are applied to the device when the system is rebooted. *stop* - Changes the current state of the device temporarily.
 
 
 
@@ -99,15 +99,15 @@ msg (always, str, )
   The execution message.
 
 
-rc' (If the command failed., int, )
+rc (If the command failed., int, )
   The return code.
 
 
-stdout' (If the command failed., str, )
+stdout (If the command failed., str, )
   The standard output.
 
 
-stderr' (If the command failed., str, )
+stderr (If the command failed., str, )
   The standard error.
 
 

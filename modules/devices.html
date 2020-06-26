@@ -234,19 +234,19 @@
 <div><dl class="simple">
 <dt>attributes (optional, dict, None)</dt><dd><p>When <em>state=available</em>, specifies the device attribute-value pairs used for changing specific attribute values.</p>
 </dd>
-<dt>device (optional, str, all)</dt><dd><p>Specifies the device logical name in the Customized Devices object class. <em>all</em> - specifies all devices to be configured when <em>state=available</em></p>
+<dt>device (optional, str, all)</dt><dd><p>Specifies the device logical name in the Customized Devices object class. <em>all</em> - specifies all devices to be configured when <em>state=available</em>.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Forces the change/unconfigure operation to take place on a locked device.</p>
 </dd>
 <dt>recursive (optional, bool, False)</dt><dd><p>Specifies to unconfigure the device and its children recursively.</p>
 </dd>
-<dt>state (optional, str, available)</dt><dd><p>Specifies the action to be performed on the device. <em>available</em> - If the device is in ‘defined’ state, configure device else change device attributes when in ‘available’ state <em>defined</em> - If the device is in ‘available state’, Unconfigure/Stop device else change device attributes when in ‘’defined’ state</p>
+<dt>state (optional, str, available)</dt><dd><p>Specifies the action to be performed on the device. <em>available</em> - If the device is in ‘defined’ state, configure device else change device attributes when in ‘available’ state. <em>defined</em> - If the device is in ‘available’ state, Unconfigure/Stop device else change device attributes when in ‘defined’ state.</p>
 </dd>
-<dt>chtype (optional, str, both)</dt><dd><p>Specifies the change type. <em>reboot</em> - Changes are applied to the device when the system is rebooted <em>current</em> - Changes the current state of the device temporarily <em>both</em> - Changes are applied both to the current state of the device and the device database</p>
+<dt>chtype (optional, str, both)</dt><dd><p>Specifies the change type. <em>reboot</em> - Changes are applied to the device when the system is rebooted. <em>current</em> - Changes the current state of the device temporarily. <em>both</em> - Changes are applied both to the current state of the device and the device database.</p>
 </dd>
 <dt>parent_device (optional, str, None)</dt><dd><p>While modifying device, specifies the parent device of the device to be updated. For unconfigure/stop operation, specifies the parent device whose children needs to be unconfigured recursively.</p>
 </dd>
-<dt>rmtype (optional, str, unconfigure)</dt><dd><p>Specifies whether to unconfigure/stop the device. <em>unconfigure</em> - Changes are applied to the device when the system is rebooted <em>stop</em> - Changes the current state of the device temporarily</p>
+<dt>rmtype (optional, str, unconfigure)</dt><dd><p>Specifies whether to unconfigure/stop the device. <em>unconfigure</em> - Changes are applied to the device when the system is rebooted. <em>stop</em> - Changes the current state of the device temporarily.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -278,11 +278,11 @@
 <dl class="simple">
 <dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>rc’ (If the command failed., int, )</dt><dd><p>The return code.</p>
+<dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
-<dt>stdout’ (If the command failed., str, )</dt><dd><p>The standard output.</p>
+<dt>stdout (If the command failed., str, )</dt><dd><p>The standard output.</p>
 </dd>
-<dt>stderr’ (If the command failed., str, )</dt><dd><p>The standard error.</p>
+<dt>stderr (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>
