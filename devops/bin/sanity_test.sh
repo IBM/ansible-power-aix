@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "======== $0 ========"
-#set -x
+set -x
 set -e
 set -o pipefail
 set -o errtrace
 
 OUTPUTDIR=./documentation
-PY_VERSIONS="2.7 3.6 3.7 3.8"
+PY_VERSIONS="2.7 3.7"
 
 err_report() {
     echo "Error running '$1' [rc=$2] line $3 "
