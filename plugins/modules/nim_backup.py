@@ -30,16 +30,16 @@ options:
   action:
     description:
     - Controls what is performed.
-    - C(bakcup) performs an backup operation on targets trough NIM master
+    - C(backup) performs an backup operation on targets trough NIM master
     - C(restore) restores a backup on targets trough NIM master
     - C(list) lists backups for targets on the NIM master
     type: str
-    choices: [ bakcup, restore, list ]
+    choices: [ backup, restore, list ]
     required: yes
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - Required if I(action=bakcup) and I(action=restore).
+    - Required if I(action=backup) and I(action=restore).
     - If I(action=list) it filters the results on the source_image attribute of the NIM resource.
     type: list
     elements: str
@@ -557,12 +557,12 @@ def nim_standalone_backup(module, target, params):
     location = os.path.join(params['location'], name)
 
     # Create the mksysb
-    # nim -o define -t mksysb -a server=master -a location=file_path -a mk_image=yes  -a source=mksysb_name  target
+    # nim -o define -t mksysb -a server=master -a location=file_path -a mk_image=yes  -a source=target mksysb_name
     # location default?
     # To ignore space requirements use the "-F" flag when defining the mksysb resource.
     cmd = ['nim', '-o', 'define', '-t', 'mksysb', '-a', 'server=master', '-a', 'mk_image=yes']
     cmd += ['-a', 'location={0}'.format(location)]
-    cmd += ['-a', 'source={0}'.format(name), target]
+    cmd += ['-a', 'source={0}'.format(target), name]
 
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
@@ -891,7 +891,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            action=dict(required=True, type='str', choices=['bakcup', 'restore', 'list']),
+            action=dict(required=True, type='str', choices=['backup', 'restore', 'list']),
             targets=dict(required=False, type='list', elements='str'),
             nim_node=dict(required=False, type='dict'),
             location=dict(type='path'),
@@ -910,7 +910,7 @@ def main():
             oslevel=dict(type='str'),
         ),
         required_if=[
-            ['action', ['bakcup', 'restore'], ['location', 'name']],
+            ['action', ['backup', 'restore'], ['location', 'name']],
         ],
     )
 
