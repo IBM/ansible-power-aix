@@ -30,16 +30,31 @@ options:
   action:
     description:
     - Controls what is performed.
-    - C(backup) performs an backup operation on targets trough NIM master
-    - C(restore) restores a backup on targets trough NIM master
-    - C(list) lists backups for targets on the NIM master
+    - C(create) performs an backup operation on targets trough NIM master.
+    - C(restore) restores a backup on targets trough NIM master.
+    - C(view) displays the content of a VIOS backup, only for I(type=backup).
+    - C(list) lists backups for targets on the NIM master.
     type: str
-    choices: [ backup, restore, list ]
+    choices: [ create, restore, view, list ]
     required: yes
+  type:
+    description:
+    - Specifies the type of backup object to operate.
+    - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
+    - C(ios_mksysb) operates on VIOS backup of the operating system (that is, the root volume group).
+    - C(ios_backup) operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
+    type: str
+    choices: [ mksysb, ios_mksysb, ios_backup ]
+    required: yes
+    default: mksysb
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - Required if I(action=backup) and I(action=restore).
+    - C(foo*) designates all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) designates all the NIM clients.
+    - C(vios) or C(standalone) designates all the NIM clients of this type.
+    - Required if I(action=create) and I(action=restore).
     - If I(action=list) it filters the results on the source_image attribute of the NIM resource.
     type: list
     elements: str
@@ -54,12 +69,13 @@ options:
     - Specifies where to put the backup files on the NIM master.
     - If not specified default for LPAR targets is I(location=/export/nim/mksysb) and for
       VIOS targets it is I(location=/export/nim/ios_backup).
-    - Required if I(action=backup) and I(action=restore).
+    - Required if I(action=create) and I(action=restore).
     type: path
   name:
     description:
     - Exact name of the backup NIM resource to act on.
     - If I(action=list) it filters the results on the name of the NIM resource.
+    - Required if I(action=view).
     type: str
   name_prefix:
     description:
@@ -141,29 +157,48 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: List backup resource targeting nimmclient1 at a specific level and name starting with ansible
+- name: List backup resource targeting nimclient1 at a specific level and name starting with ansible
   nim_backup:
     action: list
-    targets: nimmclient1
+    targets: nimclient1
     oslevel: "7200-03-02"
     name_prefix: ansible
 
 - name: Create a mksysb backup of a LPAR
   nim_backup:
-    action: backup
-    targets: nimmclient1
+    action: create
+    targets: nimclient1
     name_postfix: _mksysb
 
 - name: Restore a mksysb backup on a LPAR
   nim_backup:
-    action: backup
-    targets: nimmclient1
+    action: restore
+    targets: nimclient1
     name_postfix: _mksysb
     spot_postfix: _spot
     remove_backup: yes
     remove_spot: yes
     boot_target: no
     accept_licenses: yes
+
+- name: Backup a VIOS configuration
+  nim_backup:
+    action: create
+    type: ios_backup
+    targets: vios1
+    name_postfix: _iosbackup
+
+- name: Get the backup configuration of a VIOS
+  nim_backup:
+    action: view
+    targets: vios1
+
+- name: Restore the backup configuration on a VIOS
+  nim_backup:
+    action: restore
+    type: ios_backup
+    targets: vios1
+    name_postfix: _iosbackup
 '''
 
 RETURN = r'''
@@ -430,8 +465,8 @@ def build_nim_node(module):
 
 def get_nim_type_info(module, type):
     """
-    Build the hash of nim client of type=lpar_type defined on the
-           nim master and their associated key = value information.
+    Build the hash of nim object of specified type defined on the
+    nim master and their associated key = value information.
 
     arguments:
         module      (dict): The Ansible module
@@ -445,7 +480,8 @@ def get_nim_type_info(module, type):
     if rc != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Cannot get NIM Client information. Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        results['msg'] = 'Cannot get NIM information for {0}. Command \'{1}\' failed with return code {1}.'\
+                         .format(type, ' '.join(cmd), rc)
         module.fail_json(**results)
 
     info_hash = build_dict(module, stdout)
@@ -522,7 +558,7 @@ def expand_targets(targets):
             for i in range(int(start), int(end) + 1):
                 # target_results.append('{0}{1:02}'.format(name, i))
                 curr_name = name + str(i)
-                if curr_name in results['nim_node']['standalone']:
+                if curr_name in results['nim_node']['standalone'] or curr_name in results['nim_node']['vios']:
                     clients.append(curr_name)
             continue
 
@@ -531,6 +567,9 @@ def expand_targets(targets):
         if rmatch:
             name = rmatch.group(1)
             for curr_name in results['nim_node']['standalone']:
+                if re.match(r"^%s\.*" % name, curr_name):
+                    clients.append(curr_name)
+            for curr_name in results['nim_node']['vios']:
                 if re.match(r"^%s\.*" % name, curr_name):
                     clients.append(curr_name)
             continue
@@ -568,13 +607,14 @@ def build_name(target, name, prefix, postfix):
 
 
 @start_threaded(THRDS)
-def nim_standalone_backup(module, target, params):
+def nim_mksysb_create(module, target, objtype, params):
     """
-    Perform a NIM define operation to create a backup of a LPAR
+    Perform a NIM define operation to create a mksysb
 
     arguments:
         module  (dict): the module variable
-        target   (str): the standalone NIM Client to backup
+        target   (str): the NIM Client to backup
+        objtype  (str): the type of mksysb to create, can be mksysb or ios_mksysb
         params  (dict): the NIM command parameters
     note:
         set results['status'][target] with the status
@@ -592,10 +632,11 @@ def nim_standalone_backup(module, target, params):
     location = os.path.join(params['location'], name)
 
     # Create the mksysb
-    # nim -o define -t mksysb -a server=master -a location=file_path -a mk_image=yes  -a source=target mksysb_name
-    # location default?
     # To ignore space requirements use the "-F" flag when defining the mksysb resource.
-    cmd = ['nim', '-o', 'define', '-t', 'mksysb', '-a', 'server=master', '-a', 'mk_image=yes']
+    # nim -o define -t mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios mksysb_name
+    # nim -o define -t ios_mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios ios_mksysb_name
+    cmd = ['nim', '-o', 'define', '-a', 'server=master', '-a', 'mk_image=yes']
+    cmd += ['-t', objtype]
     cmd += ['-a', 'location={0}'.format(location)]
     cmd += ['-a', 'source={0}'.format(target), name]
 
@@ -608,7 +649,7 @@ def nim_standalone_backup(module, target, params):
             results['status'][target] = 'FAILURE'
             return False
 
-        results['meta'][target]['messages'].append('mksysb {0} created: {1}.'.format(name, location))
+        results['meta'][target]['messages'].append('{0} {1} created: {2}.'.format(objtype, name, location))
         results['meta'][target]['res_name'] = name
         results['status'][target] = 'SUCCESS'
         results['changed'] = True
@@ -619,13 +660,13 @@ def nim_standalone_backup(module, target, params):
 
 
 @start_threaded(THRDS)
-def nim_standalone_restore(module, target, params):
+def nim_mksysb_restore(module, target, params):
     """
-    Perform a bos_inst NIM operation to restore a LPAR backup
+    Perform a bos_inst NIM operation to restore a mksysb
 
     arguments:
         module  (dict): the module variable
-        target   (str): the standalone NIM Client to restore the backup on
+        target   (str): the NIM Client to restore the backup on
         params  (dict): the NIM command parameters
     note:
         set results['status'][target] with the status
@@ -731,7 +772,7 @@ def nim_standalone_restore(module, target, params):
 
 
 @start_threaded(THRDS)
-def nim_viosbr_create(module, target, params):
+def nim_iosbackup_create(module, target, params):
     """
     Perform a define NIM operation to create a backup of a VIOS (ios_backup)
 
@@ -779,7 +820,7 @@ def nim_viosbr_create(module, target, params):
 
 
 @start_threaded(THRDS)
-def nim_viosbr_restore(module, target, params):
+def nim_iosbackup_restore(module, target, params):
     """
     Perform a viosbr NIM operation to resote a VIOS backup
 
@@ -788,15 +829,15 @@ def nim_viosbr_restore(module, target, params):
         target   (str): the VIOS NIM Client to restore the backup on
         params  (dict): the NIM command parameters
     note:
-        set results['status'][target] with the status
+        Set results['status'][target] with the status
     return:
         True if restore succeeded or skipped
         False otherwise
     """
     global results
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
-    # nim -Fo viosbr -a ios_backup=ios_backup_<vios> <vios>
 
+    # nim -Fo viosbr -a ios_backup=ios_backup_<vios> <vios>
     cmd = ['nim', '-Fo', 'viosbr']
     cmd += ['-a', 'ios_backup={0}'.format(name), target]
     if not module.check_mode:
@@ -832,12 +873,13 @@ def nim_viosbr_restore(module, target, params):
     return True
 
 
-def nim_list_backup(module, target, params):
+def nim_list_backup(module, target, type, params):
     """
     Perform a viosbr NIM operation to resote a VIOS backup
 
     arguments:
         module  (dict): the module variable
+        type     (str): the type of the object to list
         target  (list): the NIM Clients to filter backup list
         params  (dict): the NIM command parameters
     return:
@@ -845,7 +887,6 @@ def nim_list_backup(module, target, params):
     """
     global results
 
-    # lsnim -l -t mksysb
     backup_info = {}
     if module.params['name']:
         cmd = ['lsnim', '-l', module.params['name']]
@@ -858,49 +899,72 @@ def nim_list_backup(module, target, params):
 
         results['msg'] = 'List backup completed successfully.'
         backup_info.update(build_dict(module, stdout))
+        return backup_info
 
-    else:
-        cmd = ['lsnim', '-l', '-t', 'mksysb']
-        rc, stdout, stderr = module.run_command(cmd)
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        if rc != 0:
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
-            module.fail_json(**results)
+    backup_info.update(get_nim_type_info(module, type))
 
-        backup_info.update(build_dict(module, stdout))
+    # Filter results
+    for backup in backup_info.copy():
+        # Filter results based on targets
+        if target and 'source_image' not in backup_info[backup] or backup_info[backup]['source_image'] not in target:
+            del backup_info[backup]
+            continue
 
-        cmd = ['lsnim', '-l', '-t', 'ios_backup']
-        rc, stdout, stderr = module.run_command(cmd)
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        if rc != 0:
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
-            module.fail_json(**results)
+        # Filter results based on oslevel
+        if params['oslevel'] and 'oslevel_s' in backup_info[backup] and params['oslevel'] not in backup_info[backup]['oslevel_s']:
+            del backup_info[backup]
+            continue
 
-        backup_info.update(build_dict(module, stdout))
-
-        # Filter results
-        for backup in backup_info.copy():
-            # Filter results based on targets
-            if target and 'source_image' not in backup_info[backup] or backup_info[backup]['source_image'] not in target:
-                del backup_info[backup]
-                continue
-
-            # Filter results based on oslevel
-            if params['oslevel'] and 'oslevel_s' in backup_info[backup] and params['oslevel'] not in backup_info[backup]['oslevel_s']:
-                del backup_info[backup]
-                continue
-
-            # Filter results based on prefix/postfix
-            if params['name_prefix'] and params['name_prefix'] not in backup:
-                del backup_info[backup]
-                continue
-            if params['name_postfix'] and params['name_postfix'] not in backup:
-                del backup_info[backup]
-                continue
+        # Filter results based on prefix/postfix
+        if params['name_prefix'] and params['name_prefix'] not in backup:
+            del backup_info[backup]
+            continue
+        if params['name_postfix'] and params['name_postfix'] not in backup:
+            del backup_info[backup]
+            continue
 
     return backup_info
+
+
+def nim_view_backup(module, params):
+    """
+    List a VIOS backup and perform a viosbr NIM operation to view its content
+
+    arguments:
+        module  (dict): the module variable
+        params  (dict): the NIM command parameters
+    note:
+        Set results['status'][target] with the status
+        Exits with fail_json in case of error
+    """
+    global results
+
+    cmd = ['lsnim', '-l', params['name']]
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        module.fail_json(**results)
+
+    results['backup_info'].update(build_dict(module, stdout))
+
+    if 'source_image' not in results['backup_info'][params['name']]:
+        results['msg'] = 'Attribute \'source_image\' not found in ios_backup resource {0}.'.format(params['name'])
+        module.fail_json(**results)
+    target = results['backup_info'][params['name']]['source_image']
+
+    # nim -Fo viosbr -a viosbr_action=view -a ios_backup=quimby-vios1_iosb quimby-vios1
+    cmd = ['nim', '-Fo', 'viosbr', '-a', 'viosbr_action=view']
+    cmd += ['-a', 'ios_backup={0}'.format(params['name']), target]
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        module.fail_json(**results)
+
+    results['status'][target] = 'SUCCESS'
 
 
 def main():
@@ -910,9 +974,10 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            action=dict(required=True, type='str', choices=['backup', 'restore', 'list']),
-            targets=dict(required=False, type='list', elements='str'),
-            nim_node=dict(required=False, type='dict'),
+            action=dict(required=True, type='str', choices=['create', 'restore', 'view', 'list']),
+            type=dict(type='str', choices=['mksysb', 'ios_mksysb', 'ios_backup'], default='mksysb'),
+            targets=dict(type='list', elements='str'),
+            nim_node=dict(type='dict'),
             location=dict(type='path'),
             name=dict(type='str'),
             name_prefix=dict(type='str'),
@@ -928,9 +993,7 @@ def main():
             accept_licenses=dict(type='bool', default=True),
             oslevel=dict(type='str'),
         ),
-        required_if=[
-            ['action', ['backup', 'restore'], ['location', 'name']],
-        ],
+        required_if=['action', ['view'], ['name']],
     )
 
     results = dict(
@@ -953,6 +1016,7 @@ def main():
     )
 
     action = module.params['action']
+    objtype = module.params['type']
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # Build nim node info
@@ -963,7 +1027,7 @@ def main():
     # check targets are valid NIM clients
     if module.params['targets']:
         targets = expand_targets(module.params['targets'])
-    if not targets and action != 'list':
+    if not targets and action != 'list' and action != 'view':
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.log('Warning: Empty target list: "{0}"'.format(targets))
         module.exit_json(**results)
@@ -972,46 +1036,73 @@ def main():
         results['status'][target] = ''  # first time init
         results['meta'][target] = {'messages': []}  # first time init
 
+    # compute parameters & default value
     params = {}
-    if action == 'backup':
+    params['name'] = module.params['name']
+    params['name_prefix'] = module.params['name_prefix']
+    params['name_postfix'] = module.params['name_postfix']
+    params['location'] = module.params['location']
+    if objtype == 'mksysb':
+        if not params['name'] and module.params['name_postfix'] is None:
+            params['name_postfix'] = '_sysb'
+        if not module.params['location']:
+            params['location'] = '/export/nim/mksysb'
+
+    elif objtype == 'ios_mksysb':
+        if not params['name'] and module.params['name_postfix'] is None:
+            params['name_postfix'] = '_sysb'
+        if not module.params['location']:
+            params['location'] = '/export/nim/ios_mksysb'
+
+    elif objtype == 'ios_backup':
+        if not params['name'] and module.params['name_postfix'] is None:
+            params['name_postfix'] = '_iosb'
+        if not module.params['location']:
+            params['location'] = '/export/nim/ios_backup'
+
+    if action == 'list':
+        params['oslevel'] = module.params['oslevel']
+        nim_list_backup(module, targets, objtype, params)
+
+    elif action == 'view':
+        nim_view_backup(module, params)
+
+    elif action == 'create':
         for target in targets:
-            params['name'] = module.params['name']
-            params['name_prefix'] = module.params['name_prefix']
             if target in results['nim_node']['standalone']:
-                if not params['name'] and module.params['name_postfix'] is None:
-                    params['name_postfix'] = '_sysb'
-                else:
-                    params['name_postfix'] = module.params['name_postfix']
-                if not module.params['location']:
-                    params['location'] = '/export/nim/mksysb'
-                else:
-                    params['location'] = module.params['location']
+                if objtype != 'mksysb':
+                    results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                    results['status'][target] = 'FAILURE'
+                    continue
 
-                nim_standalone_backup(module, target, params)
-            else:
-                if not params['name'] and module.params['name_postfix'] is None:
-                    params['name_postfix'] = '_iosb'
-                else:
-                    params['name_postfix'] = module.params['name_postfix']
-                if not module.params['location']:
-                    params['location'] = '/export/nim/ios_backup'
-                else:
-                    params['location'] = module.params['location']
+                nim_mksysb_create(module, target, objtype, params)
 
-                nim_viosbr_create(module, target, params)
+            elif target in results['nim_node']['vios']:
+                if objtype == 'mksysb':
+                    results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                    results['status'][target] = 'FAILURE'
+                    continue
+
+                if objtype == 'ios_mksysb':
+                    nim_mksysb_create(module, target, objtype, params)
+
+                if objtype == 'ios_backup':
+                    nim_iosbackup_create(module, target, params)
         wait_all()
 
     elif action == 'restore':
         for target in targets:
-            params['name'] = module.params['name']
-            params['name_prefix'] = module.params['name_prefix']
-            params['remove_backup'] = module.params['remove_backup']
 
-            if target in results['nim_node']['standalone']:
-                if not params['name'] and module.params['name_postfix'] is None:
-                    params['name_postfix'] = '_sysb'
-                else:
-                    params['name_postfix'] = module.params['name_postfix']
+            if target in results['nim_node']['standalone'] and objtype != 'mksysb':
+                results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                results['status'][target] = 'FAILURE'
+                continue
+            if target in results['nim_node']['vios'] and objtype == 'mksysb':
+                    results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                    results['status'][target] = 'FAILURE'
+                    continue
+
+            if 'mksysb' in objtype:
                 params['group'] = module.params['group']
                 params['spot_name'] = module.params['spot_name']
                 if not params['spot_name']:
@@ -1024,23 +1115,21 @@ def main():
                 params['remove_spot'] = module.params['remove_spot']
                 params['accept_licenses'] = module.params['accept_licenses']
                 params['boot_target'] = module.params['boot_target']
+                params['remove_backup'] = module.params['remove_backup']
 
-                nim_standalone_restore(module, target, params)
+                nim_mksysb_restore(module, target, params)
+
             else:
-                if not params['name'] and module.params['name_postfix'] is None:
-                    params['name_postfix'] = '_iosb'
-                else:
-                    params['name_postfix'] = module.params['name_postfix']
-                nim_viosbr_restore(module, target, params)
+                nim_iosbackup_restore(module, target, params)
+
         wait_all()
 
-    elif action == 'list':
-        params['name'] = module.params['name']
-        params['name_prefix'] = module.params['name_prefix']
-        params['name_postfix'] = module.params['name_postfix']
-        params['oslevel'] = module.params['oslevel']
-        results['backup_info'] = nim_list_backup(module, targets, params)
-
+    # Exit
+    for taret in targets:
+        if 'FAILURE' not in results['status'][target]:
+            results['msg'] = 'At least one {0} operation failed. See meta data for details on targets'.format(action)
+            module.fail_json(**results)
+    results['msg'] = '{0} operation successfull.'.format(action)
     module.exit_json(**results)
 
 
