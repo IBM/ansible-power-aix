@@ -43,9 +43,9 @@ options:
     - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
     - C(ios_mksysb) operates on VIOS backup of the operating system (that is, the root volume group).
     - C(ios_backup) operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
+    - Discarded for I(action=view) as this action only applies to ios_backup.
     type: str
     choices: [ mksysb, ios_mksysb, ios_backup ]
-    required: yes
     default: mksysb
   targets:
     description:
@@ -121,7 +121,6 @@ options:
   spot_location:
     description:
     - Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.
-    - If not specified default is I(spot_location=/export/spot).
     - Can be used on a standalone client if I(action=restore).
     type: path
     default: /export/nim/spot
@@ -157,7 +156,7 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: List backup resource targeting nimclient1 at a specific level and name starting with ansible
+- name: List mksysb targeting nimclient1 at a specific level and name starting with ansible
   nim_backup:
     action: list
     targets: nimclient1
@@ -480,7 +479,7 @@ def get_nim_type_info(module, type):
     if rc != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Cannot get NIM information for {0}. Command \'{1}\' failed with return code {1}.'\
+        results['msg'] = 'Cannot get NIM information for {0}. Command \'{1}\' failed with return code {2}.'\
                          .format(type, ' '.join(cmd), rc)
         module.fail_json(**results)
 
@@ -986,14 +985,16 @@ def main():
             spot_name=dict(type='str'),
             spot_prefix=dict(type='str'),
             spot_postfix=dict(type='str', default='_spot'),
-            spot_location=dict(type='path'),
+            spot_location=dict(type='path', default='/export/nim/spot'),
             remove_spot=dict(type='bool', default=True),
             remove_backup=dict(type='bool', default=False),
             boot_target=dict(type='bool', default=True),
             accept_licenses=dict(type='bool', default=True),
             oslevel=dict(type='str'),
         ),
-        required_if=['action', ['view'], ['name']],
+        required_if=[
+            ['action', ['view'], ['name']],
+        ],
     )
 
     results = dict(
@@ -1098,9 +1099,9 @@ def main():
                 results['status'][target] = 'FAILURE'
                 continue
             if target in results['nim_node']['vios'] and objtype == 'mksysb':
-                    results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
-                    results['status'][target] = 'FAILURE'
-                    continue
+                results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                results['status'][target] = 'FAILURE'
+                continue
 
             if 'mksysb' in objtype:
                 params['group'] = module.params['group']
