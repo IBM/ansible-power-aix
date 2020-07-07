@@ -18,10 +18,10 @@ author:
 module: nim_backup
 short_description: Use NIM to create, list and restore backup on LPAR and VIOS clients.
 description:
-- It uses the NIM define ooperation it creates mksysb or ios_backup resource on the NIM master
+- Uses the NIM define operation it creates mksysb or ios_backup resource on the NIM master
   depending on the type of the client.
-- It lists the backup resources available on the NIM master and allows to filter results.
-- It uses the NIM bos_inst and viosbr to restore backup on LPAR or VIOS clients.
+- Lists the backup resources available on the NIM master and allows to filter results.
+- Uses the NIM bos_inst and viosbr to restore backup images on LPAR or VIOS clients.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
