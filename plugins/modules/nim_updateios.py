@@ -455,7 +455,7 @@ def check_vios_targets(module, targets):
                 continue
             rc, stdout = compute_c_rsh_rc(elem, rc, stdout)
             if rc != 0:
-                msg = 'Cannot reach {0} with c_rsh, tuple {} will be ignored, rc:{1}, stderr:{2}'.format(elem, rc, stderr)
+                msg = 'Cannot reach {0} with c_rsh, tuple {1} will be ignored, rc:{2}, stderr:{3}'.format(elem, tuple_elts, rc, stderr)
                 module.log('[WARNING] ' + msg)
                 results['meta']['message'].append(msg)
                 error = True
@@ -572,7 +572,7 @@ def check_vios_ssp_status(module, target_tuple):
                 results['meta'][vios_key]['messages'].append(msg)
                 return False
             elif 'none' != results['nim_node']['vios'][vios_name]['ssp_status']:
-                msg = 'SSP state on {0} for node {1} is {2}, it differs from existing state: {2}.'\
+                msg = 'SSP state on {0} for node {1} is {2}, it differs from existing state: {3}.'\
                       .format(vios, vios_name, ssp_status, results['nim_node']['vios'][vios_name]['ssp_status'])
                 module.log(msg)
                 results['meta'][vios_key]['messages'].append(msg)
@@ -591,7 +591,7 @@ def check_vios_ssp_status(module, target_tuple):
 
     # Check VIOSes SSP is the same and status is OK
     if results['nim_node']['vios'][target_tuple[0]]['ssp_name'] != results['nim_node']['vios'][target_tuple[1]]['ssp_name']:
-        msg = 'Both VIOSes must belong to the same SSP'.format(vios_key)
+        msg = 'Both VIOSes must belong to the same SSP'
         module.log(msg)
         results['meta'][vios_key]['messages'].append(msg)
         return False
