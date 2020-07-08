@@ -1126,8 +1126,8 @@ def main():
         wait_all()
 
     # Exit
-    for taret in targets:
-        if 'FAILURE' not in results['status'][target]:
+    for target in targets:
+        if 'FAILURE' in results['status'][target]:
             results['msg'] = 'At least one {0} operation failed. See meta data for details on targets'.format(action)
             module.fail_json(**results)
     results['msg'] = '{0} operation successfull.'.format(action)
