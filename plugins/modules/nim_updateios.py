@@ -22,7 +22,6 @@ description:
 - Checks status of previous operation if provided before running its operations.
 - VIOSes of a tuple must be on the same SSP and its state must be UP.
 - When updating VIOSes in pair, it checks the SSP state, stop it before installing the VIOS, and restart it after installation.
-
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -58,7 +57,7 @@ options:
     type: str
   lpp_source:
     description:
-    - Identifies the I(lpp_source) resource that will provide the installation images for the operation.
+    - Identifies the NIM lpp_source resource that will provide the installation images for the operation.
     type: str
   accept_licenses:
     description:
@@ -81,7 +80,6 @@ options:
     - If set then the I(vios_status) of a target tuple must contain I(SUCCESS) to attempt update.
     - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set to I(SKIPPED-NO-PREV-STATUS).
     type: dict
-    elements: str
   nim_node:
     description:
     - Allows to pass along NIM node info from a task to another so that it
@@ -92,9 +90,10 @@ options:
 EXAMPLES = r'''
 - name: Update a pair of VIOSes
   nim_updateios:
-    targets: "(nimvios01, nimvios02)"
+    targets: (nimvios01, nimvios02)
     action: install
-    lpp_source: /lpp_source
+    lpp_source: 723lpp_res
+    preview: yes
 '''
 
 RETURN = r'''
@@ -138,8 +137,8 @@ status:
     sample:
         "status": {
             "vios1-vios2": "SUCCESS-UPDT2",
-            "vios3": "SUCCESS-ALTDC"
-            "vios4-vios5": "FAILURE-SSP"
+            "vios3": "SUCCESS-ALTDC",
+            "vios4-vios5": "FAILURE-SSP",
             "vios6-vios7": "FAILURE-UPDT1"
         }
 nim_node:
@@ -479,7 +478,7 @@ def tuple_str(tuple_list):
     tuple_str = ''
     for elem in tuple_list:
         if tuple_str:
-            tuple_str += '-{}'.format(elem)
+            tuple_str += '-{0}'.format(elem)
     return tuple_str
 
 
