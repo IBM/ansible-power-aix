@@ -45,7 +45,7 @@ for f in $DIR/plugins/modules/*.py; do
     for version in $PY_VERSIONS; do
         echo "-------- sanity tests for $f ($version) --------"
         # remove potential ignore lines of core module
-        grep "${f%%.py}" $SANITY_IGNORE && sed "/$f/d" $SANITY_IGNORE >$SANITY_IGNORE
+        grep "${f%%.py}" $SANITY_IGNORE && sed -i "/$f/d" $SANITY_IGNORE
         ansible-test sanity ${f%%.py} --python $version
         (( $? )) && m_rc=1 && rc=$(($rc + $m_rc))
     done
