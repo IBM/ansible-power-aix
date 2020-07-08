@@ -30,7 +30,6 @@ options:
     group_attributes:
         description:
         - Provide the attributes to be changed or created for the group.
-        default: None
         type: dict
     user_list_action:
         description:
@@ -38,7 +37,6 @@ options:
         - C(add) to add members or amdins of the group with provided I(users_list) in group I(name)
         - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
         type: str
-        default: None
         choices: [ add, remove ]
     user_list_type:
         description:
@@ -46,7 +44,6 @@ options:
         - C(members) for Provided I(user_list_action) choice will be performed on members of the group
         - C(admins) for Provided I(user_list_action) choice will be performed on admins of the group
         type: str
-        default: None
         choices: [ members, admins ]
     state:
         description:
@@ -61,13 +58,13 @@ options:
         description:
         - Group name should be specified for which the action is to taken
         type: str
+        aliases: [ group ]
         required: true
     users_list:
         description:
         - Name of the users separated by commas to be added/removed as members/admins of the group.
         - Should be used along with I(user_list_action) and I(user_list_type parameters).
         type: str
-        default: None
     remove_keystore:
         description:
         - Specifies if the group's keystore information should be deleted from the system while performing
@@ -77,13 +74,13 @@ options:
 """
 
 EXAMPLES = r'''
-- name: "Change group ansible"
-    group:
-        state: 'present'
-        name: 'ansible'
-        user_list_action: 'add'
-        user_list_type: 'member'
-        users_list: 'test1'
+- name: Change group ansible
+  group:
+    state: present
+    name: ansible
+    user_list_action: 'add'
+    user_list_type: 'member'
+    users_list: 'test1'
 '''
 
 RETURN = r'''
@@ -274,10 +271,10 @@ def main():
         argument_spec=dict(
             state=dict(type='str', required=True, choices=['present', 'absent']),
             name=dict(type='str', required=True, aliases=['group']),
-            group_attributes=dict(type='dict', default=None),
-            user_list_action=dict(type='str', choices=['add', 'remove'], default=None),
-            user_list_type=dict(type='str', choices=['members', 'admins'], default=None),
-            users_list=dict(type='str', default=None),
+            group_attributes=dict(type='dict'),
+            user_list_action=dict(type='str', choices=['add', 'remove']),
+            user_list_type=dict(type='str', choices=['members', 'admins']),
+            users_list=dict(type='str'),
             remove_keystore=dict(type='bool', default=True),
         ),
         supports_check_mode=False
