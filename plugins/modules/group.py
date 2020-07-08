@@ -4,6 +4,9 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -27,33 +30,38 @@ options:
     group_attributes:
         description:
         - Provide the attributes to be changed or created for the group.
-        type: dict
         default: None
+        type: dict
     user_list_action:
         description:
         - Provides the action choices of adding or removing the members or admins.
-        I(add) = Adding members or amdins of the group
-        I(remove) = Removing members or admins of the group
+        - C(add) to add members or amdins of the group with provided I(users_list) in group I(name)
+        - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
         type: str
         default: None
+        choices: [ add, remove ]
     user_list_type:
         description:
         - Provides the action to be taken for the group members or admins.
-        I(members) = Provided I(user_list_action) choice will be performed on members of the group
-        I(admins) = Provided I(user_list_action) choice will be performed on admins of the group
+        - C(members) for Provided I(user_list_action) choice will be performed on members of the group
+        - C(admins) for Provided I(user_list_action) choice will be performed on admins of the group
         type: str
         default: None
+        choices: [ members, admins ]
     state:
         description:
         - Specifies the action to be performed for the group.
-        - I(present) = New group will be created in the system with provided attributes. If group is already
+        - C(present) to create group with provided I(name) and I(group_attributes) in the system. If group is already
           present then attributes specified for the group will be changed with the provided attributes.
-        - I(absent) = Group will be deleted. If group is not present then message will be displayed for the same.
+        - C(absent) to delete group with provided I(name). If group is not present then message will be displayed for the same.
         type: str
+        choices: [ present, absent ]
+        required: true
     name:
         description:
         - Group name should be specified for which the action is to taken
         type: str
+        required: true
     users_list:
         description:
         - Name of the users separated by commas to be added/removed as members/admins of the group.
@@ -65,7 +73,7 @@ options:
         - Specifies if the group's keystore information should be deleted from the system while performing
           the delete operation on group.
         type: bool
-        default: True
+        default: true
 """
 
 EXAMPLES = r'''
