@@ -29,7 +29,7 @@ requirements:
 options:
     group_attributes:
         description:
-        - Provide the attributes to be changed or created for the group.
+        - Provides the attributes to be changed or created for the group.
         type: dict
     user_list_action:
         description:
