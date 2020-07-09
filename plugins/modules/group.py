@@ -25,7 +25,6 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - Root user is required.
-
 options:
     group_attributes:
         description:
@@ -109,7 +108,6 @@ from ansible.module_utils.basic import AnsibleModule
 def modify_group(module):
     """
     Modify the attributes of the user.
-
     arguments:
         module  (dict): The Ansible module
     note:
@@ -182,7 +180,6 @@ def create_group(module):
     """
     Creates the group with the attributes provided in the
     attribiutes field.
-
     arguments:
         module  (dict): The Ansible module
     note:
@@ -217,7 +214,6 @@ def create_group(module):
 def remove_group(module):
     """
     Remove the user from the group.
-
     arguments:
         module  (dict): The Ansible module
     note:
@@ -245,7 +241,6 @@ def remove_group(module):
 def group_exists(module):
     """
     Checks if the specified user exists in the system or not.
-
     arguments:
         module      (dict): The Ansible module
     return:
