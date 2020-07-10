@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -54,6 +53,7 @@ options:
       Refer to 'crfs' AIX command documentation for more details on the
       supported attributes.
     type: list
+    elements: str
   device:
     description:
     - When I(state=present),
@@ -105,13 +105,13 @@ options:
 
 EXAMPLES = r'''
 - name: Creation of a JFS2 filesystem
-   filesystem:
-     state: present
-     filesystem: /mnt3
-     fs_type: jfs2
-     attributes: size=32768,isnapshot='no'
-     mount_group: test
-     vg: rootvg
+  filesystem:
+    state: present
+    filesystem: /mnt3
+    fs_type: jfs2
+    attributes: size=32768,isnapshot='no'
+    mount_group: test
+    vg: rootvg
 - name: Increase size of a filesystem
   filesystem:
     filesystem: /mnt3
