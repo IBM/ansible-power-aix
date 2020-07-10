@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -58,7 +59,6 @@ options:
     - When I(state=present),
       a. For local filesystem, specifies the logical volume to use for filesystem
       creation. If not specified, a new logical volume will be created.
-
       b. For NFS filesystem, specifies the remote export device to use for
       creation/modification of the filesystem
     type: str
@@ -70,26 +70,28 @@ options:
     description:
     - When I(state=present), for local filesystems, specifies whether the
       file system is to be processed by the accounting subsystem
+      If not specified, a default value of 'false' will be used for filesystem
+      creation
     type: bool
-    default: false, for creation of filesystem
   fs_type:
     description:
     - Specifies the virtual filesystem type for local filesystem creation
+      If not specified, creates jfs2 filesystem by default.
     type: str
-    default: jfs2, for creation of filesystem
+    default: jfs2
   auto_mount:
     description:
     - Specifies whether to automatically mount the filesystem at system restart
-      while creation/updation of any filesystem
+      while creation/updation of any filesystem. If not specified, default value
+      for filesystem creation will be 'false'
     type: bool
-    default: false, for creation of filesystem
   permissions:
     description:
     - Specifies file system permissions while creation/updation of any filesystem
       I(rw) - specifies read-write mode
       I(ro) - specifies read-only mode
+      If not specified, default value of 'rw' will be used for filesystem creation
     type: str
-    default: rw, for creation of filesystem
     choices: [ ro, rw ]
   mount_group:
     description:
@@ -99,11 +101,10 @@ options:
     description:
     - Specifies a Network File System (NFS) server for NFS filesystem
     type: str
-
 '''
 
 EXAMPLES = r'''
-- name: "Creation of a JFS2 filesystem"
+- name: Creation of a JFS2 filesystem
    filesystem:
      state: present
      filesystem: /mnt3
@@ -111,13 +112,11 @@ EXAMPLES = r'''
      attributes: size=32768,isnapshot='no'
      mount_group: test
      vg: rootvg
-
 - name: Increase size of a filesystem
   filesystem:
     filesystem: /mnt3
     state: present
     attributes: size=+5M
-
 - name: Remove a NFS filesystem
   filesystem:
     filesystem: /mnt
