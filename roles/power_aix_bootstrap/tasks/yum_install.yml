@@ -1,0 +1,98 @@
+# Copyright (c) IBM Corporation 2020
+---
+# CHECK for Yum on inventory host
+  - name: Check for existence of yum
+    raw: "rpm -q --quiet yum && echo true || echo false"
+    register: yum_exists
+
+  - name: End play if inventory host has yum installed
+    meta: end_host
+    when: yum_exists.stdout is search("true")
+
+# DOWNLOAD (local) install images
+  - name: Check for rpm_src file on localhost
+    stat:
+      path: "{{ download_dir }}/{{ rpm_src }}"
+    register: rpm_dest
+    delegate_to: localhost
+
+  - name: Download latest rpm (installp) fileset
+    get_url:
+      url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/{{ rpm_src }}"
+      url_username: anonymous
+      url_password: anonymous
+      dest: "{{ download_dir }}/{{ rpm_src }}"
+      mode: '0644'
+    when: not rpm_dest.stat.exists
+    delegate_to: localhost
+
+  - name: Check for yum_src file on localhost
+    stat:
+      path: "{{ download_dir }}/{{ yum_src }}"
+    register: yum_dest
+    delegate_to: localhost
+
+  - name: Download yum bundle file
+    get_url:
+      url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ yum_src }}"
+      url_username: anonymous
+      url_password: anonymous
+      dest: "{{ download_dir }}/{{ yum_src }}"
+      mode: '0644'
+    when: not yum_dest.stat.exists
+    delegate_to: localhost
+
+  - name: Check for script file on localhost
+    stat:
+      path: "{{ download_dir }}/yum_installer.sh"
+    register: script_dest
+    delegate_to: localhost
+
+  - name: Copy the installer script file
+    copy:
+      src: "files/yum_installer.sh"
+      dest: "{{ download_dir }}/yum_installer.sh"
+      mode: '0755'
+    when: not script_dest.stat.exists
+    delegate_to: localhost
+
+# DEFINE / EXPAND target path
+  - name: Check for target directory
+    raw: "test -d {{ target_dir }} && echo true || echo false"
+    register: target_exists
+
+  - name: Check for target yum bundle
+    raw: "test -e {{ target_dir }}/{{ yum_src }} && echo true || echo false"
+    register: yum_target_exists
+    when: target_exists.stdout is search("true")
+
+  - name: Create target filesystem for image transfer
+    raw: "crfs -v jfs2 -g rootvg -a size=200M -m {{ target_dir }} -A yes -p rw"
+    register: crfs_result
+    when: target_exists.stdout is search("false")
+
+  - name: Mount target filesystem
+    raw: "mount {{ target_dir }}"
+    when: crfs_result.rc == 0
+
+# TRANSFER files to target inventory
+  - name: Transfer install images
+    raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} {{ inventory_hostname }}:{{ target_dir }}"
+    register: scp_result
+    ignore_errors: True
+    delegate_to: localhost
+
+# EXECUTE restore on target inventory
+  - name: Restore yum bundle content
+    raw: "{{ target_dir }}/yum_installer.sh {{ target_dir }}"
+    ignore_errors: True
+    when: scp_result.rc == 0
+
+# REMOVE temporary filesystem resource
+  - name: Remove temporary storage space
+    raw: "umount -f {{ target_dir }} && rmfs -r {{ target_dir }}"
+    when: crfs_result.rc is defined and crfs_result.rc == 0
+
+  - name: Print status
+    debug:
+      msg: Bootstrap attempt of yum on {{ inventory_hostname }} has completed

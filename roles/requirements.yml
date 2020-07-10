@@ -1,0 +1,2 @@
+roles:
+  - name: ibm.power_aix_bootstrap

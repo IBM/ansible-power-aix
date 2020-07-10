@@ -1,0 +1,21 @@
+---
+- name: "Bootstrap Yum on AIX"
+  hosts: aix
+  gather_facts: no
+  tasks:
+
+# CHECK for Yum on inventory host
+  - include_role:
+      name: power_aix_bootstrap
+    vars:
+      pkgtype: "yum"
+      download_dir: "~"
+      target_dir: "/tmp/.ansible.cpdir"
+
+- name: "Bootstrap Python on AIX"
+  hosts: aix
+  gather_facts: no
+  tasks:
+
+  - name: Yum install python
+    raw: yum -y install python

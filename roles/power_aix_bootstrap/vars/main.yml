@@ -1,0 +1,4 @@
+# Copyright (c) IBM Corporation 2020
+pkgtype: "yum"
+download_dir: "~"
+target_dir: "/tmp/.ansible.cpdir.yum"
