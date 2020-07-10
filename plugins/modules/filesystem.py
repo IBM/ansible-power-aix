@@ -390,7 +390,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            attributes=dict(type='list'),
+            attributes=dict(type='list', elements='str'),
             account_subsystem=dict(type='bool'),
             auto_mount=dict(type='bool'),
             device=dict(type='str'),
