@@ -42,14 +42,14 @@ options:
     default: present
   rm_mount_point:
     description:
-    - When state is I(absent), specifies to remove the mount directory along
+    - When state is I(state=absent), specifies to remove the mount directory along
       with the entry in the filesystem.
     type: bool
     default: false
   attributes:
     description:
     - When I(state=present), specifies comma separated attribute=value pairs
-      used for creation/modification of local filesystem (eg: JFS, JFS2)
+      used for creation/modification of local filesystem.
       Refer to 'crfs' AIX command documentation for more details on the
       supported attributes.
     type: list
@@ -76,7 +76,7 @@ options:
     description:
     - Specifies the virtual filesystem type for local filesystem creation
     type: str
-    default: jfs2
+    default: jfs2, for creation of filesystem
   auto_mount:
     description:
     - Specifies whether to automatically mount the filesystem at system restart
@@ -423,6 +423,7 @@ def main():
         msg = "Invalid state '%s'" % state
 
     module.exit_json(changed=changed, msg=msg)
+
 
 if __name__ == '__main__':
     main()
