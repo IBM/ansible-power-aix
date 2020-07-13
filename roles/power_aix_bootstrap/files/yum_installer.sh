@@ -30,7 +30,7 @@ typeset -i total_req=`echo "(75)" | bc`
 tmp_free=`df -m $source | sed -e /Filesystem/d | awk '{print $3}'`
 if [[ $tmp_free -le $total_req ]]
 then
-   chfs -a size=+$(( total_req - tmp_free )) $source
+   chfs -a size=+$(( total_req - tmp_free ))M $source
    if [[ $? -ne 0 ]]; then
        echo "Error: please make sure ${source} has 75M of free space for extracting the rpm packages."
        exit 1
@@ -43,7 +43,7 @@ typeset -i total_opt=`echo "(250)" | bc`
 opt_free=`df -m /opt | sed -e /Filesystem/d | awk '{print $3}'`
 if [[ $opt_free -le $total_opt ]]
 then
-   chfs -a size=+$(( total_opt - opt_free )) /opt
+   chfs -a size=+$(( total_opt - opt_free ))M /opt
    if [[ $? -ne 0 ]]; then
      echo "Total free space required for /opt filesystem to install rpms from yum_bundle is around 250M."
      echo "Please increase the size of /opt and retry."

@@ -1,0 +1,33 @@
+# Copyright (c) IBM Corporation 2020
+---
+# CHECK for Yum on inventory host
+  - name: Check for existence of yum
+    raw: "rpm -q --quiet yum && echo true || echo false"
+    register: yum_exists
+
+  - name: End play if inventory host doesn't have yum installed
+    meta: end_host
+    when: yum_exists.stdout is search("false")
+
+# MOUNT / EXPAND target paths
+  - name: Expand /var target directory (+100M)
+    aix_filesystem:
+      filesystem: /var
+      size: +100M
+      state: present
+
+  - name: Expand /opt target directory (+400M)
+    aix_filesystem:
+      filesystem: /opt
+      size: +400M
+      state: present
+
+# INSTALL using yum
+  - name: Install python and requisite rpms
+    yum:
+      name: python
+      state: latest
+
+  - name: Print status
+    debug:
+      msg: Bootstrap attempt of python on {{ inventory_hostname }} has completed

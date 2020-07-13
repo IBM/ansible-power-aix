@@ -8,23 +8,35 @@
 - name: Fail if download_dir not specified
   fail:
     msg: download_dir not specified
-  when: not download_dir is defined
+  when:
+    - pkgtype == "yum"
+    - not download_dir is defined
 
 - name: Fail if target_dir not specified
   fail:
     msg: target_dir not specified
-  when: not target_dir is defined
+  when:
+    - pkgtype == "yum"
+    - not target_dir is defined
 
 - name: Fail if rpm_src not specified
   fail:
     msg: rpm_src not specified
-  when: not rpm_src is defined
+  when:
+    - pkgtype == "yum"
+    - not rpm_src is defined
 
 - name: Fail if yum_src not specified
   fail:
     msg: yum_src not specified
-  when: not yum_src is defined
+  when:
+    - pkgtype == "yum"
+    - not yum_src is defined
 
 - name: Bootstrap yum
   include_tasks: "yum_install.yml"
   when: pkgtype == "yum"
+
+- name: Bootstrap python
+  include_tasks: "python_install.yml"
+  when: pkgtype == "python"
