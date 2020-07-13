@@ -7,6 +7,7 @@ set -o pipefail
 set -o errtrace
 
 OUTPUTDIR=./documentation
+PY_VERSIONS="2.7 3.7"
 
 err_report() {
     echo "Error running '$1' [rc=$2] line $3 "
@@ -21,6 +22,7 @@ cd $ANSIBLE_DIR
 git clone https://github.com/ansible/ansible.git
 cd ansible
 ANSIBLE_DIR="$(pwd)"
+SANITY_IGNORE="$ANSIBLE_DIR/test/sanity/ignore.txt"
 
 python3 -m venv venv
 . venv/bin/activate
@@ -32,23 +34,24 @@ pip install -r docs/docsite/requirements.txt
 # place the modules in the appropriate folder
 cp $DIR/plugins/modules/*.py $ANSIBLE_DIR/lib/ansible/modules/
 
+
 set +e
 
 rc=0
+errored=""
 for f in $DIR/plugins/modules/*.py; do
     f="${f##*/}"
-    echo "-------- compile for $f --------"
-    ansible-test sanity --test compile ${f%%.py} --python 2.7
-    rc=$(($rc + $?))
-    ansible-test sanity --test compile ${f%%.py} --python 3.7
-    rc=$(($rc + $?))
-
-    echo "-------- validate-modules for $f --------"
-    ansible-test sanity --test validate-modules ${f%%.py}
-    rc=$(($rc + $?))
-
+    m_rc=0
+    for version in $PY_VERSIONS; do
+        echo "-------- sanity tests for $f ($version) --------"
+        # remove potential ignore lines of core module
+        grep "${f%%.py}" $SANITY_IGNORE && sed -i "/$f/d" $SANITY_IGNORE
+        ansible-test sanity ${f%%.py} --python $version
+        (( $? )) && m_rc=1 && rc=$(($rc + $m_rc))
+    done
+    (( $m_rc )) && errored+="$f "
 done
-
+(( $rc )) && echo "-------- module in error --------\n$errored\n"
 
 set -e
 
