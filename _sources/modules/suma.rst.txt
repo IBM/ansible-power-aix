@@ -65,25 +65,25 @@ Parameters
   download_dir (optional, path, /usr/sys/inst.images)
     Directory where updates are downloaded.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   download_only (optional, bool, False)
     Download only. Do not perform installation of updates.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   last_sp (optional, bool, False)
     Specifies to download the last SP of the TL specified in *oslevel*. If no is specified only the TL is downloaded.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   extend_fs (optional, bool, True)
     Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   task_id (optional, str, None)
@@ -103,7 +103,7 @@ Parameters
   save_task (optional, bool, False)
     Saves the SUMA task. The task is saved, allowing scheduling information to be added later.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
     If *oslevel* is a TL and *last_sp=yes* the task is saved with the last SP available at the saving time.
 
@@ -119,7 +119,7 @@ Parameters
   metadata_dir (optional, path, /var/adm/ansible/metadata)
     Directory where metadata files are downloaded.
 
-    Can be used if *action=download* or ``action=preview`` when *last_sp=yes* or *oslevel* is not exact, for example *oslevel=Latest*.
+    Can be used if *action=download* or *action=preview* when *last_sp=yes* or *oslevel* is not exact, for example *oslevel=Latest*.
 
 
 

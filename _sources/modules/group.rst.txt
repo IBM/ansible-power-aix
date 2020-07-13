@@ -1,0 +1,136 @@
+.. _group_module:
+
+
+group -- Create new group or change/remove attributes of group on AIX
+=====================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates the creation of a new group with provided attributes, the modification of attributes of existing group and the deletion of group.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  group_attributes (optional, dict, None)
+    Provides the attributes to be changed or created for the group.
+
+
+  user_list_action (optional, str, None)
+    Provides the action choices of adding or removing the members or admins.
+
+    ``add`` to add members or amdins of the group with provided *users_list* in group *name*
+
+    ``remove`` to remove members or admins of the group with provided *users_list* from group *name*
+
+
+  user_list_type (optional, str, None)
+    Provides the action to be taken for the group members or admins.
+
+    ``members`` for Provided *user_list_action* choice will be performed on members of the group
+
+    ``admins`` for Provided *user_list_action* choice will be performed on admins of the group
+
+
+  state (True, str, None)
+    Specifies the action to be performed for the group.
+
+    ``present`` to create group with provided *name* and *group_attributes* in the system. If group is already present then attributes specified for the group will be changed with the provided attributes.
+
+    ``absent`` to delete group with provided *name*. If group is not present then message will be displayed for the same.
+
+
+  name (True, str, None)
+    Group name should be specified for which the action is to taken
+
+
+  users_list (optional, str, None)
+    Name of the users separated by commas to be added/removed as members/admins of the group.
+
+    Should be used along with *user_list_action* and *user_list_type parameters*.
+
+
+  remove_keystore (optional, bool, True)
+    Specifies if the group's keystore information should be deleted from the system while performing the delete operation on group.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Change group ansible
+      group:
+        state: present
+        name: ansible
+        user_list_action: 'add'
+        user_list_type: 'member'
+        users_list: 'test1'
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  The execution message.
+
+
+rc' (If the command failed., int, )
+  The return code.
+
+
+stdout' (If the command failed., str, )
+  The standard output.
+
+
+stderr' (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX development Team (@pbfinley1911)
+

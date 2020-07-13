@@ -1,0 +1,151 @@
+.. _filesystem_module:
+
+
+filesystem -- Create/Modify/Remove Local and NFS filesystems
+============================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates a. Creation of Local and NFS filesystems b. Modification of filesystems c. Removal of filesystems
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX
+
+
+
+Parameters
+----------
+
+  filesystem (True, str, None)
+    Specifies the mount point, which is the directory where the file system will be mounted.
+
+
+  state (optional, str, present)
+    Specifies the action to be performed on the filesystem. *present* - Specifies to create a filesystem if it doesn't exist else to change the specified filesystem attributes *absent* - Specifies to remove a filesystem
+
+
+  rm_mount_point (optional, bool, False)
+    When state is *state=absent*, specifies to remove the mount directory along with the entry in the filesystem.
+
+
+  attributes (optional, list, None)
+    When *state=present*, specifies comma separated attribute=value pairs used for creation/modification of local filesystem. Refer to 'crfs' AIX command documentation for more details on the supported attributes.
+
+
+  device (optional, str, None)
+    When *state=present*, a. For local filesystem, specifies the logical volume to use for filesystem creation. If not specified, a new logical volume will be created. b. For NFS filesystem, specifies the remote export device to use for creation/modification of the filesystem
+
+
+  vg (optional, str, None)
+    When *state=present*, specifies an existing volume group
+
+
+  account_subsystem (optional, bool, None)
+    When *state=present*, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem If not specified, a default value of 'false' will be used for filesystem creation
+
+
+  fs_type (optional, str, jfs2)
+    Specifies the virtual filesystem type for local filesystem creation If not specified, creates jfs2 filesystem by default.
+
+
+  auto_mount (optional, bool, None)
+    Specifies whether to automatically mount the filesystem at system restart while creation/updation of any filesystem. If not specified, default value for filesystem creation will be 'false'
+
+
+  permissions (optional, str, None)
+    Specifies file system permissions while creation/updation of any filesystem *rw* - specifies read-write mode *ro* - specifies read-only mode If not specified, default value of 'rw' will be used for filesystem creation
+
+
+  mount_group (optional, str, None)
+    Specifies the mount group to be set/modified for a filesystem
+
+
+  nfs_server (optional, str, None)
+    Specifies a Network File System (NFS) server for NFS filesystem
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Creation of a JFS2 filesystem
+      filesystem:
+        state: present
+        filesystem: /mnt3
+        fs_type: jfs2
+        attributes: size=32768,isnapshot='no'
+        mount_group: test
+        vg: rootvg
+    - name: Increase size of a filesystem
+      filesystem:
+        filesystem: /mnt3
+        state: present
+        attributes: size=+5M
+    - name: Remove a NFS filesystem
+      filesystem:
+        filesystem: /mnt
+        state: absent
+        rm_mount_point: true
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  The execution message.
+
+
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (If the command failed., str, )
+  The standard output.
+
+
+stderr (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

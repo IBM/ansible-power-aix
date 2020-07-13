@@ -38,7 +38,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Playbooks" href="../playbooks.html" />
+    <link rel="next" title="user – Create new users or change/remove attributes of users on AIX." href="user.html" />
     <link rel="prev" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" href="nim_viosupgrade.html" /> 
 </head>
 
@@ -95,16 +95,19 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Makes a file system available for use</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Update a single or a pair of Virtual I/O Servers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
@@ -118,6 +121,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vios_alt_disk.html">vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</a></li>
 </ul>
 </li>
 </ul>
@@ -251,16 +256,16 @@
 <p>Required when <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>download_dir (optional, path, /usr/sys/inst.images)</dt><dd><p>Directory where updates are downloaded.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>download_only (optional, bool, False)</dt><dd><p>Download only. Do not perform installation of updates.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>last_sp (optional, bool, False)</dt><dd><p>Specifies to download the last SP of the TL specified in <em>oslevel</em>. If no is specified only the TL is downloaded.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>extend_fs (optional, bool, True)</dt><dd><p>Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>task_id (optional, str, None)</dt><dd><p>SUMA task identification number.</p>
 <p>Can be used if <em>action=list</em> or <em>action=edit</em> or <em>action=delete</em> or <em>action=run</em> or <em>action=unschedule</em>.</p>
@@ -270,7 +275,7 @@
 <p>Can be used if <em>action=edit</em>.</p>
 </dd>
 <dt>save_task (optional, bool, False)</dt><dd><p>Saves the SUMA task. The task is saved, allowing scheduling information to be added later.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
 <p>If <em>oslevel</em> is a TL and <em>last_sp=yes</em> the task is saved with the last SP available at the saving time.</p>
 </dd>
 <dt>description (optional, str, None)</dt><dd><p>Display name for SUMA task.</p>
@@ -278,7 +283,7 @@
 <p>Can be used for <em>action=download</em> or <em>action=preview</em>.</p>
 </dd>
 <dt>metadata_dir (optional, path, /var/adm/ansible/metadata)</dt><dd><p>Directory where metadata files are downloaded.</p>
-<p>Can be used if <em>action=download</em> or <code class="docutils literal notranslate"><span class="pre">action=preview</span></code> when <em>last_sp=yes</em> or <em>oslevel</em> is not exact, for example <em>oslevel=Latest</em>.</p>
+<p>Can be used if <em>action=download</em> or <em>action=preview</em> when <em>last_sp=yes</em> or <em>oslevel</em> is not exact, for example <em>oslevel=Latest</em>.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -353,7 +358,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../playbooks.html" class="btn btn-neutral float-right" title="Playbooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="user.html" class="btn btn-neutral float-right" title="user – Create new users or change/remove attributes of users on AIX." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="nim_viosupgrade.html" class="btn btn-neutral float-left" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

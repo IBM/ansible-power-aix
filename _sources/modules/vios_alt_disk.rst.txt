@@ -1,0 +1,124 @@
+.. _vios_alt_disk_module:
+
+
+vios_alt_disk -- Create/Cleanup an alternate rootvg disk on a VIOS
+==================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Copy the rootvg to an alternate disk or cleanup an existing one.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Specifies the operation to perform on the VIOS.
+
+    ``alt_disk_copy`` to perform and alternate disk copy.
+
+    ``alt_disk_clean`` to cleanup an existing alternate disk copy.
+
+
+  target (optional, str, None)
+    Specifies the target disk.
+
+
+  disk_size_policy (optional, str, nearest)
+    Specifies how to choose the alternate disk if not specified.
+
+    ``minimize`` smallest disk that can be selected.
+
+    ``upper`` first disk found bigger than the rootvg disk.
+
+    ``lower`` disk size less than rootvg disk size but big enough to contain the used PPs.
+
+    ``nearest``
+
+
+  force (optional, bool, False)
+    Forces removal of any existing alternate disk copy on target disk.
+
+    Stops any active rootvg mirroring during the alternate disk copy.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - ``alt_disk_copy`` only backs up mounted file systems. Mount all file systems that you want to back up.
+   - copy is performed only on one alternate hdisk even if the rootvg contains multiple hdisks
+   - error if several ``altinst_rootvg`` exist for cleanup operation in automatic mode
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Perform an alternate disk copy of the rootvg to hdisk1
+      vios_alt_disk:
+        action: alt_disk_copy
+        target: hdisk1
+
+    - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
+      vios_alt_disk:
+        action: alt_disk_copy
+        disk_size_policy: minimize
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  Status information.
+
+
+status (always, str, )
+  Status.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

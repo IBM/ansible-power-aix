@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>filesystem – Create/Modify/Remove Local and NFS filesystems &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_upgradeios – Perform a VIOS upgrade with NIM" href="nim_upgradeios.html" />
-    <link rel="prev" title="nim_suma – Download fixes, SP or TL on an AIX server" href="nim_suma.html" /> 
+    <link rel="next" title="flrtvc – Generate FLRTVC report, download and install efix." href="flrtvc.html" />
+    <link rel="prev" title="emgr – The interim fix manager installs and manages system interim fixes." href="emgr.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,7 +95,15 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">filesystem – Create/Modify/Remove Local and NFS filesystems</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
@@ -107,15 +115,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
@@ -189,14 +189,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</li>
+      <li>filesystem – Create/Modify/Remove Local and NFS filesystems</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim_updateios.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/filesystem.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -210,8 +210,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-updateios-use-nim-to-update-a-single-or-a-pair-of-virtual-i-o-servers-to-latest-maintenance-level">
-<span id="nim-updateios-module"></span><h1>nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.<a class="headerlink" href="#nim-updateios-use-nim-to-update-a-single-or-a-pair-of-virtual-i-o-servers-to-latest-maintenance-level" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="filesystem-create-modify-remove-local-and-nfs-filesystems">
+<span id="filesystem-module"></span><h1>filesystem – Create/Modify/Remove Local and NFS filesystems<a class="headerlink" href="#filesystem-create-modify-remove-local-and-nfs-filesystems" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -224,120 +224,79 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.</p>
-<p>Checks status of previous operation if provided before running its operations.</p>
-<p>VIOSes of a tuple must be on the same SSP and its state must be UP.</p>
-<p>When updating VIOSes in pair, it checks the SSP state, stop it before installing the VIOS, and restart it after installation.</p>
+<p>This module facilitates a. Creation of Local and NFS filesystems b. Modification of filesystems c. Removal of filesystems</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX &gt;= 7.1 TL3</p></li>
-<li><p>Python &gt;= 2.7</p></li>
+<li><p>AIX</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl>
-<dt>action (True, str, None)</dt><dd><p>Specifies the operation telling updateios what operation to perform on the VIOS.</p>
-<p><code class="docutils literal notranslate"><span class="pre">install</span></code> installs new and supported filesets.</p>
-<p><code class="docutils literal notranslate"><span class="pre">commit</span></code> commits all uncommitted updates.</p>
-<p><code class="docutils literal notranslate"><span class="pre">reject</span></code> rejects all uncommitted updates.</p>
-<p><code class="docutils literal notranslate"><span class="pre">cleanup</span></code> removes all incomplete pieces of the previous installation.</p>
-<p><code class="docutils literal notranslate"><span class="pre">remove</span></code> removes the listed filesets from the system in <code class="docutils literal notranslate"><span class="pre">filesets</span></code> or <code class="docutils literal notranslate"><span class="pre">installp_bundle</span></code>.</p>
+<div><dl class="simple">
+<dt>filesystem (True, str, None)</dt><dd><p>Specifies the mount point, which is the directory where the file system will be mounted.</p>
 </dd>
-<dt>targets (True, list, None)</dt><dd><p>Specifies the list of VIOSes NIM targets to update.</p>
-<p>You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple. There are called tuple.</p>
+<dt>state (optional, str, present)</dt><dd><p>Specifies the action to be performed on the filesystem. <em>present</em> - Specifies to create a filesystem if it doesn’t exist else to change the specified filesystem attributes <em>absent</em> - Specifies to remove a filesystem</p>
 </dd>
-<dt>filesets (optional, str, None)</dt><dd><p>Specifies a list of file sets to remove from the targets.</p>
-<p>Can be used with <em>action=remove</em>.</p>
+<dt>rm_mount_point (optional, bool, False)</dt><dd><p>When state is <em>state=absent</em>, specifies to remove the mount directory along with the entry in the filesystem.</p>
 </dd>
-<dt>installp_bundle (optional, str, None)</dt><dd><p>Specifies an <em>installp_bundle</em> resource that lists filesets to remove on the targets.</p>
-<p>Can be used with <em>action=remove</em>.</p>
+<dt>attributes (optional, list, None)</dt><dd><p>When <em>state=present</em>, specifies comma separated attribute=value pairs used for creation/modification of local filesystem. Refer to ‘crfs’ AIX command documentation for more details on the supported attributes.</p>
 </dd>
-<dt>lpp_source (optional, str, None)</dt><dd><p>Identifies the NIM lpp_source resource that will provide the installation images for the operation.</p>
+<dt>device (optional, str, None)</dt><dd><p>When <em>state=present</em>, a. For local filesystem, specifies the logical volume to use for filesystem creation. If not specified, a new logical volume will be created. b. For NFS filesystem, specifies the remote export device to use for creation/modification of the filesystem</p>
 </dd>
-<dt>accept_licenses (optional, bool, True)</dt><dd><p>Specifies whether the software licenses should be automatically accepted during the installation.</p>
+<dt>vg (optional, str, None)</dt><dd><p>When <em>state=present</em>, specifies an existing volume group</p>
 </dd>
-<dt>preview (optional, bool, True)</dt><dd><p>Specifies a preview operation. No action is actually performed.</p>
+<dt>account_subsystem (optional, bool, None)</dt><dd><p>When <em>state=present</em>, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem If not specified, a default value of ‘false’ will be used for filesystem creation</p>
 </dd>
-<dt>time_limit (optional, str, None)</dt><dd><p>Before starting the action on a VIOS tuple, the actual date is compared to this parameter value; if it is greater then the task is stopped.</p>
-<p>The format is <code class="docutils literal notranslate"><span class="pre">mm/dd/yyyy</span> <span class="pre">hh:mm</span></code>.</p>
-<p>The resulting status for tuples in this case will be <em>SKIPPED-TIMEOUT</em>.</p>
+<dt>fs_type (optional, str, jfs2)</dt><dd><p>Specifies the virtual filesystem type for local filesystem creation If not specified, creates jfs2 filesystem by default.</p>
 </dd>
-<dt>vios_status (optional, dict, None)</dt><dd><p>Specifies the result of a previous operation.</p>
-<p>If set then the <em>vios_status</em> of a target tuple must contain <em>SUCCESS</em> to attempt update.</p>
-<p>If no <em>vios_status</em> value is found for a tuple, then returned <em>status</em> for this tuple is set to <em>SKIPPED-NO-PREV-STATUS</em>.</p>
+<dt>auto_mount (optional, bool, None)</dt><dd><p>Specifies whether to automatically mount the filesystem at system restart while creation/updation of any filesystem. If not specified, default value for filesystem creation will be ‘false’</p>
 </dd>
-<dt>nim_node (optional, dict, None)</dt><dd><p>Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.</p>
+<dt>permissions (optional, str, None)</dt><dd><p>Specifies file system permissions while creation/updation of any filesystem <em>rw</em> - specifies read-write mode <em>ro</em> - specifies read-only mode If not specified, default value of ‘rw’ will be used for filesystem creation</p>
+</dd>
+<dt>mount_group (optional, str, None)</dt><dd><p>Specifies the mount group to be set/modified for a filesystem</p>
+</dd>
+<dt>nfs_server (optional, str, None)</dt><dd><p>Specifies a Network File System (NFS) server for NFS filesystem</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Update a pair of VIOSes</span>
-  <span class="nt">nim_updateios</span><span class="p">:</span>
-    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">(nimvios01, nimvios02)</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">install</span>
-    <span class="nt">lpp_source</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">723lpp_res</span>
-    <span class="nt">preview</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Creation of a JFS2 filesystem</span>
+  <span class="nt">filesystem</span><span class="p">:</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">present</span>
+    <span class="nt">filesystem</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/mnt3</span>
+    <span class="nt">fs_type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">jfs2</span>
+    <span class="nt">attributes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">size=32768,isnapshot=&#39;no&#39;</span>
+    <span class="nt">mount_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test</span>
+    <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rootvg</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Increase size of a filesystem</span>
+  <span class="nt">filesystem</span><span class="p">:</span>
+    <span class="nt">filesystem</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/mnt3</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">present</span>
+    <span class="nt">attributes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">size=+5M</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove a NFS filesystem</span>
+  <span class="nt">filesystem</span><span class="p">:</span>
+    <span class="nt">filesystem</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/mnt</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">absent</span>
+    <span class="nt">rm_mount_point</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>msg (always, str, NIM updateios operation completed successfully)</dt><dd><p>The execution message.</p>
-</dd>
-<dt>targets (always, str, [nimclient01, nimclient02, …])</dt><dd><p>The execution message.</p>
-</dd>
-<dt>stdout (always, str, )</dt><dd><p>The standard output.</p>
-</dd>
-<dt>stderr (always, str, )</dt><dd><p>The standard error.</p>
-</dd>
-<dt>status (always, dict, {‘status’: {‘vios1-vios2’: ‘SUCCESS-UPDT2’, ‘vios3’: ‘SUCCESS-ALTDC’, ‘vios4-vios5’: ‘FAILURE-SSP’, ‘vios6-vios7’: ‘FAILURE-UPDT1’}})</dt><dd><p>Status of the execution on each target &lt;tuple&gt;.</p>
-<p>If the operation status is not avalaible, the <em>vios_status</em> passed in parameter is returned.</p>
-<dl>
-<dt>&lt;tuple&gt; (when tuple are actually a NIM client and reachable with c_rsh., str, SUCCESS-UPDT)</dt><dd><p>Status of the execution on the &lt;tuple&gt;.</p>
-<p><em>SKIPPED-NO-PREV-STATUS</em> when no <em>vios_status</em> value is found for the tuple.</p>
-<p>Previous <em>vios_status</em> when the tuple status does not contains SUCCESS.</p>
-<p><em>SKIPPED-TIMEOUT</em> when the <em>time_limit</em> is reached before updating the 1st VIOS of the tuple.</p>
-<p><em>FAILURE-SSP</em> when SSP checks or operation failed.</p>
-<p><em>FAILURE-UPDT1</em> when update of first VIOS of the tuple failed.</p>
-<p><em>FAILURE-UPDT2</em> when update of second VIOS of the tuple failed.</p>
-</dd>
-</dl>
-</dd>
-<dt>nim_node (always, dict, {‘nim_node’: {‘standalone’: {‘nimclient01’: {‘Cstate’: ‘ready for a NIM operation’, ‘Cstate_result’: ‘success’, ‘Mstate’: ‘currently running’, ‘cable_type1’: ‘N/A’, ‘class’: ‘machines’, ‘comments’: ‘object defined using nimquery -d’, ‘connect’: ‘nimsh’, ‘cpuid’: ‘00F600004C00’, ‘if1’: ‘master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0’, ‘installed_image’: ‘ansible_img’, ‘mgmt_profile1’: ‘p8-hmc 2 nimclient-cec nimclient-vios1’, ‘netboot_kernel’: ‘64’, ‘platform’: ‘chrp’, ‘prev_state’: ‘customization is being performed’, ‘type’: ‘standalone’}}, ‘vios’: {‘vios1’: {‘Cstate’: ‘ready for a NIM operation’, ‘Cstate_result’: ‘success’, ‘Mstate’: ‘currently running’, ‘cable_type1’: ‘N/A’, ‘class’: ‘management’, ‘connect’: ‘nimsh’, ‘cpuid’: ‘00F600004C00’, ‘if1’: ‘master_net vios1.aus.stglabs.ibm.com 0’, ‘mgmt_profile1’: ‘p8-hmc 1 vios-cec’, ‘netboot_kernel’: ‘64’, ‘platform’: ‘chrp’, ‘prev_state’: ‘alt_disk_install operation is being performed’}}}})</dt><dd><p>NIM node info. It can contains more information if passed as option <em>nim_node</em>.</p>
 <dl class="simple">
-<dt>standalone (always, dict, )</dt><dd><p>List of standalone NIM resources.</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>vios (always, dict, )</dt><dd><p>List of VIOS NIM resources.</p>
+<dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
-</dl>
+<dt>stdout (If the command failed., str, )</dt><dd><p>The standard output.</p>
 </dd>
-<dt>meta (always, dict, )</dt><dd><p>Detailed information on the module execution.</p>
-<dl>
-<dt>messages (always, list, see below)</dt><dd><p>Details on errors/warnings not related to a specific tuple.</p>
-</dd>
-<dt>&lt;tuple&gt; (when target is actually a NIM client, dict, )</dt><dd><p>Detailed information on the execution on the target tuple.</p>
-<dl>
-<dt>messages (always, list, )</dt><dd><p>Details on errors/warnings.</p>
-</dd>
-<dt>&lt;vios&gt; (when target is actually a NIM client., dict, )</dt><dd><p>updateios information for a specific vios.</p>
-<dl class="simple">
-<dt>stdout (If the command was run., str, )</dt><dd><p>Standard output of the updateios command.</p>
-</dd>
-<dt>stderr (If the command was run., str, )</dt><dd><p>Standard error of the updateios command.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-</dl>
+<dt>stderr (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>
@@ -364,10 +323,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_upgradeios.html" class="btn btn-neutral float-right" title="nim_upgradeios – Perform a VIOS upgrade with NIM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="flrtvc.html" class="btn btn-neutral float-right" title="flrtvc – Generate FLRTVC report, download and install efix." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_suma.html" class="btn btn-neutral float-left" title="nim_suma – Download fixes, SP or TL on an AIX server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="emgr.html" class="btn btn-neutral float-left" title="emgr – The interim fix manager installs and manages system interim fixes." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

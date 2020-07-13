@@ -1,8 +1,8 @@
 .. _nim_updateios_module:
 
 
-nim_updateios -- Update a single or a pair of Virtual I/O Servers
-=================================================================
+nim_updateios -- Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.
+=========================================================================================================
 
 .. contents::
    :local:
@@ -12,7 +12,13 @@ nim_updateios -- Update a single or a pair of Virtual I/O Servers
 Synopsis
 --------
 
-Performs updates and customization to the Virtual I/O Server (VIOS).
+Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
+
+Checks status of previous operation if provided before running its operations.
+
+VIOSes of a tuple must be on the same SSP and its state must be UP.
+
+When updating VIOSes in pair, it checks the SSP state, stop it before installing the VIOS, and restart it after installation.
 
 
 
@@ -28,54 +34,64 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-  targets (True, str, None)
-    NIM targets.
+  action (True, str, None)
+    Specifies the operation telling updateios what operation to perform on the VIOS.
+
+    ``install`` installs new and supported filesets.
+
+    ``commit`` commits all uncommitted updates.
+
+    ``reject`` rejects all uncommitted updates.
+
+    ``cleanup`` removes all incomplete pieces of the previous installation.
+
+    ``remove`` removes the listed filesets from the system in ``filesets`` or ``installp_bundle``.
+
+
+  targets (True, list, None)
+    Specifies the list of VIOSes NIM targets to update.
+
+    You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple. There are called tuple.
 
 
   filesets (optional, str, None)
-    Specifies a list of file sets to remove from the target.
+    Specifies a list of file sets to remove from the targets.
+
+    Can be used with *action=remove*.
 
 
   installp_bundle (optional, str, None)
-    Specifies an *installp_bundle* resource that lists file sets to remove on the target.
+    Specifies an *installp_bundle* resource that lists filesets to remove on the targets.
+
+    Can be used with *action=remove*.
 
 
   lpp_source (optional, str, None)
-    Identifies the *lpp_source* resource that will provide the installation images for the operation.
+    Identifies the NIM lpp_source resource that will provide the installation images for the operation.
 
 
-  accept_licenses (optional, str, None)
+  accept_licenses (optional, bool, True)
     Specifies whether the software licenses should be automatically accepted during the installation.
 
 
-  action (True, str, None)
-    Operation to perform on the targets.
-
-    ``install``.
-
-    ``commit``.
-
-    ``reject``.
-
-    ``cleanup``.
-
-    ``remove``.
-
-
-  preview (optional, str, None)
-    Specifies a preview operation.
+  preview (optional, bool, True)
+    Specifies a preview operation. No action is actually performed.
 
 
   time_limit (optional, str, None)
-    Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped; the format is ``mm/dd/yyyy hh:mm``.
+    Before starting the action on a VIOS tuple, the actual date is compared to this parameter value; if it is greater then the task is stopped.
 
+    The format is ``mm/dd/yyyy hh:mm``.
 
-  vars (optional, dict, None)
-    Specifies additional parameters.
+    The resulting status for tuples in this case will be *SKIPPED-TIMEOUT*.
 
 
   vios_status (optional, dict, None)
     Specifies the result of a previous operation.
+
+    If set then the *vios_status* of a target tuple must contain *SUCCESS* to attempt update.
+
+    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to *SKIPPED-NO-PREV-STATUS*.
 
 
   nim_node (optional, dict, None)
@@ -97,9 +113,10 @@ Examples
     
     - name: Update a pair of VIOSes
       nim_updateios:
-        targets: "(nimvios01, nimvios02)"
+        targets: (nimvios01, nimvios02)
         action: install
-        lpp_source: /lpp_source
+        lpp_source: 723lpp_res
+        preview: yes
 
 
 
@@ -114,16 +131,78 @@ targets (always, str, [nimclient01, nimclient02, ...])
   The execution message.
 
 
-output (always, str, )
-  output of executed commands.
+stdout (always, str, )
+  The standard output.
 
 
-status (always, dict, { vios01: 'SUCCESS-UPDT', vios02: 'SUCCESS-ALTDC' })
-  The execution message.
+stderr (always, str, )
+  The standard error.
 
 
-  <target> (when target is actually a NIM client, str, SUCCESS-UPDT)
-    Status of the execution on the <target>.
+status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT2', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-SSP', 'vios6-vios7': 'FAILURE-UPDT1'}})
+  Status of the execution on each target <tuple>.
+
+  If the operation status is not avalaible, the *vios_status* passed in parameter is returned.
+
+
+  <tuple> (when tuple are actually a NIM client and reachable with c_rsh., str, SUCCESS-UPDT)
+    Status of the execution on the <tuple>.
+
+    *SKIPPED-NO-PREV-STATUS* when no *vios_status* value is found for the tuple.
+
+    Previous *vios_status* when the tuple status does not contains SUCCESS.
+
+    *SKIPPED-TIMEOUT* when the *time_limit* is reached before updating the 1st VIOS of the tuple.
+
+    *FAILURE-SSP* when SSP checks or operation failed.
+
+    *FAILURE-UPDT1* when update of first VIOS of the tuple failed.
+
+    *FAILURE-UPDT2* when update of second VIOS of the tuple failed.
+
+
+
+nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed'}}}})
+  NIM node info. It can contains more information if passed as option *nim_node*.
+
+
+  standalone (always, dict, )
+    List of standalone NIM resources.
+
+
+  vios (always, dict, )
+    List of VIOS NIM resources.
+
+
+
+meta (always, dict, )
+  Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific tuple.
+
+
+  <tuple> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the target tuple.
+
+
+    messages (always, list, )
+      Details on errors/warnings.
+
+
+    <vios> (when target is actually a NIM client., dict, )
+      updateios information for a specific vios.
+
+
+      stdout (If the command was run., str, )
+        Standard output of the updateios command.
+
+
+      stderr (If the command was run., str, )
+        Standard error of the updateios command.
+
+
 
 
 

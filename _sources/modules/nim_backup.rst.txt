@@ -1,0 +1,344 @@
+.. _nim_backup_module:
+
+
+nim_backup -- Use NIM to create, list and restore backup on LPAR and VIOS clients.
+==================================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Uses the NIM define operation it creates mksysb or ios_backup resource on the NIM master depending on the type of the client.
+
+Lists the backup resources available on the NIM master and allows to filter results.
+
+Uses the NIM bos_inst and viosbr to restore backup images on LPAR or VIOS clients.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Controls what is performed.
+
+    ``create`` performs an backup operation on targets trough NIM master.
+
+    ``restore`` restores a backup on targets trough NIM master.
+
+    ``view`` displays the content of a VIOS backup, only for *type=backup*.
+
+    ``list`` lists backups for targets on the NIM master.
+
+
+  type (optional, str, mksysb)
+    Specifies the type of backup object to operate.
+
+    ``mksysb`` operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
+
+    ``ios_mksysb`` operates on VIOS backup of the operating system (that is, the root volume group).
+
+    ``ios_backup`` operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
+
+    Discarded for *action=view* as this action only applies to ios_backup.
+
+
+  targets (False, list, None)
+    Specifies the NIM clients to perform the action on.
+
+    ``foo*`` designates all the NIM clients with name starting by ``foo``.
+
+    ``foo[2:4]`` designates the NIM clients among foo2, foo3 and foo4.
+
+    ``*`` or ``ALL`` designates all the NIM clients.
+
+    ``vios`` or ``standalone`` designates all the NIM clients of this type.
+
+    Required if *action=create* and *action=restore*.
+
+    If *action=list* it filters the results on the source_image attribute of the NIM resource.
+
+
+  nim_node (optional, dict, None)
+    Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
+
+
+  location (optional, path, None)
+    Specifies where to put the backup files on the NIM master.
+
+    If not specified default for LPAR targets is *location=/export/nim/mksysb* and for VIOS targets it is *location=/export/nim/ios_backup*.
+
+    Required if *action=create* and *action=restore*.
+
+
+  name (optional, str, None)
+    Exact name of the backup NIM resource to act on.
+
+    If *action=list* it filters the results on the name of the NIM resource.
+
+    Required if *action=view*.
+
+
+  name_prefix (optional, str, None)
+    Prefix of the backup NIM resource name to act on.
+
+    The name format will be *<prefix><target_name><postfix>*.
+
+    Used only if ``name`` is not specified.
+
+    If *action=list* it filters the results on the name of the NIM resource.
+
+
+  name_postfix (optional, str, None)
+    Specifies the postfix of the backup NIM resource name to act on.
+
+    If not specified default for LPAR targets is *name_postfix=_sysb* and for VIOS targets it is *name_postfix=_iosb*.
+
+    The name format will be *<prefix><target_name><postfix>*.
+
+    Used only if ``name`` is not specified.
+
+    If *action=list* it filters the results on the name of the NIM resource.
+
+
+  group (optional, str, None)
+    Specifies the resource group to use for restoration.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  spot_name (optional, str, None)
+    Specifies the exact SPOT resource name to create to restore the backup on a standalone client.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  spot_prefix (optional, str, None)
+    Specifies the prefix of SPOT resource name created to restore the backup on a standalone client.
+
+    The SPOT name format will be *<spot_prefix><target_name><spot_postfix>*.
+
+    Used only if ``spot_name`` is not specified.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  spot_postfix (optional, str, _spot)
+    Specifies the prostfix of SPOT resource name created to restore the backup on a standalone client.
+
+    The SPOT name format will be *<spot_prefix><target_name><spot_postfix>*.
+
+    Used only if ``spot_name`` is not specified.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  spot_location (optional, path, /export/nim/spot)
+    Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  oslevel (optional, str, None)
+    Specifies the oslevel to filter results.
+
+    Can be used if *action=list*.
+
+
+  remove_spot (optional, bool, True)
+    Specifies to remove the SPOT resource created to restore the backup on a standalone client.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  remove_backup (optional, bool, False)
+    Specifies to remove the backup resource created on the NIM master.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  accept_licenses (optional, bool, True)
+    Specifies to automatically accept all licenses during the restoration of the backup.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+  boot_target (optional, bool, True)
+    Specifies to boot the NIM client after restoration of the backup.
+
+    Can be used on a standalone client if *action=restore*.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: List mksysb targeting nimclient1 at a specific level and name starting with ansible
+      nim_backup:
+        action: list
+        targets: nimclient1
+        oslevel: "7200-03-02"
+        name_prefix: ansible
+
+    - name: Create a mksysb backup of a LPAR
+      nim_backup:
+        action: create
+        targets: nimclient1
+        name_postfix: _mksysb
+
+    - name: Restore a mksysb backup on a LPAR
+      nim_backup:
+        action: restore
+        targets: nimclient1
+        name_postfix: _mksysb
+        spot_postfix: _spot
+        remove_backup: yes
+        remove_spot: yes
+        boot_target: no
+        accept_licenses: yes
+
+    - name: Backup a VIOS configuration
+      nim_backup:
+        action: create
+        type: ios_backup
+        targets: vios1
+        name_postfix: _iosbackup
+
+    - name: Get the backup configuration of a VIOS
+      nim_backup:
+        action: view
+        targets: vios1
+
+    - name: Restore the backup configuration on a VIOS
+      nim_backup:
+        action: restore
+        type: ios_backup
+        targets: vios1
+        name_postfix: _iosbackup
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  Status information.
+
+
+targets (always, list, ['nimclient01', 'nimclient02', '...'])
+  List of VIOSes.
+
+
+status (always, dict, { nimclient01: 'SUCCESS', nimclient02: 'FAILURE' })
+  Satus of the operation for each ``target``. It can be empty, SUCCESS or FAILURE.
+
+
+  <target> (when target is actually a NIM client, str, SUCCESS)
+    Status of the execution on the <target>.
+
+
+
+backup_info (if I(action=list), dict, {'backup_info': {'ansible_img': {'Rstate': 'ready for use', 'alloc_count': '0', 'arch': 'power', 'class': 'resources', 'creation_date': 'Mon Feb 3 20:55:28 2020', 'location': '/export/nim/mksysb/ansible.sysb', 'mod': '3', 'oslevel_r': '7200-03', 'oslevel_s': '7200-03-02-1845', 'prev_state': 'unavailable for use', 'release': '2', 'server': 'master', 'source_image': 'nimclient01', 'type': 'mksysb', 'version': '7'}, 'nimclient2_sysb': {'class': 'resources', 'type': 'mksysb', 'creation_date': 'Sun May 3 15:54:44 2020', 'source_image': 'nimclient2', 'arch': 'power', 'Rstate': 'ready for use', 'prev_state': 'unavailable for use', 'location': '/export/nim/mksysb/nimclient2_ansible.sysb', 'version': '7', 'release': '2', 'mod': '3', 'oslevel_r': '7200-03', 'oslevel_s': '7200-03-04-1938', 'alloc_count': '0', 'server': 'master'}}})
+  The backup NIM resource information.
+
+
+  <backup_name> (, dict, )
+    Detailed information on the NIM resource.
+
+
+    <attribute> (, str, )
+      attribute of the <backup_name> resource
+
+
+
+
+nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed'}}}})
+  NIM node info. It can contains more information if passed as option *nim_node*.
+
+
+  standalone (always, dict, )
+    List of standalone NIM resources.
+
+
+  vios (always, dict, )
+    List of VIOS NIM resources.
+
+
+
+meta (always, dict, )
+  Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific target.
+
+
+  <target> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the ``target``.
+
+
+    messages (always, list, )
+      Details on errors/warnings
+
+
+    res_name (if I(success=True), str, )
+      Name of the NIM resource created.
+
+      If *action=backup* it is the name of the backup resource.
+
+      If *action=restore* and the target is a standalone machine, then it is the name of the SPOT resource.
+
+
+    stdout (If the command was run., str, )
+      Standard output of the last command.
+
+
+    stderr (If the command was run., str, )
+      Standard error of the last command.
+
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

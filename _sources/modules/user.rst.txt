@@ -1,0 +1,124 @@
+.. _user_module:
+
+
+user -- Create new users or change/remove attributes of users on AIX.
+=====================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates the creation of a new user with provided attributes, the modification of attributes of existing user and the deletion of user.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  state (True, str, None)
+    Specifies the action to be performed for the user.
+
+    ``present`` to create user with provided *name* and *attributes* in the system. If username is already present then attributes specified for the name will be changed with the provided values.
+
+    ``absent`` to delete user with provided *name*. If username is not present then message will be displayed.
+
+
+  name (True, str, None)
+    Specifies the user name for which the action is to be taken.
+
+
+  attributes (optional, dict, None)
+    Specifies the attributes to be changed or created for the user.
+
+
+  remove_password (optional, bool, True)
+    Specifies if the password information should be deleted from the system's password file while performing the delete operation on username.
+
+
+  change_passwd_on_login (optional, bool, False)
+    Specifies if the user is required to change the password when logging in the first time after the password change operation is performed.
+
+
+  password (optional, str, None)
+    Specifies the encrypted string for the password to create or change the password.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Create user aixguest1010
+      user:
+        state: present
+        name: aixguest1010
+        change_passwd_on_login: False
+        password: as$12ndhkfjk$1c
+        attributes:
+          home: /home/test/aixguest1010
+          data: 1272
+
+
+
+Return Values
+-------------
+
+msg (always, str, Username is created SUCCESSFULLY: aixguest1010)
+  The execution message.
+
+
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (If the command failed., str, )
+  The standard output.
+
+
+stderr (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+
