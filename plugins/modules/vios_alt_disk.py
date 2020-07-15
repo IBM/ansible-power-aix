@@ -179,8 +179,6 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
     """
     global results
 
-    used_pv = []
-
     # check rootvg
     if rootvg_info['status'] != 0:
         results['msg'] = 'Wrong rootvg state'
@@ -232,7 +230,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
     rootvg_size = rootvg_info["rootvg_size"]
     # in auto mode, find the first alternate disk available
     if not hdisks:
-        hdisk = ""
+        selected_disk = ""
         prev_disk = ""
         diffsize = 0
         prev_diffsize = 0
@@ -240,30 +238,27 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
         for key in sorted(pvs, key=lambda k: pvs[k]['size']):
             hdisk = key
 
-            # disk too small or already used
-            if pvs[hdisk]['size'] < used_size or pvs[hdisk]['pvid'] in used_pv:
+            # disk too small, skip
+            if pvs[hdisk]['size'] < used_size:
                 continue
 
             # smallest disk that can be selected
             if disk_size_policy == 'minimize':
-                if pvs[hdisk]['pvid'] != 'none':
-                    used_pv.append(pvs[hdisk]['pvid'])
+                selected_disk = hdisk
                 break
 
             diffsize = pvs[hdisk]['size'] - rootvg_size
             # matching disk size
             if diffsize == 0:
-                if pvs[hdisk]['pvid'] != 'none':
-                    used_pv.append(pvs[hdisk]['pvid'])
+                selected_disk = hdisk
                 break
 
             if diffsize > 0:
                 # diffsize > 0: first disk found bigger than the rootvg disk
-                selected_disk = ""
                 if disk_size_policy == 'upper':
                     selected_disk = hdisk
                 elif disk_size_policy == 'lower':
-                    if prev_disk == "":
+                    if not prev_disk:
                         # Best Can Do...
                         selected_disk = hdisk
                     else:
@@ -276,30 +271,24 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
                         selected_disk = hdisk
                     else:
                         selected_disk = prev_disk
-
-                hdisk = selected_disk
-                if pvs[selected_disk]['pvid'] != 'none':
-                    used_pv.append(pvs[selected_disk]['pvid'])
                 break
             # disk size less than rootvg disk size
             #   but big enough to contain the used PPs
             prev_disk = hdisk
             prev_diffsize = diffsize
 
-        if hdisk == "":
-            if prev_disk != "":
+        if not selected_disk:
+            if prev_disk:
                 # Best Can Do...
-                hdisk = prev_disk
-                if pvs[prev_disk]['pvid'] != 'none':
-                    used_pv.append(pvs[prev_disk]['pvid'])
+                selected_disk = prev_disk
             else:
                 results['msg'] = 'No available alternate disk with size greater than {0} MB'\
                                  ' found'.format(rootvg_size)
                 module.fail_json(**results)
 
         module.debug('Selected disk is {0} (select mode: {1})'
-                     .format(hdisk, disk_size_policy))
-        hdisks.append(hdisk)
+                     .format(selected_disk, disk_size_policy))
+        hdisks.append(selected_disk)
 
     # hdisks specified by the user
     else:
@@ -309,11 +298,6 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
                 results['msg'] = 'Alternate disk {0} is either not found or not available'\
                                  .format(hdisk)
                 module.fail_json(**results)
-            if pvs[hdisk]['pvid'] in used_pv:
-                results['msg'] = 'Alternate disk {0} already used on the mirror VIOS.'\
-                                 .format(hdisk)
-                module.fail_json(**results)
-
             tot_size += pvs[hdisk]['size']
 
         # check the specified hdisks are large enough
@@ -582,7 +566,7 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
     results['stderr'] = stderr_altdc
     if ret_altdc != 0:
         # an error occured during alt_disk_copy
-        results['msg'] = 'Failed to copy {0}: return code {1}.'.format(hdisks, ret_altdc)
+        results['msg'] = 'Failed to copy {0}: return code {1}.'.format(' '.join(hdisks), ret_altdc)
         module.fail_json(**results)
 
 
