@@ -72,7 +72,7 @@ options:
     default: nearest
   force:
     description:
-    - Forces action.
+    - Forces removal of any existing alternate disk copy on target disk.
     type: bool
     default: no
 notes:
@@ -320,7 +320,7 @@ def check_vios_targets(module, targets):
                        .format(targets, tuple_elts))
             return None
 
-        # check vios not already exists in the target list
+        # check vios does not already exist in the target list
         if tuple_elts[0] in vios_list or (tuple_len == 4 and (tuple_elts[2] in vios_list
                                                               or tuple_elts[0] == tuple_elts[2])):
             OUTPUT.append('Malformed VIOS targets {0}. Duplicated VIOS'
@@ -521,7 +521,7 @@ def find_valid_altdisk(module, action, vios_dict, vios_key, rootvg_info, altdisk
                                        .format(err_label, vios)
             return 1
 
-        # check an alternate disk not already exists
+        # check an alternate disk does not already exist
         for hdisk in pvs:
             if pvs[hdisk]['vg'] == 'altinst_rootvg':
                 altdisk_op_tab[vios_key] = "{0} an alternate disk ({1}) already exists on {2}"\
@@ -864,7 +864,7 @@ def check_valid_altdisk(module, action, vios, vios_dict, vios_key, altdisk_op_ta
         altdisk_op_tab[vios_key] = "SUCCESS-ALTDC"
 
     return:
-        0 if alternat disk is found
+        0 if alternate disk is found
         1 otherwise
     """
     global NIM_NODE
@@ -1057,17 +1057,17 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
         if not (vios_status is None):
             if vios_key not in vios_status:
                 altdisk_op_tab[vios_key] = "FAILURE-NO-PREV-STATUS"
-                OUTPUT.append("    {0} vioses skiped (no previous status found)"
+                OUTPUT.append("    {0} vioses skipped (no previous status found)"
                               .format(vios_key))
-                module.log("[WARNING] {0} vioses skiped (no previous status found)"
+                module.log("[WARNING] {0} vioses skipped (no previous status found)"
                            .format(vios_key))
                 continue
 
             if vios_status[vios_key] != 'SUCCESS-HC' and vios_status[vios_key] != 'SUCCESS-UPDT':
                 altdisk_op_tab[vios_key] = vios_status[vios_key]
-                OUTPUT.append("    {0} vioses skiped ({1})"
+                OUTPUT.append("    {0} vioses skipped ({1})"
                               .format(vios_key, vios_status[vios_key]))
-                module.log("[WARNING] {0} vioses skiped ({1})"
+                module.log("[WARNING] {0} vioses skipped ({1})"
                            .format(vios_key, vios_status[vios_key]))
                 continue
 
