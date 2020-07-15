@@ -33,6 +33,7 @@ options:
   node:
     description:
     - Specifies the node holding the mounted directory you want to mount/unmount.
+    type: str
   mount_all:
     description:
     - When I(state=mount) and I(mount_all=all), mounts all file systems in the
