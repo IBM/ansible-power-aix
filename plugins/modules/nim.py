@@ -913,7 +913,7 @@ def nim_maintenance(module, params):
 
         results['nim_output'].append('{0}'.format(stderr))
 
-        results['nim_output'].append('NIM - Finish Commiting {0}.'.format(target))
+        results['nim_output'].append('NIM - Finished committing {0}.'.format(target))
         if ret != 0:
             module.log("Error: NIM Command: {0} failed with return code {1}"
                        .format(cmd, ret))
