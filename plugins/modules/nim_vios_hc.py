@@ -311,7 +311,7 @@ def check_vios_targets(module, targets):
 
         module.debug('vios_tuple: {0}'.format(vios_tuple))
 
-        tuple_elts = set(vios_tuple.split(','))
+        tuple_elts = list(set(vios_tuple.split(',')))
         tuple_len = len(tuple_elts)
 
         if tuple_len != 1 and tuple_len != 2:
