@@ -29,7 +29,8 @@ python3 -m venv venv
 pip install -r requirements.txt
 . hacking/env-setup
 pip install -r docs/docsite/requirements.txt
-pip3 install voluptuous pycodestyle
+pip install pylint yamllint pyyaml
+pip3 install pyyaml voluptuous pycodestyle ansible-doc-extractor
 [[ -e $(find test/ -name sanity.txt) ]] && pip install -r $(find test/ -name sanity.txt)
 
 # place the modules in the appropriate folder
