@@ -1,3 +1,4 @@
+os: linux
 sudo: required
 dist: bionic
 language: python
@@ -44,8 +45,9 @@ script:
 # push the generated documentation using GitHub Pages
 deploy:
     provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_API_KEY
+    strategy: git
+    cleanup: false
+    token: $GITHUB_API_KEY
     local_dir: docs/build
     keep_history: true
     on:
