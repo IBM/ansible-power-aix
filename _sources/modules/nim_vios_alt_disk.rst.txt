@@ -71,7 +71,7 @@ Parameters
 
 
   force (optional, bool, False)
-    Forces action.
+    Forces removal of any existing alternate disk copy on target disk.
 
 
 

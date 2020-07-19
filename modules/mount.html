@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mount – Makes a file system available for use &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>mount – Mounts/Unmounts a Filesystem/Device &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -28,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -102,7 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Makes a file system available for use</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Mounts/Unmounts a Filesystem/Device</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -189,7 +189,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mount – Makes a file system available for use</li>
+      <li>mount – Mounts/Unmounts a Filesystem/Device</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -210,8 +210,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mount-makes-a-file-system-available-for-use">
-<span id="mount-module"></span><h1>mount – Makes a file system available for use<a class="headerlink" href="#mount-makes-a-file-system-available-for-use" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="mount-mounts-unmounts-a-filesystem-device">
+<span id="mount-module"></span><h1>mount – Mounts/Unmounts a Filesystem/Device<a class="headerlink" href="#mount-mounts-unmounts-a-filesystem-device" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -224,8 +224,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module makes a file system available for use at a specified location.</p>
-<p>Builds other file trees made up of directory and file mounts.</p>
+<p>This module mounts/unmounts a Filesystem/Device on the specified path</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -238,22 +237,30 @@
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="simple">
-<dt>mount_all (optional, bool, False)</dt><dd><p>Mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</p>
+<div><dl>
+<dt>state (optional, str, mount)</dt><dd><p>Specifies the module to perform mount/unmount operation</p>
 </dd>
-<dt>alternate_fs (optional, str, None)</dt><dd><p>Mounts on a file of an alternate file system, other than the /etc/file systems file</p>
+<dt>node (optional, str, None)</dt><dd><p>Specifies the node holding the mounted directory you want to mount/unmount.</p>
+</dd>
+<dt>mount_all (optional, str, none)</dt><dd><p>When <em>state=mount</em> and <em>mount_all=all</em>, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</p>
+<p>When <em>state=umount</em> and <em>mount_all=all</em>, unmounts all mounted filesystem</p>
+<p>When <em>state=umount</em> and <em>mount_all=remote</em>, unmounts all remote mounted filesystems</p>
+</dd>
+<dt>force (optional, bool, False)</dt><dd><p>For remote mounted file systems, this attribute forces an unmount to free a client when the server is down and server path names cannot be resolved, or when a file system must be unmounted while it is still in use.</p>
+</dd>
+<dt>alternate_fs (optional, str, None)</dt><dd><p>Mounts on a file of an alternate file system, other than the /etc/filesystems file</p>
 </dd>
 <dt>removable_fs (optional, bool, False)</dt><dd><p>Mounts a file system as a removable file system</p>
 </dd>
 <dt>read_only (optional, bool, False)</dt><dd><p>Mounts a file system as a read-only file system</p>
 </dd>
-<dt>fs_type (optional, str, None)</dt><dd><p>Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute</p>
+<dt>fs_type (optional, str, None)</dt><dd><p>Mounts/unmounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute</p>
 </dd>
 <dt>vfsname (optional, str, None)</dt><dd><p>Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file</p>
 </dd>
 <dt>options (optional, str, None)</dt><dd><p>Specifies options. Options should be of the form &lt;option-name&gt;=&lt;value&gt; and multiple options should be separated only by a comma.</p>
 </dd>
-<dt>mount_dir (optional, str, None)</dt><dd><p>Directory path to be mounted.</p>
+<dt>mount_dir (optional, str, None)</dt><dd><p>Directory path to be mounted/unmounted</p>
 </dd>
 <dt>mount_over_dir (optional, str, None)</dt><dd><p>Directory path on which the mount_dir should be mounted.</p>
 </dd>
@@ -262,21 +269,34 @@
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Specify the filesystems to be mounted</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Mount filesystems</span>
   <span class="nt">mount</span><span class="p">:</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_dir=/dev/hd1</span>
-    <span class="l l-Scalar l-Scalar-Plain">mount_over_dir=/home</span>
+    <span class="nt">mount_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/hd1</span>
+    <span class="nt">mount_over_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Mount filesystems provided by a node&quot;</span>
+  <span class="nt">mount</span><span class="p">:</span>
+    <span class="nt">node</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aixbase.aus.stglabs.ibm.com</span>
+    <span class="nt">mount_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/mnt</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Unmount remote filesystems</span>
+  <span class="nt">mount</span><span class="p">:</span>
+   <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">umount</span>
+   <span class="nt">mount_all</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">remote</span>
+   <span class="nt">force</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, Command ‘mount myfs’ failed with return code 1)</dt><dd><p>The execution message.</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>stdout (always, str,   node       mounted        mounted over    vfs       date        options      n ——– —————  —————  —— ———— ————— n /dev/hd4         /                jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd2         /usr             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd9var      /var             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd3         /tmp             jfs2   Jun 09 04:37 rw,log=/dev/hd8 n /dev/hd1         /home            jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/hd11admin   /admin           jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /proc            /proc            procfs Jun 09 04:38 rw              n /dev/hd10opt     /opt             jfs2   Jun 09 04:38 rw,log=/dev/hd8 n /dev/fslv01      /tftpboot        jfs2   Jun 09 04:38 rw,log=/dev/hd8 n)</dt><dd><p>The standard output.</p>
+<dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
-<dt>stderr (always, str, mount: myfs is not a known file system)</dt><dd><p>The standard error.</p>
+<dt>stdout (If the command failed., str, )</dt><dd><p>The standard output.</p>
+</dd>
+<dt>stderr (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>

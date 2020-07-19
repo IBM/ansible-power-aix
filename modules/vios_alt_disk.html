@@ -28,10 +28,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -102,7 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Makes a file system available for use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
@@ -244,7 +244,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> to perform and alternate disk copy.</p>
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_clean</span></code> to cleanup an existing alternate disk copy.</p>
 </dd>
-<dt>target (optional, str, None)</dt><dd><p>Specifies the target disk.</p>
+<dt>targets (optional, list, None)</dt><dd><p>Specifies the target disks.</p>
 </dd>
 <dt>disk_size_policy (optional, str, nearest)</dt><dd><p>Specifies how to choose the alternate disk if not specified.</p>
 <p><code class="docutils literal notranslate"><span class="pre">minimize</span></code> smallest disk that can be selected.</p>
@@ -252,7 +252,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">lower</span></code> disk size less than rootvg disk size but big enough to contain the used PPs.</p>
 <p><code class="docutils literal notranslate"><span class="pre">nearest</span></code></p>
 </dd>
-<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disk.</p>
+<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disks.</p>
 <p>Stops any active rootvg mirroring during the alternate disk copy.</p>
 </dd>
 </dl>
@@ -264,8 +264,7 @@
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> only backs up mounted file systems. Mount all file systems that you want to back up.</p></li>
-<li><p>copy is performed only on one alternate hdisk even if the rootvg contains multiple hdisks</p></li>
-<li><p>error if several <code class="docutils literal notranslate"><span class="pre">altinst_rootvg</span></code> exist for cleanup operation in automatic mode</p></li>
+<li><p>when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks</p></li>
 </ul>
 </div>
 </div>
@@ -274,21 +273,27 @@
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to hdisk1</span>
   <span class="nt">vios_alt_disk</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
-    <span class="nt">target</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk1</span>
+    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk1</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to the smallest disk that can be selected</span>
   <span class="nt">vios_alt_disk</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
     <span class="nt">disk_size_policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimize</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a cleanup of any existing alternate disk copy</span>
+  <span class="nt">vios_alt_disk</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_clean</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, )</dt><dd><p>Status information.</p>
+<dt>msg (always, str, VIOS alt disk operation completed successfully)</dt><dd><p>The execution message.</p>
 </dd>
-<dt>status (always, str, )</dt><dd><p>Status.</p>
+<dt>stdout (always, str, Bootlist is set to the boot disk: hdisk0 blv=hd5)</dt><dd><p>The standard output</p>
+</dd>
+<dt>stderr (always, str, )</dt><dd><p>The standard error</p>
 </dd>
 </dl>
 </div>

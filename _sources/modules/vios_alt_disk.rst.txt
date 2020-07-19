@@ -36,8 +36,8 @@ Parameters
     ``alt_disk_clean`` to cleanup an existing alternate disk copy.
 
 
-  target (optional, str, None)
-    Specifies the target disk.
+  targets (optional, list, None)
+    Specifies the target disks.
 
 
   disk_size_policy (optional, str, nearest)
@@ -53,7 +53,7 @@ Parameters
 
 
   force (optional, bool, False)
-    Forces removal of any existing alternate disk copy on target disk.
+    Forces removal of any existing alternate disk copy on target disks.
 
     Stops any active rootvg mirroring during the alternate disk copy.
 
@@ -66,8 +66,7 @@ Notes
 
 .. note::
    - ``alt_disk_copy`` only backs up mounted file systems. Mount all file systems that you want to back up.
-   - copy is performed only on one alternate hdisk even if the rootvg contains multiple hdisks
-   - error if several ``altinst_rootvg`` exist for cleanup operation in automatic mode
+   - when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks
 
 
 
@@ -81,24 +80,32 @@ Examples
     - name: Perform an alternate disk copy of the rootvg to hdisk1
       vios_alt_disk:
         action: alt_disk_copy
-        target: hdisk1
+        targets: hdisk1
 
     - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
       vios_alt_disk:
         action: alt_disk_copy
         disk_size_policy: minimize
 
+    - name: Perform a cleanup of any existing alternate disk copy
+      vios_alt_disk:
+        action: alt_disk_clean
+
 
 
 Return Values
 -------------
 
-msg (always, str, )
-  Status information.
+msg (always, str, VIOS alt disk operation completed successfully)
+  The execution message.
 
 
-status (always, str, )
-  Status.
+stdout (always, str, Bootlist is set to the boot disk: hdisk0 blv=hd5)
+  The standard output
+
+
+stderr (always, str, )
+  The standard error
 
 
 

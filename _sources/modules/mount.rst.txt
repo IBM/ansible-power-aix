@@ -1,8 +1,8 @@
 .. _mount_module:
 
 
-mount -- Makes a file system available for use
-==============================================
+mount -- Mounts/Unmounts a Filesystem/Device
+============================================
 
 .. contents::
    :local:
@@ -12,9 +12,7 @@ mount -- Makes a file system available for use
 Synopsis
 --------
 
-This module makes a file system available for use at a specified location.
-
-Builds other file trees made up of directory and file mounts.
+This module mounts/unmounts a Filesystem/Device on the specified path
 
 
 
@@ -30,12 +28,28 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
-  mount_all (optional, bool, False)
-    Mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute
+  state (optional, str, mount)
+    Specifies the module to perform mount/unmount operation
+
+
+  node (optional, str, None)
+    Specifies the node holding the mounted directory you want to mount/unmount.
+
+
+  mount_all (optional, str, none)
+    When *state=mount* and *mount_all=all*, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute
+
+    When *state=umount* and *mount_all=all*, unmounts all mounted filesystem
+
+    When *state=umount* and *mount_all=remote*, unmounts all remote mounted filesystems
+
+
+  force (optional, bool, False)
+    For remote mounted file systems, this attribute forces an unmount to free a client when the server is down and server path names cannot be resolved, or when a file system must be unmounted while it is still in use.
 
 
   alternate_fs (optional, str, None)
-    Mounts on a file of an alternate file system, other than the /etc/file systems file
+    Mounts on a file of an alternate file system, other than the /etc/filesystems file
 
 
   removable_fs (optional, bool, False)
@@ -47,7 +61,7 @@ Parameters
 
 
   fs_type (optional, str, None)
-    Mounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute
+    Mounts/unmounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute
 
 
   vfsname (optional, str, None)
@@ -59,7 +73,7 @@ Parameters
 
 
   mount_dir (optional, str, None)
-    Directory path to be mounted.
+    Directory path to be mounted/unmounted
 
 
   mount_over_dir (optional, str, None)
@@ -79,25 +93,40 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Specify the filesystems to be mounted
+    - name: Mount filesystems
       mount:
-        mount_dir=/dev/hd1
-        mount_over_dir=/home
+        mount_dir: /dev/hd1
+        mount_over_dir: /home
+
+    - name: Mount filesystems provided by a node"
+      mount:
+        node: aixbase.aus.stglabs.ibm.com
+        mount_dir: /mnt
+
+    - name: Unmount remote filesystems
+      mount:
+       state: umount
+       mount_all: remote
+       force: True
 
 
 
 Return Values
 -------------
 
-msg (always, str, Command 'mount myfs' failed with return code 1)
+msg (always, str, )
   The execution message.
 
 
-stdout (always, str,   node       mounted        mounted over    vfs       date        options      \n -------- ---------------  ---------------  ------ ------------ --------------- \n /dev/hd4         /                jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n /dev/hd2         /usr             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n /dev/hd9var      /var             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n /dev/hd3         /tmp             jfs2   Jun 09 04:37 rw,log=/dev/hd8 \n /dev/hd1         /home            jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n /dev/hd11admin   /admin           jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n /proc            /proc            procfs Jun 09 04:38 rw              \n /dev/hd10opt     /opt             jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n /dev/fslv01      /tftpboot        jfs2   Jun 09 04:38 rw,log=/dev/hd8 \n)
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (If the command failed., str, )
   The standard output.
 
 
-stderr (always, str, mount: myfs is not a known file system)
+stderr (If the command failed., str, )
   The standard error.
 
 
