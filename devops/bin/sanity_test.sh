@@ -18,7 +18,7 @@ trap 'err_report "$BASH_COMMAND" $? $LINENO' ERR
 DIR="$(pwd)"
 
 # build the virtual environment to run ansible-test
-cd $ANSIBLE_DIR
+cd
 git clone https://github.com/ansible/ansible.git
 cd ansible
 ANSIBLE_DIR="$(pwd)"
@@ -29,6 +29,8 @@ python3 -m venv venv
 pip install -r requirements.txt
 . hacking/env-setup
 pip install -r docs/docsite/requirements.txt
+pip install pylint yamllint pyyaml
+pip3 install pyyaml voluptuous pycodestyle ansible-doc-extractor
 [[ -e $(find test/ -name sanity.txt) ]] && pip install -r $(find test/ -name sanity.txt)
 
 # place the modules in the appropriate folder
