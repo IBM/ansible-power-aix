@@ -2,10 +2,12 @@
 - name: "Bootstrap Yum on AIX"
   hosts: aix
   gather_facts: no
+  collections:
+  - ibm.power_aix
   tasks:
 
 # CHECK for Yum on inventory host
-  - include_role:
+  - import_role:
       name: power_aix_bootstrap
     vars:
       pkgtype: "yum"
@@ -16,9 +18,11 @@
 - name: "Bootstrap Python on AIX"
   hosts: aix
   gather_facts: no
+  collections:
+  - ibm.power_aix
   tasks:
 
-  - include_role:
+  - import_role:
       name: power_aix_bootstrap
     vars:
       pkgtype: "python"

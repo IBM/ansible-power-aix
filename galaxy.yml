@@ -7,7 +7,7 @@ namespace: ibm
 name: power_aix
 
 # The version of the collection.
-version: 1.0.1-FP1
+version: 1.0.1-FP2
 
 # Collection README file (relative to root path)
 readme: README.md
@@ -18,7 +18,7 @@ authors:
 - Paul B. Finley (@pbfinley1911)
 
 # Collection Description
-description: Ansible Content for IBM Power Systems - AIX provides a collection of modules used to manage and deploy Power Systems AIX.
+description: Ansible Content for IBM Power Systems - AIX provides a collection of content used to manage and deploy Power Systems AIX.
 
 # Collection License
 license:
