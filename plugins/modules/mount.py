@@ -32,7 +32,7 @@ options:
     choices: [mount, umount]
   node:
     description:
-    - Specifies the node holding the mounted directory you want to mount/unmount.
+    - Specifies the node holding the directory/filesystem/device you want to mount/unmount.
     type: str
   mount_all:
     description:
@@ -129,6 +129,40 @@ stderr:
 from ansible.module_utils.basic import AnsibleModule
 
 
+def is_fspath_mounted(module, mount, mount_dir, mount_over_dir):
+    """
+    Determines if a given mount path is a FS and is already mounted
+    param module: Ansible module argument spec.
+    param mount: If the action being performed is a mount (True/False)
+    param mount_dir: FS/Dir to be mounted.
+    param mount_over_dir: path where to mount the mount_dir
+    return: True - if FS and mounted / False - if FS and not mounted
+            None - if not FS
+    """
+
+    cmd = "lsfs -l %s" % mount_dir
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        # Get the fs_name of the Filesystem
+        # check if it is listed in the first column of df command
+        ln = stdout.splitlines()[1]
+        fs_name = ln.split()[0]
+        cmd = "df"
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc != 0:
+            module.fail_json("Command '%s' failed." % cmd)
+
+        if stdout:
+            fdirs = []
+        for ln in stdout.splitlines()[1:]:
+            fdirs.append(ln.split()[0])
+        if fs_name in fdirs:
+            if mount is False or fs_name == mount_dir or mount_over_dir is None:
+                return True
+        return False
+    return None
+
+
 def mount(module):
     """
     Mount the specified device/filesystem
@@ -161,6 +195,10 @@ def mount(module):
     elif module.params['mount_dir']:
         mount_dir = module.params['mount_dir']
         mount_over_dir = module.params['mount_over_dir']
+        mounted = is_fspath_mounted(module, True, mount_dir, mount_over_dir)
+        if mounted is True:
+            msg = "Filesystem/Mount point '%s' already mounted" % mount_dir
+            return False, msg
         if mount_over_dir is None:
             mount_over_dir = ""
         cmd += "%s %s" % (mount_dir, mount_over_dir)
@@ -186,6 +224,10 @@ def umount(module):
     mount_dir = module.params['mount_dir']
     node = module.params['node']
     force = module.params['force']
+
+    if is_fspath_mounted(module, False, mount_dir, None) is False:
+        msg = "Filesystem/Mount point '%s' already unmounted" % mount_dir
+        return False, msg
 
     cmd = "umount "
     if force:
