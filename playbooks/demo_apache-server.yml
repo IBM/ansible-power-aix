@@ -20,12 +20,12 @@
   gather_facts: no
   collections:
   - ibm.power_aix
-  tasks:
 
+  tasks:
   - name: "Create large enabled file system"
-    filesystem:
+    ibm.power_aix.filesystem:
       filesystem: /RPMS
-      size: 4G
+      attributes: size=4G,isnapshot='no'
       state: present
       vg: rootvg
 
@@ -35,16 +35,17 @@
       mount_over_dir: /RPMS
 
   - name: "Add space for /opt (+375M)"
-    filesystem:
+    ibm.power_aix.filesystem:
       filesystem: /opt
-      size: +375M
+      attributes: size=+375M
       state: present
 
   - name: "Add space for /var (+10M)"
-    filesystem:
+    ibm.power_aix.filesystem:
       filesystem: /var
-      size: +10M
+      attributes: size=+10M
       state: present
+
 
 # INSTALL / UPDATE yum-utils & repo software
   - name: "Install yum-utils package"
@@ -71,18 +72,19 @@
     register: httpd_exists
 
   - name: "Add space for /opt (+35M)"
-    filesystem:
+    ibm.power_aix.filesystem:
       filesystem: /opt
-      size: +35M
+      attributes: size=+35M
       state: present
     when: httpd_exists.stdout is search("false")
 
   - name: "Add space for /var (+15M)"
-    filesystem:
+    ibm.power_aix.filesystem:
       filesystem: /var
-      size: +15M
+      attributes: size=+15M
       state: present
     when: httpd_exists.stdout is search("false")
+
 
 # INSTALL / UPDATE Apache on inventory host
   - name: "Install Apache HTTP Service"

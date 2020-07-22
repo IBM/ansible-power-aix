@@ -5,6 +5,20 @@
 Releases
 ========
 
+Version 1.0.1-FP2
+-------------
+Notes
+  * Current Fix Pack release of version-1.0.1 which includes:
+    - an Ansible Role for bootstrap
+    - updates to mount module
+    - early code addition of filesystem module
+
+Availability
+  * `GitHub v1.0.1-FP2`_
+
+.. _GitHub v1.0.1-FP2:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.1-FP2/ibm-power_aix-1.0.1-FP2.tar.gz
+
 Version 1.0.1
 -------------
 Notes
