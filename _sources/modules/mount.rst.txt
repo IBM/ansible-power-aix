@@ -33,7 +33,7 @@ Parameters
 
 
   node (optional, str, None)
-    Specifies the node holding the mounted directory you want to mount/unmount.
+    Specifies the node holding the directory/filesystem/device you want to mount/unmount.
 
 
   mount_all (optional, str, none)

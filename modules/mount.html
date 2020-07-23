@@ -128,6 +128,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../playbooks.html">Playbooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roles.html">Roles</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Community Guides</span></p>
 <ul>
@@ -240,7 +241,7 @@
 <div><dl>
 <dt>state (optional, str, mount)</dt><dd><p>Specifies the module to perform mount/unmount operation</p>
 </dd>
-<dt>node (optional, str, None)</dt><dd><p>Specifies the node holding the mounted directory you want to mount/unmount.</p>
+<dt>node (optional, str, None)</dt><dd><p>Specifies the node holding the directory/filesystem/device you want to mount/unmount.</p>
 </dd>
 <dt>mount_all (optional, str, none)</dt><dd><p>When <em>state=mount</em> and <em>mount_all=all</em>, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</p>
 <p>When <em>state=umount</em> and <em>mount_all=all</em>, unmounts all mounted filesystem</p>

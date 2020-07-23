@@ -73,6 +73,7 @@ This Ansible collection is maintained by the IBM Power AIX development team.
 
    modules
    playbooks
+   roles
 
 .. toctree::
    :maxdepth: 1
