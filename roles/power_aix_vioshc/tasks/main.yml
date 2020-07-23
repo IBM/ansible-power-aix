@@ -1,0 +1,7 @@
+# Copyright (c) IBM Corporation 2020
+---
+- name: Install vioshc.py onto target
+  copy:
+    src: vioshc.py
+    dest: /usr/sbin/vioshc.py
+    mode: '0755'
