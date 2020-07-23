@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  role_name: power_aix_vioshc
+  author: Paul Finley
+  description: Ansible role for installing vioshc on a NIM master.
+  company: IBM
+
+  license: GPL-3.0-only
+
+  min_ansible_version: 2.9
+
+  platforms:
+  - name: AIX
+    versions:
+    - all
+
+  galaxy_tags: [aix]
+  dependencies: []

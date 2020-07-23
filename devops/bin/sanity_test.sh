@@ -27,6 +27,8 @@ SANITY_IGNORE="$ANSIBLE_DIR/test/sanity/ignore.txt"
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
+# skip the conflict checks but may require to manually resolve any issues afterwards
+export ANSIBLE_SKIP_CONFLICT_CHECK=1
 . hacking/env-setup
 pip install -r docs/docsite/requirements.txt
 pip install pylint yamllint pyyaml
