@@ -946,7 +946,7 @@ def nim_view_backup(module, params):
         results['msg'] = 'NIM resource \'{0}\' not found.'.format(params['name'])
         module.fail_json(**results)
 
-    results['backup_info'].update(build_dict(module, stdout))
+    results.update({'backup_info': build_dict(module, stdout)})
 
     if 'source_image' not in results['backup_info'][params['name']]:
         results['msg'] = 'Attribute \'source_image\' not found in ios_backup resource {0}.'.format(params['name'])
@@ -1026,6 +1026,7 @@ def main():
     build_nim_node(module)
 
     # check targets are valid NIM clients
+    targets = []
     if module.params['targets']:
         targets = expand_targets(module.params['targets'])
     if not targets and action != 'list' and action != 'view':
