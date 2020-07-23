@@ -801,9 +801,9 @@ def nim_iosbackup_create(module, target, params):
     cmd += ['-a', 'location={0}'.format(location), name]
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
+        results['meta'][target]['stdout'] = stdout
+        results['meta'][target]['stderr'] = stderr
         if rc != 0:
-            results['meta'][target]['stdout'] = stdout
-            results['meta'][target]['stderr'] = stderr
             results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
             results['status'][target] = 'FAILURE'
             return False
@@ -841,9 +841,9 @@ def nim_iosbackup_restore(module, target, params):
     cmd += ['-a', 'ios_backup={0}'.format(name), target]
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
+        results['meta'][target]['stdout'] = stdout
+        results['meta'][target]['stderr'] = stderr
         if rc != 0:
-            results['meta'][target]['stdout'] = stdout
-            results['meta'][target]['stderr'] = stderr
             results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
             results['status'][target] = 'FAILURE'
             return False
@@ -858,9 +858,9 @@ def nim_iosbackup_restore(module, target, params):
         cmd = ['nim', '-o', 'remove', name]
         if not module.check_mode:
             rc, stdout, stderr = module.run_command(cmd)
+            results['meta'][target]['stdout'] = stdout
+            results['meta'][target]['stderr'] = stderr
             if rc != 0:
-                results['meta'][target]['stdout'] = stdout
-                results['meta'][target]['stderr'] = stderr
                 results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
                 results['status'][target] = 'FAILURE'
                 return False
@@ -943,7 +943,7 @@ def nim_view_backup(module, params):
     results['stdout'] = stdout
     results['stderr'] = stderr
     if rc != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        results['msg'] = 'NIM resource \'{0}\' not found.'.format(params['name'])
         module.fail_json(**results)
 
     results['backup_info'].update(build_dict(module, stdout))
