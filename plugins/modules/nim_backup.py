@@ -212,7 +212,7 @@ targets:
     elements: str
     sample: [nimclient01, nimclient02, ...]
 status:
-    description: Satus of the operation for each C(target). It can be empty, SUCCESS or FAILURE.
+    description: Status of the operation for each C(target). It can be empty, SUCCESS or FAILURE.
     returned: always
     type: dict
     contains:
@@ -1127,11 +1127,11 @@ def main():
         wait_all()
 
     # Exit
-    for target in targets:
-        if 'FAILURE' in results['status'][target]:
-            results['msg'] = 'At least one {0} operation failed. See meta data for details on targets'.format(action)
-            module.fail_json(**results)
-    results['msg'] = '{0} operation successfull.'.format(action)
+    target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
+    if len(target_errored):
+        results['msg'] = "NIM backup {0} operation failed for {1}. See status and meta for details.".format(action, target_errored)
+    else:
+        results['msg'] = 'NIM backup {0} operation successfull. See status and meta for details.'.format(action)
     module.exit_json(**results)
 
 
