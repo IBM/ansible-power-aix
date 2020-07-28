@@ -124,6 +124,13 @@ options:
     - Can be used on a standalone client if I(action=restore).
     type: path
     default: /export/nim/spot
+  bosinst_data:
+    description:
+    - Specifies the bosinst_data resource to restore the backup on a standalone client.
+    - This allows running "non-prompted" installations, and so more automated restorations.
+    - If not specified you will be presented with a series of choices on the console.
+    - Can be used if I(action=restore).
+    type: str
   oslevel:
     description:
     - Specifies the oslevel to filter results.
@@ -715,6 +722,11 @@ def nim_mksysb_restore(module, target, params):
         cmd += ['-a', 'mksysb={0}'.format(name)]
         cmd += ['-a', 'spot={0}'.format(spot_name)]
 
+    if params['bosinst_data']:
+        cmd += ['-a', 'bosinst_data={0}'.format(params['bosinst_data'])]
+    else:
+        results['meta'][target]['messages'].append('Warning: No bosinst_data specified, you will be prompted for additional settings on the console.')
+
     if params['accept_licenses']:
         cmd += ['-a', 'accept_licenses=yes']
     else:
@@ -986,6 +998,7 @@ def main():
             name_prefix=dict(type='str'),
             name_postfix=dict(type='str'),
             group=dict(type='str'),
+            bosinst_data=dict(type='str'),
             spot_name=dict(type='str'),
             spot_prefix=dict(type='str'),
             spot_postfix=dict(type='str', default='_spot'),
@@ -1114,6 +1127,7 @@ def main():
 
             if 'mksysb' in objtype:
                 params['group'] = module.params['group']
+                params['bosinst_data'] = module.params['bosinst_data']
                 params['spot_name'] = module.params['spot_name']
                 if not params['spot_name']:
                     params['spot_prefix'] = module.params['spot_prefix']
