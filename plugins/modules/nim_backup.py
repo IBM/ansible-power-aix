@@ -715,9 +715,13 @@ def nim_mksysb_restore(module, target, params):
         cmd += ['-a', 'mksysb={0}'.format(name)]
         cmd += ['-a', 'spot={0}'.format(spot_name)]
 
-    if not params['accept_licenses']:
+    if params['accept_licenses']:
+        cmd += ['-a', 'accept_licenses=yes']
+    else:
         cmd += ['-a', 'accept_licenses=no']
-    if not params['boot_target']:
+    if params['boot_target']:
+        cmd += ['-a', 'boot_client=yes']
+    else:
         cmd += ['-a', 'boot_client=no']
     cmd += [target]
 
@@ -872,13 +876,13 @@ def nim_iosbackup_restore(module, target, params):
     return True
 
 
-def nim_list_backup(module, target, type, params):
+def nim_list_backup(module, target, objtype, params):
     """
     Perform a viosbr NIM operation to resote a VIOS backup
 
     arguments:
         module  (dict): the module variable
-        type     (str): the type of the object to list
+        objtype  (str): the type of the object to list
         target  (list): the NIM Clients to filter backup list
         params  (dict): the NIM command parameters
     return:
@@ -900,7 +904,7 @@ def nim_list_backup(module, target, type, params):
         backup_info.update(build_dict(module, stdout))
         return backup_info
 
-    backup_info.update(get_nim_type_info(module, type))
+    backup_info.update(get_nim_type_info(module, objtype))
 
     # Filter results
     for backup in backup_info.copy():
@@ -1073,7 +1077,8 @@ def main():
         for target in targets:
             if target in results['nim_node']['standalone']:
                 if objtype != 'mksysb':
-                    results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                    results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
+                                                               .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
 
@@ -1081,7 +1086,8 @@ def main():
 
             elif target in results['nim_node']['vios']:
                 if objtype == 'mksysb':
-                    results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                    results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
+                                                               .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
 
@@ -1096,11 +1102,13 @@ def main():
         for target in targets:
 
             if target in results['nim_node']['standalone'] and objtype != 'mksysb':
-                results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
+                                                           .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
             if target in results['nim_node']['vios'] and objtype == 'mksysb':
-                results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
+                                                           .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
 
