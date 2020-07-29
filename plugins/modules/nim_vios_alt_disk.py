@@ -109,17 +109,12 @@ msg:
     description: Status information.
     returned: always
     type: str
-targets:
-    description: List of VIOS tuples.
-    returned: always
-    type: list
-    elements: dict
 nim_node:
     description: NIM node info.
     returned: always
     type: dict
 status:
-    description: Status for each VIOS (dicionnary key).
+    description: Status for each VIOS tuples (dictionary key).
     returned: always
     type: dict
 '''
@@ -1278,7 +1273,6 @@ def main():
 
     vios_status = {}
     targets_altdisk_status = {}
-    target_list = []
 
     # =========================================================================
     # Build nim node info
@@ -1328,7 +1322,6 @@ def main():
         module.log('VIOS Alternate disk operation: Error getting the status')
         targets_altdisk_status = vios_status
 
-    results['targets'] = target_list
     results['nim_node'] = NIM_NODE
     results['status'] = targets_altdisk_status
     results['output'] = OUTPUT
