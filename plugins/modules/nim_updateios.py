@@ -186,7 +186,7 @@ nim_node:
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "customization is being performed",
-                    "type": "standalone"
+                    "type": "standalone",
                     "hostname": "nimclient01.aus.stglabs.ibm.com",
                 }
             },
@@ -205,8 +205,8 @@ nim_node:
                     "platform": "chrp",
                     "prev_state": "alt_disk_install operation is being performed",
                     "hostname": "vios1.aus.stglabs.ibm.com",
-                    "ssp_cluster_name": "porthos_cl1"
-                    "ssp_status": "DOWN"
+                    "ssp_cluster_name": "porthos_cl1",
+                    "ssp_status": "DOWN",
                 }
             }
         }
@@ -460,23 +460,23 @@ def check_vios_targets(module, targets):
                 continue
 
             # Get VIOS interface info in case we need to connect using c_rsh
-            if 'if1' not in results['nim_node']['vios'][vios]:
+            if 'if1' not in results['nim_node']['vios'][elem]:
                 msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
                 continue
-            fields = results['nim_node']['vios'][vios]['if1'].split(' ')
+            fields = results['nim_node']['vios'][elem]['if1'].split(' ')
             if len(fields) < 2:
                 msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
                 continue
-            results['nim_node']['vios'][vios]['hostname'] = fields[1]
+            results['nim_node']['vios'][elem]['hostname'] = fields[1]
 
             # check vios connectivity
-            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', results['nim_node']['vios'][vios]['hostname'],
+            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', results['nim_node']['vios'][elem]['hostname'],
                    '"/usr/bin/ls /dev/null; echo rc=$?"']
             rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
             if rc != 0:
@@ -883,7 +883,6 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
 
             if skip_next_target:
                 break
-
 
 
 def main():
