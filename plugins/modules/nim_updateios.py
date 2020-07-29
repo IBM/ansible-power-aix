@@ -32,11 +32,10 @@ options:
     - Specifies the operation telling updateios what operation to perform on the VIOS.
     - C(install) installs new and supported filesets.
     - C(commit) commits all uncommitted updates.
-    - C(reject) rejects all uncommitted updates.
     - C(cleanup) removes all incomplete pieces of the previous installation.
     - C(remove) removes the listed filesets from the system in C(filesets) or C(installp_bundle).
     type: str
-    choices: [ install, commit, reject, cleanup, remove ]
+    choices: [ install, commit, cleanup, remove ]
     required: true
   targets:
     description:
@@ -816,7 +815,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             results['status'][vios_key] = "SKIPPED-TIMEOUT"
             return
 
-        if module.params('action') in ['install', 'reject', 'cleanup'] and module.params['manage_ssp']:
+        if module.params('action') in ['install', 'cleanup'] and module.params['manage_ssp']:
             # check if SSP is defined for this VIOSes tuple.
             if not check_vios_ssp_status(module, target_tuple):
                 msg = "{0} VIOSes skipped (bad SSP status)".format(vios_key)
@@ -849,7 +848,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
 
             # if needed stop the SSP for the VIOS
             restart_needed = False
-            if tuple_len == 2 and module.params('action') in ['install', 'reject', 'cleanup'] and module.params['manage_ssp']:
+            if tuple_len == 2 and module.params('action') in ['install', 'cleanup'] and module.params['manage_ssp']:
                 if not ssp_stop_start(module, target_tuple, vios_key, vios, 'stop'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
@@ -886,7 +885,6 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 break
 
 
-###################################################################################
 
 def main():
     global module
@@ -894,8 +892,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(choices=['install', 'commit', 'reject', 'cleanup', 'remove'],
-                        required=True, type='str'),
+            action=dict(choices=['install', 'commit', 'cleanup', 'remove'], required=True, type='str'),
             targets=dict(required=True, type='list', elements='str'),
             filesets=dict(type='str'),
             installp_bundle=dict(type='str'),
