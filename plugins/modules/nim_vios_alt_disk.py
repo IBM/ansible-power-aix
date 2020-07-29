@@ -70,16 +70,15 @@ options:
     default: nearest
   force:
     description:
-    - Forces removal of any existing alternate disk copy on target disk.
+    - Forces removal of any existing alternate disk copy on target disks.
+    - Stops any active rootvg mirroring during the alternate disk copy.
     type: bool
     default: no
 notes:
   - C(alt_disk_copy) only backs up mounted file systems. Mount all file
     systems that you want to back up.
-  - copy is performed only on one alternate hdisk even if the rootvg
-    contains multiple hdisks
-  - error if several C(altinst_rootvg) exist for cleanup operation in
-    automatic mode
+  - when no target is specified, copy is performed to only one alternate
+    disk even if the rootvg contains multiple disks
 '''
 
 EXAMPLES = r'''
@@ -998,6 +997,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
     """
     global NIM_NODE
     global OUTPUT
+    global PARAMS
     global results
 
     module.debug('action: {0}, targets: {1}, vios_status: {2}'
@@ -1081,6 +1081,15 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                 nb_copies = len(copies_h.keys())
 
                 if nb_copies > 1:
+                    if not PARAMS['force']:
+                        altdisk_op_tab[vios_key] = "{0} rootvg is mirrored on {1}"\
+                                                   .format(err_label, vios)
+                        OUTPUT.append('    The rootvg is mirrored on {0} and force option is not set'
+                                      .format(vios))
+                        module.log('The rootvg is mirrored on {0} and force option is not set'
+                                   .format(vios))
+                        break
+
                     OUTPUT.append('    Stop mirroring on {0}'.format(vios))
                     module.log('[WARNING] Stop mirror on {0}'.format(vios))
 
