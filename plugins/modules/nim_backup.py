@@ -30,8 +30,8 @@ options:
   action:
     description:
     - Controls what is performed.
-    - C(create) performs an backup operation on targets trough NIM master.
-    - C(restore) restores a backup on targets trough NIM master.
+    - C(create) performs an backup operation on targets trough the NIM master.
+    - C(restore) restores a backup on targets trough the NIM master.
     - C(view) displays the content of a VIOS backup, only for I(type=backup).
     - C(list) lists backups for targets on the NIM master.
     type: str
@@ -43,9 +43,10 @@ options:
     - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
     - C(ios_mksysb) operates on VIOS backup of the operating system (that is, the root volume group).
     - C(ios_backup) operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
+    - C(savevg) operates on LPAR savevg, that is all files belonging to a volume group.
     - Discarded for I(action=view) as this action only applies to ios_backup.
     type: str
-    choices: [ mksysb, ios_mksysb, ios_backup ]
+    choices: [ mksysb, ios_mksysb, ios_backup, savevg ]
     default: mksysb
   targets:
     description:
@@ -61,21 +62,21 @@ options:
     required: no
   nim_node:
     description:
-    - Allows to pass along NIM node info from a task to another so that it
-      discovers NIM info only one time for all tasks.
+    - Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
     type: dict
   location:
     description:
-    - Specifies where to put the backup files on the NIM master.
-    - If not specified default for LPAR targets is I(location=/export/nim/mksysb) and for
-      VIOS targets it is I(location=/export/nim/ios_backup).
-    - Required if I(action=create) and I(action=restore).
+    - Specifies the location of the backup files.
+    - If I(objtype=mksysb), the default value is I(location=/export/nim/mksysb).
+    - If I(objtype=ios_mksysb), the default value is I(location=/export/nim/ios_mksysb).
+    - If I(objtype=ios_backup), the default value is I(location=/export/nim/ios_backup).
+    - If I(objtype=savevg), the default value is I(location=/export/nim/savevg).
     type: path
   name:
     description:
-    - Exact name of the backup NIM resource to act on.
+    - Specifies the exact name of the backup to act on.
     - If I(action=list) it filters the results on the name of the NIM resource.
-    - Required if I(action=view).
+    - Required if I(action=view) and if I(action=create) and I(type=savevg).
     type: str
   name_prefix:
     description:
@@ -87,41 +88,44 @@ options:
   name_postfix:
     description:
     - Specifies the postfix of the backup NIM resource name to act on.
-    - If not specified default for LPAR targets is I(name_postfix=_sysb) and for
-      VIOS targets it is I(name_postfix=_iosb).
+    - If not specified default for mksysb is I(name_postfix=_sysb), for ios_backup it is I(name_postfix=_iosb)
+      and for .
     - The name format will be I(<prefix><target_name><postfix>).
     - Used only if C(name) is not specified.
     - If I(action=list) it filters the results on the name of the NIM resource.
+    - If I(objtype=mksysb) or I(objtype=ios_mksysb), the default value is I(name_postfix=_sysb).
+    - If I(objtype=ios_backup), the default value is I(name_postfix=_iosb).
+    - If I(objtype=savevg), the default value is I(name_postfix=_svg).
     type: str
   group:
     description:
     - Specifies the resource group to use for restoration.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_name:
     description:
     - Specifies the exact SPOT resource name to create to restore the backup on a standalone client.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_prefix:
     description:
     - Specifies the prefix of SPOT resource name created to restore the backup on a standalone client.
     - The SPOT name format will be I(<spot_prefix><target_name><spot_postfix>).
     - Used only if C(spot_name) is not specified.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_postfix:
     description:
     - Specifies the prostfix of SPOT resource name created to restore the backup on a standalone client.
     - The SPOT name format will be I(<spot_prefix><target_name><spot_postfix>).
     - Used only if C(spot_name) is not specified.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
     default: _spot
   spot_location:
     description:
     - Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: path
     default: /export/nim/spot
   bosinst_data:
@@ -129,12 +133,35 @@ options:
     - Specifies the bosinst_data resource to restore the backup on a standalone client.
     - This allows running "non-prompted" installations, and so more automated restorations.
     - If not specified you will be presented with a series of choices on the console.
-    - Can be used if I(action=restore).
+    - Can be used if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   oslevel:
     description:
     - Specifies the oslevel to filter results.
     - Can be used if I(action=list).
+    type: str
+  volume_group:
+    description:
+    - Specifies the volume group to backup on the target that must be varied-on and the file systems must be mounted.
+    - Required if I(action=create) and I(type=savevg).
+    type: str
+  exclude_files:
+    description:
+    - Specifies the exclude_files NIM resource on the NIM master.
+    - Can be used if I(action=create) and I(type=savevg).
+    type: str
+  flags:
+    description:
+    - Specifies additional flags to pass to the command used. Refers to IBM documentation for details.
+    - For C(action=create) and C(type=mksysb), you could use I(-a -A -b -e -i -m -p -P -T -V -X -Z).
+    - For C(action=create) and C(type=ios_mksysb), you could use I(-nosvg -nomedialib).
+    - For C(action=create) and C(type=savevg), you could use I(-a -A -e -i -m -p -r -T -v -V -X -Z).
+    type: str
+  other_attributes:
+    description:
+    - Specifies additional attributes to pass to the NIM operation. Refers to IBM documentation for details.
+    - It is a space separated string such as I(other_attributes='-a attr1=value1 -a attr2=value2').
+    - Discarded if I(action=list).
     type: str
   remove_spot:
     description:
@@ -144,14 +171,14 @@ options:
     default: yes
   remove_backup:
     description:
-    - Specifies to remove the backup resource created on the NIM master.
-    - Can be used on a standalone client if I(action=restore).
+    - Specifies to remove the backup resource from the NIM master.
+    - Can be used if I(action=restore).
     type: bool
     default: no
   accept_licenses:
     description:
     - Specifies to automatically accept all licenses during the restoration of the backup.
-    - Can be used on a standalone client if I(action=restore).
+    - Can be used if I(action=restore) and I(type=mksysb or ios_mksysb).
     type: bool
     default: yes
   boot_target:
@@ -160,6 +187,13 @@ options:
     - Can be used on a standalone client if I(action=restore).
     type: bool
     default: yes
+  shrink_fs:
+    description:
+    - Specifies to shrink the file system contained in the volume group.
+    - Always be sure to check the size of the file systems after the restore is complete.
+    - Can be used if I(action=restore) and I(type=savevg).
+    type: bool
+    default: no
 '''
 
 EXAMPLES = r'''
@@ -205,6 +239,26 @@ EXAMPLES = r'''
     type: ios_backup
     targets: vios1
     name_postfix: _iosbackup
+
+- name: Check the size to create a savevg image of the datavg
+  nim_backup:
+    action: create
+    type: savevg
+    targets: nimclient1
+    name_postfix: _savevg
+    volume_group: datavg
+    exclude_files: my_exclude_file_res
+    other_attributes: '-a comments="datavg savevg" -a verbose=yes'
+  check_mode: yes
+
+- name: Restore a savevg image to a different disk on a LPAR
+  nim_backup:
+    action: restore
+    targets: nimclient1
+    name: nimclient1_savevg
+    remove_backup: yes
+    shrink_fs: yes
+    other_attributes: '-a disk=hdisk1 -a verbose=yes'
 '''
 
 RETURN = r'''
@@ -639,12 +693,20 @@ def nim_mksysb_create(module, target, objtype, params):
 
     # Create the mksysb
     # To ignore space requirements use the "-F" flag when defining the mksysb resource.
-    # nim -o define -t mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios mksysb_name
-    # nim -o define -t ios_mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios ios_mksysb_name
+    # nim -o define -t mksysb -a server=master -a mk_image=yes -a location=file_path -a source=lpar_name mksysb_name
+    # nim -o define -t ios_mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios_name ios_mksysb_name
     cmd = ['nim', '-o', 'define', '-a', 'server=master', '-a', 'mk_image=yes']
     cmd += ['-t', objtype]
     cmd += ['-a', 'location={0}'.format(location)]
-    cmd += ['-a', 'source={0}'.format(target), name]
+    cmd += ['-a', 'source={0}'.format(target)]
+    if params['flags'] and params['flags'].strip():
+        if objtype == 'mksysb':
+            cmd += ['mksysb_flags="{0}"'.format(params['flags'])]
+        elif objtype == 'ios_mksysb':
+            cmd += ['backupios_flags="{0}"'.format(params['flags'])]
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [name]
 
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
@@ -735,6 +797,8 @@ def nim_mksysb_restore(module, target, params):
         cmd += ['-a', 'boot_client=yes']
     else:
         cmd += ['-a', 'boot_client=no']
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
     cmd += [target]
 
     if not module.check_mode:
@@ -811,10 +875,14 @@ def nim_iosbackup_create(module, target, params):
     location = os.path.join(params['location'], name)
 
     # nim -Fo define -t ios_backup -a mk_image=yes -a server=master
-    #  -a source=<vios> -a location=/export/nim/ios_backup/<vio>_ios_backup <vios>_ios_backup
+    #  -a source=<vios> -a location=/export/nim/ios_backup/<vio>_ios_backup <vios>_iosb
     cmd = ['nim', '-Fo', 'define', '-t', 'ios_backup', '-a', 'mk_image=yes', '-a', 'server=master']
     cmd += ['-a', 'source={0}'.format(target)]
-    cmd += ['-a', 'location={0}'.format(location), name]
+    cmd += ['-a', 'location={0}'.format(location)]
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [name]
+
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
         results['meta'][target]['stdout'] = stdout
@@ -854,7 +922,11 @@ def nim_iosbackup_restore(module, target, params):
 
     # nim -Fo viosbr -a ios_backup=ios_backup_<vios> <vios>
     cmd = ['nim', '-Fo', 'viosbr']
-    cmd += ['-a', 'ios_backup={0}'.format(name), target]
+    cmd += ['-a', 'ios_backup={0}'.format(name)]
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [target]
+
     if not module.check_mode:
         rc, stdout, stderr = module.run_command(cmd)
         results['meta'][target]['stdout'] = stdout
@@ -971,7 +1043,10 @@ def nim_view_backup(module, params):
 
     # nim -Fo viosbr -a viosbr_action=view -a ios_backup=quimby-vios1_iosb quimby-vios1
     cmd = ['nim', '-Fo', 'viosbr', '-a', 'viosbr_action=view']
-    cmd += ['-a', 'ios_backup={0}'.format(params['name']), target]
+    cmd += ['-a', 'ios_backup={0}'.format(params['name'])]
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [target]
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -982,6 +1057,126 @@ def nim_view_backup(module, params):
     results['status'][target] = 'SUCCESS'
 
 
+@start_threaded(THRDS)
+def nim_savevg_create(module, target, params):
+    """
+    Perform a define NIM operation to create a savevg of a LPAR
+
+    arguments:
+        module  (dict): the module variable
+        target   (str): the LPAR NIM Client to backup the volume group
+        params  (dict): the NIM command parameters
+    note:
+        Set results['status'][target] with the status
+    return:
+        True if restore succeeded or skipped
+        False otherwise
+    """
+    global results
+
+    name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
+
+    # compute backup location
+    if not os.path.exists(params['location']):
+        os.makedirs(params['location'])
+    location = os.path.join(params['location'], name)
+
+    # Create the savevg
+    # nim -o define -t savevg -a server=master -a mk_image=yes -a location=file_path -a source=lpar_name
+    #                         -a volume_group=vgname -a exclude_files=exclude_list savevg_name
+    cmd = ['nim', '-o', 'define', '-t', 'savevg', '-a', 'server=master', '-a', 'mk_image=yes']
+    cmd += ['-a', 'location={0}'.format(location)]
+    if params['flags'] and params['flags'].strip():
+        cmd += ['savevg_flags="{0}"'.format(params['flags'])]
+    cmd += ['-a', 'source={0}'.format(target)]
+    if params['volume_group']:
+        cmd += ['-a', 'volume_group={0}'.format(params['volume_group'])]
+    if params['exclude_files']:
+        cmd += ['-a', 'exclude_files={0}'.format(params['exclude_files'])]
+    if module.check_mode:
+        cmd += ['-a', 'size_preview=yes']
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [name]
+
+    rc, stdout, stderr = module.run_command(cmd)
+    results['meta'][target]['stdout'] = stdout
+    results['meta'][target]['stderr'] = stderr
+    if rc != 0:
+        results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
+        results['status'][target] = 'FAILURE'
+        return False
+
+    results['meta'][target]['messages'].append('savevg {0} created: {1}.'.format(name, location))
+    results['meta'][target]['res_name'] = name
+    results['status'][target] = 'SUCCESS'
+    results['changed'] = True
+
+    return True
+
+
+@start_threaded(THRDS)
+def nim_savevg_restore(module, target, params):
+    """
+    Perform a restvg NIM operation to resote a VIOS backup
+
+    arguments:
+        module  (dict): the module variable
+        target   (str): the LPAR NIM Client to restore the backup on
+        params  (dict): the NIM command parameters
+    note:
+        Set results['status'][target] with the status
+    return:
+        True if restore succeeded or skipped
+        False otherwise
+    """
+    global results
+    name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
+
+    # nim -o restvg -a savevg=savevg_res_name -a shrink=<yes|no> lpar_name
+    cmd = ['nim', '-o', 'restvg']
+    cmd += ['-a', 'savevg={0}'.format(name)]
+    if params['shrink_fs']:
+        cmd += ['-a', 'shrink=yes']
+    else:
+        cmd += ['-a', 'shrink=no']
+    if params['other_attributes']:
+        cmd += params['other_attributes'].split(' ')
+    cmd += [target]
+
+    if not module.check_mode:
+        rc, stdout, stderr = module.run_command(cmd)
+        results['meta'][target]['stdout'] = stdout
+        results['meta'][target]['stderr'] = stderr
+        if rc != 0:
+            results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
+            results['status'][target] = 'FAILURE'
+            return False
+
+        results['meta'][target]['messages'].append('Backup {0} has been restored.'.format(name))
+        results['status'][target] = 'SUCCESS'
+        results['changed'] = True
+    else:
+        results['meta'][target]['messages'].append('Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd)))
+
+    if params['remove_backup']:
+        cmd = ['nim', '-o', 'remove', name]
+        if not module.check_mode:
+            rc, stdout, stderr = module.run_command(cmd)
+            results['meta'][target]['stdout'] = stdout
+            results['meta'][target]['stderr'] = stderr
+            if rc != 0:
+                results['meta'][target]['messages'].append('Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc))
+                results['status'][target] = 'FAILURE'
+                return False
+
+            results['meta'][target]['messages'].append('Backup {0} has been removed.'.format(name))
+        else:
+            results['meta'][target]['messages'].append('Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd)))
+
+    return True
+
+
 def main():
     global module
     global results
@@ -990,24 +1185,34 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             action=dict(required=True, type='str', choices=['create', 'restore', 'view', 'list']),
-            type=dict(type='str', choices=['mksysb', 'ios_mksysb', 'ios_backup'], default='mksysb'),
+            type=dict(type='str', choices=['mksysb', 'ios_mksysb', 'ios_backup', 'savevg'], default='mksysb'),
             targets=dict(type='list', elements='str'),
             nim_node=dict(type='dict'),
             location=dict(type='path'),
             name=dict(type='str'),
             name_prefix=dict(type='str'),
             name_postfix=dict(type='str'),
+            flags=dict(type='str'),
+            other_attributes=dict(type='str'),
+            # argument for restore operations
+            remove_spot=dict(type='bool', default=True),
+            remove_backup=dict(type='bool', default=False),
+            # arguments for restore mksysb and ios_mksysb operations
             group=dict(type='str'),
-            bosinst_data=dict(type='str'),
             spot_name=dict(type='str'),
             spot_prefix=dict(type='str'),
             spot_postfix=dict(type='str', default='_spot'),
             spot_location=dict(type='path', default='/export/nim/spot'),
-            remove_spot=dict(type='bool', default=True),
-            remove_backup=dict(type='bool', default=False),
-            boot_target=dict(type='bool', default=True),
+            bosinst_data=dict(type='str'),
             accept_licenses=dict(type='bool', default=True),
+            boot_target=dict(type='bool', default=True),
+            # arguments for list operation
             oslevel=dict(type='str'),
+            # arguments for operations on savevg
+            volume_group=dict(type='str'),
+            exclude_files=dict(type='str'),
+            shrink_fs=dict(type='bool', default=False),
+
         ),
         required_if=[
             ['action', ['view'], ['name']],
@@ -1058,27 +1263,38 @@ def main():
     # compute parameters & default value
     params = {}
     params['name'] = module.params['name']
-    params['name_prefix'] = module.params['name_prefix']
-    params['name_postfix'] = module.params['name_postfix']
     params['location'] = module.params['location']
+    params['other_attributes'] = module.params['other_attributes']
+
+    if objtype != 'vg':
+        params['name_prefix'] = module.params['name_prefix']
+        params['name_postfix'] = module.params['name_postfix']
+
     if objtype == 'mksysb':
         if not params['name'] and module.params['name_postfix'] is None:
             params['name_postfix'] = '_sysb'
-        if not module.params['location']:
+        if not params['location']:
             params['location'] = '/export/nim/mksysb'
 
     elif objtype == 'ios_mksysb':
         if not params['name'] and module.params['name_postfix'] is None:
             params['name_postfix'] = '_sysb'
-        if not module.params['location']:
+        if not params['location']:
             params['location'] = '/export/nim/ios_mksysb'
 
     elif objtype == 'ios_backup':
         if not params['name'] and module.params['name_postfix'] is None:
             params['name_postfix'] = '_iosb'
-        if not module.params['location']:
+        if not params['location']:
             params['location'] = '/export/nim/ios_backup'
 
+    elif objtype == 'savevg':
+        if not params['name'] and module.params['name_postfix'] is None:
+            params['name_postfix'] = '_svg'
+        if not params['location']:
+            params['location'] = '/export/nim/savevg'
+
+    # perform the operation
     if action == 'list':
         params['oslevel'] = module.params['oslevel']
         nim_list_backup(module, targets, objtype, params)
@@ -1089,7 +1305,7 @@ def main():
     elif action == 'create':
         for target in targets:
             if target in results['nim_node']['standalone']:
-                if objtype != 'mksysb':
+                if objtype != 'mksysb' and objtype != 'savevg':
                     results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
                                                                .format(action, objtype))
                     results['status'][target] = 'FAILURE'
@@ -1098,7 +1314,7 @@ def main():
                 nim_mksysb_create(module, target, objtype, params)
 
             elif target in results['nim_node']['vios']:
-                if objtype == 'mksysb':
+                if objtype != 'ios_mksysb' and objtype != 'ios_backup':
                     results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                                .format(action, objtype))
                     results['status'][target] = 'FAILURE'
@@ -1109,6 +1325,11 @@ def main():
 
                 if objtype == 'ios_backup':
                     nim_iosbackup_create(module, target, params)
+
+                if objtype == 'savevg':
+                    params['volume_group'] = module.params['volume_group']
+                    params['exclude_files'] = module.params['exclude_files']
+                    nim_savevg_create(module, target, params)
         wait_all()
 
     elif action == 'restore':
@@ -1119,7 +1340,7 @@ def main():
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
-            if target in results['nim_node']['vios'] and objtype == 'mksysb':
+            if target in results['nim_node']['vios'] and (objtype == 'mksysb' or objtype == 'savevg'):
                 results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'
@@ -1143,8 +1364,12 @@ def main():
 
                 nim_mksysb_restore(module, target, params)
 
-            else:
+            elif objtype == 'ios_backup':
                 nim_iosbackup_restore(module, target, params)
+
+            else:
+                params['shrink_fs'] = module.params['shrink_fs']
+                nim_savevg_restore(module, target, params)
 
         wait_all()
 
