@@ -251,8 +251,9 @@
 <p><code class="docutils literal notranslate"><span class="pre">admins</span></code> for Provided <em>user_list_action</em> choice will be performed on admins of the group</p>
 </dd>
 <dt>state (True, str, None)</dt><dd><p>Specifies the action to be performed for the group.</p>
-<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create group with provided <em>name</em> and <em>group_attributes</em> in the system. If group is already present then attributes specified for the group will be changed with the provided attributes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create group with provided <em>name</em> and <em>group_attributes</em> in the system.</p>
 <p><code class="docutils literal notranslate"><span class="pre">absent</span></code> to delete group with provided <em>name</em>. If group is not present then message will be displayed for the same.</p>
+<p><code class="docutils literal notranslate"><span class="pre">modify</span></code> to change the specified attributes with provided value of the given group.</p>
 </dd>
 <dt>name (True, str, None)</dt><dd><p>Group name should be specified for which the action is to taken</p>
 </dd>

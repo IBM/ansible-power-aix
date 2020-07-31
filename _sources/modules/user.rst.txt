@@ -32,9 +32,11 @@ Parameters
   state (True, str, None)
     Specifies the action to be performed for the user.
 
-    ``present`` to create user with provided *name* and *attributes* in the system. If username is already present then attributes specified for the name will be changed with the provided values.
+    ``present`` to create user with provided *name* and *attributes* in the system.
 
     ``absent`` to delete user with provided *name*. If username is not present then message will be displayed.
+
+    ``modify`` to change the specified attributes with provided value of the given username.
 
 
   name (True, str, None)

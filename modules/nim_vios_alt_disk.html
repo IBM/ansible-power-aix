@@ -245,8 +245,8 @@
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> to perform and alternate disk copy.</p>
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_clean</span></code> to cleanup an existing alternate disk copy.</p>
 </dd>
-<dt>targets (True, list, None)</dt><dd><p>NIM VIOS target.</p>
-<p>Use a tuple format with the 1st element the VIOS and the 2nd element the disk used for the alternate disk copy. “vios1,disk1,vios2,disk2” for dual VIOSes. “vios1,disk1” for single VIOS.</p>
+<dt>targets (True, list, None)</dt><dd><p>NIM VIOS targets.</p>
+<p>Use a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.</p>
 </dd>
 <dt>time_limit (optional, str, None)</dt><dd><p>Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped; the format is <code class="docutils literal notranslate"><span class="pre">mm/dd/yyyy</span> <span class="pre">hh:mm</span></code>.</p>
 </dd>
@@ -262,7 +262,8 @@
 <p><code class="docutils literal notranslate"><span class="pre">lower</span></code> disk size less than rootvg disk size but big enough to contain the used PPs.</p>
 <p><code class="docutils literal notranslate"><span class="pre">nearest</span></code></p>
 </dd>
-<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disk.</p>
+<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disks.</p>
+<p>Stops any active rootvg mirroring during the alternate disk copy.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -273,26 +274,32 @@
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> only backs up mounted file systems. Mount all file systems that you want to back up.</p></li>
-<li><p>copy is performed only on one alternate hdisk even if the rootvg contains multiple hdisks</p></li>
-<li><p>error if several <code class="docutils literal notranslate"><span class="pre">altinst_rootvg</span></code> exist for cleanup operation in automatic mode</p></li>
+<li><p>when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to hdisk1</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to hdisk1 on nimvios01</span>
   <span class="nt">nim_vios_alt_disk</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
     <span class="nt">targets</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">nimvios01,hdisk1</span>
+    <span class="p p-Indicator">-</span> <span class="nt">nimvios01</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">hdisk1</span><span class="p p-Indicator">]</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to the smallest disk that can be selected</span>
   <span class="nt">nim_vios_alt_disk</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
     <span class="nt">disk_size_policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimize</span>
     <span class="nt">targets</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">nimvios01,,nimvios02,</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">nimvios03,</span>
+    <span class="p p-Indicator">-</span> <span class="nt">nimvios01</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+      <span class="nt">nimvios02</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+    <span class="p p-Indicator">-</span> <span class="nt">nimvios03</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a cleanup of any existing alternate disk copy on nimvios01</span>
+  <span class="nt">nim_vios_alt_disk</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_clean</span>
+    <span class="nt">targets</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">nimvios01</span><span class="p">:</span> <span class="p p-Indicator">[]</span>
 </pre></div>
 </div>
 </div>
@@ -301,11 +308,9 @@
 <dl class="simple">
 <dt>msg (always, str, )</dt><dd><p>Status information.</p>
 </dd>
-<dt>targets (always, list, )</dt><dd><p>List of VIOS tuples.</p>
-</dd>
 <dt>nim_node (always, dict, )</dt><dd><p>NIM node info.</p>
 </dd>
-<dt>status (always, dict, )</dt><dd><p>Status for each VIOS (dicionnary key).</p>
+<dt>status (always, dict, )</dt><dd><p>Status for each VIOS tuples (dictionary key).</p>
 </dd>
 </dl>
 </div>

@@ -52,9 +52,11 @@ Parameters
   state (True, str, None)
     Specifies the action to be performed for the group.
 
-    ``present`` to create group with provided *name* and *group_attributes* in the system. If group is already present then attributes specified for the group will be changed with the provided attributes.
+    ``present`` to create group with provided *name* and *group_attributes* in the system.
 
     ``absent`` to delete group with provided *name*. If group is not present then message will be displayed for the same.
+
+    ``modify`` to change the specified attributes with provided value of the given group.
 
 
   name (True, str, None)

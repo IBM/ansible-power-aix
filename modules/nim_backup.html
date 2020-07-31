@@ -301,6 +301,11 @@
 <dt>spot_location (optional, path, /export/nim/spot)</dt><dd><p>Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.</p>
 <p>Can be used on a standalone client if <em>action=restore</em>.</p>
 </dd>
+<dt>bosinst_data (optional, str, None)</dt><dd><p>Specifies the bosinst_data resource to restore the backup on a standalone client.</p>
+<p>This allows running “non-prompted” installations, and so more automated restorations.</p>
+<p>If not specified you will be presented with a series of choices on the console.</p>
+<p>Can be used if <em>action=restore</em>.</p>
+</dd>
 <dt>oslevel (optional, str, None)</dt><dd><p>Specifies the oslevel to filter results.</p>
 <p>Can be used if <em>action=list</em>.</p>
 </dd>
@@ -373,7 +378,7 @@
 </dd>
 <dt>targets (always, list, [‘nimclient01’, ‘nimclient02’, ‘…’])</dt><dd><p>List of VIOSes.</p>
 </dd>
-<dt>status (always, dict, { nimclient01: ‘SUCCESS’, nimclient02: ‘FAILURE’ })</dt><dd><p>Satus of the operation for each <code class="docutils literal notranslate"><span class="pre">target</span></code>. It can be empty, SUCCESS or FAILURE.</p>
+<dt>status (always, dict, { nimclient01: ‘SUCCESS’, nimclient02: ‘FAILURE’ })</dt><dd><p>Status of the operation for each <code class="docutils literal notranslate"><span class="pre">target</span></code>. It can be empty, SUCCESS or FAILURE.</p>
 <dl class="simple">
 <dt>&lt;target&gt; (when target is actually a NIM client, str, SUCCESS)</dt><dd><p>Status of the execution on the &lt;target&gt;.</p>
 </dd>

@@ -37,9 +37,9 @@ Parameters
 
 
   targets (True, list, None)
-    NIM VIOS target.
+    NIM VIOS targets.
 
-    Use a tuple format with the 1st element the VIOS and the 2nd element the disk used for the alternate disk copy. "vios1,disk1,vios2,disk2" for dual VIOSes. "vios1,disk1" for single VIOS.
+    Use a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.
 
 
   time_limit (optional, str, None)
@@ -71,7 +71,9 @@ Parameters
 
 
   force (optional, bool, False)
-    Forces removal of any existing alternate disk copy on target disk.
+    Forces removal of any existing alternate disk copy on target disks.
+
+    Stops any active rootvg mirroring during the alternate disk copy.
 
 
 
@@ -82,8 +84,7 @@ Notes
 
 .. note::
    - ``alt_disk_copy`` only backs up mounted file systems. Mount all file systems that you want to back up.
-   - copy is performed only on one alternate hdisk even if the rootvg contains multiple hdisks
-   - error if several ``altinst_rootvg`` exist for cleanup operation in automatic mode
+   - when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks
 
 
 
@@ -94,19 +95,26 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Perform an alternate disk copy of the rootvg to hdisk1
+    - name: Perform an alternate disk copy of the rootvg to hdisk1 on nimvios01
       nim_vios_alt_disk:
         action: alt_disk_copy
         targets:
-        - nimvios01,hdisk1
+        - nimvios01: [hdisk1]
 
     - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
       nim_vios_alt_disk:
         action: alt_disk_copy
         disk_size_policy: minimize
         targets:
-        - nimvios01,,nimvios02,
-        - nimvios03,
+        - nimvios01: []
+          nimvios02: []
+        - nimvios03: []
+
+    - name: Perform a cleanup of any existing alternate disk copy on nimvios01
+      nim_vios_alt_disk:
+        action: alt_disk_clean
+        targets:
+        - nimvios01: []
 
 
 
@@ -117,16 +125,12 @@ msg (always, str, )
   Status information.
 
 
-targets (always, list, )
-  List of VIOS tuples.
-
-
 nim_node (always, dict, )
   NIM node info.
 
 
 status (always, dict, )
-  Status for each VIOS (dicionnary key).
+  Status for each VIOS tuples (dictionary key).
 
 
 

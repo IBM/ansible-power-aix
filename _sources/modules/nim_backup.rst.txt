@@ -152,6 +152,16 @@ Parameters
     Can be used on a standalone client if *action=restore*.
 
 
+  bosinst_data (optional, str, None)
+    Specifies the bosinst_data resource to restore the backup on a standalone client.
+
+    This allows running "non-prompted" installations, and so more automated restorations.
+
+    If not specified you will be presented with a series of choices on the console.
+
+    Can be used if *action=restore*.
+
+
   oslevel (optional, str, None)
     Specifies the oslevel to filter results.
 
@@ -252,7 +262,7 @@ targets (always, list, ['nimclient01', 'nimclient02', '...'])
 
 
 status (always, dict, { nimclient01: 'SUCCESS', nimclient02: 'FAILURE' })
-  Satus of the operation for each ``target``. It can be empty, SUCCESS or FAILURE.
+  Status of the operation for each ``target``. It can be empty, SUCCESS or FAILURE.
 
 
   <target> (when target is actually a NIM client, str, SUCCESS)

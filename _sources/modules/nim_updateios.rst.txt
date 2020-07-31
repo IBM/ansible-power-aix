@@ -16,9 +16,9 @@ Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) t
 
 Checks status of previous operation if provided before running its operations.
 
-VIOSes of a tuple must be on the same SSP and its state must be UP.
+VIOSes of a tuple must be on the same SSP cluster and its state must be OK.
 
-When updating VIOSes in pair, it checks the SSP state, stop it before installing the VIOS, and restart it after installation.
+When updating VIOSes pair, it checks the SSP cluster state, stop it before installing the VIOS, and restart it after installation.
 
 
 
@@ -40,8 +40,6 @@ Parameters
     ``install`` installs new and supported filesets.
 
     ``commit`` commits all uncommitted updates.
-
-    ``reject`` rejects all uncommitted updates.
 
     ``cleanup`` removes all incomplete pieces of the previous installation.
 
@@ -72,6 +70,10 @@ Parameters
 
   accept_licenses (optional, bool, True)
     Specifies whether the software licenses should be automatically accepted during the installation.
+
+
+  manage_ssp (optional, bool, False)
+    Specifies whether the SSP cluster should be check and stop before updating the vios and restarted after.
 
 
   preview (optional, bool, True)
@@ -111,12 +113,22 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Update a pair of VIOSes
+    - name: Preview updateios on a pair of VIOSes
       nim_updateios:
-        targets: (nimvios01, nimvios02)
+        targets: 'nimvios01, nimvios02'
         action: install
         lpp_source: 723lpp_res
         preview: yes
+    - name: Update VIOSes as a pair and a VIOS alone discarding SSP
+      nim_updateios:
+        targets:
+        - nimvios01,nimvios02
+        - nimvios03
+        action: install
+        lpp_source: 723lpp_res
+        time_limit: '07/21/2020 17:02'
+        manage_ssp: no
+        preview: no
 
 
 
@@ -154,7 +166,7 @@ status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT2', 'vios3': 'SUCC
 
     *SKIPPED-TIMEOUT* when the *time_limit* is reached before updating the 1st VIOS of the tuple.
 
-    *FAILURE-SSP* when SSP checks or operation failed.
+    *FAILURE-SSP* when SSP cluster checks or operation failed.
 
     *FAILURE-UPDT1* when update of first VIOS of the tuple failed.
 
@@ -162,7 +174,7 @@ status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT2', 'vios3': 'SUCC
 
 
 
-nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed'}}}})
+nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone', 'hostname': 'nimclient01.aus.stglabs.ibm.com'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'ssp_cluster_name': 'porthos_cl1', 'ssp_status': 'DOWN'}}}})
   NIM node info. It can contains more information if passed as option *nim_node*.
 
 

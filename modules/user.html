@@ -241,8 +241,9 @@
 <blockquote>
 <div><dl>
 <dt>state (True, str, None)</dt><dd><p>Specifies the action to be performed for the user.</p>
-<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create user with provided <em>name</em> and <em>attributes</em> in the system. If username is already present then attributes specified for the name will be changed with the provided values.</p>
+<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create user with provided <em>name</em> and <em>attributes</em> in the system.</p>
 <p><code class="docutils literal notranslate"><span class="pre">absent</span></code> to delete user with provided <em>name</em>. If username is not present then message will be displayed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">modify</span></code> to change the specified attributes with provided value of the given username.</p>
 </dd>
 <dt>name (True, str, None)</dt><dd><p>Specifies the user name for which the action is to be taken.</p>
 </dd>
