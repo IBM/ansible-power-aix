@@ -29,11 +29,11 @@ options:
   state:
     description:
     - Specifies the action to be performed for the user.
-    - C(present) to create user with provided I(name) and I(attributes) in the system. If username is already
-      present then attributes specified for the name will be changed with the provided values.
+    - C(present) to create user with provided I(name) and I(attributes) in the system.
     - C(absent) to delete user with provided I(name). If username is not present then message will be displayed.
+    - C(modify) to change the specified attributes with provided value of the given username.
     type: str
-    choices: [ present, absent ]
+    choices: [ present, absent, modify ]
     required: true
   name:
     description: Specifies the user name for which the action is to be taken.
@@ -257,7 +257,7 @@ def change_password(module):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', required=True, choices=['present', 'absent']),
+            state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
             name=dict(type='str', required=True, aliases=['user']),
             attributes=dict(type='dict'),
             remove_password=dict(type='bool', default=True),
@@ -269,24 +269,33 @@ def main():
 
     msg = ""
     attributes = module.params['attributes']
+    changed = False
 
     if module.params['state'] == 'absent':
         if user_exists(module):
             msg = remove_user(module)
+            changed = True
         else:
             msg = "User name is NOT FOUND : %s" % module.params['name']
-            module.fail_json(msg=msg)
-    if module.params['state'] == 'present':
+    elif module.params['state'] == 'present':
         if not user_exists(module):
             msg = create_user(module)
+            changed = True
         else:
-            if attributes is None and module.params['password'] is None:
-                msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
-                module.fail_json(msg=msg)
-            else:
+            msg = "User %s already exists." % module.params['name']
+    elif module.params['state'] == 'modify':
+        if attributes is None and module.params['password'] is None:
+            msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
+        else:
+            if user_exists(module):
                 msg = modify_user(module)
+                changed = True
+            else:
+                msg = "No user found in the system to modify the attributes: %s" % module.params['name']
+    else:
+        msg = "Invalid state. The state provided is not supported: %s" % module.params['state']
 
-    module.exit_json(changed=True, msg=msg)
+    module.exit_json(changed=changed, msg=msg)
 
 
 if __name__ == '__main__':

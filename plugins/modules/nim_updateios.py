@@ -20,8 +20,8 @@ short_description: Use NIM to update a single or a pair of Virtual I/O Servers t
 description:
 - Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
 - Checks status of previous operation if provided before running its operations.
-- VIOSes of a tuple must be on the same SSP and its state must be UP.
-- When updating VIOSes in pair, it checks the SSP state, stop it before installing the VIOS, and restart it after installation.
+- VIOSes of a tuple must be on the same SSP cluster and its state must be OK.
+- When updating VIOSes pair, it checks the SSP cluster state, stop it before installing the VIOS, and restart it after installation.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -32,11 +32,10 @@ options:
     - Specifies the operation telling updateios what operation to perform on the VIOS.
     - C(install) installs new and supported filesets.
     - C(commit) commits all uncommitted updates.
-    - C(reject) rejects all uncommitted updates.
     - C(cleanup) removes all incomplete pieces of the previous installation.
     - C(remove) removes the listed filesets from the system in C(filesets) or C(installp_bundle).
     type: str
-    choices: [ install, commit, reject, cleanup, remove ]
+    choices: [ install, commit, cleanup, remove ]
     required: true
   targets:
     description:
@@ -64,6 +63,11 @@ options:
     - Specifies whether the software licenses should be automatically accepted during the installation.
     type: bool
     default: True
+  manage_ssp:
+    description:
+    - Specifies whether the SSP cluster should be check and stop before updating the vios and restarted after.
+    type: bool
+    default: False
   preview:
     description: Specifies a preview operation. No action is actually performed.
     type: bool
@@ -88,12 +92,22 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: Update a pair of VIOSes
+- name: Preview updateios on a pair of VIOSes
   nim_updateios:
-    targets: (nimvios01, nimvios02)
+    targets: 'nimvios01, nimvios02'
     action: install
     lpp_source: 723lpp_res
     preview: yes
+- name: Update VIOSes as a pair and a VIOS alone discarding SSP
+  nim_updateios:
+    targets:
+    - nimvios01,nimvios02
+    - nimvios03
+    action: install
+    lpp_source: 723lpp_res
+    time_limit: '07/21/2020 17:02'
+    manage_ssp: no
+    preview: no
 '''
 
 RETURN = r'''
@@ -128,7 +142,7 @@ status:
             - I(SKIPPED-NO-PREV-STATUS) when no I(vios_status) value is found for the tuple.
             - Previous I(vios_status) when the tuple status does not contains SUCCESS.
             - I(SKIPPED-TIMEOUT) when the I(time_limit) is reached before updating the 1st VIOS of the tuple.
-            - I(FAILURE-SSP) when SSP checks or operation failed.
+            - I(FAILURE-SSP) when SSP cluster checks or operation failed.
             - I(FAILURE-UPDT1) when update of first VIOS of the tuple failed.
             - I(FAILURE-UPDT2) when update of second VIOS of the tuple failed.
             returned: when tuple are actually a NIM client and reachable with c_rsh.
@@ -172,7 +186,8 @@ nim_node:
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "customization is being performed",
-                    "type": "standalone"
+                    "type": "standalone",
+                    "hostname": "nimclient01.aus.stglabs.ibm.com",
                 }
             },
             "vios": {
@@ -189,6 +204,9 @@ nim_node:
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "alt_disk_install operation is being performed",
+                    "hostname": "vios1.aus.stglabs.ibm.com",
+                    "ssp_cluster_name": "porthos_cl1",
+                    "ssp_status": "DOWN",
                 }
             }
         }
@@ -233,7 +251,6 @@ import time
 
 from ansible.module_utils.basic import AnsibleModule
 
-# TODO improvement: NIM client name can differs from the cluster node name
 module = None
 results = None
 
@@ -442,8 +459,24 @@ def check_vios_targets(module, targets):
                 error = True
                 continue
 
+            # Get VIOS interface info in case we need to connect using c_rsh
+            if 'if1' not in results['nim_node']['vios'][elem]:
+                msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
+                module.log(msg)
+                results['meta']['messages'].append(msg)
+                error = True
+                continue
+            fields = results['nim_node']['vios'][elem]['if1'].split(' ')
+            if len(fields) < 2:
+                msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
+                module.log(msg)
+                results['meta']['messages'].append(msg)
+                error = True
+                continue
+            results['nim_node']['vios'][elem]['hostname'] = fields[1]
+
             # check vios connectivity
-            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', elem,
+            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', results['nim_node']['vios'][elem]['hostname'],
                    '"/usr/bin/ls /dev/null; echo rc=$?"']
             rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
             if rc != 0:
@@ -498,13 +531,12 @@ def check_vios_ssp_status(module, target_tuple):
     """
     global results
 
-    ssp_name = ''
     vios_key = tuple_str(target_tuple)
     tuple_len = len(target_tuple)
 
     for vios in target_tuple:
-        if 'ssp_name' in results['nim_node']['vios'][vios]:
-            del(results['nim_node']['vios'][vios]['ssp_name'])
+        if 'ssp_cluster_name' in results['nim_node']['vios'][vios]:
+            del(results['nim_node']['vios'][vios]['ssp_cluster_name'])
         results['nim_node']['vios'][vios]['ssp_status'] = 'none'
 
     # get the SSP status
@@ -512,9 +544,9 @@ def check_vios_ssp_status(module, target_tuple):
     for vios in target_tuple:
         # Get the cluster name and status
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               results['nim_node']['vios'][vios]['vios_ip'],
+               results['nim_node']['vios'][vios]['hostname'],
                '"LC_ALL=C /usr/ios/cli/ioscli cluster -list &&'
-               ' /usr/ios/cli/ioscli cluster -status -fmt : ; echo rc=$?"']
+               ' /usr/ios/cli/ioscli cluster -status -fmt : -verbose; echo rc=$?"']
 
         rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
         if rc != 0:
@@ -542,55 +574,78 @@ def check_vios_ssp_status(module, target_tuple):
             return False
         else:
             # stdout is like:
-            # gdr_ssp3
-            # gdr_ssp3:OK:castor_gdr_vios3:8284-22A0221FD4BV:17:OK:OK
-            # gdr_ssp3:OK:castor_gdr_vios2:8284-22A0221FD4BV:16:OK:OK
-            lines = stdout.rstrip().splitlines()
-            del(lines[0])
+            # CLUSTER_NAME:    porthos_cl1
+            # CLUSTER_ID:      adf01bd81de611ea8012be6aa4a49d02
+            #
+            # porthos_cl1:OK:porthos-vios1:8286-42A02103341V:2:OK:OK
+            # porthos_cl1:OK:porthos-vios2:8286-42A02103341V:3:OK:OK
+            #
+            # with the following:
+            # Cluster Name:Cluster State:Node Name:Node MTM:Node Partition Num:Node State:Pool State
+            # Let's remove the first 3 lines
+            lines = stdout.rstrip().splitlines()[3:]
 
-        # check that the VIOSes belong to the same cluster and have the same satus or there is no SSP
         for line in lines:
-            line = line.rstrip()
-            if not line or len(line) <= 3:
+            line = line.strip()
+            if not line:
                 continue
             fields = line.split(':')
-            ssp_name = fields[0]
-            vios_name = fields[2]
-            ssp_status = fields[1]  # TODO: VRO check the position of the SSP status in the line
-
-            if vios_name not in target_tuple:
+            if len(line) != 7:
+                msg = 'Expecting 21 fields for SSP status, got {0}.'.format(len(line))
+                module.log('[WARNING] ' + msg)
+                results['meta']['messages'].append(msg)
                 continue
+            ssp_cluster_name = fields[0]
+            ssp_node_name = fields[2]
+            ssp_status = fields[6]
 
-            if 'ssp_name' not in results['nim_node']['vios'][vios_name]:
-                results['nim_node']['vios'][vios_name]['ssp_name'] = ssp_name
-                results['nim_node']['vios'][vios_name]['ssp_status'] = ssp_status
-            elif ssp_name != results['nim_node']['vios'][vios_name]['ssp_name']:
+            # check node is in tuple
+            # TODO Improvement: ssp_cluster_name is a short hostname. But hostname here after is from 'if1' definition and can
+            # be an IP address. Moreover tuple is NIM client name can differ from hostname. We could get the actual hostname.
+            if ssp_node_name not in target_tuple:
+                if ssp_node_name in results['nim_node']['vios'][target_tuple[0]]['hostname']:
+                    ssp_node_name = target_tuple[0]
+                elif tuple_len > 1 and ssp_node_name in results['nim_node']['vios'][target_tuple[1]]['hostname']:
+                    ssp_node_name = target_tuple[1]
+                else:
+                    msg = 'Node {0} not found in target_tuple: {1}'.format(ssp_node_name, target_tuple)
+                    module.log(msg)
+                    results['meta'][vios_key]['messages'].append(msg)
+                    continue
+
+            # save the ssp status in results
+            if 'ssp_cluster_name' not in results['nim_node']['vios'][ssp_node_name]:
+                results['nim_node']['vios'][ssp_node_name]['ssp_cluster_name'] = ssp_cluster_name
+                results['nim_node']['vios'][ssp_node_name]['ssp_status'] = ssp_status
+            elif ssp_cluster_name != results['nim_node']['vios'][ssp_node_name]['ssp_cluster_name']:
                 msg = 'VIOS {0} apprears to belong to a different SSP, existing: {1}, got: {2}.'\
-                      .format(vios_name, results['nim_node']['vios'][vios_name]['ssp_name'], ssp_name)
+                      .format(ssp_node_name, results['nim_node']['vios'][ssp_node_name]['ssp_cluster_name'], ssp_cluster_name)
                 module.log(msg)
                 results['meta'][vios_key]['messages'].append(msg)
                 return False
-            elif 'none' != results['nim_node']['vios'][vios_name]['ssp_status']:
+            elif 'none' != results['nim_node']['vios'][ssp_node_name]['ssp_status'] and ssp_status != results['nim_node']['vios'][ssp_node_name]['ssp_status']:
                 msg = 'SSP state on {0} for node {1} is {2}, it differs from existing state: {3}.'\
-                      .format(vios, vios_name, ssp_status, results['nim_node']['vios'][vios_name]['ssp_status'])
+                      .format(vios, ssp_node_name, ssp_status, results['nim_node']['vios'][ssp_node_name]['ssp_status'])
                 module.log(msg)
                 results['meta'][vios_key]['messages'].append(msg)
                 return False
             else:
-                results['nim_node']['vios'][vios_name]['ssp_status'] = ssp_status
+                results['nim_node']['vios'][ssp_node_name]['ssp_status'] = ssp_status
 
             # single VIOS case
             if tuple_len == 1:
-                if results['nim_node']['vios'][vios_name]['ssp_status'] == 'OK':
-                    msg = 'SSP is active for the single VIOS: {0}.'.format(vios_name)
+                if results['nim_node']['vios'][ssp_node_name]['ssp_status'] == 'OK':
+                    msg = 'SSP is active for the single VIOS: {0}.'.format(ssp_node_name)
                     module.log(msg)
                     results['meta'][vios_key]['messages'].append(msg)
                     return False
                 return True
 
-    # Check VIOSes SSP is the same and status is OK
-    if results['nim_node']['vios'][target_tuple[0]]['ssp_name'] != results['nim_node']['vios'][target_tuple[1]]['ssp_name']:
-        msg = 'Both VIOSes must belong to the same SSP'
+    # Check the VIOSes belong to the same cluster and have the same satus OK or there is no SSP
+    if results['nim_node']['vios'][target_tuple[0]]['ssp_cluster_name'] != results['nim_node']['vios'][target_tuple[1]]['ssp_cluster_name']:
+        msg = 'Both VIOSes must belong to the same SSP, got: {0}:{1} and {2}:{3}'\
+              .format(target_tuple[0], results['nim_node']['vios'][target_tuple[0]]['ssp_cluster_name'],
+                      target_tuple[1], results['nim_node']['vios'][target_tuple[1]]['ssp_cluster_name'])
         module.log(msg)
         results['meta'][vios_key]['messages'].append(msg)
         return False
@@ -621,7 +676,7 @@ def ssp_stop_start(module, target_tuple, vios_key, vios, action):
     """
     global results
 
-    # if action is start SSP, find the first node running SSP
+    # if action is start, find the first node running SSP
     node = vios
     if action == 'start':
         for cur_node in target_tuple:
@@ -630,14 +685,14 @@ def ssp_stop_start(module, target_tuple, vios_key, vios, action):
                 break
 
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-           results['nim_node']['vios'][node]['vios_ip'],
+           results['nim_node']['vios'][node]['hostname'],
            '"/usr/sbin/clctrl -{0} -n {1} -m {2}; echo rc=$?"'
-           .format(action, results['nim_node']['vios'][vios]['ssp_name'], vios)]
+           .format(action, results['nim_node']['vios'][vios]['ssp_cluster_name'], vios)]
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         msg = 'Cannot {0} SSP on {1} with c_rsh: \'{2}\', rc:{3}, stderr:{4}'\
-              .format(action, results['nim_node']['vios'][node]['vios_ip'], ' '.join(cmd), rc, stderr)
+              .format(action, results['nim_node']['vios'][node]['hostname'], ' '.join(cmd), rc, stderr)
         module.log('[WARNING] ' + msg)
         results['meta'][vios_key]['messages'].append(msg)
         return False
@@ -645,7 +700,7 @@ def ssp_stop_start(module, target_tuple, vios_key, vios, action):
         rc, stdout = compute_c_rsh_rc(node, rc, stdout)
         if rc != 0:
             msg = 'Failed to {0} SSP cluster {1} on {2}: {3}'\
-                  .format(action, results['nim_node']['vios'][vios]['ssp_name'], vios, stdout)
+                  .format(action, results['nim_node']['vios'][vios]['ssp_cluster_name'], vios, stdout)
             results['meta'][vios_key]['messages'].append(msg)
             module.log(msg)
             return False
@@ -657,7 +712,7 @@ def ssp_stop_start(module, target_tuple, vios_key, vios, action):
         results['nim_node']['vios'][vios]['ssp_status'] = 'OK'
 
     msg = '{0} SSP cluster {1} on {2} succeeded'\
-          .format(action, results['nim_node']['vios'][vios]['ssp_name'], vios)
+          .format(action, results['nim_node']['vios'][vios]['ssp_cluster_name'], vios)
     module.log(msg)
     results['meta'][vios_key]['messages'].append(msg)
     return True
@@ -680,24 +735,22 @@ def get_updateios_cmd(module):
     if module.params['action'] == 'remove':
         if module.params['filesets']:
             cmd += ['-a', 'filesets={0}'.format(module.params['filesets'])]
-        elif module.params['installp_bundle']:
+        if module.params['installp_bundle']:
             cmd += ['-a', 'installp_bundle={0}'.format(module.params['installp_bundle'])]
-    # TODO: check if updateios support filesets list for commit operation
-    # if module.params['action'] == 'commit':
-    #     if module.params['filesets']:
-    #         cmd += ['-a', 'filesets={0}'.format(module.params['filesets'])]
-    #     else:
-    #         cmd += ['-a', 'filesets=all']
 
     if module.params['lpp_source']:
         if check_lpp_source(module, module.params['lpp_source']):
             cmd += ['-a', 'lpp_source={0}'.format(module.params['lpp_source'])]
 
     if module.params['accept_licenses']:
-        cmd += ['-a', 'accept_licenses=yes']    # default in NIM is no
+        cmd += ['-a', 'accept_licenses=yes']
+    else:
+        cmd += ['-a', 'accept_licenses=no']    # default in NIM
 
-    if not module.params['preview']:
-        cmd += ['-a', 'preview=no']     # default in NIM is yes
+    if module.params['preview']:
+        cmd += ['-a', 'preview=yes']     # default in NIM
+    else:
+        cmd += ['-a', 'preview=no']
 
     return cmd
 
@@ -705,9 +758,21 @@ def get_updateios_cmd(module):
 def nim_updateios(module, targets_list, vios_status, time_limit):
     """
     Execute the updateios command
+    For each VIOS tuple,
+    - retrieve the previous status if any (looking for SUCCESS-HC and SUCCESS-UPDT)
+    - for each VIOS of the tuple, check the SSP name and node status
+    - stop the SSP if necessary
+    - perform the updateios operation
+    - wait for the copy to finish
+    - start the SSP if necessary
 
     arguments:
-        module  (dict): The Ansible module
+        module          (dict): The Ansible module
+        targets_list    (list): Target tuple list of VIOS
+        vios_status     (dict): provided previous status for each tuple
+        time_limit       (str): Date and time to perform tuple update
+    note:
+        Set the update status in results['status'][vios_key].
     return:
         none
     """
@@ -750,7 +815,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             results['status'][vios_key] = "SKIPPED-TIMEOUT"
             return
 
-        if module.params('action') in ['install', 'reject', 'cleanup']:
+        if module.params('action') in ['install', 'cleanup'] and module.params['manage_ssp']:
             # check if SSP is defined for this VIOSes tuple.
             if not check_vios_ssp_status(module, target_tuple):
                 msg = "{0} VIOSes skipped (bad SSP status)".format(vios_key)
@@ -765,7 +830,6 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 continue
 
         results['status'][vios_key] = "SUCCESS-UPDT"
-        # TODO VRO should we simulate a success if preview is set? Is there a preview mode in updateios NIM operation?
         # DEBUG-Begin : Uncomment for testing without effective update operation
         # results['meta'][vios_key]['messages'].append('Warning: testing without effective update operation')
         # results['meta'][vios_key]['messages'].append('NIM Command: {0} '.format(updateios_cmd))
@@ -784,7 +848,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
 
             # if needed stop the SSP for the VIOS
             restart_needed = False
-            if tuple_len == 2 and module.params('action') in ['install', 'reject', 'cleanup']:
+            if tuple_len == 2 and module.params('action') in ['install', 'cleanup'] and module.params['manage_ssp']:
                 if not ssp_stop_start(module, target_tuple, vios_key, vios, 'stop'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
@@ -811,6 +875,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 results['changed'] = True
 
             # if needed restart the SSP for the VIOS
+            # TODO check if updateios returns before it finishes
             if restart_needed:
                 if not ssp_stop_start(module, target_tuple, vios_key, vios, 'start'):
                     results['status'][vios_key] = err_label
@@ -820,25 +885,23 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 break
 
 
-###################################################################################
-
 def main():
     global module
     global results
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(choices=['install', 'commit', 'reject', 'cleanup', 'remove'],
-                        required=True, type='str'),
+            action=dict(choices=['install', 'commit', 'cleanup', 'remove'], required=True, type='str'),
             targets=dict(required=True, type='list', elements='str'),
-            filesets=dict(required=False, type='str'),
-            installp_bundle=dict(required=False, type='str'),
-            lpp_source=dict(required=False, type='str'),
-            accept_licenses=dict(required=False, type='bool', default=True),
-            preview=dict(required=False, type='bool', default=True),
-            time_limit=dict(required=False, type='str'),
-            vios_status=dict(required=False, type='dict'),
-            nim_node=dict(required=False, type='dict')
+            filesets=dict(type='str'),
+            installp_bundle=dict(type='str'),
+            lpp_source=dict(type='str'),
+            accept_licenses=dict(type='bool', default=True),
+            manage_ssp=dict(type='bool', default=False),
+            preview=dict(type='bool', default=True),
+            time_limit=dict(type='str'),
+            vios_status=dict(type='dict'),
+            nim_node=dict(type='dict')
         ),
         required_if=[
             ['action', 'install', ['lpp_source']],
@@ -871,7 +934,6 @@ def main():
 
     vios_status = {}
     action = module.params['action']
-    targets = module.params['targets']
 
     # Get and check parameters
     if module.params['vios_status']:
@@ -882,8 +944,8 @@ def main():
         param_one_of(['installp_bundle', 'filesets'])
     else:
         if module.params['filesets'] or module.params['installp_bundle']:
-            msg = 'action is {0}: discarding installp_bundle or filesets attribute'.format(action)
-            module.log(msg + ': attribute filesets "{0}" and installp_bundle "{1}"'
+            msg = 'action is {0}: discarding installp_bundle and filesets attribute'.format(action)
+            module.log(msg + ', got: filesets:"{0}" and installp_bundle:"{1}"'
                        .format(module.params['filesets'], module.params['installp_bundle']))
             results['meta']['messages'].append(msg)
 
@@ -904,12 +966,13 @@ def main():
     if module.params['nim_node']:
         results['nim_node'] = module.params['nim_node']
     if 'vios' not in module.params['nim_node']:
-        results['nim_node'].update({type: get_nim_type_info(module, 'vios')})
+        results['nim_node'].update({'vios': get_nim_type_info(module, 'vios')})
 
     # check targets are valid NIM clients
-    results['targets'] = check_vios_targets(module, targets)
+    results['targets'] = check_vios_targets(module, module.params['targets'])
+
     if not results['targets']:
-        module.log('Warning: Empty target list, targets: \'{0}\''.format(targets))
+        module.log('Warning: Empty target list, targets: \'{0}\''.format(module.params['targets']))
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.exit_json(**results)
 
@@ -919,20 +982,6 @@ def main():
         results['status'][vios_key] = ''  # first time init
         results['meta'][vios_key] = {'messages': []}  # first time init
 
-    # Get VIOS interface info in case we need to connect using c_rsh
-    for target in results['targets']:
-        for vios in target:
-            if 'if1' in module.params['nim_node']['vios'][vios]:
-                fields = results['nim_node']['vios'][vios]['if1'].split(' ')
-                if len(fields) >= 2:
-                    results['nim_node']['vios'][vios]['vios_ip'] = fields[1]
-                    continue
-            if 'vios_ip' not in module.params['nim_node']['vios']:
-                msg = 'Cannot get vios {0}\'s interface address (from lsnim -l command). Please check its NIM setting.'.format(vios)
-                module.log('[WARNING] ' + msg)
-                results['meta']['messages'].append('Warning: ' + msg)
-                # TODO If no IP address, should we do something else, or wait for failure if c_rsh is needed?
-
     # Perfom the update
     nim_updateios(module, results['targets'], vios_status, time_limit)
 
@@ -940,9 +989,13 @@ def main():
         module.log('NIM updateios operation: status table is empty')
         results['meta']['messages'].append('Warning: status table is empty, returning initial vios_status.')
         results['status'] = vios_status
-
-    # Exit
-    results['msg'] = "NIM updateios operation completed. See status and meta for details."
+        results['msg'] = "NIM updateios operation completed. See meta data for details."
+    else:
+        target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
+        if len(target_errored):
+            results['msg'] = "NIM updateios operation failed for {0}. See status and meta for details.".format(target_errored)
+        else:
+            results['msg'] = "NIM updateios operation completed. See status and meta for details."
     module.exit_json(**results)
 
 

@@ -124,6 +124,13 @@ options:
     - Can be used on a standalone client if I(action=restore).
     type: path
     default: /export/nim/spot
+  bosinst_data:
+    description:
+    - Specifies the bosinst_data resource to restore the backup on a standalone client.
+    - This allows running "non-prompted" installations, and so more automated restorations.
+    - If not specified you will be presented with a series of choices on the console.
+    - Can be used if I(action=restore).
+    type: str
   oslevel:
     description:
     - Specifies the oslevel to filter results.
@@ -212,7 +219,7 @@ targets:
     elements: str
     sample: [nimclient01, nimclient02, ...]
 status:
-    description: Satus of the operation for each C(target). It can be empty, SUCCESS or FAILURE.
+    description: Status of the operation for each C(target). It can be empty, SUCCESS or FAILURE.
     returned: always
     type: dict
     contains:
@@ -715,9 +722,18 @@ def nim_mksysb_restore(module, target, params):
         cmd += ['-a', 'mksysb={0}'.format(name)]
         cmd += ['-a', 'spot={0}'.format(spot_name)]
 
-    if not params['accept_licenses']:
+    if params['bosinst_data']:
+        cmd += ['-a', 'bosinst_data={0}'.format(params['bosinst_data'])]
+    else:
+        results['meta'][target]['messages'].append('Warning: No bosinst_data specified, you will be prompted for additional settings on the console.')
+
+    if params['accept_licenses']:
+        cmd += ['-a', 'accept_licenses=yes']
+    else:
         cmd += ['-a', 'accept_licenses=no']
-    if not params['boot_target']:
+    if params['boot_target']:
+        cmd += ['-a', 'boot_client=yes']
+    else:
         cmd += ['-a', 'boot_client=no']
     cmd += [target]
 
@@ -872,13 +888,13 @@ def nim_iosbackup_restore(module, target, params):
     return True
 
 
-def nim_list_backup(module, target, type, params):
+def nim_list_backup(module, target, objtype, params):
     """
     Perform a viosbr NIM operation to resote a VIOS backup
 
     arguments:
         module  (dict): the module variable
-        type     (str): the type of the object to list
+        objtype  (str): the type of the object to list
         target  (list): the NIM Clients to filter backup list
         params  (dict): the NIM command parameters
     return:
@@ -900,7 +916,7 @@ def nim_list_backup(module, target, type, params):
         backup_info.update(build_dict(module, stdout))
         return backup_info
 
-    backup_info.update(get_nim_type_info(module, type))
+    backup_info.update(get_nim_type_info(module, objtype))
 
     # Filter results
     for backup in backup_info.copy():
@@ -982,6 +998,7 @@ def main():
             name_prefix=dict(type='str'),
             name_postfix=dict(type='str'),
             group=dict(type='str'),
+            bosinst_data=dict(type='str'),
             spot_name=dict(type='str'),
             spot_prefix=dict(type='str'),
             spot_postfix=dict(type='str', default='_spot'),
@@ -1073,7 +1090,8 @@ def main():
         for target in targets:
             if target in results['nim_node']['standalone']:
                 if objtype != 'mksysb':
-                    results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                    results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
+                                                               .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
 
@@ -1081,7 +1099,8 @@ def main():
 
             elif target in results['nim_node']['vios']:
                 if objtype == 'mksysb':
-                    results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                    results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
+                                                               .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
 
@@ -1096,16 +1115,19 @@ def main():
         for target in targets:
 
             if target in results['nim_node']['standalone'] and objtype != 'mksysb':
-                results['meta'][target]['messages'].append('Cannot {0} {1} on a standalone machine.'.format(action, type))
+                results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
+                                                           .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
             if target in results['nim_node']['vios'] and objtype == 'mksysb':
-                results['meta'][target]['messages'].append('Cannot {0} {1} on a VIOS.'.format(action, type))
+                results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
+                                                           .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
 
             if 'mksysb' in objtype:
                 params['group'] = module.params['group']
+                params['bosinst_data'] = module.params['bosinst_data']
                 params['spot_name'] = module.params['spot_name']
                 if not params['spot_name']:
                     params['spot_prefix'] = module.params['spot_prefix']
@@ -1127,12 +1149,13 @@ def main():
         wait_all()
 
     # Exit
-    for target in targets:
-        if 'FAILURE' in results['status'][target]:
-            results['msg'] = 'At least one {0} operation failed. See meta data for details on targets'.format(action)
-            module.fail_json(**results)
-    results['msg'] = '{0} operation successfull.'.format(action)
-    module.exit_json(**results)
+    target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
+    if len(target_errored):
+        results['msg'] = "NIM backup {0} operation failed for {1}. See status and meta for details.".format(action, target_errored)
+        module.fail_json(**results)
+    else:
+        results['msg'] = 'NIM backup {0} operation successfull. See status and meta for details.'.format(action)
+        module.exit_json(**results)
 
 
 if __name__ == '__main__':
