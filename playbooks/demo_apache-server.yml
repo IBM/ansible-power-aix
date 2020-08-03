@@ -25,14 +25,13 @@
   - name: "Create large enabled file system"
     ibm.power_aix.filesystem:
       filesystem: /RPMS
-      attributes: size=4G,isnapshot='no'
+      attributes: size=4G
       state: present
       vg: rootvg
 
   - name: "Mount the filesystem"
     mount:
-      mount_dir: /dev/fslv00
-      mount_over_dir: /RPMS
+      mount_dir: /RPMS
 
   - name: "Add space for /opt (+375M)"
     ibm.power_aix.filesystem:

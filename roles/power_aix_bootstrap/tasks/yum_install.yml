@@ -77,7 +77,7 @@
 
 # TRANSFER files to target inventory
   - name: Transfer install images
-    raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} {{ inventory_hostname }}:{{ target_dir }}"
+    raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} root@{{ inventory_hostname }}:{{ target_dir }}"
     register: scp_result
     ignore_errors: True
     delegate_to: localhost
