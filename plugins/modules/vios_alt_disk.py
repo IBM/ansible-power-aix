@@ -307,8 +307,8 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
             if tot_size >= used_size:
                 module.log('[WARNING] Alternate disks smaller than the current rootvg.')
             else:
-                results['msg'] = 'Alternate disk {0} too small ({1} < {2}).'\
-                                 .format(hdisk, pvs[hdisk]['size'], rootvg_size)
+                results['msg'] = 'Alternate disks too small ({0} < {1}).'\
+                                 .format(tot_size, rootvg_size)
                 module.fail_json(**results)
 
 

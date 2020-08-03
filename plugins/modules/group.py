@@ -47,11 +47,11 @@ options:
     state:
         description:
         - Specifies the action to be performed for the group.
-        - C(present) to create group with provided I(name) and I(group_attributes) in the system. If group is already
-          present then attributes specified for the group will be changed with the provided attributes.
+        - C(present) to create group with provided I(name) and I(group_attributes) in the system.
         - C(absent) to delete group with provided I(name). If group is not present then message will be displayed for the same.
+        - C(modify) to change the specified attributes with provided value of the given group.
         type: str
-        choices: [ present, absent ]
+        choices: [ present, absent, modify ]
         required: true
     name:
         description:
@@ -264,7 +264,7 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', required=True, choices=['present', 'absent']),
+            state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
             name=dict(type='str', required=True, aliases=['group']),
             group_attributes=dict(type='dict'),
             user_list_action=dict(type='str', choices=['add', 'remove']),
@@ -278,24 +278,33 @@ def main():
     msg = ""
     group_attributes = module.params['group_attributes']
     user_list_action = module.params['user_list_action']
+    changed = False
 
     if module.params['state'] == 'absent':
         if group_exists(module):
             msg = remove_group(module)
+            changed = True
         else:
             msg = "Group name is NOT FOUND : %s" % module.params['name']
-            module.fail_json(msg=msg)
-    if module.params['state'] == 'present':
+    elif module.params['state'] == 'present':
         if not group_exists(module):
             msg = create_group(module)
+            changed = True
         else:
-            if group_attributes is None and user_list_action is None:
-                msg = "Please provide the attributes to be set or action to be taken for the group."
-                module.fail_json(msg=msg)
-            else:
+            msg = "Group %s already exists." % module.params['name']
+    elif module.params['state'] == 'modify':
+        if group_attributes is None and user_list_action is None:
+            msg = "Please provide the attributes to be set or action to be taken for the group."
+        else:
+            if group_exists(module):
                 msg = modify_group(module)
+                changed = True
+            else:
+                msg = "No group found in the system to modify the attributes: %s" % module.params['name']
+    else:
+        msg = "Invalid state. The state provided is not supported: %s" % module.params['state']
 
-    module.exit_json(changed=True, msg=msg)
+    module.exit_json(changed=changed, msg=msg)
 
 
 if __name__ == '__main__':
