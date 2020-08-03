@@ -5,19 +5,28 @@
 Releases
 ========
 
-Version 1.0.1-FP2
+Version 1.0.2
 -------------
 Notes
-  * Current Fix Pack release of version-1.0.1 which includes:
-    - an Ansible Role for bootstrap
-    - updates to mount module
-    - early code addition of filesystem module
+  * Includes Ansible Roles for bootstrap (yum/python) and VIOS health checker (early release)
+  * NIM backup module (early release)
+  * Filesystem module (early release)
+  * Minor fixes for NIM updateios
+  * Minor fixes for mount module
 
 Availability
-  * `GitHub v1.0.1-FP2`_
+  * `Automation Hub v1.0.2`_
+  * `Galaxy v1.0.2`_
+  * `GitHub v1.0.2`_
 
-.. _GitHub v1.0.1-FP2:
-   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.1-FP2/ibm-power_aix-1.0.1-FP2.tar.gz
+.. _Automation Hub v1.0.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.0.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.0.2.tar.gz
+
+.. _GitHub v1.0.2:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.2/ibm-power_aix-1.0.2.tar.gz
 
 Version 1.0.1
 -------------
