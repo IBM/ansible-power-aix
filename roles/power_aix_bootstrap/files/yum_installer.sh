@@ -13,12 +13,12 @@
 # flag=3 Lower version already installed
 # flag=0 No package from yum_bundle is installed.
 
-source=${1:-`pwd`}
+source=${1:-$(pwd)}
 
 #Check if we running this as the root user.
 if [[ "$(id -u)" != "0" ]]
 then
-   echo "This script must be run as root."
+   printf "\nThis script must be run as root."
    exit 1
 fi
 
@@ -26,27 +26,27 @@ fi
 #Extracting rpm packages.
 # 75 MB for rpm packages extracted.
 
-typeset -i total_req=`echo "(75)" | bc`
-tmp_free=`df -m $source | sed -e /Filesystem/d | awk '{print $3}'`
+typeset -i total_req=$(echo "(75)" | bc)
+tmp_free=$(df -m "$source" | sed -e /Filesystem/d | awk '{print $3}')
 if [[ $tmp_free -le $total_req ]]
 then
-   chfs -a size=+$(( total_req - tmp_free ))M $source
+   chfs -a size=+$(( total_req - tmp_free ))M "$source"
    if [[ $? -ne 0 ]]; then
-       echo "Error: please make sure ${source} has 75M of free space for extracting the rpm packages."
+       printf "\nError: please make sure ${source} has 75M of free space for extracting the rpm packages."
        exit 1
   fi
 fi
 
 #Check if /opt is having enough space to install the packages from yum_bundle.
 #Currently we need around 250M of free space in /opt filesystem.
-typeset -i total_opt=`echo "(250)" | bc`
-opt_free=`df -m /opt | sed -e /Filesystem/d | awk '{print $3}'`
+typeset -i total_opt=$(echo "(250)" | bc)
+opt_free=$(df -m /opt | sed -e /Filesystem/d | awk '{print $3}')
 if [[ $opt_free -le $total_opt ]]
 then
    chfs -a size=+$(( total_opt - opt_free ))M /opt
    if [[ $? -ne 0 ]]; then
-     echo "Total free space required for /opt filesystem to install rpms from yum_bundle is around 250M."
-     echo "Please increase the size of /opt and retry."
+     printf "\nTotal free space required for /opt filesystem to install rpms from yum_bundle is around 250M."
+     printf "\nPlease increase the size of /opt and retry."
      exit 1
    fi
 fi
@@ -54,37 +54,36 @@ fi
 #Update rpm.rte to version.
 # From AIX 7.1 TL5 & 7.2 TL2 rpm.rte shipped is 4.13.0.1.
 # Installation will be skipped if either 4.9.1.3 or 4.13.0.1 is installed.
-echo "Installing rpm.rte at the latest version ..."
-echo "This may take several minutes depending on the number of rpms installed..."
+printf "\nInstalling rpm.rte at the latest version ..."
+printf "\nThis may take several minutes depending on the number of rpms installed...\n"
 
-cd $source
+cd "$source"
 installp -qacXYd rpm.rte all
 #lslpp -L | grep rpm.rte | grep 4.9.1.3
-lslpp -Lc rpm.rte >/dev/null 2>&1
-if [[ $? -eq 0 ]]
+if lslpp -Lc rpm.rte >/dev/null 2>&1
 then
-   rpm_ver=`lslpp -Lc rpm.rte | awk 'FNR==2' | awk -F':' '{print $3}' | cut -d'.' -f1`
+   rpm_ver=$(lslpp -Lc rpm.rte | awk 'FNR==2' | awk -F':' '{print $3}' | cut -d'.' -f1)
    #One more check to see if rpm.rte is version4 or higher.
    #We mayn't come to this part at all.
    if [[ $rpm_ver -lt 4 ]]
    then
-      rpm_inst=`lslpp -Lc rpm.rte | awk 'FNR==2' | awk -F':' '{print $2, $3}'`
-      echo "rpm.rte version required is 4.9.1.3 or higher, but the installed version is ${rpm_inst}"
+      rpm_inst=$(lslpp -Lc rpm.rte | awk 'FNR==2' | awk -F':' '{print $2, $3}')
+      printf "\nrpm.rte version required is 4.9.1.3 or higher, but the installed version is ${rpm_inst}"
       exit 1
    fi
 else
-   echo "rpm.rte update to latest version failed."
-   echo "Please check the /smit.log file and retry the install."
+   printf "\nrpm.rte update to latest version failed."
+   printf "\nPlease check the /smit.log file and retry the install."
    exit 1
 fi
 
-echo "\nExtracting yum_bundle.tar ..."
+printf "\nExtracting yum_bundle.tar ...\n"
 tar -xvf yum_bundle.tar
 
 #Compares the two packages version number
 function cmp_version {
-   large=$(echo  ${pkcurr[1]} ${pkversion[$index]}  | \
-   awk '{ split($1, a, ".");
+   large=$(echo  "${pkcurr[1]}" "${pkversion[$index]}"  | \
+      awk '{ split($1, a, ".");
      	 split($2, b, ".");
          x = 0;
       	 for (i = 1; i <= 4; i++)
@@ -97,7 +96,7 @@ function cmp_version {
        	    }
             print x;
     	 }')
-   return $large
+   return "$large"
 }
 
 #Compares the two packages release number
@@ -108,25 +107,24 @@ function cmp_release {
    elif [[ $1 > $2 ]]
    then
       return 2
-   elif [[ $1 == $2 ]]
+   elif [[ "$1" == "$2" ]]
    then
       return 1
    fi
 }
 
 #Check if some packages are already installed from the yum_bundle.
-echo "\n"
-echo "Checking whether any of the rpms from yum_bundle are already installed ...\n"
+printf "\nChecking whether any of the rpms from yum_bundle are already installed ...\n"
 set -A pkgname
 set -A pkversion
 set -A pkgrelease
 set -A inst_list
 
-ls *.rpm | while read rpm_file
+find . -name "*.rpm" | while read -r rpm_file
 do
-   pkname[${#pkname[*]}]=`rpm -qp --qf "%{NAME}" $rpm_file`
-   pkversion[${#pkversion[*]}]=`rpm -qp --qf "%{VERSION}" $rpm_file`
-   pkgrelease[${#pkgrelease[*]}]=`rpm -qp --qf "%{RELEASE}" $rpm_file`
+   pkname[${#pkname[*]}]=$(rpm -qp --qf "%{NAME}" "$rpm_file")
+   pkversion[${#pkversion[*]}]=$(rpm -qp --qf "%{VERSION}" "$rpm_file")
+   pkgrelease[${#pkgrelease[*]}]=$(rpm -qp --qf "%{RELEASE}" "$rpm_file")
 done
 
 let "index=0"
@@ -137,10 +135,10 @@ do
 
    set -A pkcurr ""
    let "flag=0"
-   rpm_file=`ls *.rpm | grep  "^$pk-[0-9]"`
-   line=`rpm -qa | grep "^$pk-[0-9]"`
+   rpm_file=$(find . -name "$pk-[0-9]*.rpm")
+   line=$(rpm -qa | grep "^$pk-[0-9]")
 
-   if [[ ! -z $line ]]
+   if [[ -n $line ]]
    then
       # Special care must be taken for packages name having more than one fields.
       # For example python-devel
@@ -148,29 +146,29 @@ do
       IFS='-'
       set -A name_ver $line
       IFS=$oldIFS
-      count=`echo ${#name_ver[@]}` #Count number of fields in a package.
+      count=${#name_ver[@]} #Count number of fields in a package.
       # Exclude release, version field plus array index starts with 0.
       let "i=$count-3"
 
       if [[ $i -eq 0 ]]
       then
-         name=`echo "${name_ver[0]}"`
+         name=${name_ver[0]}
       elif [[ $i -eq 1 ]]
       then
-         name=`echo "${name_ver[0]}-${name_ver[1]}"`
+         name=$(echo "${name_ver[0]}-${name_ver[1]}")
       elif [[ $i -eq 2 ]]
       then
-         name=`echo "${name_ver[0]}-${name_ver[1]}-${name_ver[2]}"`
+         name=$(echo "${name_ver[0]}-${name_ver[1]}-${name_ver[2]}")
       elif [[ $i -eq 3 ]]
       then
-         name=`echo "${name_ver[0]}-${name_ver[1]}-${name_ver[2]}-${name_ver[3]}"`
+         name=$(echo "${name_ver[0]}-${name_ver[1]}-${name_ver[2]}-${name_ver[3]}")
       else
-         echo "Package name more than 4 fields"
+         printf "\nPackage name more than 4 fields"
       fi
 
       #To get version exclude release field plus 0 index array.
       let "j=$count-2"
-      ver=`echo ${name_ver[$j]}`
+      ver=${name_ver[$j]}
 
       # Now set the name version field.
       set -A pktest "$name" "$ver"
@@ -180,13 +178,13 @@ do
    fi
 
    #get the release field from the installed package.
-   release=`rpm -qa | grep "^$pk-[0-9]" | awk -F '-' {'print $NF'} | awk -F '.' {'print $1'}`
+   release=$(rpm -qa | grep "^$pk-[0-9]" | awk -F '-' {'print $NF'} | awk -F '.' {'print $1'})
    # If package from yum_bundle is installed.
-   if [[ ${pktest[0]} == $pk ]]
+   if [[ "${pktest[0]}" == "$pk" ]]
    then
       set -A pkcurr "$name" "$ver"
       #compare versions of installed package & from the yum bundle.
-      cmp_version ${pktest[1]} ${pkversion[$index]}
+      cmp_version "${pktest[1]}" "${pkversion[$index]}"
       rc=$?
       if [[ $rc -eq 3 ]]
       then
@@ -197,9 +195,9 @@ do
       elif [[ $rc -eq 0 ]]
       then
          # If version numbers are same then compare the release of packages.
-         if [[ ${pktest[1]} == ${pkversion[$index]} ]]
+         if [[ "${pktest[1]}" == "${pkversion[$index]}" ]]
          then
-            cmp_release $release ${pkgrelease[$index]}
+            cmp_release "$release" "${pkgrelease[$index]}"
             rc=$?
             if [[ $rc -eq 3 ]]
             then
@@ -217,25 +215,25 @@ do
 
    if [[ "$flag" -eq 1 ]]
    then
-      echo "Package ${pkcurr[0]}-${pkcurr[1]}-$release is already installed"
+      printf "\nPackage ${pkcurr[0]}-${pkcurr[1]}-$release is already installed"
       let "index=index+1"
       continue;
    elif [[ "$flag" -eq 2 ]]
    then
-      echo "Skipping ${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} as higher version is already installed."
-      echo "Please make sure these packages are from the Toolbox as there is no guarantee that"
-      echo "third party packages are compatible with Toolbox packages.\n"
+      printf "\nSkipping ${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} as higher version is already installed."
+      printf "\nPlease make sure these packages are from the Toolbox as there is no guarantee that"
+      printf "\nthird party packages are compatible with Toolbox packages.\n"
       let "index=index+1"
       continue;
-   elif [ "$flag" -eq 3 ]
+   elif [[ "$flag" -eq 3 ]]
    then
-      echo "${pktest[0]}-${pktest[1]}-$release is installed.  Updating to ${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} ..."
+      printf "\n${pktest[0]}-${pktest[1]}-$release is installed.  Updating to ${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} ..."
       inst_list[${#inst_list[*]}+1]=$rpm_file
       let "index=index+1"
       continue;
-   elif [ "$flag" -eq 0 ]
+   elif [[ "$flag" -eq 0 ]]
    then
-      echo "${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} will be installed ..."
+      printf "\n${pkname[$index]}-${pkversion[$index]}-${pkgrelease[$index]} will be installed ..."
       inst_list[${#inst_list[*]}+1]=$rpm_file
       let "index=index+1"
       continue;
@@ -244,26 +242,19 @@ done
 
 if [[ ${#inst_list[@]} -eq 0 ]]
 then
-   echo "\nYum and all its dependencies are already installed."
+   printf "\n\nYum and all its dependencies are already installed.\n"
    exit 0
 fi
 
-echo "\nInstalling the packages...\n"
-rpm -Uvh ${inst_list[@]}
-
-if [[ $? -eq 0 ]]
+printf "\n\nInstalling the packages...\n"
+if rpm -Uvh "${inst_list[@]}"
 then
-   echo
-   echo "\033[1;32mYum installed successfully. \033[m"
-   echo "\033[1;33mPlease run 'yum update' to update packages to the latest level. \033[m"
-   echo
+   printf "\n\033[1;32mYum installed successfully. \033[m"
+   printf "\n\033[1;33mPlease run 'yum update' to update packages to the latest level. \033[m"
    #yum -y update
-elif [[ $? -ne 0 ]]
-then
-   echo
-   echo "\033[1;31mYum installation failed. \033[m"
-   echo "If the failure was due to a space issue, increase the size of /opt and re-run yum.sh"
-   echo "or install the downloaded packages from $source manually."
-   echo "Another reason for failure could be mixing of Toolbox packages and packages from other sources."
-   echo
+else
+   printf "\n\033[1;31mYum installation failed. \033[m"
+   printf "\nIf the failure was due to a space issue, increase the size of /opt and re-run yum.sh"
+   printf "\nor install the downloaded packages from $source manually."
+   printf "\nAnother reason for failure could be mixing of Toolbox packages and packages from other sources.\n"
 fi
