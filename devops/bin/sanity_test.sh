@@ -55,7 +55,7 @@ for f in $DIR/plugins/modules/*.py; do
     done
     (( $m_rc )) && errored+="$f "
 done
-(( $rc )) && echo "-------- module in error --------\n$errored\n"
+(( $rc )) && printf "-------- module in error --------\n$errored\n"
 
 set -e
 
