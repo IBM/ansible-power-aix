@@ -150,7 +150,7 @@ status:
             sample: 'SUCCESS-UPDT'
     sample:
         "status": {
-            "vios1-vios2": "SUCCESS-UPDT2",
+            "vios1-vios2": "SUCCESS-UPDT",
             "vios3": "SUCCESS-ALTDC",
             "vios4-vios5": "FAILURE-SSP",
             "vios6-vios7": "FAILURE-UPDT1"
