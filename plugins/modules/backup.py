@@ -34,7 +34,7 @@ options:
     - C(restore) to restore a backup image.
     - C(view) to get useful information about a backup image.
     type: str
-    choices: [ create, restore ]
+    choices: [ create, restore, view ]
     required: true
   os_backup:
     description:
@@ -71,26 +71,32 @@ options:
     - The filename can be specified by either a relative or an absolute pathname.
     - Can be used if C(os_backup=no) and C(action=restore).
     type: path
-  use_data_file:
+  create_data_file:
     description:
     - Specifies to create the data file containing information including the list of logical volumes
       file systems and their sizes, and the volume group name.
     - When C(volume_group) is the rootvg, data file will be in I(/image.data).
     - When C(volume_group) is a data volume group, data file will be in
       I(/tmp/vgdata/vgname/vgname.data).
-    - Specify C(use_data_file=mapfile) to creates the MAPFILE containing the mapping of the logical
+    - Specify C(create_data_file=mapfile) to creates the MAPFILE containing the mapping of the logical
       to physical partitions for each logical volume in the volume group. This mapping can be used
       to allocate the same logical-to-physical mapping when the image is restored.
     - Can be used if C(action=create) and C(os_backup=no).
     type: str
     choices: [ yes, mapfile, no ]
     default: no
-  exclude_file:
+  exclude_fs:
     description:
-    - Specifies the exclude file path. This file lists the file systems ito exclude from the backup.
+    - Specifies a file path that contains the list of file systems to exclude from the backup.
     - One file system mount point is listed per line.
     - Can be used if C(action=create) and C(os_backup=no).
     type: path
+  force:
+    description:
+    - Specifies to overwrite existing backup image.
+    - Can be used if C(os_backup=no) and C(action=create).
+    type: bool
+    default: no
   exclude_data:
     description:
     - If C(action=create), specifies to exclude user data from the backup. Backs up user volume
@@ -99,6 +105,15 @@ options:
     - If C(action=restore), specifies to recreate the volume group structure only without restoring
       any files or data.
     - Can be used if C(os_backup=no) and C(action=create) or C(action=restore).
+    type: bool
+    default: no
+  exclude_files:
+    description:
+    - Specifies to exclude files specified in the /etc/exclude.vgname file from being backed up.
+    - The /etc/exclude.vgname file should contain patterns of file names that you do not want
+      included in your system backup image. They are input to the pattern matching conventions of
+      the grep command.
+    - Can be used if C(action=create) and C(os_backup=no).
     type: bool
     default: no
   extend_fs:
@@ -122,13 +137,41 @@ options:
     default: no
 notes:
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
+  - C(savevg) backs up all logical volume information and will be recreated. However, only
+    JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up
+    using a savevg.
 '''
 
 EXAMPLES = r'''
-- name: Perform an alternate disk copy of the rootvg to hdisk1
+- name: savevg of rootvg to /dev/hdisk1
   backup:
     action: create
-    targets: hdisk1
+    os_backup: no
+    name: rootvg
+    location: /dev/hdisk1
+    exclude_data: no
+    exclude_files: no
+    exclude_fs: /tmp/exclude_fs_list
+    create_data_file: yes
+    extend_fs: yes
+    verbose: yes
+
+- name: savevg of datavg structure to /dev/hdisk2
+  backup:
+    action: create
+    os_backup: no
+    name: datavg
+    location: /dev/hdisk2
+    exclude_data: yes
+    exclude_files: yes
+    create_data_file: yes
+
+- name: view the vg backup image stored on /dev/hdisk1 with savevg
+  backup:
+    action: view
+    os_backup: no
+    location: /dev/hdisk1
+
 '''
 
 RETURN = r'''
@@ -169,14 +212,16 @@ def check_vg(module, vg):
         False otherwise
     """
     global results
+    module.log('Checking {0} is active.'.format(vg))
 
     # list active volume groups
-    cmd = ['/usr/sbin/lsvg', 'o']
+    cmd = ['/usr/sbin/lsvg', '-o']
     rc, stdout, stderr = module.run_command(cmd)
     if rc == 0:
         vgs = stdout.splitlines()
-        module.log('checking {0}, active volume groups: {1}'.format(vg, vgs))
+        module.log('Active volume groups are: {0}'.format(vgs))
         if vg in vgs:
+            module.debug('volume group {0} is active'.format(vg))
             return True
 
     results['stdout'] = stdout
@@ -197,6 +242,7 @@ def mksysb(module, params):
         False otherwise
     """
     global results
+    module.log('Creating OS backup with mksysb.')
 
     # mksysb  device | file
     # not yet implemented:
@@ -224,6 +270,7 @@ def alt_disk_mksysb(module, params):
         False otherwise
     """
     global results
+    module.log('Restoring OS backup with alt_disk_mksysb.')
 
     # alt_disk_mksysb -m device -d target_disks...
     # not yet implemented:
@@ -255,12 +302,26 @@ def savevg(module, params, vg):
         rc       (int): the return code of the command
     """
     global results
+    module.log('Creating VG backup of {0} with savevg.'.format(vg))
+
+    # Check if the backup image already exists
+    if not params['force']:
+        rc = restvg_view(module, params)
+        if rc == 0:
+            vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
+            if vg_name == vg:
+                results['msg'] = 'Backup images for {0} already exists.'.format(vg)
+                return 0
+            else:
+                results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
+                return 1
+        else:
+            results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)
+            return rc
 
     if not check_vg(module, vg):
         results['msg'] = 'Volume group {0} is not active, please vary on the volume group.'.format(vg)
         return 1
-
-    # TODO Check if an existing backup is overwritten. Does it errors? Do we need a force option?
 
     # savevg VGName
     # [ -e ]        Excludes files specified in the /etc/exclude.vgname file from being backed up.
@@ -279,20 +340,20 @@ def savevg(module, params, vg):
     # [ -V ]        Verify a tape backup.
     # [ -Z ]        Does not back up the EFS information for all the files, directories, and file systems.
     cmd = ['/bin/savevg']
-    if params['exclude_file']:
-        cmd += ['-e', params['exclude_file']]
+    if params['exclude_files']:
+        cmd += ['-e']
     if params['location']:
         cmd += ['-f', params['location']]
-    if params['use_data_file'] == 'mapfile':
+    if params['create_data_file'] == 'mapfile':
         cmd += ['-m']
-    elif params['use_data_file']:
+    elif params['create_data_file']:
         cmd += ['-i']
     if params['exclude_data']:
         cmd += ['-r']
     if params['verbose']:
         cmd += ['-v']
-    if params['exclude_file_system']:
-        cmd += ['-x', params['exclude_file_system']]
+    if params['exclude_fs']:
+        cmd += ['-x', params['exclude_fs']]
     if params['extend_fs']:
         cmd += ['-X']
     if params['flags']:
@@ -303,6 +364,7 @@ def savevg(module, params, vg):
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
+    results['rc'] = rc
     if rc == 0:
         results['changed'] = True
     return rc
@@ -321,10 +383,11 @@ def restvg(module, params, action, disk):
         rc       (int): the return code of the command
     """
     global results
-    # savevg [DiskName]
+    module.log('VG backup {0} on {1} with restvg.'.format(action, disk))
+
+    # restvg [DiskName]
     # [ -d FileName ]   Uses a file (absolute or relative path) instead of the vgname.data file in the backup image.
     # [ -f Device ]     Device of file to store the image. Default is I(/dev/rmt0).
-    # [ -l ]            Displays useful information about a volume group backup. Used when action is 'view'.
     # [ -q ]            Does not display the VG name and target disk device name usual prompt before restoration.
     # [ -r ]            Recreates a VG structure only without restoring any files or data.
     # [ -s ]            Creates the LV with minimum size possible to accomodate the file system.
@@ -337,8 +400,6 @@ def restvg(module, params, action, disk):
         cmd += ['-d', params['data_file']]
     if params['location']:
         cmd += ['-f', params['location']]
-    if action == 'view':
-        cmd += ['-l']
     if not params['verbose']:
         cmd += ['-q']
     if params['exclude_data']:
@@ -360,13 +421,42 @@ def restvg(module, params, action, disk):
     return rc
 
 
+def restvg_view(module, params):
+    """
+    Run the restvg command to get backup information.
+
+    arguments:
+        module     (dict): the module variable
+        params  (dict): the command parameters
+    return:
+        rc       (int): the return code of the command
+    """
+    global results
+
+    location = params['location'].strip()
+    if not location:
+        location = '/dev/rmt0'
+    module.log('View VG backup {0} with restvg.'.format(location))
+
+    # restvg -f Device -l
+    # [ -f Device ]     Device of file to store the image. Default is I(/dev/rmt0).
+    # [ -l ]            Displays useful information about a volume group backup. Used when action is 'view'.
+    cmd = ['restvg', '-f', location, '-l']
+
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    results['rc'] = rc
+    return rc
+
+
 def main():
     global results
 
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(required=True, type='str',
-                        choices=['create', 'restore']),
+                        choices=['create', 'restore', 'view']),
             os_backup=dict(type='bool', default=False),
             name=dict(type='str'),
             flags=dict(type='str'),
@@ -375,8 +465,10 @@ def main():
             exclude_data=dict(type='bool', default=False),
             verbose=dict(type='bool', default=False),
             # for savevg
-            use_data_file=dict(type='str', choices=[True, 'mapfile', False], default=False),
-            exclude_file=dict(type='path'),
+            create_data_file=dict(type='str', choices=[True, 'mapfile', False], default=False),
+            exclude_fs=dict(type='path'),
+            force=dict(type='bool', default=False),
+            exclude_files=dict(type='bool', default=False),
             extend_fs=dict(type='bool', default=False),
             # for restvg
             data_file=dict(type='path'),
@@ -397,10 +489,11 @@ def main():
 
     params = {}
     action = module.params['action']
+    params['os_backup'] = module.params['os_backup']
     params['flags'] = module.params['flags']
 
     if action == 'create':
-        if not params['os_backup']:
+        if params['os_backup']:
 
             rc = mksysb(module, params)
 
@@ -409,8 +502,10 @@ def main():
             params['location'] = module.params['location']
             params['exclude_data'] = module.params['exclude_data']
             params['verbose'] = module.params['verbose']
-            params['use_data_file'] = module.params['use_data_file']
-            params['exclude_file'] = module.params['exclude_file']
+            params['create_data_file'] = module.params['create_data_file']
+            params['exclude_fs'] = module.params['exclude_fs']
+            params['force'] = module.params['force']
+            params['exclude_files'] = module.params['exclude_files']
             params['extend_fs'] = module.params['extend_fs']
 
             if not params['name']:
@@ -438,20 +533,27 @@ def main():
             rc = restvg(module, params, action, params['name'])
 
     elif action == 'view':
-        params['location'] = module.params['location']
+        if params['os_backup']:
+            results['msg'] = 'Bad parameter: action is {0}, os_backup cannot be \'{1}\'.'.format(action, params['os_backup'])
+            module.fail_json(**results)
 
+        params['location'] = module.params['location']
         if not params['location'] or not params['location'].strip():
             results['msg'] = 'Missing parameter: action is {0} but argument \'location\' is missing.'.format(action)
             module.fail_json(**results)
 
-        rc = restvg(module, params, action, params['name'])
+        rc = restvg_view(module, params)
 
     if rc == 0:
-        results['msg'] = 'AIX backup {0} operation successfull.'.format(action)
+        if not results['msg']:
+            msg = 'AIX backup {0} operation successfull.'.format(action)
+            results['msg'] = msg
+        module.log(results['msg'])
         module.exit_json(**results)
     else:
         if not results['msg']:
             results['msg'] = 'AIX backup {0} operation failed.'.format(action)
+        module.log(results['msg'])
         module.fail_json(**results)
 
 
