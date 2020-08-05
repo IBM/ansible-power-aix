@@ -402,7 +402,7 @@ def main():
         stderr='',
     )
 
-    ioslevel = get_ioslevel(module)
+    get_ioslevel(module)
 
     action = module.params['action']
 
