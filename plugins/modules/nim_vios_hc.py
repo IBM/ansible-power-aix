@@ -44,7 +44,7 @@ options:
     - Specifies additional parameters.
     type: dict
 notes:
-  - Requires vioshc.py available at U(https://github.com/aixoss/vios-health-checker).
+  - Use the C(power_aix_vioshc) role to install the required C(vioshc.py) script on the NIM master.
 '''
 
 EXAMPLES = r'''
