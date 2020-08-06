@@ -122,7 +122,7 @@ options:
     - Can be used if C(action=create) and C(os_backup=no).
     type: bool
     default: no
-  minimal_lv_size:
+  minimize_lv_size:
     description:
     - Specifies to create the logical volumes with minimum size possible to accomodate
       the file system.
@@ -148,7 +148,7 @@ EXAMPLES = r'''
     action: create
     os_backup: no
     name: rootvg
-    location: /dev/hdisk1
+    location: /dav/rmt1
     exclude_data: no
     exclude_files: no
     exclude_fs: /tmp/exclude_fs_list
@@ -161,7 +161,7 @@ EXAMPLES = r'''
     action: create
     os_backup: no
     name: datavg
-    location: /dev/hdisk2
+    location: /tmp/backup_datavg
     exclude_data: yes
     exclude_files: yes
     create_data_file: yes
@@ -172,6 +172,16 @@ EXAMPLES = r'''
     os_backup: no
     location: /dev/hdisk1
 
+- name: restvg to restore datavg structure only to /dev/hdisk2
+  backup:
+    action: restore
+    os_backup: no
+    name: datavg
+    location: /tmp/backup_datavg
+    data_file: /tmp/datavg.mydata
+    exclude_data: yes
+    minimize_lv_size: yes
+    flags: '-n'
 '''
 
 RETURN = r'''
@@ -179,16 +189,38 @@ msg:
     description: The execution message.
     returned: always
     type: str
-    sample: 'AIX backup create operation successfull.'
+    sample: 'AIX create backup operation successfull.'
 stdout:
     description: The standard output of the command.
     returned: always
     type: str
-    sample: 'Bootlist is set to the boot disk: hdisk0 blv=hd5'
+    sample:
+      'hdisk1
+       lv00
+       x           11 ./tmp/vgdata/datavg/image.info
+       x          127 ./tmp/vgdata/vgdata.files11928014
+       x          127 ./tmp/vgdata/vgdata.files
+       x         2320 ./tmp/vgdata/datavg/filesystems
+       x         1530 ./tmp/vgdata/datavg/datavg.data
+       x          278 ./tmp/vgdata/datavg/backup.data
+           total size: 4393'
 stderr:
     description: The standard error of the command.
     returned: always
     type: str
+    sample:
+      'Will create the Volume Group:	datavg
+       Target Disks:	  Allocation Policy:
+                Shrink Filesystems:	yes
+                Preserve Physical Partitions for each Logical Volume:	no
+
+       New volume on /tmp/datavg_backup:
+        Cluster 51200 bytes (100 blocks).
+           Volume number 1
+           Date of backup: Thu Aug  6 03:53:53 2020
+           Files backed up by name
+           User root
+           files restored: 6'
 rc:
     description:
     - The return code of the command.
@@ -217,17 +249,21 @@ def check_vg(module, vg):
     # list active volume groups
     cmd = ['/usr/sbin/lsvg', '-o']
     rc, stdout, stderr = module.run_command(cmd)
-    if rc == 0:
-        vgs = stdout.splitlines()
-        module.log('Active volume groups are: {0}'.format(vgs))
-        if vg in vgs:
-            module.debug('volume group {0} is active'.format(vg))
-            return True
+    if rc != 0:
+        results['msg'] = 'Cannot get active volume group. Command \'{0}\' failed.'.format(cmd)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        results['rc'] = rc
+        return False
 
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    results['rc'] = rc
-    return False
+    vgs = stdout.splitlines()
+    module.log('Active volume groups are: {0}'.format(vgs))
+    if vg in vgs:
+        module.debug('volume group {0} is active'.format(vg))
+        return True
+    else:
+        results['msg'] = 'Volume group {0} is not active. Active volume groups are: {1}. Please vary on the volume group.'.format(vg, vgs)
+        return False
 
 
 def mksysb(module, params):
@@ -251,7 +287,7 @@ def mksysb(module, params):
     cmd = ['/bin/mksysb']
 
     if params['flags']:
-        for f in params['flags']:
+        for f in params['flags'].split(' '):
             cmd += [f]
 
     return True
@@ -282,7 +318,7 @@ def alt_disk_mksysb(module, params):
     # [ -D B O V g k r y z T S C ]
     cmd = ['/usr/sbin/alt_disk_mksysb']
     if params['flags']:
-        for f in params['flags']:
+        for f in params['flags'].split(' '):
             cmd += [f]
     module.log('cmd: {0}'.format(cmd))
 
@@ -320,7 +356,6 @@ def savevg(module, params, vg):
             return rc
 
     if not check_vg(module, vg):
-        results['msg'] = 'Volume group {0} is not active, please vary on the volume group.'.format(vg)
         return 1
 
     # savevg VGName
@@ -357,7 +392,7 @@ def savevg(module, params, vg):
     if params['extend_fs']:
         cmd += ['-X']
     if params['flags']:
-        for f in params['flags']:
+        for f in params['flags'].split(' '):
             cmd += [f]
     cmd += [vg]
 
@@ -387,7 +422,7 @@ def restvg(module, params, action, disk):
 
     # restvg [DiskName]
     # [ -d FileName ]   Uses a file (absolute or relative path) instead of the vgname.data file in the backup image.
-    # [ -f Device ]     Device of file to store the image. Default is I(/dev/rmt0).
+    # [ -f Device ]     Device name of the backup media. Default is I(/dev/rmt0).
     # [ -q ]            Does not display the VG name and target disk device name usual prompt before restoration.
     # [ -r ]            Recreates a VG structure only without restoring any files or data.
     # [ -s ]            Creates the LV with minimum size possible to accomodate the file system.
@@ -404,10 +439,10 @@ def restvg(module, params, action, disk):
         cmd += ['-q']
     if params['exclude_data']:
         cmd += ['-r']
-    if params['minimal_lv_size']:
+    if params['minimize_lv_size']:
         cmd += ['-s']
     if params['flags']:
-        for f in params['flags']:
+        for f in params['flags'].split(' '):
             cmd += [f]
     if disk:
         cmd += [disk]
@@ -472,7 +507,7 @@ def main():
             extend_fs=dict(type='bool', default=False),
             # for restvg
             data_file=dict(type='path'),
-            minimal_lv_size=dict(type='bool', default=False),
+            minimize_lv_size=dict(type='bool', default=False),
         ),
         required_if=[
             ['action', 'view', ['location']],
@@ -528,7 +563,7 @@ def main():
             params['exclude_data'] = module.params['exclude_data']
             params['verbose'] = module.params['verbose']
             params['data_file'] = module.params['data_file']
-            params['minimal_lv_size'] = module.params['minimal_lv_size']
+            params['minimize_lv_size'] = module.params['minimize_lv_size']
 
             rc = restvg(module, params, action, params['name'])
 
@@ -546,13 +581,13 @@ def main():
 
     if rc == 0:
         if not results['msg']:
-            msg = 'AIX backup {0} operation successfull.'.format(action)
+            msg = 'AIX {0} backup operation successfull.'.format(action)
             results['msg'] = msg
         module.log(results['msg'])
         module.exit_json(**results)
     else:
         if not results['msg']:
-            results['msg'] = 'AIX backup {0} operation failed.'.format(action)
+            results['msg'] = 'AIX {0} backup operation failed.'.format(action)
         module.log(results['msg'])
         module.fail_json(**results)
 
