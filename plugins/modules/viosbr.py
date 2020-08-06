@@ -22,7 +22,7 @@ description:
   and logical configuration of the Virtual I/O Server (VIOS).
 version_added: '2.9'
 requirements:
-- AIX >= 7.1 TL3
+- VIOS >= 2.2.2.00
 - Python >= 2.7
 options:
   action:
