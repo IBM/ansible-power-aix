@@ -1215,7 +1215,7 @@ def main():
 
         ),
         required_if=[
-            ['action', ['view'], ['name']],
+            ['action', 'view', ['name']],
         ],
     )
 

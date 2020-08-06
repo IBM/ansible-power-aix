@@ -336,7 +336,7 @@ def viosbr_migrate(module, params):
 
 def viosbr_dr(module, params):
     """
-    Recover the cluster on another geographic location.
+    Recovers the cluster on another geographic location.
     """
     global results
 
@@ -385,10 +385,10 @@ def main():
             validate=dict(type='bool', default=False),
         ),
         required_if=[
-            ['action', ['backup'], ['file']],
-            ['action', ['restore'], ['file']],
-            ['action', ['recoverdb'], ['clustername']],
-            ['action', ['migrate'], ['file']],
+            ['action', 'backup', ['file']],
+            ['action', 'restore', ['file']],
+            ['action', 'recoverdb', ['clustername']],
+            ['action', 'migrate', ['file']],
         ],
         mutually_exclusive=[
             ['force', 'validate']

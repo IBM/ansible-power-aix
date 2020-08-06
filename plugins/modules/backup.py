@@ -475,7 +475,7 @@ def main():
             minimal_lv_size=dict(type='bool', default=False),
         ),
         required_if=[
-            ['action', ['view'], ['location']],
+            ['action', 'view', ['location']],
         ],
     )
 

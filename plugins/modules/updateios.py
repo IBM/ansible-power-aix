@@ -168,8 +168,9 @@ def main():
             install_new=dict(type='bool', default=False),
         ),
         required_if=[
-            ['action', ['update'], ['device']],
-            ['action', ['remove'], ['filesets']],
+            ['action', 'update', ['device']],
+            ['action', 'list', ['device']],
+            ['action', 'remove', ['filesets']],
         ]
     )
 
