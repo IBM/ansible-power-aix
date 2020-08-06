@@ -220,6 +220,11 @@ def main():
     if not module.check_mode:
         response = 'y\ny'
 
+    # Do we want to implement a manage_ssp flag like in nim_updateios
+    # that would call clstartstop to remove the VIOS from the cluster
+    # before applying the update?
+    # It is probably better to manage this within playbooks/roles.
+
     shcmd = "eval echo '{0}' | {1}".format(response, ' '.join(cmd))
     ret, stdout, stderr = module.run_command(shcmd, use_unsafe_shell=True)
     results['stdout'] = stdout
@@ -227,6 +232,9 @@ def main():
     if ret != 0:
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(shcmd, ret)
         module.fail_json(**results)
+
+    if action != 'list' and not module.check_mode:
+        results['changed'] = True
 
     results['msg'] = 'updateios completed successfully'
     module.exit_json(**results)
