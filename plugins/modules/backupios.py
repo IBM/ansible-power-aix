@@ -21,7 +21,7 @@ description:
 - Creates a backup of the Virtual I/O Server and places it onto a file system.
 version_added: '2.9'
 requirements:
-- VIOS >= 2.2.2.00
+- VIOS >= 2.2.5.0
 - Python >= 2.7
 options:
   file:

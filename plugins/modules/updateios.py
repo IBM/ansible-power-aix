@@ -21,7 +21,7 @@ description:
 - Install fixes or update the VIOS to the latest maintenance level.
 version_added: '2.9'
 requirements:
-- VIOS >= 2.2.2.00
+- VIOS >= 2.2.5.0
 - Python >= 2.7
 options:
   action:
