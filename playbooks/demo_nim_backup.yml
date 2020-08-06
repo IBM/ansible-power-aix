@@ -1,0 +1,123 @@
+---
+- name: "Backup operation using NIM for on AIX/VIOS"
+  hosts: nimserver
+  gather_facts: no
+  vars:
+    preview_v:              True
+    # for Standalone LPAR
+    # lpar_nim_node_v:        {}
+    lpar_targets_v:         "quimby06"
+    sysb_location_v:        "/export/nim/mksysb"
+    sysb_name_v:            "ansible_img"
+    sysb_name_prefix_v:     "ansible"
+    sysb_name_postfix_v:    "_sysb"
+    sysb_group_v:           ""
+    sysb_spot_name_v:       ""
+    sysb_spot_prefix_v:     ""
+    sysb_spot_postfix_v:    ""
+    sysb_spot_location_v:   "/export/nim/spot"
+    sysb_remove_spot_v:     False
+    sysb_remove_backup_v:   False
+    sysb_boot_target_v:     True
+    # for VIOS
+    # vios_nim_node_v:        {}
+    vios_targets_v:         "quimby-vios2"
+    iossysb_type_v:         "ios_mksysb"
+    iossysb_location_v:     "/export/nim/ios_mksysb"
+    iossysb_remove_spot_v:  False
+    iossysb_spot_postfix_v: "_iossysb"
+    iossysb_accept_licenses_v: True
+    iossysb_check_mode_v:   True
+    iosb_type_v:            "ios_backup"
+    iosb_name_v:            ""
+    iosb_name_prefix_v:     ""
+    iosb_name_postfix_v:    "_iosb"
+    iosb_location_v:        "/export/nim/ios_backup"
+    # for backup list 
+    oslevel_v:              "7200-03-02"
+
+  tasks:
+
+  - name: List backup on the NIM Master
+    nim_backup:
+      action: list
+      targets: "ALL"
+      oslevel: "{{ oslevel_v }}"
+      name: "{{ sysb_name_v }}"
+      # name_prefix: "{{ sysb_name_prefix_v }}"
+      # name_postfix: "{{ sysb_name_postfix_v }}"
+    register: result
+  - debug: var=result
+
+  - name: Create a mksysb backup of a LPAR
+    nim_backup:
+      action: backup
+      targets: "{{ lpar_targets_v }}"
+      location: "{{ sysb_location_v }}"
+      # name: "{{ sysb_name_v }}"
+      # name_prefix: "{{ sysb_name_prefix_v }}"
+      # name_postfix: "{{ sysb_name_postfix_v }}"
+    register: result
+  - debug: var=result
+
+#  - name: Restore a mksysb on a LPAR
+#    nim_backup:
+#      action: restore
+#      targets: "{{ lpar_targets_v }}"
+#      # name: "{{ sysb_name_v }}"
+#      location: "{{ sysb_location_v }}"
+#      spot_location: "{{ sysb_spot_location_v }}"
+#      boot_target: "{{ sysb_boot_target_v }}"
+#      remove_spot: "{{ sysb_remove_spot_v }}"
+#      remove_backup: "{{ sysb_remove_backup_v }}"
+#    register: result
+#  - debug: var=result
+
+  - name: Create an ios mksysb
+    nim_backup:
+      action: create
+      type: "{{ iossysb_type_v }}"
+      targets: "{{ vios_targets_v }}"
+      location: "{{ iossysb_location_v }}"
+    register: result
+  - debug: var=result
+
+#  - name: Restore a mksysb on a vios
+#    nim_backup:
+#      action: restore
+#      targets: "{{ vios_targets_v }}"
+#      type: "{{ iossysb_type_v }}"
+#      bosinst_data: 7200-03bid_ow
+#      spot_postfix: "{{ iossysb_spot_postfix_v }}"
+#      remove_spot: "{{ iossysb_remove_spot_v }}"
+#      accept_licenses: "{{ iossysb_accept_licenses_v }}"
+#      check_mode: "{{ iossysb_check_mode_v }}"
+#    register: result
+#  - debug: var=result
+
+  - name: Create an ios backup ( save vios config )
+    nim_backup:
+      action: create
+      type: "{{ iosb_type_v }}"
+      targets: "{{ vios_targets_v }}"
+      location: "{{ iosb_location_v }}"
+    register: result
+  - debug: var=result
+
+  - name: Display an ios backup
+    nim_backup:
+      action: view
+      type: "{{ iosb_type_v }}"
+      # targets: "{{ vios_targets_v }}"
+      name: quimby-vios2_iosb
+    register: result
+  - debug: var=result
+
+#  - name: Restore an ios backup ( restore ios config )
+#    nim_backup:
+#      action: restore
+#      type: "{{ iosb_type_v }}"
+#      targets: "{{ vios_targets_v }}"
+#      name_postfix: "{{ iosb_name_postfix_v }}"
+#    register: result
+#  - debug: var=result

@@ -1,0 +1,60 @@
+---
+- name: "Backup operations on datavg using savevg and restvg for AIX"
+  hosts: all
+  gather_facts: no
+  vars:
+    # for savevg/restvg LPAR
+    os_backup_v:            False
+    vg_name_v:              "datavg"
+    disk_name_v:            "hdisk1"
+    location_v:             "/tmp/datavg_backup"
+    exclude_data_v:         False
+    create_data_file_v:     False
+    exclude_fs_v:           "/tmp/eclude_fs_list"
+    force_v:                True
+    extend_fs_v:            True
+    verbose_v:              True
+    minimize_lv_size_v:     True
+    data_file_orig_v:       "/tmp/vgdata/datavg/datavg.data"
+    data_file_v:            "/tmp/datavg.mydata"    # a copy of /tmp/vgdata/datavg/datavg.data
+    restvg_flags_v:         "-n"                    # ignore existing MAP files
+
+  tasks:
+
+  - name: savevg to create a vg backup image
+    backup:
+      action: create
+      os_backup: "{{ os_backup_v }}"
+      name: "{{ vg_name_v }}"
+      location: "{{ location_v }}"
+      exclude_data: "{{ exclude_data_v }}"
+      create_data_file: "{{ create_data_file_v }}"
+      extend_fs: "{{ extend_fs_v }}"
+      force: "{{ force_v }}"
+      verbose: "{{ verbose_v }}"
+
+  - name: remove the volume group
+    command: reducevg -d -f "{{ vg_name_v }}" "{{ disk_name_v }}"
+
+  - name: restvg to view the backup image information
+    backup:
+      action: view
+      os_backup: "{{ os_backup_v }}"
+      location: "{{ location_v }}"
+    register: results
+  - debug: var=results
+
+  - name: mv original vgname.data file
+    command: mv "{{ data_file_orig_v }}" "{{ data_file_v }}"
+
+  - name: restvg to retore the backup image
+    backup:
+      action: restore
+      os_backup: "{{ os_backup_v }}"
+      name: "{{ disk_name_v }}"
+      location: "{{ location_v }}"
+      data_file: "{{ data_file_v }}"
+      exclude_data: "{{ exclude_data_v }}"
+      minimize_lv_size: "{{ minimize_lv_size_v }}"
+      flags: "{{ restvg_flags_v }}"
+ 
