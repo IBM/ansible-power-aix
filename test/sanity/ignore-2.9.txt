@@ -1,0 +1,4 @@
+roles/power_aix_vioshc/files/vioshc.py future-import-boilerplate!skip
+roles/power_aix_vioshc/files/vioshc.py metaclass-boilerplate!skip
+roles/power_aix_vioshc/files/vioshc.py shebang!skip
+roles/power_aix_bootstrap/files/yum_installer.sh shellcheck!skip #helper script
