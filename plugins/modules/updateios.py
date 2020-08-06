@@ -160,6 +160,7 @@ def main():
     global results
 
     module = AnsibleModule(
+        supports_check_mode=True,
         argument_spec=dict(
             action=dict(required=True, type='str',
                         choices=['update', 'commit', 'cleanup', 'install', 'remove', 'list']),
@@ -213,11 +214,18 @@ def main():
     elif action == 'list':
         cmd += ['-list', '-dev', params['device']]
 
-    ret, stdout, stderr = module.run_command(cmd)
+    # Note: updateios is an interactive command.
+    # We use the same mechanism nim uses (c_updateios.sh) to implement preview mode.
+    response = 'n'
+    if not module.check_mode:
+        response = 'y\ny'
+
+    shcmd = "eval echo '{0}' | {1}".format(response, ' '.join(cmd))
+    ret, stdout, stderr = module.run_command(shcmd, use_unsafe_shell=True)
     results['stdout'] = stdout
     results['stderr'] = stderr
     if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(shcmd, ret)
         module.fail_json(**results)
 
     results['msg'] = 'updateios completed successfully'
