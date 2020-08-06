@@ -30,15 +30,17 @@ options:
     - C(update) to perform an update to the VIOS.
     - C(commit) to commit all uncommitted updates to the VIOS.
     - C(cleanup) to remove all incomplete pieces of the previous installation.
+    - C(install) to install a file set from the VIOS installation media.
     - C(remove) to remove the specified file sets from the system.
     - C(list) to list the file sets on the VIOS installation media that are
       available to be installed.
     type: str
-    choices: [ update, commit, cleanup, remove, list ]
+    choices: [ update, commit, cleanup, install, remove, list ]
     required: true
   device:
     description:
     - Specifies the device or directory containing the images to install.
+    - When I(action=list) or I(action=install), only C(/dev/cdX) can be specified.
     type: str
   force:
     description:
@@ -47,7 +49,7 @@ options:
     default: no
   filesets:
     description:
-    - When I(action=update), specifies the name of the file set to be installed
+    - When I(action=install), specifies the name of the file set to be installed
       from the VIOS installation media.
     - When I(action=remove), specifies the list of file sets to uninstall.
     type: list
@@ -96,7 +98,7 @@ EXAMPLES = r'''
 
 - name: Install a file set from the VIOS installation media
   updateios:
-    action: update
+    action: install
     filesets: ILMT-TAD4D-agent
     device: /dev/cd1
 '''
@@ -160,7 +162,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(required=True, type='str',
-                        choices=['update', 'commit', 'cleanup', 'remove', 'list']),
+                        choices=['update', 'commit', 'cleanup', 'install', 'remove', 'list']),
             device=dict(type='str'),
             accept_licenses=dict(type='bool', default=False),
             force=dict(type='bool', default=False),
@@ -170,6 +172,7 @@ def main():
         required_if=[
             ['action', 'update', ['device']],
             ['action', 'list', ['device']],
+            ['action', 'install', ['device', 'filesets']],
             ['action', 'remove', ['filesets']],
         ]
     )
@@ -196,9 +199,10 @@ def main():
             cmd += ['-install']
         if params['accept_licenses']:
             cmd += ['-accept']
-        if params['filesets']:
-            cmd += ['-fs']
-            cmd += params['filesets']
+    elif action == 'install':
+        cmd += ['-dev', params['device']]
+        cmd += ['-fs']
+        cmd += params['filesets']
     elif action == 'remove':
         cmd += ['-remove']
         cmd += params['filesets']
@@ -207,7 +211,7 @@ def main():
     elif action == 'cleanup':
         cmd += ['-cleanup']
     elif action == 'list':
-        cmd += ['-list']
+        cmd += ['-list', '-dev', params['device']]
 
     ret, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
