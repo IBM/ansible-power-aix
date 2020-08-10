@@ -1,0 +1,62 @@
+---
+- name: "Run Mksysb"
+  hosts: aixhosts
+  become: yes
+  become_user: root
+  vars:
+   mksysb_lv: "backuplv"
+   mksysb_dir: "/backup"
+   NIM_Server: "nimhost"
+   backup_repo: "/mksysb_images"
+   NFS_mount: "/mnt"
+  tasks:
+   - name: "check backup filesystem "
+     aix_filesystem:
+      device: "{{ mksysb_lv }}"
+      filesystem: "{{ mksysb_dir }}"
+      size: 10G
+      vg: datavg
+      state: present
+     when: ansible_distribution == 'AIX'
+   - name: "Mount backup filesystem"
+     aix_filesystem:
+      device: "{{ mksysb_lv }}"
+      filesystem: "{{ mksysb_dir }}"
+      state: mounted
+   - name: "Run mksysb backup"
+     mksysb:
+      name: "{{ansible_hostname}}_mksysb_{{ansible_date_time.date}}"
+      storage_path: "{{ mksysb_dir }}"
+      exclude_files: yes
+     when: ansible_distribution == 'AIX'
+## due to some reasons aix_filesystem module did not work for mounting NFS for me hence using commad module
+#   - name: "Check NFS Filesystem Mount"
+#     aix_filesystem:
+#      device: "{{ backup_repo }}"
+#      nfs_server: "{{ NIM_Server }}"
+#      filesystem: "{{ NFS_mount }}"
+#      state: present
+#     register: result
+#   - debug: var=result
+#   - name: "mount NFS filesystem"
+#     aix_filesystem:
+#      device: "{{ backup_repo }}"
+#      nfs_server: "{{ NIM_Server }}"
+#      filesystem: "{{ NFS_mount }}"
+#      state: mounted
+#     register: result
+#   - debug: var=result
+   - name: "Mount NFS"
+     command: "mount {{ NIM_Server }}:{{ backup_repo }} {{ NFS_mount }}"
+     register: nfsmount
+   - name: "Copy files from local Directory to NFS"
+     copy:
+      src: '"{{ mksysb_dir }}"/"{{ansible_hostname}}_mksysb_{{ansible_date_time.date}}"'
+      dest: "{{ NFS_mount }}"
+      remote_src: yes
+     when: nfsmount is succeeded
+   - name: "unmount NFS"
+     mount:
+      path: "{{ NFS_mount }}"
+      state: unmounted
+     
