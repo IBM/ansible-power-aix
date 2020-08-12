@@ -165,3 +165,43 @@ levels INFO, WARN, ERROR, DEBUG.
 .. _ask-pass documentation:
    https://linux.die.net/man/1/sshpass
 
+
+
+Log and debug
+-------------
+
+The **IBM Power Systems AIX collection** uses the standard Ansible log system
+that is using the syslog subsystem on the managed nodes.
+
+To activate AIX syslog you can update the configuration file `/etc/syslog.conf`
+with a selector `user.info` (or `user.debug` for more details) such as:
+
+.. code-block:: sh
+
+   $ vi /etc/syslog.conf
+   user.info /var/log/syslog.user.info rotate size 1m files 4 compress
+
+and restarting syslogd subsystem and look for Ansible logs:
+
+.. code-block:: sh
+
+   $ >/var/log/syslog.user.info
+   $ refresh -s syslogd
+
+   $ grep ansible /var/log/syslog.user.info
+   May  6 03:28:27 nimmaster user:info ansible-nim: Invoked with resource=None force=False description=None script=damien_script lpp_source=None action=script asynchronous=True location=None device=None group=None operation=None targets=['nimclient01']
+   May  6 03:28:27 nimmaster user:info ansible-nim: *** START ***
+   ...
+
+To see the full debug log messages you should set the selector field to
+`user.debug` and run the playbook with the environment variable
+`ANSIBLE_DEBUG=1`
+
+.. code-block:: sh
+
+   $ vi /etc/syslog.conf
+   user.debug /var/log/syslog.user.debug rotate size 1m files 4 compress
+   $ >/var/log/syslog.user.debug
+   $ refresh -s syslogd
+   $ ANSIBLE_DEBUG=1 ansible-playbook -M plugins/modules ./demo_nim.yml -vvv
+
