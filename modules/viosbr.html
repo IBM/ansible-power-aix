@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>viosbr – Backup/Restore the configuration of the VIOS &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="viosbr – Backup/Restore the configuration of the VIOS" href="viosbr.html" />
-    <link rel="prev" title="user – Create new users or change/remove attributes of users on AIX." href="user.html" /> 
+    <link rel="next" title="Playbooks" href="../playbooks.html" />
+    <link rel="prev" title="vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS" href="vios_alt_disk.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -117,7 +117,8 @@
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="updateios.html">updateios – Updates the Virtual I/O Server to the latest maintenance level</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vios_alt_disk.html">vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">viosbr – Backup/Restore the configuration of the VIOS</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -127,7 +128,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="viosbr.html">viosbr – Backup/Restore the configuration of the VIOS</a></li>
 </ul>
 </li>
 </ul>
@@ -195,14 +195,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</li>
+      <li>viosbr – Backup/Restore the configuration of the VIOS</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/vios_alt_disk.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/viosbr.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -216,8 +216,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="vios-alt-disk-create-cleanup-an-alternate-rootvg-disk-on-a-vios">
-<span id="vios-alt-disk-module"></span><h1>vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS<a class="headerlink" href="#vios-alt-disk-create-cleanup-an-alternate-rootvg-disk-on-a-vios" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="viosbr-backup-restore-the-configuration-of-the-vios">
+<span id="viosbr-module"></span><h1>viosbr – Backup/Restore the configuration of the VIOS<a class="headerlink" href="#viosbr-backup-restore-the-configuration-of-the-vios" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -231,7 +231,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Copy the rootvg to an alternate disk or cleanup an existing one.</p>
+<p>Performs the operations for backing up and restoring the virtual and logical configuration of the Virtual I/O Server (VIOS).</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -246,19 +246,41 @@
 <blockquote>
 <div><dl>
 <dt>action (True, str, None)</dt><dd><p>Specifies the operation to perform on the VIOS.</p>
-<p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> to perform and alternate disk copy.</p>
-<p><code class="docutils literal notranslate"><span class="pre">alt_disk_clean</span></code> to cleanup an existing alternate disk copy.</p>
+<p><code class="docutils literal notranslate"><span class="pre">backup</span></code> to perform a backup.</p>
+<p><code class="docutils literal notranslate"><span class="pre">restore</span></code> to restore a backup file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">recoverdb</span></code> to recover from a corrupted shared storage pool (SSP) database.</p>
+<p><code class="docutils literal notranslate"><span class="pre">migrate</span></code> to migrate a backup file from an older release level to a current release level. A new file is created with <em>_MIGRATED</em> string appended to the given file name.</p>
+<p><code class="docutils literal notranslate"><span class="pre">dr</span></code> to recover the cluster on another geographic location.</p>
+<p><code class="docutils literal notranslate"><span class="pre">list</span></code> to view the listing of backup files.</p>
 </dd>
-<dt>targets (optional, list, None)</dt><dd><p>Specifies the target disks.</p>
+<dt>file (optional, str, None)</dt><dd><p>Specifies the file name of the file that has backup information.</p>
+<p>For backup, compressed file is created with <em>.tar.gz</em> extension.</p>
+<p>For cluster backups, compressed file is created with <em>&lt;clustername&gt;.tar.gz</em> extension.</p>
+<p>If file name is a relative path, file is created under <em>/home/padmin/cfgbackups</em>.</p>
 </dd>
-<dt>disk_size_policy (optional, str, nearest)</dt><dd><p>Specifies how to choose the alternate disk if not specified.</p>
-<p><code class="docutils literal notranslate"><span class="pre">minimize</span></code> smallest disk that can be selected.</p>
-<p><code class="docutils literal notranslate"><span class="pre">upper</span></code> first disk found bigger than the rootvg disk.</p>
-<p><code class="docutils literal notranslate"><span class="pre">lower</span></code> disk size less than rootvg disk size but big enough to contain the used PPs.</p>
-<p><code class="docutils literal notranslate"><span class="pre">nearest</span></code></p>
+<dt>dir (optional, str, None)</dt><dd><p>User-specified location from where to list backup files when <em>action=list</em>.</p>
 </dd>
-<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disks.</p>
-<p>Stops any active rootvg mirroring during the alternate disk copy.</p>
+<dt>devtype (optional, str, None)</dt><dd><p>Only restore devices of the specified type.</p>
+</dd>
+<dt>clustername (optional, str, None)</dt><dd><p>Specifies the cluster name to back up or restore, including all of its associated nodes.</p>
+</dd>
+<dt>subfile (optional, str, None)</dt><dd><p>Specifies the node configuration file to be restored.</p>
+</dd>
+<dt>currentdb (optional, str, None)</dt><dd><p>Restores the cluster without restoring the database from the backup.</p>
+<p>When restoring mapping, some of the mapping can fail if the mappings are not in the current database.</p>
+</dd>
+<dt>force (optional, bool, False)</dt><dd><p>Attempts to restore a device even if it has not been successfully validated.</p>
+</dd>
+<dt>repopvs (optional, list, None)</dt><dd><p>List of hdisks to be used as repository disks for restoring the cluster.</p>
+<p>The given disks must not contain a repository signature.</p>
+</dd>
+<dt>skipcluster (optional, bool, False)</dt><dd><p>Restores all local devices, except <em>cluster0</em>.</p>
+</dd>
+<dt>skipdevattr (optional, bool, False)</dt><dd><p>Skips the restore of the physical device attributes.</p>
+<p>Does not modify the current system’s physical device attributes.</p>
+</dd>
+<dt>validate (optional, bool, False)</dt><dd><p>Validates the devices on the server against the devices on the backed-up file.</p>
+<p>Fails the restore operation if items do not validate successfully.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -268,37 +290,90 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> only backs up mounted file systems. Mount all file systems that you want to back up.</p></li>
-<li><p>when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks</p></li>
+<li><p>The <em>restore</em> action must be run on the same VIOS partition as the one where the backup was performed.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to hdisk1</span>
-  <span class="nt">vios_alt_disk</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
-    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk1</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Back up all the device attributes and logical and virtual device mappings</span>
+        <span class="l l-Scalar l-Scalar-Plain">on the VIOS file /tmp/myserverbackuperform.tar.gz</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">backup</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/myserverbackuperform</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to the smallest disk that can be selected</span>
-  <span class="nt">vios_alt_disk</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_copy</span>
-    <span class="nt">disk_size_policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimize</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore all the possible devices and display a summary of deployed and nondeployed devices</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/padmin/cfgbackups/myserverbackup.002.tar.gz</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a cleanup of any existing alternate disk copy</span>
-  <span class="nt">vios_alt_disk</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">alt_disk_clean</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Back up a cluster and all the nodes that are up</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">backup</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore a particular node within the cluster</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+    <span class="nt">subfile</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myclusterMTM8233-E8B02HV32001P3.xml</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore a cluster and its nodes</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+    <span class="nt">repopvs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk5</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore only the shared storage pool database from a backup file</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">recoverdb</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Migrate an older cluster backup file</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">migrate</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore legacy device mappings on a node, which is in cluster using a cluster backup file</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+    <span class="nt">subfile</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myclusterMTM8233-E8B02HV32001P3.xml</span>
+    <span class="nt">skipcluster</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Restore cluster from a backup file but use the database that exists on the system</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
+    <span class="nt">repopvs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk5</span>
+    <span class="nt">currentdb</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Recover the cluster on another geographic location</span>
+  <span class="nt">viosbr</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dr</span>
+    <span class="nt">clustername</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mycluster</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">systemA.mycluster.tar.gz</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, VIOS alt disk operation completed successfully)</dt><dd><p>The execution message.</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>stdout (always, str, Bootlist is set to the boot disk: hdisk0 blv=hd5)</dt><dd><p>The standard output</p>
+<dt>stdout (always, str, Backup of this node (vios01) successful)</dt><dd><p>The standard output</p>
 </dd>
-<dt>stderr (always, str, )</dt><dd><p>The standard error</p>
+<dt>stderr (always, str, File /home/padmin/cfgbackups/myserverbackup.002.tar.gz does not exist.)</dt><dd><p>The standard error</p>
+</dd>
+<dt>ioslevel (always, str, 3.1.0.00)</dt><dd><p>The latest installed maintenance level of the system</p>
+</dd>
+<dt>file (if I(action=backup) or I(action=migrate), str, /home/padmin/cfgbackups/myserverbackup.002.tar.gz)</dt><dd><p>The name of the backup file that has been created</p>
 </dd>
 </dl>
 </div>
@@ -325,10 +400,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="viosbr.html" class="btn btn-neutral float-right" title="viosbr – Backup/Restore the configuration of the VIOS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../playbooks.html" class="btn btn-neutral float-right" title="Playbooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="user.html" class="btn btn-neutral float-left" title="user – Create new users or change/remove attributes of users on AIX." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="vios_alt_disk.html" class="btn btn-neutral float-left" title="vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

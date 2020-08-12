@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Roles" href="roles.html" />
-    <link rel="prev" title="vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS" href="modules/vios_alt_disk.html" /> 
+    <link rel="prev" title="viosbr – Backup/Restore the configuration of the VIOS" href="modules/viosbr.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -98,6 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#inventory">Inventory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#group-vars">Group_vars</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#run-the-playbooks">Run the playbooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#log-and-debug">Log and debug</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="roles.html">Roles</a></li>
@@ -289,6 +290,37 @@ Review the playbook notes sections for additional details and
 configuration.</p>
 </div>
 </div>
+<div class="section" id="log-and-debug">
+<h2>Log and debug<a class="headerlink" href="#log-and-debug" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>IBM Power Systems AIX collection</strong> uses the standard Ansible log system
+that is using the syslog subsystem on the managed nodes.</p>
+<p>To activate AIX syslog you can update the configuration file <cite>/etc/syslog.conf</cite>
+with a selector <cite>user.info</cite> (or <cite>user.debug</cite> for more details) such as:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ vi /etc/syslog.conf
+user.info /var/log/syslog.user.info rotate size 1m files <span class="m">4</span> compress
+</pre></div>
+</div>
+<p>and restarting syslogd subsystem and look for Ansible logs:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ &gt;/var/log/syslog.user.info
+$ refresh -s syslogd
+
+$ grep ansible /var/log/syslog.user.info
+May  <span class="m">6</span> <span class="m">03</span>:28:27 nimmaster user:info ansible-nim: Invoked with <span class="nv">resource</span><span class="o">=</span>None <span class="nv">force</span><span class="o">=</span>False <span class="nv">description</span><span class="o">=</span>None <span class="nv">script</span><span class="o">=</span>damien_script <span class="nv">lpp_source</span><span class="o">=</span>None <span class="nv">action</span><span class="o">=</span>script <span class="nv">asynchronous</span><span class="o">=</span>True <span class="nv">location</span><span class="o">=</span>None <span class="nv">device</span><span class="o">=</span>None <span class="nv">group</span><span class="o">=</span>None <span class="nv">operation</span><span class="o">=</span>None <span class="nv">targets</span><span class="o">=[</span><span class="s1">&#39;nimclient01&#39;</span><span class="o">]</span>
+May  <span class="m">6</span> <span class="m">03</span>:28:27 nimmaster user:info ansible-nim: *** START ***
+...
+</pre></div>
+</div>
+<p>To see the full debug log messages you should set the selector field to
+<cite>user.debug</cite> and run the playbook with the environment variable
+<cite>ANSIBLE_DEBUG=1</cite></p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ vi /etc/syslog.conf
+user.debug /var/log/syslog.user.debug rotate size 1m files <span class="m">4</span> compress
+$ &gt;/var/log/syslog.user.debug
+$ refresh -s syslogd
+$ <span class="nv">ANSIBLE_DEBUG</span><span class="o">=</span><span class="m">1</span> ansible-playbook -M plugins/modules ./demo_nim.yml -vvv
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -302,7 +334,7 @@ configuration.</p>
         <a href="roles.html" class="btn btn-neutral float-right" title="Roles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="modules/vios_alt_disk.html" class="btn btn-neutral float-left" title="vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="modules/viosbr.html" class="btn btn-neutral float-left" title="viosbr – Backup/Restore the configuration of the VIOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

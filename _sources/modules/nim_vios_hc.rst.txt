@@ -51,7 +51,7 @@ Notes
 -----
 
 .. note::
-   - Requires vioshc.py available at https://github.com/aixoss/vios-health-checker.
+   - Use the ``power_aix_vioshc`` role to install the required ``vioshc.py`` script on the NIM master.
 
 
 

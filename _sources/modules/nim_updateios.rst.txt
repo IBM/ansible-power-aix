@@ -151,7 +151,7 @@ stderr (always, str, )
   The standard error.
 
 
-status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT2', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-SSP', 'vios6-vios7': 'FAILURE-UPDT1'}})
+status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-SSP', 'vios6-vios7': 'FAILURE-UPDT1'}})
   Status of the execution on each target <tuple>.
 
   If the operation status is not avalaible, the *vios_status* passed in parameter is returned.

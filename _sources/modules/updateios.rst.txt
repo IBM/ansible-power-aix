@@ -1,0 +1,161 @@
+.. _updateios_module:
+
+
+updateios -- Updates the Virtual I/O Server to the latest maintenance level
+===========================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Install fixes or update the VIOS to the latest maintenance level.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- VIOS >= 2.2.5.0
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Specifies the operation to perform on the VIOS.
+
+    ``update`` to perform an update to the VIOS.
+
+    ``commit`` to commit all uncommitted updates to the VIOS.
+
+    ``cleanup`` to remove all incomplete pieces of the previous installation.
+
+    ``install`` to install a file set from the VIOS installation media.
+
+    ``remove`` to remove the specified file sets from the system.
+
+    ``list`` to list the file sets on the VIOS installation media that are available to be installed.
+
+
+  device (optional, str, None)
+    Specifies the device or directory containing the images to install.
+
+    When *action=list* or *action=install*, only ``/dev/cdX`` can be specified.
+
+
+  force (optional, bool, False)
+    Forces all uncommitted updates to be committed before applying the new updates.
+
+
+  filesets (optional, list, None)
+    When *action=install*, specifies the name of the file set to be installed from the VIOS installation media.
+
+    When *action=remove*, specifies the list of file sets to uninstall.
+
+
+  install_new (optional, bool, False)
+    Installs new and supported file sets onto the VIOS.
+
+
+  accept_licenses (optional, bool, False)
+    Specifies that you agree to the required software license agreements for software to be installed.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - A fix pack or service pack cannot be applied if the VIOS partition is part of a shared storage pool and the cluster node state is UP.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Update the VIOS to the latest level, where the updates are
+            located on the mounted file system /home/padmin/update
+      updateios:
+        action: update
+        device: /home/padmin/update
+
+    - name: Update the VIOS to the latest level, when previous levels are not committed
+      updateios:
+        action: update
+        force: yes
+        device: /home/padmin/update
+
+    - name: Cleanup partially installed updates
+      updateios:
+        action: cleanup
+
+    - name: Commit the installed updates
+      updateios:
+        action: commit
+
+    - name: List the available file sets on the VIOS installation media
+      updateios:
+        action: list
+        device: /dev/cd0
+
+    - name: Install a file set from the VIOS installation media
+      updateios:
+        action: install
+        filesets: ILMT-TAD4D-agent
+        device: /dev/cd1
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  The execution message.
+
+
+stdout (always, str, )
+  The standard output
+
+
+stderr (always, str, )
+  The standard error
+
+
+ioslevel (always, str, 3.1.0.00)
+  The latest installed maintenance level of the system
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

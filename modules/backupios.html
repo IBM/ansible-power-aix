@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim – Server setup, install packages, update SP or TL. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>backupios – Creates an installable image of the root volume group &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients." href="nim_backup.html" />
-    <link rel="prev" title="mount – Mounts/Unmounts a Filesystem/Device" href="mount.html" /> 
+    <link rel="next" title="devices – Configure/Modify/Unconfigure devices" href="devices.html" />
+    <link rel="prev" title="backup – Manage data or system volume group backup on a LPAR." href="backup.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -94,7 +94,16 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="backupios.html">backupios – Creates an installable image of the root volume group</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">backupios – Creates an installable image of the root volume group</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
@@ -105,15 +114,7 @@
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim – Server setup, install packages, update SP or TL.</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
@@ -194,14 +195,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim – Server setup, install packages, update SP or TL.</li>
+      <li>backupios – Creates an installable image of the root volume group</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/backupios.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -215,27 +216,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-server-setup-install-packages-update-sp-or-tl">
-<span id="nim-module"></span><h1>nim – Server setup, install packages, update SP or TL.<a class="headerlink" href="#nim-server-setup-install-packages-update-sp-or-tl" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="backupios-creates-an-installable-image-of-the-root-volume-group">
+<span id="backupios-module"></span><h1>backupios – Creates an installable image of the root volume group<a class="headerlink" href="#backupios-creates-an-installable-image-of-the-root-volume-group" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Server setup, install packages, update SP or TL.</p>
+<p>Creates a backup of the Virtual I/O Server and places it onto a file system.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX &gt;= 7.1 TL3</p></li>
+<li><p>VIOS &gt;= 2.2.5.0</p></li>
 <li><p>Python &gt;= 2.7</p></li>
 </ul>
 </div>
@@ -243,100 +245,59 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>action (True, str, None)</dt><dd><p>Specifies the action to perform.</p>
-<p><code class="docutils literal notranslate"><span class="pre">update</span></code> to update NIM clients with a specified <code class="docutils literal notranslate"><span class="pre">lpp_source</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">master_setup</span></code> to setup a NIM master.</p>
-<p><code class="docutils literal notranslate"><span class="pre">check</span></code> to retrieve the <code class="docutils literal notranslate"><span class="pre">Cstate</span></code> of each NIM client.</p>
-<p><code class="docutils literal notranslate"><span class="pre">compare</span></code> to compare installation inventories of the NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">script</span></code> to apply a script to customize NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">allocate</span></code> to allocate a resource to specified NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">deallocate</span></code> to deallocate a resource for specified NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">bos_inst</span></code> to install a given list of NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">define_script</span></code> to define a script NIM resource.</p>
-<p><code class="docutils literal notranslate"><span class="pre">remove</span></code> to remove a specified NIM resource.</p>
-<p><code class="docutils literal notranslate"><span class="pre">reset</span></code> to reset the <code class="docutils literal notranslate"><span class="pre">Cstate</span></code> of a NIM client.</p>
-<p><code class="docutils literal notranslate"><span class="pre">reboot</span></code> to reboot the given NIM clients if they are running.</p>
-<p><code class="docutils literal notranslate"><span class="pre">maintenance</span></code> to perform a maintenance operation on NIM clients.</p>
+<dt>file (True, str, None)</dt><dd><p>Specifies the directory on which the image is to be stored.</p>
+<p>When <em>mksysb=yes</em>, specifies the file name.</p>
 </dd>
-<dt>lpp_source (optional, str, None)</dt><dd><p>Indicates the lpp_source to apply to the targets.</p>
-<p><code class="docutils literal notranslate"><span class="pre">latest_tl</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_sp</span></code>, <code class="docutils literal notranslate"><span class="pre">next_tl</span></code> and <code class="docutils literal notranslate"><span class="pre">next_sp</span></code> can be specified; based on the NIM server resources, nim will determine the actual oslevel necessary to update the targets.</p>
+<dt>mksysb (optional, bool, False)</dt><dd><p>Creates an mksysb image.</p>
 </dd>
-<dt>targets (optional, list, None)</dt><dd><p>Specifies the NIM clients to perform the action on.</p>
-<p><code class="docutils literal notranslate"><span class="pre">foo*</span></code> designates all the NIM clients with name starting by <code class="docutils literal notranslate"><span class="pre">foo</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">foo[2:4]</span></code> designates the NIM clients among foo2, foo3 and foo4.</p>
-<p><code class="docutils literal notranslate"><span class="pre">*</span></code> or <code class="docutils literal notranslate"><span class="pre">ALL</span></code> designates all the NIM clients.</p>
+<dt>nopack (optional, list, None)</dt><dd><p>When <em>mksysb=yes</em>, specifies the list of files to exclude from being packed.</p>
 </dd>
-<dt>asynchronous (optional, bool, False)</dt><dd><p>If set to <code class="docutils literal notranslate"><span class="pre">no</span></code>, NIM client will be completely installed before starting the installation of another NIM client.</p>
+<dt>savevgstruct (optional, bool, True)</dt><dd><p>Specifies whether to save the volume groups structure of user-defined volume groups as part of the <code class="docutils literal notranslate"><span class="pre">backupios</span></code> process.</p>
 </dd>
-<dt>device (optional, str, None)</dt><dd><p>The device (or directory) where to find the lpp source to install.</p>
-</dd>
-<dt>script (optional, str, None)</dt><dd><p>NIM script resource.</p>
-</dd>
-<dt>resource (optional, str, None)</dt><dd><p>NIM resource.</p>
-</dd>
-<dt>location (optional, str, None)</dt><dd><p>Specifies the full path name of the script resource file.</p>
-</dd>
-<dt>group (optional, str, None)</dt><dd><p>NIM group resource.</p>
-</dd>
-<dt>force (optional, bool, False)</dt><dd><p>Forces action.</p>
-</dd>
-<dt>operation (optional, str, None)</dt><dd><p>NIM maintenance operation.</p>
-</dd>
-<dt>description (optional, str, None)</dt><dd><p>Describes the NIM operation (informational only).</p>
+<dt>savemedialib (optional, bool, True)</dt><dd><p>Specifies whether to save the contents of the media repository as part of the <code class="docutils literal notranslate"><span class="pre">backupios</span></code> process.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">backupios</span></code> module backs up only the volume group structures that are activated. The structures of volumes groups that are deactivated are not backed up.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Install using group resource</span>
-  <span class="nt">nim</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bos_inst</span>
-    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">nimclient01</span>
-    <span class="nt">group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">basic_res_grp</span>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Generate a backup to /home/padmin/backup directory</span>
+  <span class="nt">backupios</span><span class="p">:</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/padmin/backup</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Check the Cstate of all NIM clients</span>
-  <span class="nt">nim</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">check</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Define a script resource on NIM master</span>
-  <span class="nt">nim</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">define_script</span>
-    <span class="nt">resource</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myscript</span>
-    <span class="nt">location</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/myscript.sh</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Execute a script on all NIM clients synchronously</span>
-  <span class="nt">nim</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">script</span>
-    <span class="nt">script</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myscript</span>
-    <span class="nt">asynchronous</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
-    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">all</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Generate an mksysb backup to /home/padmin/backup.mksysb</span>
+  <span class="nt">backupios</span><span class="p">:</span>
+    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/padmin/backup.mksysb</span>
+    <span class="nt">mksysb</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+    <span class="nt">savemedialib</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
+    <span class="nt">savevgstruct</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>msg (always, str, )</dt><dd><p>Status information.</p>
-</dd>
-<dt>nim_output (always, str, )</dt><dd><p>Output from nim commands.</p>
-</dd>
-<dt>nim_node (always, dict, {‘nim_node’: {‘lpp_source’: {‘723lpp_res’: ‘/export/nim/lpp_source/723lpp_res’}, ‘master’: {‘cstate’: ‘ready for a NIM operation’, ‘type’: ‘master’}, ‘standalone’: {‘nimclient01’: {‘cstate’: ‘ready for a NIM operation’, ‘ip’: ‘nimclient01.mydomain.com’, ‘type’: ‘standalone’}, ‘nimclient02’: {‘cstate’: ‘ready for a NIM operation’, ‘ip’: ‘nimclient02.mydomain.com’, ‘type’: ‘standalone’}}, ‘vios’: {}}})</dt><dd><p>NIM node info.</p>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>lpp_source (always, dict, )</dt><dd><p>List of lpp sources.</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>master (always, dict, )</dt><dd><p>NIM master.</p>
+<dt>stdout (always, str, )</dt><dd><p>The standard output</p>
 </dd>
-<dt>standalone (always, dict, )</dt><dd><p>List of standalone NIM resources.</p>
+<dt>stderr (always, str, )</dt><dd><p>The standard error</p>
 </dd>
-<dt>vios (always, dict, )</dt><dd><p>List of VIOS NIM resources.</p>
-</dd>
-</dl>
+<dt>ioslevel (always, str, 3.1.0.00)</dt><dd><p>The latest installed maintenance level of the system</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -358,10 +319,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_backup.html" class="btn btn-neutral float-right" title="nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="devices.html" class="btn btn-neutral float-right" title="devices – Configure/Modify/Unconfigure devices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mount.html" class="btn btn-neutral float-left" title="mount – Mounts/Unmounts a Filesystem/Device" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="backup.html" class="btn btn-neutral float-left" title="backup – Manage data or system volume group backup on a LPAR." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

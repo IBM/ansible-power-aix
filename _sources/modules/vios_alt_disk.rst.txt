@@ -20,7 +20,7 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- AIX >= 7.1 TL3
+- VIOS >= 2.2.5.0
 - Python >= 2.7
 
 

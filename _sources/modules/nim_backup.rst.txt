@@ -35,9 +35,9 @@ Parameters
   action (True, str, None)
     Controls what is performed.
 
-    ``create`` performs an backup operation on targets trough NIM master.
+    ``create`` performs an backup operation on targets trough the NIM master.
 
-    ``restore`` restores a backup on targets trough NIM master.
+    ``restore`` restores a backup on targets trough the NIM master.
 
     ``view`` displays the content of a VIOS backup, only for *type=backup*.
 
@@ -52,6 +52,8 @@ Parameters
     ``ios_mksysb`` operates on VIOS backup of the operating system (that is, the root volume group).
 
     ``ios_backup`` operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
+
+    ``savevg`` operates on LPAR savevg, that is all files belonging to a volume group.
 
     Discarded for *action=view* as this action only applies to ios_backup.
 
@@ -77,19 +79,23 @@ Parameters
 
 
   location (optional, path, None)
-    Specifies where to put the backup files on the NIM master.
+    Specifies the location of the backup files.
 
-    If not specified default for LPAR targets is *location=/export/nim/mksysb* and for VIOS targets it is *location=/export/nim/ios_backup*.
+    If *objtype=mksysb*, the default value is *location=/export/nim/mksysb*.
 
-    Required if *action=create* and *action=restore*.
+    If *objtype=ios_mksysb*, the default value is *location=/export/nim/ios_mksysb*.
+
+    If *objtype=ios_backup*, the default value is *location=/export/nim/ios_backup*.
+
+    If *objtype=savevg*, the default value is *location=/export/nim/savevg*.
 
 
   name (optional, str, None)
-    Exact name of the backup NIM resource to act on.
+    Specifies the exact name of the backup to act on.
 
     If *action=list* it filters the results on the name of the NIM resource.
 
-    Required if *action=view*.
+    Required if *action=view* and if *action=create* and *type=savevg*.
 
 
   name_prefix (optional, str, None)
@@ -105,7 +111,7 @@ Parameters
   name_postfix (optional, str, None)
     Specifies the postfix of the backup NIM resource name to act on.
 
-    If not specified default for LPAR targets is *name_postfix=_sysb* and for VIOS targets it is *name_postfix=_iosb*.
+    If not specified default for mksysb is *name_postfix=_sysb*, for ios_backup it is *name_postfix=_iosb* and for .
 
     The name format will be *<prefix><target_name><postfix>*.
 
@@ -113,17 +119,23 @@ Parameters
 
     If *action=list* it filters the results on the name of the NIM resource.
 
+    If *objtype=mksysb* or *objtype=ios_mksysb*, the default value is *name_postfix=_sysb*.
+
+    If *objtype=ios_backup*, the default value is *name_postfix=_iosb*.
+
+    If *objtype=savevg*, the default value is *name_postfix=_svg*.
+
 
   group (optional, str, None)
     Specifies the resource group to use for restoration.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used on a standalone client if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   spot_name (optional, str, None)
     Specifies the exact SPOT resource name to create to restore the backup on a standalone client.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used on a standalone client if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   spot_prefix (optional, str, None)
@@ -133,7 +145,7 @@ Parameters
 
     Used only if ``spot_name`` is not specified.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used on a standalone client if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   spot_postfix (optional, str, _spot)
@@ -143,13 +155,13 @@ Parameters
 
     Used only if ``spot_name`` is not specified.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used on a standalone client if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   spot_location (optional, path, /export/nim/spot)
     Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used on a standalone client if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   bosinst_data (optional, str, None)
@@ -159,13 +171,43 @@ Parameters
 
     If not specified you will be presented with a series of choices on the console.
 
-    Can be used if *action=restore*.
+    Can be used if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   oslevel (optional, str, None)
     Specifies the oslevel to filter results.
 
     Can be used if *action=list*.
+
+
+  volume_group (optional, str, None)
+    Specifies the volume group to backup on the target that must be varied-on and the file systems must be mounted.
+
+    Required if *action=create* and *type=savevg*.
+
+
+  exclude_files (optional, str, None)
+    Specifies the exclude_files NIM resource on the NIM master.
+
+    Can be used if *action=create* and *type=savevg*.
+
+
+  flags (optional, str, None)
+    Specifies additional flags to pass to the command used. Refers to IBM documentation for details.
+
+    For ``action=create`` and ``type=mksysb``, you could use *-a -A -b -e -i -m -p -P -T -V -X -Z*.
+
+    For ``action=create`` and ``type=ios_mksysb``, you could use *-nosvg -nomedialib*.
+
+    For ``action=create`` and ``type=savevg``, you could use *-a -A -e -i -m -p -r -T -v -V -X -Z*.
+
+
+  other_attributes (optional, str, None)
+    Specifies additional attributes to pass to the NIM operation. Refers to IBM documentation for details.
+
+    It is a space separated string such as *other_attributes='-a attr1=value1 -a attr2=value2'*.
+
+    Discarded if *action=list*.
 
 
   remove_spot (optional, bool, True)
@@ -175,21 +217,29 @@ Parameters
 
 
   remove_backup (optional, bool, False)
-    Specifies to remove the backup resource created on the NIM master.
+    Specifies to remove the backup resource from the NIM master.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used if *action=restore*.
 
 
   accept_licenses (optional, bool, True)
     Specifies to automatically accept all licenses during the restoration of the backup.
 
-    Can be used on a standalone client if *action=restore*.
+    Can be used if *action=restore* and *type=mksysb or ios_mksysb*.
 
 
   boot_target (optional, bool, True)
     Specifies to boot the NIM client after restoration of the backup.
 
     Can be used on a standalone client if *action=restore*.
+
+
+  shrink_fs (optional, bool, False)
+    Specifies to shrink the file system contained in the volume group.
+
+    Always be sure to check the size of the file systems after the restore is complete.
+
+    Can be used if *action=restore* and *type=savevg*.
 
 
 
@@ -247,6 +297,26 @@ Examples
         type: ios_backup
         targets: vios1
         name_postfix: _iosbackup
+
+    - name: Check the size to create a savevg image of the datavg
+      nim_backup:
+        action: create
+        type: savevg
+        targets: nimclient1
+        name_postfix: _savevg
+        volume_group: datavg
+        exclude_files: my_exclude_file_res
+        other_attributes: '-a comments="datavg savevg" -a verbose=yes'
+      check_mode: yes
+
+    - name: Restore a savevg image to a different disk on a LPAR
+      nim_backup:
+        action: restore
+        targets: nimclient1
+        name: nimclient1_savevg
+        remove_backup: yes
+        shrink_fs: yes
+        other_attributes: '-a disk=hdisk1 -a verbose=yes'
 
 
 
