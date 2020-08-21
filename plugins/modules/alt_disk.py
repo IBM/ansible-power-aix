@@ -511,7 +511,7 @@ def main():
     # Make sure we are not running on a VIOS.
     # This could be dangerous because the automatic disk selection differs from VIOS.
     # It could think a disk is not being used when it is actually used (mapped to a client).
-    if os.path.exists('/dev/vio0'):
+    if os.path.exists('/usr/ios'):
         results['msg'] = 'This should not be run on a VIOS'
         module.fail_json(**results)
 
