@@ -1110,7 +1110,8 @@ def nim_savevg_create(module, target, params):
     results['meta'][target]['messages'].append('savevg {0} created: {1}.'.format(name, location))
     results['meta'][target]['res_name'] = name
     results['status'][target] = 'SUCCESS'
-    results['changed'] = True
+    if not module.check_mode:
+        results['changed'] = True
 
     return True
 
@@ -1265,6 +1266,7 @@ def main():
     params['name'] = module.params['name']
     params['location'] = module.params['location']
     params['other_attributes'] = module.params['other_attributes']
+    params['flags'] = module.params['flags']
 
     if objtype != 'vg':
         params['name_prefix'] = module.params['name_prefix']
@@ -1305,42 +1307,43 @@ def main():
     elif action == 'create':
         for target in targets:
             if target in results['nim_node']['standalone']:
-                if objtype != 'mksysb' and objtype != 'savevg':
+                if objtype == 'mksysb':
+                    nim_mksysb_create(module, target, objtype, params)
+                elif objtype == 'savevg':
+                    params['volume_group'] = module.params['volume_group']
+                    params['exclude_files'] = module.params['exclude_files']
+                    nim_savevg_create(module, target, params)
+                else:
                     results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
                                                                .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
 
-                nim_mksysb_create(module, target, objtype, params)
-
             elif target in results['nim_node']['vios']:
-                if objtype != 'ios_mksysb' and objtype != 'ios_backup':
+                if objtype == 'ios_mksysb':
+                    nim_mksysb_create(module, target, objtype, params)
+                elif objtype == 'ios_backup':
+                    nim_iosbackup_create(module, target, params)
+                elif objtype == 'savevg':
+                    params['volume_group'] = module.params['volume_group']
+                    params['exclude_files'] = module.params['exclude_files']
+                    nim_savevg_create(module, target, params)
+                else:
                     results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                                .format(action, objtype))
                     results['status'][target] = 'FAILURE'
                     continue
-
-                if objtype == 'ios_mksysb':
-                    nim_mksysb_create(module, target, objtype, params)
-
-                if objtype == 'ios_backup':
-                    nim_iosbackup_create(module, target, params)
-
-                if objtype == 'savevg':
-                    params['volume_group'] = module.params['volume_group']
-                    params['exclude_files'] = module.params['exclude_files']
-                    nim_savevg_create(module, target, params)
         wait_all()
 
     elif action == 'restore':
         for target in targets:
 
-            if target in results['nim_node']['standalone'] and objtype != 'mksysb':
+            if target in results['nim_node']['standalone'] and objtype != 'mksysb' and objtype != 'savevg':
                 results['meta'][target]['messages'].append('Operation {0} {1} not supported on a standalone machine. You may want to select mksysb.'
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
-            if target in results['nim_node']['vios'] and (objtype == 'mksysb' or objtype == 'savevg'):
+            if target in results['nim_node']['vios'] and objtype == 'mksysb':
                 results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'

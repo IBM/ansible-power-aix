@@ -4,6 +4,17 @@
   gather_facts: no
   vars:
     preview_v:              True
+    flags_v:                ""
+    other_attributes_v:     ""
+    # for savevg/restvg operation
+    svg_type_v:             "savevg"
+    svg_location_v:         "/export/nim/savevg"
+    svg_name_v:             ""
+    svg_name_prefix_v:      ""
+    svg_name_postfix_v:     ""
+    svg_volume_group_v:     "datavg"
+    svg_other_attributes_v: "-a disk=hdisk1 -a verbose=yes"
+    svg_shrink_fs_v:        False
     # for Standalone LPAR
     # lpar_nim_node_v:        {}
     lpar_targets_v:         "quimby06"
@@ -24,16 +35,15 @@
     vios_targets_v:         "quimby-vios2"
     iossysb_type_v:         "ios_mksysb"
     iossysb_location_v:     "/export/nim/ios_mksysb"
-    iossysb_remove_spot_v:  False
-    iossysb_spot_postfix_v: "_iossysb"
-    iossysb_accept_licenses_v: True
-    iossysb_check_mode_v:   True
+    iossysb_name_v:         ""
+    iossysb_name_prefix_v:  ""
+    iossysb_name_postfix_v: "_iossysb"
     iosb_type_v:            "ios_backup"
     iosb_name_v:            ""
     iosb_name_prefix_v:     ""
     iosb_name_postfix_v:    "_iosb"
     iosb_location_v:        "/export/nim/ios_backup"
-    # for backup list 
+    # for backup list
     oslevel_v:              "7200-03-02"
 
   tasks:
@@ -43,7 +53,7 @@
       action: list
       targets: "ALL"
       oslevel: "{{ oslevel_v }}"
-      name: "{{ sysb_name_v }}"
+      name: "{{ sysb_name_v }}
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
     register: result
@@ -64,7 +74,7 @@
 #    nim_backup:
 #      action: restore
 #      targets: "{{ lpar_targets_v }}"
-#      # name: "{{ sysb_name_v }}"
+#      name: "{{ sysb_name_v }}"
 #      location: "{{ sysb_location_v }}"
 #      spot_location: "{{ sysb_spot_location_v }}"
 #      boot_target: "{{ sysb_boot_target_v }}"
@@ -73,12 +83,14 @@
 #    register: result
 #  - debug: var=result
 
+
   - name: Create an ios mksysb
     nim_backup:
       action: create
       type: "{{ iossysb_type_v }}"
       targets: "{{ vios_targets_v }}"
       location: "{{ iossysb_location_v }}"
+      # name: "{{ iossysb_name_v }}"
     register: result
   - debug: var=result
 
@@ -91,9 +103,10 @@
 #      spot_postfix: "{{ iossysb_spot_postfix_v }}"
 #      remove_spot: "{{ iossysb_remove_spot_v }}"
 #      accept_licenses: "{{ iossysb_accept_licenses_v }}"
-#      check_mode: "{{ iossysb_check_mode_v }}"
+#    check_mode: "{{ preview_v }}"
 #    register: result
 #  - debug: var=result
+
 
   - name: Create an ios backup ( save vios config )
     nim_backup:
@@ -108,12 +121,12 @@
     nim_backup:
       action: view
       type: "{{ iosb_type_v }}"
-      # targets: "{{ vios_targets_v }}"
+    #  targets: "{{ vios_targets_v }}"
       name: quimby-vios2_iosb
     register: result
   - debug: var=result
 
-#  - name: Restore an ios backup ( restore ios config )
+#  - name: Restore an ios backup ( restore vios config )
 #    nim_backup:
 #      action: restore
 #      type: "{{ iosb_type_v }}"
@@ -121,3 +134,50 @@
 #      name_postfix: "{{ iosb_name_postfix_v }}"
 #    register: result
 #  - debug: var=result
+
+
+   - name: Create a savevg backup of a LPAR VG
+     nim_backup:
+       action: create
+       type: "{{ svg_type_v }}"
+       targets: "{{ lpar_targets_v }}"
+       volume_group: "{{ svg_volume_group_v }}"
+       location: "{{ svg_location_v }}"
+       shrink_fs: "{{ svg_shrink_fs_v }}"
+     #check_mode: "{{ preview_v }}"
+     register: result
+   - debug: var=result
+
+#   - name: Restore a savevg backup of a LPAR VG
+#     nim_backup:
+#       action: restore
+#       type: "{{ svg_type_v }}"
+#       targets: "{{ lpar_targets_v }}"
+#       #other_attributes: "{{ svg_other_attributes_v }}"
+#       shrink_fs: "{{ svg_shrink_fs_v }}"
+#     register: result
+#   - debug: var=result
+
+
+   - name: Create a savevg backup of a VIOS VG
+     nim_backup:
+       action: create
+       type: "{{ svg_type_v }}"
+       targets: "{{ vios_targets_v }}"
+       volume_group: "{{ svg_volume_group_v }}"
+       location: "{{ svg_location_v }}"
+       other_attributes: "{{ svg_other_attributes_v }}"
+       shrink_fs: "{{ svg_shrink_fs_v }}"
+     check_mode: "{{ preview_v }}"
+     register: result
+   - debug: var=result
+
+#   - name: Restore a savevg backup of a VIOS VG
+#     nim_backup:
+#       action: restore
+#       type: "{{ svg_type_v }}"
+#       targets: "{{ vios_targets_v }}"
+#       #other_attributes: "{{ svg_other_attributes_v }}"
+#       shrink_fs: "{{ svg_shrink_fs_v }}"
+#     register: result
+#   - debug: var=result
