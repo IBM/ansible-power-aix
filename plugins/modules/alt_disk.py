@@ -361,7 +361,7 @@ def check_rootvg(module):
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
-    # parse lsvg outpout to get the size in megabytes:
+    # parse lsvg output to get the size in megabytes:
     # TOTAL PPs:           639 (40896 megabytes)
     # USED PPs:            404 (25856 megabytes)
     # PP SIZE:             64 megabyte(s)
