@@ -125,31 +125,31 @@ options:
 
 EXAMPLES = r'''
 - name: List all software products and installable options contained on an installation cartridge tape
-  installp:
+  ibm.power_aix.installp:
     action: list
     device: /dev/rmt0.1
 
 - name: List all customer-reported problems fixed by all software products on an installation tape
-  installp:
+  ibm.power_aix.installp:
     action: list_fixes
     device: /dev/rmt0.1
     install_list: all
 
 - name: Install all filesets within the bos.net software package and expand file systems if necessary
-  installp:
+  ibm.power_aix.installp:
     extend_fs: yes
     device: /usr/sys/inst.images
     install_list: bos.net
 
 - name: Reinstall and commit the NFS software product option that is already installed on the system at the same level
-  installp:
+  ibm.power_aix.installp:
     commit: yes
     force: yes
     device: /dev/rmt0.1
     install_list: bos.net.nfs.client:4.1.0.0
 
 - name: Remove a fileset named bos.net.tcp.server
-  installp:
+  ibm.power_aix.installp:
     action: deinstall
     install_list: bos.net.tcp.server
 '''
