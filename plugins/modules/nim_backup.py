@@ -1324,10 +1324,6 @@ def main():
                     nim_mksysb_create(module, target, objtype, params)
                 elif objtype == 'ios_backup':
                     nim_iosbackup_create(module, target, params)
-                elif objtype == 'savevg':
-                    params['volume_group'] = module.params['volume_group']
-                    params['exclude_files'] = module.params['exclude_files']
-                    nim_savevg_create(module, target, params)
                 else:
                     results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                                .format(action, objtype))
@@ -1343,7 +1339,7 @@ def main():
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'
                 continue
-            if target in results['nim_node']['vios'] and objtype == 'mksysb':
+            if target in results['nim_node']['vios'] and (objtype == 'mksysb' or objtype == 'savevg'):
                 results['meta'][target]['messages'].append('Operation {0} {1} not supported on a VIOS. You may want to select ios_mksysb.'
                                                            .format(action, objtype))
                 results['status'][target] = 'FAILURE'
