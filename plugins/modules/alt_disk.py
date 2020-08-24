@@ -43,10 +43,9 @@ options:
     - C(minimize) smallest disk that can be selected.
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
-    - C(nearest)
+    - C(nearest) disk size closest to the rootvg disk.
     type: str
     choices: [ minimize, upper, lower, nearest ]
-    default: nearest
   force:
     description:
     - Forces removal of any existing alternate disk copy on target disks.
@@ -403,6 +402,12 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
     """
     global results
 
+    # Either hdisks must be non-empty or disk_size_policy must be
+    # explicitly set. This ensures the user knows what he is doing.
+    if not hdisks and not disk_size_policy:
+        results['msg'] = 'Either targets or disk_size_policy must be specified'
+        module.fail_json(**results)
+
     rootvg_info = check_rootvg(module)
     if rootvg_info is None:
         module.fail_json(**results)
@@ -493,8 +498,7 @@ def main():
                         choices=['copy', 'clean'], default='copy'),
             targets=dict(type='list', elements='str'),
             disk_size_policy=dict(type='str',
-                                  choices=['minimize', 'upper', 'lower', 'nearest'],
-                                  default='nearest'),
+                                  choices=['minimize', 'upper', 'lower', 'nearest']),
             force=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
