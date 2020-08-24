@@ -279,13 +279,14 @@ def main():
         cmd += ['-g']
     parts = module.params['parts']
     strparts = ''
-    for part in parts:
-        if part == 'root':
-            strparts += 'r'
-        elif part == 'share':
-            strparts += 's'
-        elif part == 'usr':
-            strparts += 'u'
+    if parts:
+        for part in parts:
+            if part == 'root':
+                strparts += 'r'
+            elif part == 'share':
+                strparts += 's'
+            elif part == 'usr':
+                strparts += 'u'
     if strparts != '':
         cmd += ['-O' + strparts]
 
