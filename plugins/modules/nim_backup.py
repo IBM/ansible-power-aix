@@ -153,9 +153,9 @@ options:
   flags:
     description:
     - Specifies additional flags to pass to the command used. Refers to IBM documentation for details.
-    - For C(action=create) and C(type=mksysb), you could use I(-a -A -b -e -i -m -p -P -T -V -X -Z).
-    - For C(action=create) and C(type=ios_mksysb), you could use I(-nosvg -nomedialib).
-    - For C(action=create) and C(type=savevg), you could use I(-a -A -e -i -m -p -r -T -v -V -X -Z).
+    - For I(action=create) and I(type=mksysb), you could use I(-a -A -b -e -i -m -p -P -T -V -X -Z).
+    - For I(action=create) and I(type=ios_mksysb), you could use I(-nosvg -nomedialib).
+    - For I(action=create) and I(type=savevg), you could use I(-a -A -e -i -m -p -r -T -v -V -X -Z).
     type: str
   other_attributes:
     description:
