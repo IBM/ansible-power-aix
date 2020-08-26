@@ -3,8 +3,7 @@
   hosts: all
   gather_facts: no
   vars:
-    # for savevg/restvg LPAR
-    os_backup_v:            False
+    type_v:                 "savevg"
     vg_name_v:              "datavg"
     disk_name_v:            "hdisk1"
     location_v:             "/tmp/datavg_backup"
@@ -24,7 +23,7 @@
   - name: savevg to create a vg backup image
     backup:
       action: create
-      os_backup: "{{ os_backup_v }}"
+      type: "{{ type_v }}"
       name: "{{ vg_name_v }}"
       location: "{{ location_v }}"
       exclude_data: "{{ exclude_data_v }}"
@@ -39,7 +38,7 @@
   - name: restvg to view the backup image information
     backup:
       action: view
-      os_backup: "{{ os_backup_v }}"
+      type: "{{ type_v }}"
       location: "{{ location_v }}"
     register: results
   - debug: var=results
@@ -50,7 +49,7 @@
   - name: restvg to retore the backup image
     backup:
       action: restore
-      os_backup: "{{ os_backup_v }}"
+      type: "{{ type_v }}"
       name: "{{ disk_name_v }}"
       location: "{{ location_v }}"
       data_file: "{{ data_file_v }}"
