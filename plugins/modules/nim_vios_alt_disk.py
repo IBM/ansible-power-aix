@@ -64,7 +64,7 @@ options:
     - C(minimize) smallest disk that can be selected.
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
-    - C(nearest)
+    - C(nearest) disk size closest to the rootvg disk.
     type: str
     choices: [ minimize, upper, lower, nearest ]
     default: nearest

@@ -63,7 +63,7 @@ options:
     - Absolute directory path where to download the packages on the NIM server.
     - If not set it looks for existing NIM ressource matching I(lpp_source_name) and use its location.
     - If no NIM ressource is found, the path is set to /usr/sys/inst.images
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: path
   download_only:
     description:
@@ -74,7 +74,7 @@ options:
   extend_fs:
     description:
     - Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
-    - Can be used if I(action=download) or C(action=preview).
+    - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: yes
   description:
@@ -86,7 +86,7 @@ options:
   metadata_dir:
     description:
     - Directory where metadata files are downloaded.
-    - Can be used if I(action=download) or C(action=preview) when I(oslevel) is not exact, for example I(oslevel=Latest).
+    - Can be used if I(action=download) or I(action=preview) when I(oslevel) is not exact, for example I(oslevel=Latest).
     type: path
     default: /var/adm/ansible/metadata
 '''

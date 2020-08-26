@@ -15,23 +15,23 @@ DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: vios_alt_disk
-short_description: Create/Cleanup an alternate rootvg disk on a VIOS
+module: alt_disk
+short_description: Create/Cleanup an alternate rootvg disk
 description:
 - Copy the rootvg to an alternate disk or cleanup an existing one.
 version_added: '2.9'
 requirements:
-- VIOS >= 2.2.5.0
+- AIX >= 7.1 TL3
 - Python >= 2.7
 options:
   action:
     description:
-    - Specifies the operation to perform on the VIOS.
-    - C(alt_disk_copy) to perform and alternate disk copy.
-    - C(alt_disk_clean) to cleanup an existing alternate disk copy.
+    - Specifies the operation to perform.
+    - C(copy) to perform and alternate disk copy.
+    - C(clean) to cleanup an existing alternate disk copy.
     type: str
-    choices: [ alt_disk_copy, alt_disk_clean ]
-    required: true
+    choices: [ copy, clean ]
+    default: copy
   targets:
     description:
     - Specifies the target disks.
@@ -39,22 +39,20 @@ options:
     elements: str
   disk_size_policy:
     description:
-    - Specifies how to choose the alternate disk if not specified.
+    - When I(action=copy), specifies how to choose the alternate disk if I(targets) is not specified.
     - C(minimize) smallest disk that can be selected.
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
-    - C(nearest)
+    - C(nearest) disk size closest to the rootvg disk.
     type: str
     choices: [ minimize, upper, lower, nearest ]
-    default: nearest
   force:
     description:
     - Forces removal of any existing alternate disk copy on target disks.
-    - Stops any active rootvg mirroring during the alternate disk copy.
     type: bool
     default: no
 notes:
-  - C(alt_disk_copy) only backs up mounted file systems. Mount all file
+  - M(alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
   - when no target is specified, copy is performed to only one alternate
     disk even if the rootvg contains multiple disks
@@ -62,18 +60,16 @@ notes:
 
 EXAMPLES = r'''
 - name: Perform an alternate disk copy of the rootvg to hdisk1
-  vios_alt_disk:
-    action: alt_disk_copy
+  alt_disk:
     targets: hdisk1
 
 - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
-  vios_alt_disk:
-    action: alt_disk_copy
+  alt_disk:
     disk_size_policy: minimize
 
 - name: Perform a cleanup of any existing alternate disk copy
-  vios_alt_disk:
-    action: alt_disk_clean
+  alt_disk:
+    action: clean
 '''
 
 RETURN = r'''
@@ -81,7 +77,7 @@ msg:
     description: The execution message.
     returned: always
     type: str
-    sample: 'VIOS alt disk operation completed successfully'
+    sample: 'alt disk copy operation completed successfully'
 stdout:
     description: The standard output
     returned: always
@@ -93,6 +89,7 @@ stderr:
     type: str
 '''
 
+import os.path
 import re
 
 from ansible.module_utils.basic import AnsibleModule
@@ -100,13 +97,13 @@ from ansible.module_utils.basic import AnsibleModule
 
 def get_pvs(module):
     """
-    Get the list of PVs on the VIOS.
+    Get the list of PVs.
 
     return: dictionary with PVs information
     """
     global results
 
-    cmd = ['/usr/ios/cli/ioscli', 'lspv']
+    cmd = ['lspv']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -114,7 +111,6 @@ def get_pvs(module):
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
-    # NAME             PVID                                 VG               STATUS
     # hdisk0           000018fa3b12f5cb                     rootvg           active
     pvs = {}
     for line in stdout.split('\n'):
@@ -135,13 +131,13 @@ def get_pvs(module):
 
 def get_free_pvs(module):
     """
-    Get the list of free PVs on the VIOS.
+    Get the list of free PVs.
 
     return: dictionary with free PVs information
     """
     global results
 
-    cmd = ['/usr/ios/cli/ioscli', 'lspv', '-free']
+    cmd = ['lspv']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -149,16 +145,34 @@ def get_free_pvs(module):
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
-    # NAME            PVID                                SIZE(megabytes)
-    # hdiskX          none                                572325
+    # hdisk0           000018fa3b12f5cb                     rootvg           active
     free_pvs = {}
     for line in stdout.split('\n'):
         line = line.rstrip()
-        match_key = re.match(r"^(hdisk\S+)\s+(\S+)\s+(\S+)", line)
-        if match_key:
-            free_pvs[match_key.group(1)] = {}
-            free_pvs[match_key.group(1)]['pvid'] = match_key.group(2)
-            free_pvs[match_key.group(1)]['size'] = int(match_key.group(3))
+        match_key = re.match(r"^(hdisk\S+)\s+(\S+)\s+(\S+)\s*(\S*)", line)
+        # Only match disks that have no volume groups
+        if match_key and match_key.group(3) == 'None':
+            hdisk = match_key.group(1)
+            # Check if the disk has an _LVM signature using lquerypv
+            cmd = ['lquerypv', '-V', hdisk]
+            ret, stdout, stderr = module.run_command(cmd)
+            if ret != 0:
+                module.log('[WARN] could not query pv {0}'.format(hdisk))
+                continue
+            if stdout.strip() != "1":
+                continue
+
+            # Retrieve disk size using getconf (bootinfo -s is deprecated)
+            cmd = ['getconf', 'DISK_SIZE', '/dev/' + hdisk]
+            ret, stdout, stderr = module.run_command(cmd)
+            if ret != 0:
+                module.log('[WARN] could not retrieve {0} size'.format(hdisk))
+                continue
+            size = stdout.strip()
+
+            free_pvs[hdisk] = {}
+            free_pvs[hdisk]['pvid'] = match_key.group(2)
+            free_pvs[hdisk]['size'] = int(size)
 
     module.debug('List of available PVs:')
     for key in free_pvs.keys():
@@ -315,41 +329,29 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
 def check_rootvg(module):
     """
     Check the rootvg
-    - check if the rootvg is mirrored
-    - check stale partitions
     - calculate the total and used size of the rootvg
 
     return:
         Dictionary with following keys: value
             "status":
-                0 the rootvg can be saved in an alternate disk copy
-                1 otherwise (cannot unmirror then mirror again)
-            "copy_dict":
-                dictionary key, value
-                    key: copy number (int)
-                    value: hdiskX
-                    example: {1: 'hdisk4', : 2: 'hdisk8', 3: 'hdisk9'}
+                0 the rootvg can be saved with an alternate disk copy
+                1 otherwise
             "rootvg_size": size in Megabytes (int)
             "used_size": size in Megabytes (int)
     """
     global results
 
     vg_info = {}
-    copy_dict = {}
     vg_info["status"] = 1
-    vg_info["copy_dict"] = copy_dict
     vg_info["rootvg_size"] = 0
     vg_info["used_size"] = 0
 
-    nb_lp = 0
-    copy = 0
-    used_size = -1
-    total_size = -1
+    total_pps = -1
+    used_pps = -1
     pp_size = -1
-    pv_size = -1
-    hdisk_dict = {}
 
-    cmd = ['/usr/sbin/lsvg', '-M', 'rootvg']
+    # get the rootvg pp size
+    cmd = ['lsvg', 'rootvg']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -357,109 +359,20 @@ def check_rootvg(module):
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
-    # lsvg -M rootvg command OK, check mirroring
-    # hdisk4:453      hd1:101
-    # hdisk4:454      hd1:102
-    # hdisk4:257      hd10opt:1:1
-    # hdisk4:258      hd10opt:2:1
-    # hdisk4:512-639
-    # hdisk8:255      hd1:99:2        stale
-    # hdisk8:256      hd1:100:2       stale
-    # hdisk8:257      hd10opt:1:2
-    # hdisk8:258      hd10opt:2:2
-    # ..
-    # hdisk9:257      hd10opt:1:3
-    # ..
-    if stdout.find('stale') > 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        results['msg'] = 'rootvg contains stale partitions'
-        return None
-
-    hdisk = ''
-
+    # parse lsvg output to get the size in megabytes:
+    # TOTAL PPs:           639 (40896 megabytes)
+    # USED PPs:            404 (25856 megabytes)
+    # PP SIZE:             64 megabyte(s)
     for line in stdout.split('\n'):
         line = line.rstrip()
-        mirror_key = re.match(r"^(\S+):\d+\s+\S+:\d+:(\d+)$", line)
-        if mirror_key:
-            hdisk = mirror_key.group(1)
-            copy = int(mirror_key.group(2))
-        else:
-            single_key = re.match(r"^(\S+):\d+\s+\S+:\d+$", line)
-            if single_key:
-                hdisk = single_key.group(1)
-                copy = 1
-            else:
-                continue
-
-        if copy == 1:
-            nb_lp += 1
-
-        if hdisk in hdisk_dict.keys():
-            if hdisk_dict[hdisk] != copy:
-                results['msg'] = "rootvg data structure is not compatible with an "\
-                                 "alt_disk_copy operation (2 copies on the same disk)"
-                return None
-        else:
-            hdisk_dict[hdisk] = copy
-
-        if copy not in copy_dict.keys():
-            if hdisk in copy_dict.values():
-                results['msg'] = "rootvg data structure is not compatible with an alt_disk_copy operation"
-                return None
-            copy_dict[copy] = hdisk
-
-    if len(copy_dict.keys()) > 1:
-        if len(copy_dict.keys()) != len(hdisk_dict.keys()):
-            results['msg'] = "The rootvg is partially or completely mirrored but some "\
-                             "LP copies are spread on several disks. This prevents the "\
-                             "system from creating an alternate rootvg disk copy."
-            return None
-
-        # the (rootvg) is mirrored then get the size of hdisk from copy1
-        cmd = ['/usr/sbin/lsvg', '-p', 'rootvg']
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            return None
-
-        # parse lsvg outpout to get the size in megabytes:
-        # rootvg:
-        # PV_NAME           PV STATE          TOTAL PPs   FREE PPs    FREE DISTRIBUTION
-        # hdisk4            active            639         254         126..00..00..00..128
-        # hdisk8            active            639         254         126..00..00..00..128
-
-        for line in stdout.split('\n'):
-            line = line.rstrip()
-            match_key = re.match(r"^(\S+)\s+\S+\s+(\d+)\s+\d+\s+\S+", line)
-            if match_key:
-                pv_size = int(match_key.group(2))
-                if match_key.group(1) == copy_dict[1]:
-                    break
-                continue
-
-        if pv_size == -1:
-            results['msg'] = 'Failed to get pv size, parsing error'
-            return None
-
-    # now get the rootvg pp size
-    cmd = ['/usr/sbin/lsvg', 'rootvg']
-    ret, stdout, stderr = module.run_command(cmd)
-    if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        return None
-
-    # parse lsvg outpout to get the size in megabytes:
-    # VG PERMISSION:      read/write               TOTAL PPs:      558 (285696 megabytes)
-    for line in stdout.split('\n'):
-        line = line.rstrip()
-        match_key = re.match(r".*TOTAL PPs:\s+\d+\s+\((\d+)\s+megabytes\).*", line)
+        match_key = re.match(r".*TOTAL PPs:\s+(\d+)\s+\(\d+\s+megabytes\).*", line)
         if match_key:
-            total_size = int(match_key.group(1))
+            total_pps = int(match_key.group(1))
+            continue
+
+        match_key = re.match(r".*USED PPs:\s+(\d+)\s+\(\d+\s+megabytes\).*", line)
+        if match_key:
+            used_pps = int(match_key.group(1))
             continue
 
         match_key = re.match(r".*PP SIZE:\s+(\d+)\s+megabyte\(s\)", line)
@@ -467,17 +380,14 @@ def check_rootvg(module):
             pp_size = int(match_key.group(1))
             continue
 
-    if pp_size == -1:
-        results['msg'] = 'Failed to get rootvg pp size, parsing error'
+    if total_pps == -1 or used_pps == -1 or pp_size == -1:
+        results['msg'] = 'Failed to get rootvg size, parsing error'
         return None
 
-    if len(copy_dict.keys()) > 1:
-        total_size = pp_size * pv_size
-
-    used_size = pp_size * (nb_lp + 1)
+    total_size = pp_size * total_pps
+    used_size = pp_size * used_pps
 
     vg_info["status"] = 0
-    vg_info["copy_dict"] = copy_dict
     vg_info["rootvg_size"] = total_size
     vg_info["used_size"] = used_size
     return vg_info
@@ -487,13 +397,16 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
     """
     alt_disk_copy operation
 
-    - check the rootvg, find and valid the hdisks for the operation
-    - unmirror rootvg if necessary
-    - perform the alt disk copy or cleanup operation
-    - wait for the copy to finish
-    - mirror rootvg if necessary
+    - check the rootvg, find and validate the hdisks for the operation
+    - perform the alt disk copy operation
     """
     global results
+
+    # Either hdisks must be non-empty or disk_size_policy must be
+    # explicitly set. This ensures the user knows what he is doing.
+    if not hdisks and not disk_size_policy:
+        results['msg'] = 'Either targets or disk_size_policy must be specified'
+        module.fail_json(**results)
 
     rootvg_info = check_rootvg(module)
     if rootvg_info is None:
@@ -505,71 +418,18 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
 
     module.log('Using {0} as alternate disks'.format(hdisks))
 
-    # unmirror the vg if necessary
-    # check mirror
-
-    copies_h = rootvg_info["copy_dict"]
-    nb_copies = len(copies_h.keys())
-
-    if nb_copies > 1:
-        if not force:
-            results['msg'] = 'The rootvg is mirrored and force option is not set'
-            module.fail_json(**results)
-
-        module.log('[WARNING] Stopping mirror')
-
-        cmd = ['/usr/sbin/unmirrorvg', 'rootvg']
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            # unmirror command failed
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
-        if stderr.find('rootvg successfully unmirrored') == -1:
-            # unmirror command failed
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Failed to unmirror rootvg'
-            module.fail_json(**results)
-        # unmirror command OK
-        module.info('Unmirror rootvg successful')
-
     # alt_disk_copy
     cmd = ['alt_disk_copy', '-B', '-d', ' '.join(hdisks)]
 
-    ret_altdc, stdout_altdc, stderr_altdc = module.run_command(cmd)
-    if ret_altdc == 0:
-        results['changed'] = True
+    ret, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
 
-    # restore the mirroring if necessary
-    if nb_copies > 1:
-        module.log('Restoring mirror')
-
-        cmd = ['/usr/sbin/mirrorvg', '-m', '-c', nb_copies, 'rootvg', copies_h[2]]
-        if nb_copies > 2:
-            cmd += [copies_h[3]]
-
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            # mirror command failed
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
-        if stderr.find('Failed to mirror the volume group') != -1:
-            # mirror command failed
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Failed to mirror rootvg'
-            module.fail_json(**results)
-
-    results['stdout'] = stdout_altdc
-    results['stderr'] = stderr_altdc
-    if ret_altdc != 0:
-        # an error occured during alt_disk_copy
-        results['msg'] = 'Failed to copy {0}: return code {1}.'.format(' '.join(hdisks), ret_altdc)
+    if ret != 0:
+        # an error occured during alt_root_vg
+        results['msg'] = 'Failed to copy {0}: return code {1}.'.format(' '.join(hdisks), ret)
         module.fail_json(**results)
+    results['changed'] = True
 
 
 def alt_disk_clean(module, hdisks):
@@ -599,8 +459,8 @@ def alt_disk_clean(module, hdisks):
             if pvs[pv]['vg'] == 'altinst_rootvg':
                 hdisks.append(pv)
         if not hdisks:
-            results['msg'] = 'There is no alternate install rootvg'
-            module.fail_json(**results)
+            # Do not fail if there is no altinst_rootvg to preserve idempotency
+            return
 
     # First remove the alternate VG
     module.log('Removing altinst_rootvg')
@@ -634,14 +494,16 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(required=True, type='str',
-                        choices=['alt_disk_copy', 'alt_disk_clean']),
+            action=dict(type='str',
+                        choices=['copy', 'clean'], default='copy'),
             targets=dict(type='list', elements='str'),
             disk_size_policy=dict(type='str',
-                                  choices=['minimize', 'upper', 'lower', 'nearest'],
-                                  default='nearest'),
+                                  choices=['minimize', 'upper', 'lower', 'nearest']),
             force=dict(type='bool', default=False),
-        )
+        ),
+        mutually_exclusive=[
+            ['targets', 'disk_size_policy']
+        ],
     )
 
     results = dict(
@@ -651,17 +513,24 @@ def main():
         stderr='',
     )
 
+    # Make sure we are not running on a VIOS.
+    # This could be dangerous because the automatic disk selection differs from VIOS.
+    # It could think a disk is not being used when it is actually used (mapped to a client).
+    if os.path.exists('/usr/ios'):
+        results['msg'] = 'This should not be run on a VIOS'
+        module.fail_json(**results)
+
     action = module.params['action']
     targets = module.params['targets']
     disk_size_policy = module.params['disk_size_policy']
     force = module.params['force']
 
-    if action == 'alt_disk_copy':
+    if action == 'copy':
         alt_disk_copy(module, targets, disk_size_policy, force)
     else:
         alt_disk_clean(module, targets)
 
-    results['msg'] = 'VIOS alt disk operation completed successfully'
+    results['msg'] = 'alt_disk {0} operation completed successfully'.format(action)
     module.exit_json(**results)
 
 
