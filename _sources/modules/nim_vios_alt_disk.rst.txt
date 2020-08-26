@@ -67,7 +67,7 @@ Parameters
 
     ``lower`` disk size less than rootvg disk size but big enough to contain the used PPs.
 
-    ``nearest``
+    ``nearest`` disk size closest to the rootvg disk.
 
 
   force (optional, bool, False)

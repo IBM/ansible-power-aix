@@ -73,7 +73,7 @@ Parameters
 
     If no NIM ressource is found, the path is set to /usr/sys/inst.images
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   download_only (optional, bool, False)
@@ -85,7 +85,7 @@ Parameters
   extend_fs (optional, bool, True)
     Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
 
-    Can be used if *action=download* or ``action=preview``.
+    Can be used if *action=download* or *action=preview*.
 
 
   description (optional, str, None)
@@ -99,7 +99,7 @@ Parameters
   metadata_dir (optional, path, /var/adm/ansible/metadata)
     Directory where metadata files are downloaded.
 
-    Can be used if *action=download* or ``action=preview`` when *oslevel* is not exact, for example *oslevel=Latest*.
+    Can be used if *action=download* or *action=preview* when *oslevel* is not exact, for example *oslevel=Latest*.
 
 
 

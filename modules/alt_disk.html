@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>backupios – Creates an installable image of the root volume group &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>alt_disk – Create/Cleanup an alternate rootvg disk &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="devices – Configure/Modify/Unconfigure devices" href="devices.html" />
-    <link rel="prev" title="backup – Manage data or system volume group backup on a LPAR." href="backup.html" /> 
+    <link rel="next" title="backup – Manage data or system volume group backup on a LPAR." href="backup.html" />
+    <link rel="prev" title="Modules" href="../modules.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,8 +93,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">backupios – Creates an installable image of the root volume group</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">alt_disk – Create/Cleanup an alternate rootvg disk</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -104,6 +103,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
@@ -124,10 +124,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="updateios.html">updateios – Updates the Virtual I/O Server to the latest maintenance level</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="vios_alt_disk.html">vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="viosbr.html">viosbr – Backup/Restore the configuration of the VIOS</a></li>
 </ul>
 </li>
 </ul>
@@ -195,14 +192,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>backupios – Creates an installable image of the root volume group</li>
+      <li>alt_disk – Create/Cleanup an alternate rootvg disk</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/backupios.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/alt_disk.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -216,8 +213,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="backupios-creates-an-installable-image-of-the-root-volume-group">
-<span id="backupios-module"></span><h1>backupios – Creates an installable image of the root volume group<a class="headerlink" href="#backupios-creates-an-installable-image-of-the-root-volume-group" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="alt-disk-create-cleanup-an-alternate-rootvg-disk">
+<span id="alt-disk-module"></span><h1>alt_disk – Create/Cleanup an alternate rootvg disk<a class="headerlink" href="#alt-disk-create-cleanup-an-alternate-rootvg-disk" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -231,13 +228,13 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Creates a backup of the Virtual I/O Server and places it onto a file system.</p>
+<p>Copy the rootvg to an alternate disk or cleanup an existing one.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>VIOS &gt;= 2.2.5.0</p></li>
+<li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
 </ul>
 </div>
@@ -245,16 +242,19 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>file (True, str, None)</dt><dd><p>Specifies the directory on which the image is to be stored.</p>
-<p>When <em>mksysb=yes</em>, specifies the file name.</p>
+<dt>action (optional, str, copy)</dt><dd><p>Specifies the operation to perform.</p>
+<p><code class="docutils literal notranslate"><span class="pre">copy</span></code> to perform and alternate disk copy.</p>
+<p><code class="docutils literal notranslate"><span class="pre">clean</span></code> to cleanup an existing alternate disk copy.</p>
 </dd>
-<dt>mksysb (optional, bool, False)</dt><dd><p>Creates an mksysb image.</p>
+<dt>targets (optional, list, None)</dt><dd><p>Specifies the target disks.</p>
 </dd>
-<dt>nopack (optional, list, None)</dt><dd><p>When <em>mksysb=yes</em>, specifies the list of files to exclude from being packed.</p>
+<dt>disk_size_policy (optional, str, None)</dt><dd><p>When <em>action=copy</em>, specifies how to choose the alternate disk if <em>targets</em> is not specified.</p>
+<p><code class="docutils literal notranslate"><span class="pre">minimize</span></code> smallest disk that can be selected.</p>
+<p><code class="docutils literal notranslate"><span class="pre">upper</span></code> first disk found bigger than the rootvg disk.</p>
+<p><code class="docutils literal notranslate"><span class="pre">lower</span></code> disk size less than rootvg disk size but big enough to contain the used PPs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">nearest</span></code> disk size closest to the rootvg disk.</p>
 </dd>
-<dt>savevgstruct (optional, bool, True)</dt><dd><p>Specifies whether to save the volume groups structure of user-defined volume groups as part of the <code class="docutils literal notranslate"><span class="pre">backupios</span></code> process.</p>
-</dd>
-<dt>savemedialib (optional, bool, True)</dt><dd><p>Specifies whether to save the contents of the media repository as part of the <code class="docutils literal notranslate"><span class="pre">backupios</span></code> process.</p>
+<dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disks.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -264,35 +264,35 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>The <code class="docutils literal notranslate"><span class="pre">backupios</span></code> module backs up only the volume group structures that are activated. The structures of volumes groups that are deactivated are not backed up.</p></li>
+<li><p><a class="reference internal" href="#alt-disk-module"><span class="std std-ref">alt_disk</span></a> only backs up mounted file systems. Mount all file systems that you want to back up.</p></li>
+<li><p>when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Generate a backup to /home/padmin/backup directory</span>
-  <span class="nt">backupios</span><span class="p">:</span>
-    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/padmin/backup</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to hdisk1</span>
+  <span class="nt">alt_disk</span><span class="p">:</span>
+    <span class="nt">targets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hdisk1</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Generate an mksysb backup to /home/padmin/backup.mksysb</span>
-  <span class="nt">backupios</span><span class="p">:</span>
-    <span class="nt">file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/padmin/backup.mksysb</span>
-    <span class="nt">mksysb</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">savemedialib</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
-    <span class="nt">savevgstruct</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform an alternate disk copy of the rootvg to the smallest disk that can be selected</span>
+  <span class="nt">alt_disk</span><span class="p">:</span>
+    <span class="nt">disk_size_policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimize</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a cleanup of any existing alternate disk copy</span>
+  <span class="nt">alt_disk</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">clean</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
+<dt>msg (always, str, alt disk copy operation completed successfully)</dt><dd><p>The execution message.</p>
 </dd>
-<dt>stdout (always, str, )</dt><dd><p>The standard output</p>
+<dt>stdout (always, str, Bootlist is set to the boot disk: hdisk0 blv=hd5)</dt><dd><p>The standard output</p>
 </dd>
 <dt>stderr (always, str, )</dt><dd><p>The standard error</p>
-</dd>
-<dt>ioslevel (always, str, 3.1.0.00)</dt><dd><p>The latest installed maintenance level of the system</p>
 </dd>
 </dl>
 </div>
@@ -319,10 +319,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="devices.html" class="btn btn-neutral float-right" title="devices – Configure/Modify/Unconfigure devices" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="backup.html" class="btn btn-neutral float-right" title="backup – Manage data or system volume group backup on a LPAR." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="backup.html" class="btn btn-neutral float-left" title="backup – Manage data or system volume group backup on a LPAR." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

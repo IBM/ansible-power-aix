@@ -195,11 +195,11 @@ Parameters
   flags (optional, str, None)
     Specifies additional flags to pass to the command used. Refers to IBM documentation for details.
 
-    For ``action=create`` and ``type=mksysb``, you could use *-a -A -b -e -i -m -p -P -T -V -X -Z*.
+    For *action=create* and *type=mksysb*, you could use *-a -A -b -e -i -m -p -P -T -V -X -Z*.
 
-    For ``action=create`` and ``type=ios_mksysb``, you could use *-nosvg -nomedialib*.
+    For *action=create* and *type=ios_mksysb*, you could use *-nosvg -nomedialib*.
 
-    For ``action=create`` and ``type=savevg``, you could use *-a -A -e -i -m -p -r -T -v -V -X -Z*.
+    For *action=create* and *type=savevg*, you could use *-a -A -e -i -m -p -r -T -v -V -X -Z*.
 
 
   other_attributes (optional, str, None)

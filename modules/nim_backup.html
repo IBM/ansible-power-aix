@@ -93,8 +93,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="backupios.html">backupios – Creates an installable image of the root volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
@@ -123,10 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="updateios.html">updateios – Updates the Virtual I/O Server to the latest maintenance level</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="vios_alt_disk.html">vios_alt_disk – Create/Cleanup an alternate rootvg disk on a VIOS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="viosbr.html">viosbr – Backup/Restore the configuration of the VIOS</a></li>
 </ul>
 </li>
 </ul>
@@ -326,9 +323,9 @@
 <p>Can be used if <em>action=create</em> and <em>type=savevg</em>.</p>
 </dd>
 <dt>flags (optional, str, None)</dt><dd><p>Specifies additional flags to pass to the command used. Refers to IBM documentation for details.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">action=create</span></code> and <code class="docutils literal notranslate"><span class="pre">type=mksysb</span></code>, you could use <em>-a -A -b -e -i -m -p -P -T -V -X -Z</em>.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">action=create</span></code> and <code class="docutils literal notranslate"><span class="pre">type=ios_mksysb</span></code>, you could use <em>-nosvg -nomedialib</em>.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">action=create</span></code> and <code class="docutils literal notranslate"><span class="pre">type=savevg</span></code>, you could use <em>-a -A -e -i -m -p -r -T -v -V -X -Z</em>.</p>
+<p>For <em>action=create</em> and <em>type=mksysb</em>, you could use <em>-a -A -b -e -i -m -p -P -T -V -X -Z</em>.</p>
+<p>For <em>action=create</em> and <em>type=ios_mksysb</em>, you could use <em>-nosvg -nomedialib</em>.</p>
+<p>For <em>action=create</em> and <em>type=savevg</em>, you could use <em>-a -A -e -i -m -p -r -T -v -V -X -Z</em>.</p>
 </dd>
 <dt>other_attributes (optional, str, None)</dt><dd><p>Specifies additional attributes to pass to the NIM operation. Refers to IBM documentation for details.</p>
 <p>It is a space separated string such as <em>other_attributes=’-a attr1=value1 -a attr2=value2’</em>.</p>

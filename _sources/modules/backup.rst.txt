@@ -16,7 +16,7 @@ This module manages backup image of data or system volume group.
 
 It uses mksysb or savevg command to create the backup image of the volume group either in a file or onto a device.
 
-It uses restvg or alt_disk_mksysb to restore a backup image to a disk.
+It uses restvg or alt_disk_mksysb to restore a backup image to disk(s).
 
 
 
@@ -39,39 +39,53 @@ Parameters
 
     ``restore`` to restore a backup image.
 
-    ``view`` to get useful information about a backup image.
+    ``view`` to get useful information about a backup image; can be used only for *type=savevg*
 
 
-  os_backup (optional, bool, False)
-    Specifies the operation concerns the Operating system.
+  type (optional, str, savevg)
+    Specifies the type of backup object to operate.
 
-    If *yes*, it will use mksysb to create an Operating System backup of the root volume group and alt_disk_mksysb to restore the backup image onto a disk.
+    ``mksysb`` is under construction.
 
-    If *no*, it will use savevg to list and back up all files belonging to a volume group and restvg to restore a backup image onto a disk.
+    ``mksysb`` operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
+
+    ``savevg`` operates on LPAR savevg, that is all files belonging to a volume group.
+
+    Discarded for *action=view* as this action only applies to savevg.
 
 
   name (optional, str, None)
     Specifies the targets of the operation.
 
-    Required if ``action=create`` and ``os_backup=no``, then it specifies the volume group to back up.
+    Discarded if *type=mksysb*.
 
-    If ``action=restore``, it specifies the disk device to restore to and do not use the one in the vgname.data file.
+    Required if *action=create* and *type=savevg*, then it specifies the volume group to back up.
+
+    If *action=restore* and *type=savevg*, it specifies the disk device to restore to and do not use the one in the vgname.data file.
 
 
   flags (optional, str, None)
     Specifies additional flag to pass to the command. Refers to IBM documentation for details.
 
-    For ``action=create`` and ``os_backup=no``, you could use *-a -A -b Blocks -p -T -V -Z*.
+    For *action=create* and *type=savevg*, you could use ``-a -A -b Blocks -p -T -V -Z``.
 
-    For ``action=restore`` and ``os_backup=no``, you could use *-b Blocks -n -P PPsize*.
+    For *action=restore* and *type=savevg*, you could use ``-b Blocks -n -P PPsize``.
 
 
   location (optional, path, None)
     Specifies the location of the backup files. It can be a device or file path.
 
-    When ``os_backup=no``, the default device is */dev/rmt0*.
+    When *type=savevg*, the default device is ``/dev/rmt0``.
 
-    Can be used if ``os_backup=no``. Required if ``action=view``.
+    Required if *action=view* or *type=mksysb*.
+
+
+  disk (optional, list, None)
+    Specifies the name or names of the target disks where the alternate rootvg is created.
+
+    This disk or these disks must not currently contain any volume group definition.
+
+    Required if *action=restore* and *type=mksysb*.
 
 
   data_file (optional, path, None)
@@ -79,19 +93,19 @@ Parameters
 
     The filename can be specified by either a relative or an absolute pathname.
 
-    Can be used if ``os_backup=no`` and ``action=restore``.
+    Can be used if *type=savevg* and *action=restore*.
 
 
   create_data_file (optional, str, False)
-    Specifies to create the data file containing information including the list of logical volumes file systems and their sizes, and the volume group name.
+    Specifies to create the data file containing information on the vloume group, logical volumes, file systems and their sizes.
 
-    When ``volume_group`` is the rootvg, data file will be in */image.data*.
+    If *volume_group=rootvg*, then data file will be in ``/image.data``.
 
-    When ``volume_group`` is a data volume group, data file will be in */tmp/vgdata/vgname/vgname.data*.
+    If ``volume_group`` is a data volume group, data file will be in ``/tmp/vgdata/vgname/vgname.data``.
 
-    Specify ``create_data_file=mapfile`` to creates the MAPFILE containing the mapping of the logical to physical partitions for each logical volume in the volume group. This mapping can be used to allocate the same logical-to-physical mapping when the image is restored.
+    Specify *create_data_file=mapfile* to creates the MAPFILE containing the mapping of the logical to physical partitions for each logical volume in the volume group. This mapping can be used to allocate the same logical-to-physical mapping when the image is restored.
 
-    Can be used if ``action=create`` and ``os_backup=no``.
+    Can be used if *action=create*.
 
 
   exclude_fs (optional, path, None)
@@ -99,21 +113,27 @@ Parameters
 
     One file system mount point is listed per line.
 
-    Can be used if ``action=create`` and ``os_backup=no``.
+    Can be used if *action=create*.
 
 
   force (optional, bool, False)
     Specifies to overwrite existing backup image.
 
-    Can be used if ``os_backup=no`` and ``action=create``.
+    Can be used if *action=create* and *type=savevg*.
 
 
   exclude_data (optional, bool, False)
-    If ``action=create``, specifies to exclude user data from the backup. Backs up user volume group information and administration data files. This backs up files such as /tmp/vgdata/vgname/vgname.data and map files if any exist. Cannot be used on a rootvg.
+    If *action=create*, specifies to exclude user data from the backup. Backs up user volume group information and administration data files. This backs up files such as /tmp/vgdata/vgname/vgname.data and map files if any exist. Cannot be used on a rootvg.
 
-    If ``action=restore``, specifies to recreate the volume group structure only without restoring any files or data.
+    If *action=restore*, specifies to recreate the volume group structure only without restoring any files or data.
 
-    Can be used if ``os_backup=no`` and ``action=create`` or ``action=restore``.
+    Can be used if *type=savevg*.
+
+
+  exclude_packing_files (optional, bool, False)
+    Specifies to exclude files specified in the /etc/exclude_packing.rootvg, /etc/exclude_packing.vgname, or /etc/exclude_packing.WPARname file from being packed.
+
+    Can be used if *action=create* and *type=mksysb*.
 
 
   exclude_files (optional, bool, False)
@@ -121,25 +141,25 @@ Parameters
 
     The /etc/exclude.vgname file should contain patterns of file names that you do not want included in your system backup image. They are input to the pattern matching conventions of the grep command.
 
-    Can be used if ``action=create`` and ``os_backup=no``.
+    Can be used if *action=create*.
 
 
   extend_fs (optional, bool, False)
     Specifies to extend the filesystem if needed.
 
-    Can be used if ``action=create`` and ``os_backup=no``.
+    Can be used if *action=create* and *type=savevg*.
 
 
   minimize_lv_size (optional, bool, False)
     Specifies to create the logical volumes with minimum size possible to accomodate the file system.
 
-    Can be used if ``action=restore`` and ``os_backup=no``.
+    Can be used if *action=restore* and *type=savevg*.
 
 
   verbose (optional, bool, False)
     Specifies to run the operation in verbose mode.
 
-    Can be used if ``action=create`` or ``action=restore``.
+    Can be used if *action=create* or *action=restore*.
 
 
 
@@ -151,6 +171,7 @@ Notes
 .. note::
    - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
    - ``savevg`` backs up all logical volume information and will be recreated. However, only JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up using a savevg.
+   - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
 
 
 
@@ -164,7 +185,7 @@ Examples
     - name: savevg of rootvg to /dev/hdisk1
       backup:
         action: create
-        os_backup: no
+        type: savevg
         name: rootvg
         location: /dav/rmt1
         exclude_data: no
@@ -177,7 +198,7 @@ Examples
     - name: savevg of datavg structure to /dev/hdisk2
       backup:
         action: create
-        os_backup: no
+        type: savevg
         name: datavg
         location: /tmp/backup_datavg
         exclude_data: yes
@@ -187,13 +208,13 @@ Examples
     - name: view the vg backup image stored on /dev/hdisk1 with savevg
       backup:
         action: view
-        os_backup: no
+        type: savevg
         location: /dev/hdisk1
 
     - name: restvg to restore datavg structure only to /dev/hdisk2
       backup:
         action: restore
-        os_backup: no
+        type: savevg
         name: datavg
         location: /tmp/backup_datavg
         data_file: /tmp/datavg.mydata
