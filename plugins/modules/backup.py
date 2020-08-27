@@ -482,7 +482,7 @@ def restvg(module, params, action, disk):
     # [ -b Blocks ]     Specifies the number of 512-byte blocks to write in a single output operation
     # [ -n ]            Ignores the existing MAP files.
     # [ -P PPsize ]     Specifies the number of megabytes in each physical partition.
-    cmd = ['restvg']
+    cmd = ['/usr/bin/restvg']
     if params['data_file']:
         cmd += ['-d', params['data_file']]
     if params['location']:
@@ -513,7 +513,7 @@ def restvg_view(module, params):
     Run the restvg command to get backup information.
 
     arguments:
-        module     (dict): the module variable
+        module  (dict): the module variable
         params  (dict): the command parameters
     return:
         rc       (int): the return code of the command
