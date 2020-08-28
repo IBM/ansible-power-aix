@@ -57,6 +57,8 @@ options:
   flags:
     description:
     - Specifies additional flag to pass to the command. Refers to IBM documentation for details.
+    - For I(action=create) and I(type=mksysb), you could use C(-a -A -b number -F filename -G|-N -M -P -t path -T -V -Z).
+    - For I(action=restore) and I(type=mksysb), you could use C(-p platform -L mksysb_level -c console -K -O -g -k -r -z -T -S -C).
     - For I(action=create) and I(type=savevg), you could use C(-a -A -b Blocks -p -T -V -Z).
     - For I(action=restore) and I(type=savevg), you could use C(-b Blocks -n -P PPsize).
     type: str
@@ -68,17 +70,33 @@ options:
     type: path
   disk:
     description:
-    - Specifies the name or names of the target disks where the alternate rootvg is created.
+    - Specifies the name or names of the target disk(s) where the alternate rootvg is created.
     - This disk or these disks must not currently contain any volume group definition.
     - Required if I(action=restore) and I(type=mksysb).
     type: list
     elements: str
+  script:
+    description:
+    - Specifies the full path of a customiation script file to run at the end of the mksysb installation.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: path
+  resolv_conf:
+    description:
+    - Specifies the full path of a alternate resolv.conf file to replace the existing one after the mksysb installation.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: path
+  phase:
+    description:
+    - Specifies the phase(s) to execute during the invocation of the alt_disk_mksysb command.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: str
+    choices: [ 1, 2, 3, 12, 23, all ]
   data_file:
     description:
-    - Specifies a filename to be used as the vgname.data file instead of the one contained within
-      the backup image being restored.
-    - The filename can be specified by either a relative or an absolute pathname.
-    - Can be used if I(type=savevg) and I(action=restore).
+    - Specifies a full path filename to use instead of the one from the image being restored.
+    - If I(type=mksysb) it specifies the image.data file.
+    - If I(type=savevg) it specifies the vgname.data file.
+    - Can be used if I(action=restore).
     type: path
   create_data_file:
     description:
@@ -91,14 +109,40 @@ options:
       to allocate the same logical-to-physical mapping when the image is restored.
     - Can be used if I(action=create).
     type: str
-    choices: [ yes, mapfile, no ]
-    default: no
+    choices: [ 'yes', 'mapfile', 'no' ]
+    default: 'no'
   exclude_fs:
     description:
     - Specifies a file path that contains the list of file systems to exclude from the backup.
     - One file system mount point is listed per line.
     - Can be used if I(action=create).
     type: path
+  remain_nim_client:
+    description:
+    - Specifies to remains NIM client after the mksysb installation.
+    - The /.rhosts and /etc/niminfo files are copied to the alternate rootvg's file system.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: bool
+    default: no
+  import_vg:
+    description:
+    - Specifies to look for and import volume groupe found in mksysb backup image.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: bool
+    default: no
+  debug:
+    description:
+    - Specifies the debug mode (that is the set -x output).
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: bool
+    default: no
+  bootlist:
+    description:
+    - Specifies to run the bootlist command after the mksysb installation.
+    - Cannot be used if I(flags) contains the C(-r) flag.
+    - Can be used if I(action=restore) or I(type=mksysb).
+    type: bool
+    default: yes
   force:
     description:
     - Specifies to overwrite existing backup image.
@@ -134,7 +178,7 @@ options:
   extend_fs:
     description:
     - Specifies to extend the filesystem if needed.
-    - Can be used if I(action=create) and I(type=savevg).
+    - Can be used if I(action=create).
     type: bool
     default: no
   minimize_lv_size:
@@ -159,6 +203,22 @@ notes:
 '''
 
 EXAMPLES = r'''
+- name: backup the rootvg with mksysb
+  backup:
+    action: create
+    type: mksysb
+    location: /tmp/backup_rootvg
+    exclude_files: false
+    extend_fs: yes
+
+- name: install the mksysb image to /dev/hdisk1 using the 64 bits kernel if possible
+  backup:
+    action: restore
+    type: mksysb
+    location: /ESSAI/backup_datavg
+    disk: /dev/hdisk1
+    flags: '-S -K'
+
 - name: savevg of rootvg to /dev/hdisk1
   backup:
     action: create
@@ -296,7 +356,6 @@ def mksysb(module, params):
     module.log('Creating OS backup with mksysb.')
 
     # mksysb  device | file
-    # not yet implemented:
     # [ -e ]          Excludes files specified in the /etc/exclude.vgname file from being backed up.
     # [ -i | -m ]     Create the image.data file calling mkszfile to get VG, LV, PV, PS info (-m for map file).
     # [ -P ]          Excludes files that are listed line by line in predifined files from being packed.
@@ -317,7 +376,7 @@ def mksysb(module, params):
     # [ -Z ]          Does not back up the EFS information for all the files, directories, and file systems.
 
     cmd = ['/bin/mksysb']
-    if params['create_data_file'] == 'mapfile':
+    if params['create_data_file'].lower() == 'mapfile':
         cmd += ['-m']
     elif params['create_data_file'].lower() == 'yes':
         cmd += ['-i']
@@ -336,6 +395,7 @@ def mksysb(module, params):
             cmd += [f]
     cmd += [params['location']]
 
+    module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -350,31 +410,75 @@ def alt_disk_mksysb(module, params):
     Installs an alternate disk with a mksysb install base install image.
 
     arguments:
-        module      (dict): The Ansible module
+        module  (dict): The Ansible module
         params  (dict): the command parameters
-    note:
     return:
-        True if backup succeeded
-        False otherwise
+        rc       (int): the return code of the command
     """
     global results
     module.log('Restoring OS backup with alt_disk_mksysb.')
 
     # alt_disk_mksysb -m device -d target_disks...
+    # [ -m device ]       Location of the mksysb. It can be a tape device (/dev/rmt0) or a path in the filesystem.
+    # [ -d target_disks ] Space delimited list of disk where the alternate rootvg is created.
+    # [ -s script ]       Customization script to run at the end of the mksysb install.
+    # [ -R resolv_conf ]  Full path of resolv.conf file that replace the existing one after after the mksysb has been restored.
+    # [ -i image.data ]   Full path of image.data to use instead of the default file from mksysb image.
+    # [ -P phase_option ] Phase(s) to execute during this invocation of the alt_disk_mksysb command. Can be 1,2,3,12,23,all.
+    # [ -n ]    Remains NIM client.
+    # [ -B ]    Does not run bootlist after the operation. Invalid with -r.
+    # [ -y ]    Looks for and import (if found) mksysb volume group.
+    # [ -V ]    Verbose output showing files restored.
+    # [ -D ]    Truns on debug (set -x output).
     # not yet implemented:
-    # [ -i image.data ] [ -s script ] [-R resolv_conf ] [ -p platform ] [ -L mksysb_level ]
-    # [ -n ]
-    # [ -P phase_option ]
-    # [ -c console ]
-    # [ -K ]
-    # [ -D B O V g k r y z T S C ]
+    # [ -p platform ]     Platform used to create the name of the disk boot image.
+    # [ -L mksysb_level ] Level is combined with the platform type to create the boot image name.
+    # [ -c console ]      Device name to be used as the alternate rootvg's system console. Valid with -O.
+    # [ -K ]    Uses the 64 bits kernel if possible.
+    # [ -O ]    Performs a device reset on the target alinst_rootvg.
+    # [ -g ]    Overlooks the bootable checks for the target_disks
+    # [ -k ]    Keeps mksysb devices.
+    # [ -r ]    Reboots from the new disk when alt_disk_mksysb is complete.
+    # [ -z ]    Does not import any type of non-rootvg. Overrides -y.
+    # [ -T ]    Converts JSF file systems to JFS2 while recreating the rootvg on target disks.
+    # [ -S ]    Skips space-checking on target disks before clone or install operation.
+    # [ -C ]    Uses the /usr/lpp/bos.alt_disk_install/boot_images/bosboot.disk.chrp file from the current rootvg only.
     cmd = ['/usr/sbin/alt_disk_mksysb']
+    cmd += ['-m', params['location']]
+    if len(params['disk']) == 1:
+        cmd += ['-d', params['disk']]
+    else:
+        cmd += ['-d', '"{0}"'.format(' '.join(params['disk']))]
+    if params['script']:
+        cmd += ['-s', params['script']]
+    if params['resolv_conf']:
+        cmd += ['-R', params['resolv_conf']]
+    if params['data_file']:
+        cmd += ['-i', params['data_file']]
+    if params['data_file']:
+        cmd += ['-P', params['data_file']]
+    if params['remain_nim_client']:
+        cmd += ['-n']
+    if params['import_vg']:
+        cmd += ['-y']
+    if params['bootlist']:
+        cmd += ['-B']
+    if params['verbose']:
+        cmd += ['-V']
+    if params['debug']:
+        cmd += ['-D']
     if params['flags']:
         for f in params['flags'].split(' '):
             cmd += [f]
-    module.log('cmd: {0}'.format(cmd))
 
-    return True
+    module.log('running command: {0}'.format(cmd))
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    results['rc'] = rc
+    if rc == 0:
+        results['changed'] = True
+    return rc
 
 
 def savevg(module, params, vg):
@@ -448,6 +552,7 @@ def savevg(module, params, vg):
             cmd += [f]
     cmd += [vg]
 
+    module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -482,7 +587,7 @@ def restvg(module, params, action, disk):
     # [ -b Blocks ]     Specifies the number of 512-byte blocks to write in a single output operation
     # [ -n ]            Ignores the existing MAP files.
     # [ -P PPsize ]     Specifies the number of megabytes in each physical partition.
-    cmd = ['/usr/bin/restvg']
+    cmd = ['/bin/restvg']
     if params['data_file']:
         cmd += ['-d', params['data_file']]
     if params['location']:
@@ -499,6 +604,7 @@ def restvg(module, params, action, disk):
     if disk:
         cmd += [disk]
 
+    module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -530,6 +636,7 @@ def restvg_view(module, params):
     # [ -l ]            Displays useful information about a volume group backup. Used when action is 'view'.
     cmd = ['restvg', '-f', location, '-l']
 
+    module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -548,23 +655,31 @@ def main():
             type=dict(type='str', choices=['mksysb', 'savevg'], default='savevg'),
             name=dict(type='str'),
             flags=dict(type='str'),
+            verbose=dict(type='bool', default=False),
+            # for alt_disk_mksysb and savevg, restvg
+            location=dict(type='path'),
+            # for alt_disk_mksysb and restvg
+            data_file=dict(type='path'),
+            # for mksysb and savevg
+            exclude_files=dict(type='bool', default=False),
+            exclude_fs=dict(type='path'),
+            extend_fs=dict(type='bool', default=False),
+            # for savevg and restvg
+            exclude_data=dict(type='bool', default=False),
             # for mksysb
             exclude_packing_files=dict(type='bool', default=False),
             # for alt_disk_mksysb
             disk=dict(type='list', elements='str'),
-            # for alt_disk_mksysb and savevg, restvg
-            location=dict(type='path'),
-            # for savevg and restvg
-            exclude_data=dict(type='bool', default=False),
-            verbose=dict(type='bool', default=False),
+            script=dict(type='path'),
+            resolv_conf=dict(type='path'),
+            phase=dict(type='str', choices=['1', '2', '3', '12', '23', 'all']),
+            remain_nim_client=dict(type='bool', default=False),
+            import_vg=dict(type='bool', default=False),
+            debug=dict(type='bool', default=False),
+            bootlist=dict(type='bool', default=True),
             # for savevg
-            create_data_file=dict(type='str', choices=[True, 'mapfile', False], default=False),
-            exclude_fs=dict(type='path'),
+            create_data_file=dict(type='str', choices=['yes', 'mapfile', 'no'], default='no'),
             force=dict(type='bool', default=False),
-            exclude_files=dict(type='bool', default=False),
-            extend_fs=dict(type='bool', default=False),
-            # for restvg
-            data_file=dict(type='path'),
             minimize_lv_size=dict(type='bool', default=False),
         ),
         required_if=[
@@ -583,7 +698,7 @@ def main():
 
     params = {}
     action = module.params['action']
-    params['objtype'] = module.params['objtype']
+    params['objtype'] = module.params['type']
     params['flags'] = module.params['flags']
     params['location'] = module.params['location']
 
@@ -614,8 +729,18 @@ def main():
             rc = savevg(module, params, params['name'])
 
     elif action == 'restore':
+        params['data_file'] = module.params['data_file']
+        params['verbose'] = module.params['verbose']
+
         if params['objtype'] == mksysb:
             params['disk'] = module.params['disk']
+            params['script'] = module.params['script']
+            params['resolv_conf'] = module.params['resolv_conf']
+            params['phase'] = module.params['phase']
+            params['remain_nim_client'] = module.params['remain_nim_client']
+            params['import_vg'] = module.params['import_vg']
+            params['debug'] = module.params['debug']
+            params['bootlist'] = module.params['bootlist']
 
             if not params['disk']:
                 results['msg'] = 'Missing parameter: action is {0} but argument \'disk\' is missing.'.format(action)
@@ -626,8 +751,6 @@ def main():
         elif params['objtype'] == savevg:
             params['name'] = module.params['name']
             params['exclude_data'] = module.params['exclude_data']
-            params['verbose'] = module.params['verbose']
-            params['data_file'] = module.params['data_file']
             params['minimize_lv_size'] = module.params['minimize_lv_size']
 
             rc = restvg(module, params, action, params['name'])
@@ -638,9 +761,6 @@ def main():
             module.fail_json(**results)
 
         params['location'] = module.params['location']
-        if not params['location'] or not params['location'].strip():
-            results['msg'] = 'Missing parameter: action is {0} but argument \'location\' is missing.'.format(action)
-            module.fail_json(**results)
 
         rc = restvg_view(module, params)
 
