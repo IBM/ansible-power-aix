@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: aixpert
-short_description: Apply/Check/Save/Undo security settings
+short_description: Apply/Check/Save/Undo/Query security settings
 description:
 - This module facilitates
     a. Application of security rules on the system using aixpert
@@ -78,7 +78,7 @@ options:
 '''
 
 EXAMPLES = r'''
- - name: "Save default level rules in normal format"
+  - name: "Save default level rules in normal format"
     aixpert:
        mode: save
        level: default
@@ -227,7 +227,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            level=dict(type='str', choices=['high', 'low', 'default', 'sox-cobit']),
+            level=dict(type='str', choices=['high', 'medium', 'low', 'default', 'sox-cobit']),
             mode=dict(type='str', required=True, choices=['check', 'undo', 'apply', 'save', 'query']),
             abbr_fmt_file=dict(type='str'),
             norm_fmt_file=dict(type='str'),
