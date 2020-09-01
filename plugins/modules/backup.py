@@ -217,7 +217,7 @@ EXAMPLES = r'''
     type: mksysb
     location: /ESSAI/backup_datavg
     disk: /dev/hdisk1
-    flags: '-S -K'
+    flags: '-K'
 
 - name: savevg of rootvg to /dev/hdisk1
   backup:
@@ -446,7 +446,7 @@ def alt_disk_mksysb(module, params):
     cmd = ['/usr/sbin/alt_disk_mksysb']
     cmd += ['-m', params['location']]
     if len(params['disk']) == 1:
-        cmd += ['-d', params['disk']]
+        cmd += ['-d', params['disk'][0]]
     else:
         cmd += ['-d', '"{0}"'.format(' '.join(params['disk']))]
     if params['script']:
@@ -634,7 +634,7 @@ def restvg_view(module, params):
     # restvg -f Device -l
     # [ -f Device ]     Device of file to store the image. Default is I(/dev/rmt0).
     # [ -l ]            Displays useful information about a volume group backup. Used when action is 'view'.
-    cmd = ['restvg', '-f', location, '-l']
+    cmd = ['/bin/restvg', '-f', location, '-l']
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
