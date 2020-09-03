@@ -29,7 +29,7 @@ options:
     state:
         description:
         - Specifies the action to be performed for the logical volume.
-        - C(present) to create logical volume with I(lv_attributes) in the system. If logical volume is already
+        - C(present) to create logical volume with I(lv_attributes) in the system. If volume is already
           present then attributes specified for the volume will be changed with the provided attributes.
         - C(absent) to delete logial volume with provided I(name). If volume is not present then message will be displayed for the same.
         type: str
