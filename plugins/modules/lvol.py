@@ -303,7 +303,7 @@ def main():
             num_of_logical_partitions=dict(type='int', default=1),
             policy=dict(type='str', default='maximum', choices=['maximum', 'minimum']),
             lv_new_name=dict(type='str'),
-            phy_vol_list=dict(type='list', default=list())
+            phy_vol_list=dict(type='list', elements='str', default=list())
         ),
         supports_check_mode=False
     )
@@ -327,4 +327,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
