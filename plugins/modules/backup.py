@@ -266,6 +266,13 @@ msg:
     returned: always
     type: str
     sample: 'AIX create backup operation successfull.'
+
+cmd:
+    description: The command executed.
+    returned: when the command is run.
+    type: str
+    sample: '/bin/restvg -f /dev/rmt0 -l'
+
 stdout:
     description: The standard output of the command.
     returned: always
@@ -397,6 +404,7 @@ def mksysb(module, params):
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     results['rc'] = rc
@@ -473,6 +481,7 @@ def alt_disk_mksysb(module, params):
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     results['rc'] = rc
@@ -554,6 +563,7 @@ def savevg(module, params, vg):
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     results['rc'] = rc
@@ -606,6 +616,7 @@ def restvg(module, params, action, disk):
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     results['rc'] = rc
@@ -638,6 +649,7 @@ def restvg_view(module, params):
 
     module.log('running command: {0}'.format(cmd))
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     results['rc'] = rc
