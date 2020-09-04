@@ -153,7 +153,6 @@ def create_modify_lv(module):
     policy = module.params['policy']
     msg = ""
     command_flag = False
-    phy_vol_list = module.params['phy_vol_list']
     pvs = module.params['phy_vol_list']
 
     pv_list = ' '.join(pvs)
