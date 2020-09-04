@@ -32,7 +32,7 @@ options:
     - Specifies the operation to perform on the LPAR.
     - C(create) to create a backup image.
     - C(restore) to restore a backup image.
-    - C(view) to get useful information about a backup image; can be used only for I(type=savevg)
+    - C(view) to get useful information about a backup image.
     type: str
     choices: [ create, restore, view ]
     required: true
@@ -65,7 +65,7 @@ options:
   location:
     description:
     - Specifies the location of the backup files. It can be a device or file path.
-    - When I(type=savevg), the default device is C(/dev/rmt0).
+    - When I(type=savevg) or I(action=view), the default device is C(/dev/rmt0).
     - Required if I(action=view) or I(type=mksysb).
     type: path
   disk:
@@ -195,6 +195,8 @@ options:
     type: bool
     default: no
 notes:
+  - C(restore) C(mksysb) operation can be long, one can use the default log file
+    /var/adm/ras/alt_disk_inst.log to track progress.
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
   - C(savevg) backs up all logical volume information and will be recreated. However, only
     JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up
@@ -490,6 +492,35 @@ def alt_disk_mksysb(module, params):
     return rc
 
 
+def lsmksysb(module, params):
+    """
+    Installs an alternate disk with a mksysb install base install image.
+
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): the command parameters
+    return:
+        rc       (int): the return code of the command
+    """
+    global results
+    module.log('Viewing OS backup information with lsmksysb.')
+
+    # lsmksysb [ -f device ][ -l ]
+    # not yet implemented:
+    # [ -a ] [ -b blocks ] [ -c ] [ -n ] [ -r ] [ -s ] [ -d path ] [ -B ] [ -D ] [ -L ] [ -V ] [ file_list ]
+    cmd = ['/bin/lsmksysb', '-l']
+    if params['location'].strip():
+        cmd += ['-f', params['location']]
+
+    module.log('running command: {0}'.format(cmd))
+    rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    results['rc'] = rc
+    return rc
+
+
 def savevg(module, params, vg):
     """
     Run the savevg command to back up files of a volume group.
@@ -744,7 +775,7 @@ def main():
         params['data_file'] = module.params['data_file']
         params['verbose'] = module.params['verbose']
 
-        if params['objtype'] == mksysb:
+        if params['objtype'] == 'mksysb':
             params['disk'] = module.params['disk']
             params['script'] = module.params['script']
             params['resolv_conf'] = module.params['resolv_conf']
@@ -760,7 +791,7 @@ def main():
 
             rc = alt_disk_mksysb(module, params)
 
-        elif params['objtype'] == savevg:
+        elif params['objtype'] == 'savevg':
             params['name'] = module.params['name']
             params['exclude_data'] = module.params['exclude_data']
             params['minimize_lv_size'] = module.params['minimize_lv_size']
@@ -768,13 +799,11 @@ def main():
             rc = restvg(module, params, action, params['name'])
 
     elif action == 'view':
-        if params['objtype'] != savevg:
-            results['msg'] = 'Bad parameter: action is {0}, objtype cannot be \'{1}\'.'.format(action, params['objtype'])
-            module.fail_json(**results)
-
         params['location'] = module.params['location']
-
-        rc = restvg_view(module, params)
+        if params['objtype'] == 'mksysb':
+            rc = restvg_view(module, params)
+        elif params['objtype'] == 'savevg':
+            rc = lsmksysb(module, params)
 
     if rc == 0:
         if not results['msg']:

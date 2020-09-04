@@ -16,7 +16,7 @@
     exclude_fs_v:               ""
     extend_fs_v:                True
     mksysb_flags_v:             "-G"    # Excludes WPAR file systems
-    alt_disk_mksysb_flags_v:    "-K"    # Use 64 bits kernel.
+    alt_disk_mksysb_flags_v:    ""
     exclude_packing_files_v:    False
     script_v:                   ""
     resolv_conf_v:              ""
@@ -33,13 +33,21 @@
     backup:
       action: create
       type: "{{ type_v }}"
-      location: "{{ location_v }}"
+      location: "{{ location_create_v }}"
       exclude_fs: "{{ exclude_fs_v }}"
       exclude_files: "{{ exclude_files_v }}"
       extend_fs: "{{ extend_fs_v }}"
       exclude_packing_files: "{{ exclude_packing_files_v }}"
       verbose: "{{ verbose_v }}"
       flags: "{{ mksysb_flags_v }}"
+#    register: result
+#  - debug: var=result
+
+  - name: view the mksysb image
+    backup:
+      action: view
+      type: "{{ type_v }}"
+      location: "{{ location_create_v }}"
 #    register: result
 #  - debug: var=result
 
@@ -68,7 +76,7 @@
 #    backup:
 #      action: restore
 #      type: "{{ type_v }}"
-#      location: "{{ location_v }}"
+#      location: "{{ location_restore_v }}"
 #      data_file: "{{ data_file_v }}"
 #      disk: "{{ disk_v }}"
 #      script: "{{ script_v }}"
