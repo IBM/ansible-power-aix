@@ -546,7 +546,7 @@ def check_vios_ssp_status(module, target_tuple):
         cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
                results['nim_node']['vios'][vios]['hostname'],
                '"LC_ALL=C /usr/ios/cli/ioscli cluster -list &&'
-               ' /usr/ios/cli/ioscli cluster -status -fmt : -verbose; echo rc=$?"']
+               ' /usr/ios/cli/ioscli cluster -status -fmt : ; echo rc=$?"']
 
         rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
         if rc != 0:
@@ -590,8 +590,8 @@ def check_vios_ssp_status(module, target_tuple):
             if not line:
                 continue
             fields = line.split(':')
-            if len(line) != 7:
-                msg = 'Expecting 21 fields for SSP status, got {0}.'.format(len(line))
+            if len(fields) != 7:
+                msg = 'Expecting 7 fields for SSP status, got {0}.'.format(len(line))
                 module.log('[WARNING] ' + msg)
                 results['meta']['messages'].append(msg)
                 continue

@@ -692,10 +692,11 @@ def nim_mksysb_create(module, target, objtype, params):
     location = os.path.join(params['location'], name)
 
     # Create the mksysb
-    # To ignore space requirements use the "-F" flag when defining the mksysb resource.
+    # To ignore space requirements use the "-F" flag when defining the mksysb resource, this allows
+    # to run multiple mksysb creation (multi threading) too.
     # nim -o define -t mksysb -a server=master -a mk_image=yes -a location=file_path -a source=lpar_name mksysb_name
     # nim -o define -t ios_mksysb -a server=master -a mk_image=yes -a location=file_path -a source=vios_name ios_mksysb_name
-    cmd = ['nim', '-o', 'define', '-a', 'server=master', '-a', 'mk_image=yes']
+    cmd = ['nim', '-Fo', 'define', '-a', 'server=master', '-a', 'mk_image=yes']
     cmd += ['-t', objtype]
     cmd += ['-a', 'location={0}'.format(location)]
     cmd += ['-a', 'source={0}'.format(target)]
@@ -757,7 +758,7 @@ def nim_mksysb_restore(module, target, params):
     else:
         # Create the SPOT from the mksysb for restore operation
         # nim -o define -t spot -a server=master -a source=mksysb_name -a location=/export/spot spot1
-        cmd = ['nim', '-o', 'define', '-t', 'spot', '-a', 'server=master']
+        cmd = ['nim', '-Fo', 'define', '-t', 'spot', '-a', 'server=master']
         cmd += ['-a', 'source={0}'.format(name)]
         cmd += ['-a', 'location={0}'.format(params['spot_location']), spot_name]
 

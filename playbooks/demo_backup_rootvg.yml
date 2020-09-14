@@ -1,0 +1,93 @@
+---
+- name: "Backup operations on rootvg using mksysb and alt_disk_mksysb for AIX"
+  hosts: all
+  gather_facts: no
+  vars:
+    type_v:                     "mksysb"
+    volume_group_v:             "vg00"      # volume group where /ESSAI resides
+    disk_v:                     "hdisk1"    # hdisk1 is part of vg00
+    location_create_v:          "/ESSAI/rootvg_sysb"
+    restore_fs_v:               "/tmp"
+    restore_fs_size_v:          5G
+    location_restore_v:         "/tmp/rootvg_sysb"
+    verbose_v:                  True
+    #data_file_v:                "/tmp/image.data"
+    exclude_files_v:            False
+    exclude_fs_v:               ""
+    extend_fs_v:                True
+    mksysb_flags_v:             "-G"    # Excludes WPAR file systems
+    alt_disk_mksysb_flags_v:    ""
+    exclude_packing_files_v:    False
+    script_v:                   ""
+    resolv_conf_v:              ""
+    phase_v:                    "all"
+    remain_nim_client_v:        True
+    import_vg_v:                False
+    debug_v:                    False
+    bootlist_v:                 True
+
+
+  tasks:
+
+  - name: create a mksysb image of rootvg
+    backup:
+      action: create
+      type: "{{ type_v }}"
+      location: "{{ location_create_v }}"
+      exclude_fs: "{{ exclude_fs_v }}"
+      exclude_files: "{{ exclude_files_v }}"
+      extend_fs: "{{ extend_fs_v }}"
+      exclude_packing_files: "{{ exclude_packing_files_v }}"
+      verbose: "{{ verbose_v }}"
+      flags: "{{ mksysb_flags_v }}"
+#    register: result
+#  - debug: var=result
+
+  - name: view the mksysb image
+    backup:
+      action: view
+      type: "{{ type_v }}"
+      location: "{{ location_create_v }}"
+#    register: result
+#  - debug: var=result
+
+#  - name: increase filesystem to move mksysb image 
+#    filesystem:
+#      filesystem: "{{ restore_fs_v }}"
+#      state: present
+#      attributes: size="{{ restore_fs_size_v }}"
+
+#  - name: move mksysb image to /tmp
+#    copy:
+#      remote_src: yes
+#      src: "{{ location_create_v }}"
+#      dest: "{{ location_restore_v }}"
+
+#  - name: unmount the filesystem
+#    filesystem:
+#      state: absent
+#      filesystem: "{{ restore_fs_v }}"
+#      rm_mount_point: yes
+ 
+#  - name: remove volume group prior to install mksysb
+  # reducevg -d vg00 hdisk1
+
+#  - name: install the mksysb image to disk
+#    backup:
+#      action: restore
+#      type: "{{ type_v }}"
+#      location: "{{ location_restore_v }}"
+#      data_file: "{{ data_file_v }}"
+#      disk: "{{ disk_v }}"
+#      script: "{{ script_v }}"
+#      resolv_conf: "{{ resolv_conf_v }}"
+#      phase: "{{ phase_v }}"
+#      remain_nim_client: "{{ remain_nim_client_v }}"
+#      import_vg: "{{ import_vg_v }}"
+#      debug: "{{ debug_v }}"
+#      bootlist: "{{ bootlist_v }}"
+#      verbose: "{{ verbose_v }}"
+#      flags: "{{ alt_disk_mksysb_flags_v }}"
+#    register: result
+#  - debug: var=result
+
