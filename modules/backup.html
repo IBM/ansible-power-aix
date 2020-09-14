@@ -93,6 +93,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – Apply/Check/Save/Undo/Query security settings</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">backup – Manage data or system volume group backup on a LPAR.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
@@ -112,6 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
@@ -247,7 +249,7 @@
 <dt>action (True, str, None)</dt><dd><p>Specifies the operation to perform on the LPAR.</p>
 <p><code class="docutils literal notranslate"><span class="pre">create</span></code> to create a backup image.</p>
 <p><code class="docutils literal notranslate"><span class="pre">restore</span></code> to restore a backup image.</p>
-<p><code class="docutils literal notranslate"><span class="pre">view</span></code> to get useful information about a backup image; can be used only for <em>type=savevg</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">view</span></code> to get useful information about a backup image.</p>
 </dd>
 <dt>type (optional, str, savevg)</dt><dd><p>Specifies the type of backup object to operate.</p>
 <p><code class="docutils literal notranslate"><span class="pre">mksysb</span></code> is under construction.</p>
@@ -261,22 +263,34 @@
 <p>If <em>action=restore</em> and <em>type=savevg</em>, it specifies the disk device to restore to and do not use the one in the vgname.data file.</p>
 </dd>
 <dt>flags (optional, str, None)</dt><dd><p>Specifies additional flag to pass to the command. Refers to IBM documentation for details.</p>
+<p>For <em>action=create</em> and <em>type=mksysb</em>, you could use <code class="docutils literal notranslate"><span class="pre">-a</span> <span class="pre">-A</span> <span class="pre">-b</span> <span class="pre">number</span> <span class="pre">-F</span> <span class="pre">filename</span> <span class="pre">-G|-N</span> <span class="pre">-M</span> <span class="pre">-P</span> <span class="pre">-t</span> <span class="pre">path</span> <span class="pre">-T</span> <span class="pre">-V</span> <span class="pre">-Z</span></code>.</p>
+<p>For <em>action=restore</em> and <em>type=mksysb</em>, you could use <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">platform</span> <span class="pre">-L</span> <span class="pre">mksysb_level</span> <span class="pre">-c</span> <span class="pre">console</span> <span class="pre">-K</span> <span class="pre">-O</span> <span class="pre">-g</span> <span class="pre">-k</span> <span class="pre">-r</span> <span class="pre">-z</span> <span class="pre">-T</span> <span class="pre">-S</span> <span class="pre">-C</span></code>.</p>
 <p>For <em>action=create</em> and <em>type=savevg</em>, you could use <code class="docutils literal notranslate"><span class="pre">-a</span> <span class="pre">-A</span> <span class="pre">-b</span> <span class="pre">Blocks</span> <span class="pre">-p</span> <span class="pre">-T</span> <span class="pre">-V</span> <span class="pre">-Z</span></code>.</p>
 <p>For <em>action=restore</em> and <em>type=savevg</em>, you could use <code class="docutils literal notranslate"><span class="pre">-b</span> <span class="pre">Blocks</span> <span class="pre">-n</span> <span class="pre">-P</span> <span class="pre">PPsize</span></code>.</p>
 </dd>
 <dt>location (optional, path, None)</dt><dd><p>Specifies the location of the backup files. It can be a device or file path.</p>
-<p>When <em>type=savevg</em>, the default device is <code class="docutils literal notranslate"><span class="pre">/dev/rmt0</span></code>.</p>
+<p>When <em>type=savevg</em> or <em>action=view</em>, the default device is <code class="docutils literal notranslate"><span class="pre">/dev/rmt0</span></code>.</p>
 <p>Required if <em>action=view</em> or <em>type=mksysb</em>.</p>
 </dd>
-<dt>disk (optional, list, None)</dt><dd><p>Specifies the name or names of the target disks where the alternate rootvg is created.</p>
+<dt>disk (optional, list, None)</dt><dd><p>Specifies the name or names of the target disk(s) where the alternate rootvg is created.</p>
 <p>This disk or these disks must not currently contain any volume group definition.</p>
 <p>Required if <em>action=restore</em> and <em>type=mksysb</em>.</p>
 </dd>
-<dt>data_file (optional, path, None)</dt><dd><p>Specifies a filename to be used as the vgname.data file instead of the one contained within the backup image being restored.</p>
-<p>The filename can be specified by either a relative or an absolute pathname.</p>
-<p>Can be used if <em>type=savevg</em> and <em>action=restore</em>.</p>
+<dt>script (optional, path, None)</dt><dd><p>Specifies the full path of a customiation script file to run at the end of the mksysb installation.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
 </dd>
-<dt>create_data_file (optional, str, False)</dt><dd><p>Specifies to create the data file containing information on the vloume group, logical volumes, file systems and their sizes.</p>
+<dt>resolv_conf (optional, path, None)</dt><dd><p>Specifies the full path of a alternate resolv.conf file to replace the existing one after the mksysb installation.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
+</dd>
+<dt>phase (optional, str, None)</dt><dd><p>Specifies the phase(s) to execute during the invocation of the alt_disk_mksysb command.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
+</dd>
+<dt>data_file (optional, path, None)</dt><dd><p>Specifies a full path filename to use instead of the one from the image being restored.</p>
+<p>If <em>type=mksysb</em> it specifies the image.data file.</p>
+<p>If <em>type=savevg</em> it specifies the vgname.data file.</p>
+<p>Can be used if <em>action=restore</em>.</p>
+</dd>
+<dt>create_data_file (optional, str, no)</dt><dd><p>Specifies to create the data file containing information on the vloume group, logical volumes, file systems and their sizes.</p>
 <p>If <em>volume_group=rootvg</em>, then data file will be in <code class="docutils literal notranslate"><span class="pre">/image.data</span></code>.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">volume_group</span></code> is a data volume group, data file will be in <code class="docutils literal notranslate"><span class="pre">/tmp/vgdata/vgname/vgname.data</span></code>.</p>
 <p>Specify <em>create_data_file=mapfile</em> to creates the MAPFILE containing the mapping of the logical to physical partitions for each logical volume in the volume group. This mapping can be used to allocate the same logical-to-physical mapping when the image is restored.</p>
@@ -285,6 +299,20 @@
 <dt>exclude_fs (optional, path, None)</dt><dd><p>Specifies a file path that contains the list of file systems to exclude from the backup.</p>
 <p>One file system mount point is listed per line.</p>
 <p>Can be used if <em>action=create</em>.</p>
+</dd>
+<dt>remain_nim_client (optional, bool, False)</dt><dd><p>Specifies to remains NIM client after the mksysb installation.</p>
+<p>The /.rhosts and /etc/niminfo files are copied to the alternate rootvg’s file system.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
+</dd>
+<dt>import_vg (optional, bool, False)</dt><dd><p>Specifies to look for and import volume groupe found in mksysb backup image.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
+</dd>
+<dt>debug (optional, bool, False)</dt><dd><p>Specifies the debug mode (that is the set -x output).</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
+</dd>
+<dt>bootlist (optional, bool, True)</dt><dd><p>Specifies to run the bootlist command after the mksysb installation.</p>
+<p>Cannot be used if <em>flags</em> contains the <code class="docutils literal notranslate"><span class="pre">-r</span></code> flag.</p>
+<p>Can be used if <em>action=restore</em> or <em>type=mksysb</em>.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Specifies to overwrite existing backup image.</p>
 <p>Can be used if <em>action=create</em> and <em>type=savevg</em>.</p>
@@ -301,7 +329,7 @@
 <p>Can be used if <em>action=create</em>.</p>
 </dd>
 <dt>extend_fs (optional, bool, False)</dt><dd><p>Specifies to extend the filesystem if needed.</p>
-<p>Can be used if <em>action=create</em> and <em>type=savevg</em>.</p>
+<p>Can be used if <em>action=create</em>.</p>
 </dd>
 <dt>minimize_lv_size (optional, bool, False)</dt><dd><p>Specifies to create the logical volumes with minimum size possible to accomodate the file system.</p>
 <p>Can be used if <em>action=restore</em> and <em>type=savevg</em>.</p>
@@ -317,6 +345,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">restore</span></code> <code class="docutils literal notranslate"><span class="pre">mksysb</span></code> operation can be long, one can use the default log file /var/adm/ras/alt_disk_inst.log to track progress.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">savevg</span></code> only backs up varied-on volume group. The file systems must be mounted.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">savevg</span></code> backs up all logical volume information and will be recreated. However, only JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up using a savevg.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">savevg</span></code> only backs up varied-on volume group. The file systems must be mounted.</p></li>
@@ -325,7 +354,23 @@
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">savevg of rootvg to /dev/hdisk1</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">backup the rootvg with mksysb</span>
+  <span class="nt">backup</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">create</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mksysb</span>
+    <span class="nt">location</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/backup_rootvg</span>
+    <span class="nt">exclude_files</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">false</span>
+    <span class="nt">extend_fs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">install the mksysb image to /dev/hdisk1 using the 64 bits kernel if possible</span>
+  <span class="nt">backup</span><span class="p">:</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">restore</span>
+    <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mksysb</span>
+    <span class="nt">location</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/ESSAI/backup_datavg</span>
+    <span class="nt">disk</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/hdisk1</span>
+    <span class="nt">flags</span><span class="p">:</span> <span class="s">&#39;-K&#39;</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">savevg of rootvg to /dev/hdisk1</span>
   <span class="nt">backup</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">create</span>
     <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">savevg</span>
@@ -371,6 +416,8 @@
 <h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt>msg (always, str, AIX create backup operation successfull.)</dt><dd><p>The execution message.</p>
+</dd>
+<dt>cmd (when the command is run., str, /bin/restvg -f /dev/rmt0 -l)</dt><dd><p>The command executed.</p>
 </dd>
 <dt>stdout (always, str, hdisk1 lv00 x           11 ./tmp/vgdata/datavg/image.info x          127 ./tmp/vgdata/vgdata.files11928014 x          127 ./tmp/vgdata/vgdata.files x         2320 ./tmp/vgdata/datavg/filesystems x         1530 ./tmp/vgdata/datavg/datavg.data x          278 ./tmp/vgdata/datavg/backup.data total size: 4393)</dt><dd><p>The standard output of the command.</p>
 </dd>

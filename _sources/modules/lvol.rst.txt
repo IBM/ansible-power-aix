@@ -1,0 +1,157 @@
+.. _lvol_module:
+
+
+lvol -- Create/Delete logical volume or change characteristics of logical volume on AIX
+=======================================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates the creation of a new logical volume with provided characteristics, the modification of characteristics of existing logical volume and its deletion.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  state (True, str, None)
+    Specifies the action to be performed for the logical volume.
+
+    ``present`` to create logical volume with *lv_attributes* in the system. If volume is already present then attributes specified for the volume will be changed with the provided attributes.
+
+    ``absent`` to delete logial volume with provided *name*. If volume is not present then message will be displayed for the same.
+
+
+  lv (True, str, None)
+    Logical volume name should be specified for which the action is to taken while removing or modifying
+
+
+  vg (True, str, None)
+    The volume group of the concerned logical volume.
+
+
+  lv_type (optional, str, jfs2)
+    Type of the logical volume.
+
+
+  size (optional, str, None)
+    Size of the concerned logical volume. Please check the valid sizes for mklv and chlv commands.
+
+
+  extra_opts (optional, str, None)
+    Any other options to be passed by the user to mklv or chlv command
+
+
+  copies (optional, int, 1)
+    Specifies number of copies of logical volume
+
+    Maximum value allowed is 3
+
+
+  num_of_logical_partitions (optional, int, 1)
+    Specifies the number of logical partitions
+
+
+  policy (optional, str, maximum)
+    Sets the inter-physical volume allocation policy
+
+    ``maximum`` Allocates across the maximum number of physical volumes.
+
+    ``minimum`` Allocates logical partitions across the minimum number of physical volumes.
+
+
+  lv_new_name (optional, str, None)
+    New name of the logical volume if user wants to change the name of existing logical volume.
+
+
+  phy_vol_list (optional, list, None)
+    List of pysical volumes.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Create a logical volume of 64M
+      lvol:
+        vg: test1vg
+        lv: test1lv
+        size: 64M
+    - name: Create a logical volume of 32M with disks testdisk1 and testdisk2
+      lvol:
+        vg: test2vg
+        lv: test2lv
+        size: 32M
+        pvs: [ testdisk1, testdisk2 ]
+    - name: Create a logical volume of 32M with a minimum placement policy
+      lvol:
+        vg: rootvg
+        lv: test4lv
+        size: 32M
+        policy: minimum
+    - name: Create a logical volume with extra options like mirror pool
+      lvol:
+        vg: testvg
+        lv: testlv
+        size: 128M
+        extra_opts: -p copy1=poolA -p copy2=poolB
+    - name: Remove the logical volume
+      lvol:
+        vg: test1vg
+        lv: test1lv
+        state: absent
+
+
+
+Return Values
+-------------
+
+msg (always, str, Logical volume is created SUCCESSFULLY: test1lv)
+  The execution message along with return code, output/error
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX development Team (@pbfinley1911)
+

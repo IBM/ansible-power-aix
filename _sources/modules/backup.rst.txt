@@ -39,7 +39,7 @@ Parameters
 
     ``restore`` to restore a backup image.
 
-    ``view`` to get useful information about a backup image; can be used only for *type=savevg*
+    ``view`` to get useful information about a backup image.
 
 
   type (optional, str, savevg)
@@ -67,6 +67,10 @@ Parameters
   flags (optional, str, None)
     Specifies additional flag to pass to the command. Refers to IBM documentation for details.
 
+    For *action=create* and *type=mksysb*, you could use ``-a -A -b number -F filename -G|-N -M -P -t path -T -V -Z``.
+
+    For *action=restore* and *type=mksysb*, you could use ``-p platform -L mksysb_level -c console -K -O -g -k -r -z -T -S -C``.
+
     For *action=create* and *type=savevg*, you could use ``-a -A -b Blocks -p -T -V -Z``.
 
     For *action=restore* and *type=savevg*, you could use ``-b Blocks -n -P PPsize``.
@@ -75,28 +79,48 @@ Parameters
   location (optional, path, None)
     Specifies the location of the backup files. It can be a device or file path.
 
-    When *type=savevg*, the default device is ``/dev/rmt0``.
+    When *type=savevg* or *action=view*, the default device is ``/dev/rmt0``.
 
     Required if *action=view* or *type=mksysb*.
 
 
   disk (optional, list, None)
-    Specifies the name or names of the target disks where the alternate rootvg is created.
+    Specifies the name or names of the target disk(s) where the alternate rootvg is created.
 
     This disk or these disks must not currently contain any volume group definition.
 
     Required if *action=restore* and *type=mksysb*.
 
 
+  script (optional, path, None)
+    Specifies the full path of a customiation script file to run at the end of the mksysb installation.
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
+  resolv_conf (optional, path, None)
+    Specifies the full path of a alternate resolv.conf file to replace the existing one after the mksysb installation.
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
+  phase (optional, str, None)
+    Specifies the phase(s) to execute during the invocation of the alt_disk_mksysb command.
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
   data_file (optional, path, None)
-    Specifies a filename to be used as the vgname.data file instead of the one contained within the backup image being restored.
+    Specifies a full path filename to use instead of the one from the image being restored.
 
-    The filename can be specified by either a relative or an absolute pathname.
+    If *type=mksysb* it specifies the image.data file.
 
-    Can be used if *type=savevg* and *action=restore*.
+    If *type=savevg* it specifies the vgname.data file.
+
+    Can be used if *action=restore*.
 
 
-  create_data_file (optional, str, False)
+  create_data_file (optional, str, no)
     Specifies to create the data file containing information on the vloume group, logical volumes, file systems and their sizes.
 
     If *volume_group=rootvg*, then data file will be in ``/image.data``.
@@ -114,6 +138,34 @@ Parameters
     One file system mount point is listed per line.
 
     Can be used if *action=create*.
+
+
+  remain_nim_client (optional, bool, False)
+    Specifies to remains NIM client after the mksysb installation.
+
+    The /.rhosts and /etc/niminfo files are copied to the alternate rootvg's file system.
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
+  import_vg (optional, bool, False)
+    Specifies to look for and import volume groupe found in mksysb backup image.
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
+  debug (optional, bool, False)
+    Specifies the debug mode (that is the set -x output).
+
+    Can be used if *action=restore* or *type=mksysb*.
+
+
+  bootlist (optional, bool, True)
+    Specifies to run the bootlist command after the mksysb installation.
+
+    Cannot be used if *flags* contains the ``-r`` flag.
+
+    Can be used if *action=restore* or *type=mksysb*.
 
 
   force (optional, bool, False)
@@ -147,7 +199,7 @@ Parameters
   extend_fs (optional, bool, False)
     Specifies to extend the filesystem if needed.
 
-    Can be used if *action=create* and *type=savevg*.
+    Can be used if *action=create*.
 
 
   minimize_lv_size (optional, bool, False)
@@ -169,6 +221,7 @@ Notes
 -----
 
 .. note::
+   - ``restore`` ``mksysb`` operation can be long, one can use the default log file /var/adm/ras/alt_disk_inst.log to track progress.
    - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
    - ``savevg`` backs up all logical volume information and will be recreated. However, only JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up using a savevg.
    - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
@@ -182,6 +235,22 @@ Examples
 .. code-block:: yaml+jinja
 
     
+    - name: backup the rootvg with mksysb
+      backup:
+        action: create
+        type: mksysb
+        location: /tmp/backup_rootvg
+        exclude_files: false
+        extend_fs: yes
+
+    - name: install the mksysb image to /dev/hdisk1 using the 64 bits kernel if possible
+      backup:
+        action: restore
+        type: mksysb
+        location: /ESSAI/backup_datavg
+        disk: /dev/hdisk1
+        flags: '-K'
+
     - name: savevg of rootvg to /dev/hdisk1
       backup:
         action: create
@@ -229,6 +298,10 @@ Return Values
 
 msg (always, str, AIX create backup operation successfull.)
   The execution message.
+
+
+cmd (when the command is run., str, /bin/restvg -f /dev/rmt0 -l)
+  The command executed.
 
 
 stdout (always, str, hdisk1 lv00 x           11 ./tmp/vgdata/datavg/image.info x          127 ./tmp/vgdata/vgdata.files11928014 x          127 ./tmp/vgdata/vgdata.files x         2320 ./tmp/vgdata/datavg/filesystems x         1530 ./tmp/vgdata/datavg/datavg.data x          278 ./tmp/vgdata/datavg/backup.data total size: 4393)

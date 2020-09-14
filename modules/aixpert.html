@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim_vios_hc – Check if a pair of VIOSes can be updated &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>aixpert – Apply/Check/Save/Undo/Query security settings &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" href="nim_viosupgrade.html" />
-    <link rel="prev" title="nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk" href="nim_vios_alt_disk.html" /> 
+    <link rel="next" title="alt_disk – Create/Cleanup an alternate rootvg disk" href="alt_disk.html" />
+    <link rel="prev" title="Modules" href="../modules.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,7 +93,15 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – Apply/Check/Save/Undo/Query security settings</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">aixpert – Apply/Check/Save/Undo/Query security settings</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
@@ -114,16 +122,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_vios_hc – Check if a pair of VIOSes can be updated</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
@@ -194,14 +193,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim_vios_hc – Check if a pair of VIOSes can be updated</li>
+      <li>aixpert – Apply/Check/Save/Undo/Query security settings</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim_vios_hc.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/aixpert.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -215,81 +214,83 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated">
-<span id="nim-vios-hc-module"></span><h1>nim_vios_hc – Check if a pair of VIOSes can be updated<a class="headerlink" href="#nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="aixpert-apply-check-save-undo-query-security-settings">
+<span id="aixpert-module"></span><h1>aixpert – Apply/Check/Save/Undo/Query security settings<a class="headerlink" href="#aixpert-apply-check-save-undo-query-security-settings" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Check if a pair of Virtual I/O Servers can be updated.</p>
+<p>This module facilitates a. Application of security rules on the system using aixpert b. Checking of security settings c. Undo of the previously applied set of security rules d. Saving of security rules in normal or abbreviated mode.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX &gt;= 7.1 TL3</p></li>
+<li><p>AIX</p></li>
 <li><p>Python &gt;= 2.7</p></li>
+<li><p>Should be run as ‘root’ user</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>action (True, str, None)</dt><dd><p>Specifies the operation to perform.</p>
-<p><code class="docutils literal notranslate"><span class="pre">health_check</span></code> to perform a health check.</p>
+<dt>mode (True, str, None)</dt><dd><p>Specifies the action to be performed <em>mode=apply</em>, applies the security settings based on the level specified or profile provided. If both are provided, ‘level’ will take precedence. <em>mode=check</em>, checks the security settings against the previously applied set of rules or the provided ‘profile’ file <em>mode=save</em>, saves the security settings for the level specified or based on the specified ‘profile’ file. - If <em>abbr_fmt_file</em>, is provided, the security rules are saved in the abbreviated file format. - If <em>norm_fmt_file</em> is provided, the security rules are saved in normal format. <em>mode=undo</em>, undoes the previously applied security settings. <em>mode=query</em>, get the type of the profile applied on the system.</p>
 </dd>
-<dt>targets (True, list, None)</dt><dd><p>NIM target.</p>
-<p>To perform a health check on dual VIOSes specify a tuple with the following format: “vios1,vios2”.</p>
+<dt>level (optional, str, None)</dt><dd><p>Specifies the security level settings to be applied or saved. <em>high</em> - Specifies high-level security options <em>low</em> - Specifies low-level security options. <em>medium</em> - Specifies medium-level security options. <em>default</em> - Specifies AIX® standards-level security options. <em>sox-cobit</em> - Specifies SOX-COBIT best practices-level security options.</p>
 </dd>
-<dt>vars (optional, dict, None)</dt><dd><p>Specifies additional parameters.</p>
+<dt>profile (optional, str, None)</dt><dd><p>When <em>mode=apply</em>, specifies the profile to be applied on the system</p>
+<p>When <em>mode=check</em>, specified the profile to be used to check the security settings.</p>
+</dd>
+<dt>abbr_fmt_file (optional, str, None)</dt><dd><p>When <em>mode=save</em> or <em>mode=apply</em>, specifies the file where the security settings needs to be saved in abbreviated format.</p>
+</dd>
+<dt>norm_fmt_file (optional, str, None)</dt><dd><p>When <em>mode=apply</em> or <em>mode=save</em>, specifies the file where the settings should be saved in normal format.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
-<div class="section" id="notes">
-<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p>Use the <code class="docutils literal notranslate"><span class="pre">power_aix_vioshc</span></code> role to install the required <code class="docutils literal notranslate"><span class="pre">vioshc.py</span></code> script on the NIM master.</p></li>
-</ul>
-</div>
-</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a health check on dual VIOSes vios1,vios2 and on VIOS vios3</span>
-  <span class="nt">nim_vios_hc</span><span class="p">:</span>
-    <span class="nt">targets</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios1,vios2</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios3</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">health_check</span>
+<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;Save</span><span class="nv"> </span><span class="s">default</span><span class="nv"> </span><span class="s">level</span><span class="nv"> </span><span class="s">rules</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">normal</span><span class="nv"> </span><span class="s">format&quot;</span>
+  <span class="nt">aixpert</span><span class="p">:</span>
+     <span class="nt">mode</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">save</span>
+     <span class="nt">level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
+     <span class="nt">norm_fmt_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/kavana/norm.xml</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;Apply</span><span class="nv"> </span><span class="s">using</span><span class="nv"> </span><span class="s">saved</span><span class="nv"> </span><span class="s">profile&quot;</span>
+  <span class="nt">aixpert</span><span class="p">:</span>
+     <span class="nt">mode</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">apply</span>
+     <span class="nt">profile</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home/kavana/norm.xml</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;Undo</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">settings&quot;</span>
+  <span class="nt">aixpert</span><span class="p">:</span>
+     <span class="nt">mode</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">undo</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, )</dt><dd><p>Status information.</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-<dt>targets (always, list, )</dt><dd><p>List of VIOS tuples.</p>
+<dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
-<dt>nim_node (always, dict, )</dt><dd><p>NIM node info.</p>
+<dt>stdout (If the command failed., str, )</dt><dd><p>The standard output.</p>
 </dd>
-<dt>status (always, dict, )</dt><dd><p>Status for each VIOS (dictionary key).</p>
+<dt>stderr (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -311,10 +312,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_viosupgrade.html" class="btn btn-neutral float-right" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="alt_disk.html" class="btn btn-neutral float-right" title="alt_disk – Create/Cleanup an alternate rootvg disk" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_vios_alt_disk.html" class="btn btn-neutral float-left" title="nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
