@@ -24,6 +24,24 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 options:
+  action:
+    description:
+    - Specifies the action to perform.
+    - C(add) to add filter rules.
+    - C(check) to check the syntax of filter rules.
+    - C(move) to move a filter rule.
+    - C(change) to change a filter rule.
+    - C(import) to import filter rules from an export file.
+    - C(export) to export filter rules to an export file.
+    type: str
+    choices: [ add, check, move, change, import, export ]
+    default: add
+  directory:
+    description:
+    - When I(action=import) or I(action=export), specifies the directory where
+      the text files are to be read.
+    - When I(action=export), directory will be created if it does not exist.
+    type: str
   ipv4:
     description:
     - Specifies the IPv4 filter module state and rules.
@@ -286,17 +304,17 @@ def list_rules(module, version):
         if fields[7] == 'icmp':
             if fields[8] != 'any':
                 rule['icmp_type_opr'] = fields[8]
-            rule['icmp_type'] = fields[9]
+                rule['icmp_type'] = fields[9]
             if fields[10] != 'any':
                 rule['icmp_code_opr'] = fields[10]
-            rule['icmp_code'] = fields[11]
+                rule['icmp_code'] = fields[11]
         else:
             if fields[8] != 'any':
                 rule['s_opr'] = fields[8]
-            rule['s_port'] = fields[9]
+                rule['s_port'] = fields[9]
             if fields[10] != 'any':
                 rule['d_opr'] = fields[10]
-            rule['d_port'] = fields[11]
+                rule['d_port'] = fields[11]
         rule['scope'] = fields[12]
         if fields[13] != 'both':
             rule['direction'] = fields[13]
@@ -304,7 +322,8 @@ def list_rules(module, version):
             rule['log'] = True
         if fields[15] != 'all packets':
             rule['fragment'] = fields[15]
-        rule['tunnel'] = fields[16]
+        if fields[16] != '0':
+            rule['tunnel'] = fields[16]
         if fields[17] != 'all':
             rule['interface'] = fields[17]
         if fields[18] != '0':
@@ -378,7 +397,7 @@ def add_rules(module, params, version):
         if rule['icmp_code'] and not rule['d_port']:
             cmd += ['-P', rule['icmp_code']]
 
-        # genfilt -s and -m are mandatory
+        # genfilt -s and -m flags are mandatory
         if rule['s_addr']:
             cmd += ['-s', rule['s_addr']]
         elif version == 'ipv4':
@@ -388,10 +407,15 @@ def add_rules(module, params, version):
         if rule['s_mask']:
             cmd += ['-m', rule['s_mask']]
         elif version == 'ipv4':
-            cmd += ['-m', '0.0.0.0']
+            if rule['s_addr']:
+                cmd += ['-m', '255.255.255.255']
+            else:
+                cmd += ['-m', '0.0.0.0']
         else:
-            cmd += ['-m', '0']
-
+            if rule['s_addr']:
+                cmd += ['-m', '128']
+            else:
+                cmd += ['-m', '0']
         if rule['s_opr']:
             cmd += ['-o', rule['s_opr']]
         if rule['s_port']:
@@ -399,8 +423,15 @@ def add_rules(module, params, version):
 
         if rule['d_addr']:
             cmd += ['-d', rule['d_addr']]
-            if rule['d_mask']:
-                cmd += ['-M', rule['d_mask']]
+        if rule['d_mask']:
+            cmd += ['-M', rule['d_mask']]
+        elif version == 'ipv4':
+            # If -M not specified, it would be set to 255.255.255.255
+            if not rule['d_addr']:
+                cmd += ['-M', '0.0.0.0']
+        else:
+            if not rule['d_addr']:
+                cmd += ['-M', '0']
         if rule['d_opr']:
             cmd += ['-O', rule['d_opr']]
         if rule['d_port']:
@@ -441,7 +472,7 @@ def add_rules(module, params, version):
             results['msg'] = 'Could not add rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
 
-    # Should we call check_filt here?
+    # Should we call ckfilt here?
 
     # Activate the rules
     cmd = ['mkfilt', vopt, '-u']
@@ -466,14 +497,13 @@ def add_rules(module, params, version):
     return True
 
 
-def import_filt(module, version):
+def import_rules(module, params):
     """
     Imports filter rules from an export file.
     """
     global results
 
-    vopt = '-v4' if version == 'ipv4' else '-v6'
-    cmd = ['impfilt', vopt]
+    cmd = ['impfilt', '-f', params['directory']]
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -482,14 +512,13 @@ def import_filt(module, version):
         module.fail_json(**results)
 
 
-def export_filt(module, version):
+def export_rules(module, params):
     """
     Exports filter rules to an export file.
     """
     global results
 
-    vopt = '-v4' if version == 'ipv4' else '-v6'
-    cmd = ['expfilt', vopt]
+    cmd = ['expfilt', '-f', params['directory']]
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -498,14 +527,13 @@ def export_filt(module, version):
         module.fail_json(**results)
 
 
-def check_filt(module, version):
+def check_rules(module):
     """
     Checks the syntax of filter rules.
     """
     global results
 
-    vopt = '-v4' if version == 'ipv4' else '-v6'
-    cmd = ['ckfilt', vopt]
+    cmd = ['ckfilt']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -608,9 +636,15 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
+            action=dict(type='str', choices=['add', 'check', 'move', 'change', 'import', 'export'], default='add'),
+            directory=dict(type='str'),
             ipv4=ipcommon,
             ipv6=ipcommon
-        )
+        ),
+        required_if=[
+            ['action', 'import', ['directory']],
+            ['action', 'export', ['directory']],
+        ]
     )
 
     results = dict(
