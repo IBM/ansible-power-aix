@@ -29,12 +29,11 @@ options:
     - Specifies the action to perform.
     - C(add) to add filter rules.
     - C(check) to check the syntax of filter rules.
-    - C(move) to move a filter rule.
     - C(change) to change a filter rule.
     - C(import) to import filter rules from an export file.
     - C(export) to export filter rules to an export file.
     type: str
-    choices: [ add, check, move, change, import, export ]
+    choices: [ add, check, change, import, export ]
     default: add
   directory:
     description:
@@ -78,11 +77,15 @@ options:
             description:
             - Specifies the action to perform.
             type: str
-            choices: [ permit, deny, shun_host, shun_port, if, else, endif, remove ]
+            choices: [ permit, deny, shun_host, shun_port, if, else, endif, remove, move ]
           id:
             description:
             - Specifies the filter rule ID.
             - C(all) specifies to remove all user-defined filter rules.
+            type: str
+          new_id:
+            description:
+            - When I(action=move), specifies the new filter rule ID.
             type: str
           direction:
             description:
@@ -412,7 +415,7 @@ def add_change_rules(module, params, version):
             cmd += ['-aE']
         elif rule['action'] == 'remove':
             if not rule['id']:
-                results['msg'] = 'Could not remove rule without rule id'
+                results['msg'] = 'action remove requires id'
                 module.fail_json(**results)
             cmd = ['rmfilt', vopt, '-n', rule['id']]
             if params[version]['force']:
@@ -422,6 +425,19 @@ def add_change_rules(module, params, version):
                 results['stdout'] = stdout
                 results['stderr'] = stderr
                 results['msg'] = 'Could not remove rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+                module.fail_json(**results)
+            results['changed'] = True
+            continue
+        elif rule['action'] == 'move':
+            if not rule['id'] or not rule['new_id']:
+                results['msg'] = 'action move requires id and new_id'
+                module.fail_json(**results)
+            cmd = ['mvfilt', vopt, '-p', rule['id'], '-n', rule['new_id']]
+            ret, stdout, stderr = module.run_command(cmd)
+            if ret != 0:
+                results['stdout'] = stdout
+                results['stderr'] = stderr
+                results['msg'] = 'Could not move rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
             continue
@@ -606,23 +622,6 @@ def check_rules(module):
         module.fail_json(**results)
 
 
-def move_rule(module, version):
-    """
-    Moves a filter rule.
-    """
-    global results
-
-    vopt = '-v4' if version == 'ipv4' else '-v6'
-    cmd = ['mvfilt', vopt]
-    ret, stdout, stderr = module.run_command(cmd)
-    if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
-    results['changed'] = True
-
-
 def make_devices(module):
     """
     Make sure ipsec_v4 and ipsec_v6 devices are Available.
@@ -653,8 +652,9 @@ def main():
             rules=dict(
                 type='list', elements='dict',
                 options=dict(
-                    action=dict(type='str', choices=['permit', 'deny', 'shun_host', 'shun_port', 'if', 'else', 'endif', 'remove']),
+                    action=dict(type='str', choices=['permit', 'deny', 'shun_host', 'shun_port', 'if', 'else', 'endif', 'remove', 'move']),
                     id=dict(type='str'),
+                    new_id=dict(type='str'),
                     direction=dict(type='str', choices=['inbound', 'outbound', 'both'], default='both'),
                     s_addr=dict(type='str'),
                     s_mask=dict(type='str'),
@@ -687,7 +687,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', choices=['add', 'check', 'move', 'change', 'import', 'export'], default='add'),
+            action=dict(type='str', choices=['add', 'check', 'change', 'import', 'export'], default='add'),
             directory=dict(type='str'),
             rawexport=dict(type='bool', default=False),
             ipv4=ipcommon,
