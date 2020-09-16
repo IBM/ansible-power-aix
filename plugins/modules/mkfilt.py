@@ -366,7 +366,10 @@ def list_rules(module, version):
     return rules
 
 
-def add_rules(module, params, version):
+def add_change_rules(module, params, version):
+    """
+    Adds a new filter rule or changes an existing one.
+    """
     global results
 
     vopt = '-v4' if version == 'ipv4' else '-v6'
@@ -376,9 +379,17 @@ def add_rules(module, params, version):
     if 'rules' not in params[version]:
         return True
 
-    # Add rules
+    # Add or change rules
     for rule in params[version]['rules']:
-        cmd = ['genfilt', vopt]
+        if params['action'] == 'change':
+            cmd = ['chfilt']
+            if not rule['id']:
+                results['msg'] = 'Could not change rule without rule id'
+                module.fail_json(**results)
+        else:
+            cmd = ['genfilt']
+        cmd += [vopt]
+
         if rule['action'] == 'permit':
             cmd += ['-aP']
         elif rule['action'] == 'deny':
@@ -705,14 +716,16 @@ def main():
 
     make_devices(module)
 
-    if module.params['action'] == 'add':
-        add_rules(module, module.params, 'ipv4')
-        add_rules(module, module.params, 'ipv6')
-    elif module.params['action'] == 'import':
+    action = module.params['action']
+
+    if action == 'add' or action == 'change':
+        add_change_rules(module, module.params, 'ipv4')
+        add_change_rules(module, module.params, 'ipv6')
+    elif action == 'import':
         import_rules(module, module.params)
-    elif module.params['action'] == 'export':
+    elif action == 'export':
         export_rules(module, module.params)
-    elif module.params['action'] == 'check':
+    elif action == 'check':
         check_rules(module)
 
     results['filter'] = {}
