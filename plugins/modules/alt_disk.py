@@ -51,6 +51,33 @@ options:
     - Forces removal of any existing alternate disk copy on target disks.
     type: bool
     default: no
+  bootlist:
+    description:
+    - When I(action=copy), specifies to run bootlist after the alternate disk copy.
+    type: bool
+    default: no
+  remain_nim_client:
+    description:
+    - When I(action=copy), specifies to copy the C(/.rhosts) and C(/etc/niminfo) files
+      to the alternate rootvg.
+    type: bool
+    default: no
+  device_reset:
+    description:
+    - When I(action=copy), specifies to reset any user-defined device configurations
+      on the target C(altinst_rootvg).
+    type: bool
+    default: no
+  first_boot_script:
+    description:
+    - When I(action=copy), specifies an optional customization script to run during
+      the initial boot of the alternate rootvg, after all file systems are mounted.
+    type: str
+  resolvconf:
+    description:
+    - When I(action=copy), specifies the C(resolv.conf) file to replace the existing
+      one after the rootvg has been cloned.
+    type: str
 notes:
   - M(alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
@@ -393,7 +420,7 @@ def check_rootvg(module):
     return vg_info
 
 
-def alt_disk_copy(module, hdisks, disk_size_policy, force):
+def alt_disk_copy(module, params, hdisks):
     """
     alt_disk_copy operation
 
@@ -404,7 +431,7 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
 
     # Either hdisks must be non-empty or disk_size_policy must be
     # explicitly set. This ensures the user knows what he is doing.
-    if not hdisks and not disk_size_policy:
+    if not hdisks and not params['disk_size_policy']:
         results['msg'] = 'Either targets or disk_size_policy must be specified'
         module.fail_json(**results)
 
@@ -414,19 +441,29 @@ def alt_disk_copy(module, hdisks, disk_size_policy, force):
 
     if hdisks is None:
         hdisks = []
-    find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force)
+    find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'], params['force'])
 
     module.log('Using {0} as alternate disks'.format(hdisks))
 
     # alt_disk_copy
-    cmd = ['alt_disk_copy', '-B', '-d', ' '.join(hdisks)]
+    cmd = ['alt_disk_copy', '-d', ' '.join(hdisks)]
+    if not params['bootlist']:
+        cmd += ['-B']
+    if params['remain_nim_client']:
+        cmd += ['-n']
+    if params['device_reset']:
+        cmd += ['-O']
+    if params['first_boot_script']:
+        cmd += ['-x', params['first_boot_script']]
+    if params['resolvconf']:
+        cmd += ['-R', params['resolvconf']]
 
     ret, stdout, stderr = module.run_command(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
 
     if ret != 0:
-        # an error occured during alt_root_vg
+        # an error occured during alt_disk_copy
         results['msg'] = 'Failed to copy {0}: return code {1}.'.format(' '.join(hdisks), ret)
         module.fail_json(**results)
     results['changed'] = True
@@ -500,6 +537,11 @@ def main():
             disk_size_policy=dict(type='str',
                                   choices=['minimize', 'upper', 'lower', 'nearest']),
             force=dict(type='bool', default=False),
+            bootlist=dict(type='bool', default=False),
+            remain_nim_client=dict(type='bool', default=False),
+            device_reset=dict(type='bool', default=False),
+            first_boot_script=dict(type='str'),
+            resolvconf=dict(type='str'),
         ),
         mutually_exclusive=[
             ['targets', 'disk_size_policy']
@@ -522,11 +564,9 @@ def main():
 
     action = module.params['action']
     targets = module.params['targets']
-    disk_size_policy = module.params['disk_size_policy']
-    force = module.params['force']
 
     if action == 'copy':
-        alt_disk_copy(module, targets, disk_size_policy, force)
+        alt_disk_copy(module, module.params, targets)
     else:
         alt_disk_clean(module, targets)
 
