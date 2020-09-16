@@ -163,6 +163,11 @@ options:
           fragment:
             description:
             - Specifies the fragmentation control.
+            - C(Y) specifies all packets.
+            - C(N) specifies unfragmented packets only.
+            - C(O) specifies fragments and fragment headers only.
+            - C(H) specifies fragment headers and unfragmented packets only.
+            choices: [ Y, N, O, H ]
             type: str
           timeout:
             description:
@@ -189,11 +194,22 @@ options:
             - Specifies whether the rule will apply to forwarded packets, packets
               destined or originated from the local host, or both.
             type: str
-            choices: [ forwarded, local, both ]
+            choices: [ route, local, both ]
           antivirus:
             description:
             - Specifies the antivirus file name.
             - Understands some versions of ClamAV Virus Database.
+            - Mutually exclusive with I(pattern) and I(pattern_filename).
+            type: str
+          pattern:
+            description:
+            - Specifies the quoted character string or pattern.
+            - Mutually exclusive with I(antivirus) and I(pattern_filename).
+            type: str
+          pattern_filename:
+            description:
+            - Specifies the pattern file name.
+            - Mutually exclusive with I(antivirus) and I(pattern).
             type: str
   ipv6:
     description:
@@ -225,6 +241,7 @@ EXAMPLES = r'''
 - name: Remove all user-defined and auto-generated filter rules
   mkfilt:
     ipv4:
+      default: permit
       force: yes
       rules:
       - action: remove
@@ -286,6 +303,9 @@ def list_rules(module, version):
         rule['id'] = fields[0]
         rule['action'] = fields[1]
 
+        # For more readability of the JSON output, we do not report fields
+        # that are set to the default value.
+
         if (version == 'ipv4' and fields[2] != '0.0.0.0') or (version == 'ipv6' and fields[2] != '::'):
             rule['s_addr'] = fields[2]
         # Mask or prefix length
@@ -315,20 +335,31 @@ def list_rules(module, version):
             if fields[10] != 'any':
                 rule['d_opr'] = fields[10]
                 rule['d_port'] = fields[11]
-        rule['scope'] = fields[12]
+        if fields[12] != 'both':
+            rule['routing'] = fields[12]
         if fields[13] != 'both':
             rule['direction'] = fields[13]
         if fields[14] == 'yes':
             rule['log'] = True
         if fields[15] != 'all packets':
-            rule['fragment'] = fields[15]
+            if fields[15] == 'unfragmented packets only':
+                rule['fragment'] = 'N'
+            elif fields[15] == 'fragments and fragment headers only':
+                rule['fragment'] = 'O'
+            elif fields[15] == 'fragment headers and unfragmented packets only':
+                rule['fragment'] = 'H'
         if fields[16] != '0':
             rule['tunnel'] = fields[16]
         if fields[17] != 'all':
             rule['interface'] = fields[17]
         if fields[18] != '0':
             rule['timeout'] = fields[18]
-        # XXX missing fields? routing? antivirus? pattern?
+        if fields[19] == 'Anti-Virus Patterns':
+            rule['antivirus'] = fields[20]
+        elif fields[19] == 'Pattern':
+            rule['pattern'] = fields[20]
+        elif fields[19] == 'Pattern File':
+            rule['pattern_filename'] = fields[20]
         rule['description'] = fields[21]
         rules += [rule]
 
@@ -340,7 +371,7 @@ def add_rules(module, params, version):
 
     vopt = '-v4' if version == 'ipv4' else '-v6'
 
-    if version not in params:
+    if not params[version]:
         return True
     if 'rules' not in params[version]:
         return True
@@ -375,6 +406,7 @@ def add_rules(module, params, version):
                 results['stderr'] = stderr
                 results['msg'] = 'Could not remove rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
+            results['changed'] = True
             continue
 
         if rule['id']:
@@ -451,7 +483,7 @@ def add_rules(module, params, version):
             cmd += ['-gN']
 
         if rule['routing']:
-            if rule['routing'] == 'forwarded':
+            if rule['routing'] == 'route':
                 cmd += ['-rR']
             elif rule['routing'] == 'local':
                 cmd += ['-rL']
@@ -460,8 +492,14 @@ def add_rules(module, params, version):
 
         if rule['tunnel']:
             cmd += ['-t', rule['tunnel']]
+
         if rule['antivirus']:
             cmd += ['-C', rule['antivirus']]
+        elif rule['pattern']:
+            cmd += ['-x', rule['pattern']]
+        elif rule['pattern_filename']:
+            cmd += ['-X', rule['pattern_filename']]
+
         if rule['log']:
             cmd += ['-lY']
 
@@ -471,13 +509,16 @@ def add_rules(module, params, version):
             results['stderr'] = stderr
             results['msg'] = 'Could not add rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
-
-    # Should we call ckfilt here?
+        results['changed'] = True
 
     # Activate the rules
     cmd = ['mkfilt', vopt, '-u']
-    if 'default' in params[version] and params[version]['default'] == 'deny':
-        cmd += ['-zD']
+    if params[version]['default'] is not None:
+        # Change the default rule
+        if params[version]['default'] == 'deny':
+            cmd += ['-zD']
+        else:
+            cmd += ['-zP']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -485,14 +526,17 @@ def add_rules(module, params, version):
         results['msg'] = 'Could not activate filter: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
-    if params[version]['log']:
-        cmd = ['mkfilt', vopt, '-g', 'start']
+    if params[version]['log'] is not None:
+        # Change the log setting of the filter rule module
+        logaction = 'start' if params[version]['log'] else 'stop'
+        cmd = ['mkfilt', vopt, '-g', logaction]
         ret, stdout, stderr = module.run_command(cmd)
         if ret != 0:
             results['stdout'] = stdout
             results['stderr'] = stderr
-            results['msg'] = 'Could not activate logging: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            results['msg'] = 'Could not change logging: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
+        results['changed'] = True
 
     return True
 
@@ -510,6 +554,7 @@ def import_rules(module, params):
         results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
+    results['changed'] = True
 
 
 def export_rules(module, params):
@@ -535,9 +580,9 @@ def check_rules(module):
 
     cmd = ['ckfilt']
     ret, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
@@ -556,6 +601,7 @@ def move_rule(module, version):
         results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
+    results['changed'] = True
 
 
 def change_rule(module, version):
@@ -572,6 +618,7 @@ def change_rule(module, version):
         results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
+    results['changed'] = True
 
 
 def make_devices(module):
@@ -622,13 +669,15 @@ def main():
                     tunnel=dict(type='str'),
                     log=dict(type='bool'),
                     interface=dict(type='str'),
-                    fragment=dict(type='str'),
+                    fragment=dict(type='str', choices=['Y', 'N', 'O', 'H']),
                     timeout=dict(type='str'),
                     description=dict(type='str'),
                     protocol=dict(type='str'),
                     source_routing=dict(type='bool'),
-                    routing=dict(type='str', choices=['forwarded', 'local', 'both']),
+                    routing=dict(type='str', choices=['route', 'local', 'both']),
                     antivirus=dict(type='str'),
+                    pattern=dict(type='str'),
+                    pattern_filename=dict(type='str'),
                 )
             )
         )
@@ -656,8 +705,15 @@ def main():
 
     make_devices(module)
 
-    add_rules(module, module.params, 'ipv4')
-    # add_rules(module, module.params, 'ipv6')
+    if module.params['action'] == 'add':
+        add_rules(module, module.params, 'ipv4')
+        add_rules(module, module.params, 'ipv6')
+    elif module.params['action'] == 'import':
+        import_rules(module, module.params)
+    elif module.params['action'] == 'export':
+        export_rules(module, module.params)
+    elif module.params['action'] == 'check':
+        check_rules(module)
 
     results['filter'] = {}
     rules = list_rules(module, 'ipv4')
