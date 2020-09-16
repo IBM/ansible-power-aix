@@ -42,6 +42,12 @@ options:
       the text files are to be read.
     - When I(action=export), directory will be created if it does not exist.
     type: str
+  rawexport:
+    description:
+    - When I(action=export), specifies to export filter rules as is and to not
+      reverse direction on rules.
+    type: bool
+    default: no
   ipv4:
     description:
     - Specifies the IPv4 filter module state and rules.
@@ -515,9 +521,9 @@ def add_change_rules(module, params, version):
             cmd += ['-lY']
 
         ret, stdout, stderr = module.run_command(cmd)
+        results['stdout'] += stdout
+        results['stderr'] += stderr
         if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
             results['msg'] = 'Could not add rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
         results['changed'] = True
@@ -531,9 +537,9 @@ def add_change_rules(module, params, version):
         else:
             cmd += ['-zP']
     ret, stdout, stderr = module.run_command(cmd)
+    results['stdout'] += stdout
+    results['stderr'] += stderr
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
         results['msg'] = 'Could not activate filter: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
@@ -542,9 +548,9 @@ def add_change_rules(module, params, version):
         logaction = 'start' if params[version]['log'] else 'stop'
         cmd = ['mkfilt', vopt, '-g', logaction]
         ret, stdout, stderr = module.run_command(cmd)
+        results['stdout'] += stdout
+        results['stderr'] += stderr
         if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
             results['msg'] = 'Could not change logging: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
         results['changed'] = True
@@ -560,9 +566,9 @@ def import_rules(module, params):
 
     cmd = ['impfilt', '-f', params['directory']]
     ret, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
     results['changed'] = True
@@ -575,10 +581,12 @@ def export_rules(module, params):
     global results
 
     cmd = ['expfilt', '-f', params['directory']]
+    if params['rawexport']:
+        cmd += ['-r']
     ret, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
@@ -606,23 +614,6 @@ def move_rule(module, version):
 
     vopt = '-v4' if version == 'ipv4' else '-v6'
     cmd = ['mvfilt', vopt]
-    ret, stdout, stderr = module.run_command(cmd)
-    if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
-    results['changed'] = True
-
-
-def change_rule(module, version):
-    """
-    Changes a filter rule.
-    """
-    global results
-
-    vopt = '-v4' if version == 'ipv4' else '-v6'
-    cmd = ['chfilt', vopt]
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
         results['stdout'] = stdout
@@ -698,6 +689,7 @@ def main():
         argument_spec=dict(
             action=dict(type='str', choices=['add', 'check', 'move', 'change', 'import', 'export'], default='add'),
             directory=dict(type='str'),
+            rawexport=dict(type='bool', default=False),
             ipv4=ipcommon,
             ipv6=ipcommon
         ),
