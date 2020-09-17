@@ -1,0 +1,55 @@
+---
+- name: "Update operation using NIM on VIOS"
+  hosts: nimserver
+  gather_facts: no
+  vars:
+    preview_v:              True
+    # vios_status_v:          {}
+    # vios_nim_node_v:        {}
+    targets_v:              "quimby-vios2"
+    lpp_source_v:           ""
+    rm_filesets_v:          ""
+    rm_installp_bundle_v:   ""
+    accept_licenses_v:      True
+    manage_cluster_v:       False
+    time_limit_v:           "09/30/2020 14:30"
+
+  tasks:
+
+  - name: Update VIOS through the NIM Master
+    nim_updateios:
+      action: install
+      targets: "{{ targets_v }}"
+      manage_cluster: "{{ manage_cluster_v }}"
+      accept_licenses: "{{ accept_licenses_v }}"
+      lpp_source: "{{ lpp_source_v }}"
+      time_limit: "{{ time_limit_v }}"
+      preview: "{{ preview_v }}"
+    register: result
+  - debug: var=result
+
+  - name: Remove a list of filesets from VIOS
+    nim_updateios:
+      action: remove
+      targets: "{{ targets_v }}"
+      filesets_v: "{{ rm_filesets_v }}"
+      #installp_bundle_v: "{{ rm_installp_bundle_v }}"
+      preview: "{{ preview_v }}"
+    register: result
+  - debug: var=result
+
+  - name: Commit all uncommitted filesets on VIOS
+    nim_updateios:
+      action: commit
+      targets: "{{ targets_v }}"
+      preview: "{{ preview_v }}"
+    register: result
+  - debug: var=result
+
+  - name: Cleanup incomplete previous installation from VIOS
+    nim_updateios:
+      action: cleanup
+      targets: "{{ targets_v }}"
+      preview: "{{ preview_v }}"
+    register: result
+  - debug: var=result
