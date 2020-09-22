@@ -50,7 +50,7 @@ options:
         - Describes what action init has to perform with I(name).
         type: str
         required: true
-        choices = [
+        choices: [
                 'boot',
                 'bootwait',
                 'hold',
@@ -137,7 +137,7 @@ def modify_entry(module):
     cmd = 'chitab'
 
     new_entry = name + ":" + runlevel + ":" + action + ":" + command
-    cmd = cmd + " " + ident_opts
+    cmd = cmd + " " + new_entry
 
     rc, stdout, stderr = module.run_command(cmd)
 
