@@ -145,6 +145,7 @@ status:
         <tuple>:
             description:
             - Status of the execution on the <tuple>.
+            - The <tuple> elements are sorted to form the key of the dictionary.
             - I(SKIPPED-NO-PREV-STATUS) when no I(vios_status) value is found for the tuple.
             - Previous I(vios_status) when the tuple status does not contains SUCCESS.
             - I(SKIPPED-TIMEOUT) when the I(time_limit) is reached before updating the 1st VIOS of the tuple.
@@ -275,30 +276,6 @@ module = None
 results = None
 
 
-def compute_c_rsh_rc(machine, rc, stdout):
-    """
-    Extract the rc of c_rsh command from the stdout.
-
-    When running a remote command over c_rsh, we can echo rc=$? to get
-    the actual return code on the nim master (not the c_rsh return code).
-
-    arguments:
-        machine (str): The NIM host we executed run_command against
-        rc      (int): The run_command return code
-        stdout  (str): The run_command stdout
-    return:
-        rc      (int): The return code of the actual command
-        stdout  (str): The command stdout without the "rc=$?" string
-    """
-    if machine != 'master':
-        s = re.search(r'rc=([-\d]+)$', stdout)
-        if s:
-            if rc == 0:
-                rc = int(s.group(1))
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
-    return rc, stdout
-
-
 def param_one_of(one_of_list, required=True, exclusive=True):
     """
     Check at parameter of one_of_list is defined in module.params dictionary.
@@ -327,6 +304,38 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         results['msg'] = 'Invalid parameter: action is {0} supports only one of the following: '.format(module.params['action'])
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
+
+
+def nim_exec(module, node, command):
+    """
+    Execute the specified command on the specified nim client using c_rsh.
+
+    arguments:
+        module      (dict): The Ansible module
+        node        (dict): nim client to execute the command on to
+        command     (list): command to execute
+    return:
+        rc      (int) return code of the command
+        stdout  (str) stdout of the command
+        stderr  (str) stderr of the command
+    """
+
+    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
+    cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        return (rc, stdout, stderr)
+
+    s = re.search(r'rc=([-\d]+)$', stdout)
+    if s:
+        rc = int(s.group(1))
+        # remove the rc of c_rsh with echo $?
+        stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('nim_exec command \'{0}\': rc:{1}, output:{2}, stderr:{3}'.format(' '.join(cmd), rc, stdout, stderr))
+
+    return (rc, stdout, stderr)
 
 
 def get_nim_type_info(module, type):
@@ -427,7 +436,10 @@ def check_lpp_source(module, lpp_source):
 def check_vios_targets(module, targets):
     """
     Check the list of VIOS targets.
-    Can be a list of one or two VIOS
+    Check that each target can be reached.
+
+    A target name can be of the following form:
+        vios1,vios2 or vios3
 
     arguments:
         module  (dict): the Ansible module
@@ -442,15 +454,17 @@ def check_vios_targets(module, targets):
 
     # Build targets list
     for elems in targets:
-        tuple_elts = elems.replace(" ", "").replace("[", "").replace("]", "").replace("(", "").replace(")", "").split(',')
-        module.debug('Checking tuple: {0}'.format(tuple_elts))
+        module.debug('Checking elems: {0}'.format(elems))
+
+        tuple_elts = list(set(elems.replace(" ", "").replace("[", "").replace("]", "").replace("(", "").replace(")", "").split(',')))
         tuple_len = len(tuple_elts)
+        module.debug('Checking tuple: {0}'.format(tuple_elts))
 
         if tuple_len == 0:
             continue
 
         if tuple_len > 2:
-            msg = 'Malformed VIOS targets \'{0}\'. Tuple {1} should be a 1 or 2 elements.'.format(targets, tuple_elts)
+            msg = 'Malformed VIOS targets \'{0}\'. Tuple {1} should be a 1 or 2 elements.'.format(targets, elems)
             module.log(msg)
             results['msg'] = msg
             module.exit_json(**results)
@@ -458,7 +472,7 @@ def check_vios_targets(module, targets):
         error = False
         for elem in tuple_elts:
             if len(elem) == 0:
-                msg = 'Malformed VIOS targets tuple {0}: empty string.'.format(tuple_elts)
+                msg = 'Malformed VIOS targets tuple {0}: empty string.'.format(elems)
                 module.log(msg)
                 results['msg'] = msg
                 module.exit_json(**results)
@@ -473,7 +487,7 @@ def check_vios_targets(module, targets):
 
             # check vios is knowed by the NIM master - if not ignore it
             if elem not in results['nim_node']['vios']:
-                msg = "VIOS {0} is not client of the NIM master, tuple {1} will be ignored".format(elem, tuple_elts)
+                msg = "VIOS {0} is not client of the NIM master, tuple {1} will be ignored".format(elem, elems)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -481,14 +495,14 @@ def check_vios_targets(module, targets):
 
             # Get VIOS interface info in case we need to connect using c_rsh
             if 'if1' not in results['nim_node']['vios'][elem]:
-                msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
+                msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
                 continue
             fields = results['nim_node']['vios'][elem]['if1'].split(' ')
             if len(fields) < 2:
-                msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, tuple_elts)
+                msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -496,18 +510,9 @@ def check_vios_targets(module, targets):
             results['nim_node']['vios'][elem]['hostname'] = fields[1]
 
             # check vios connectivity
-            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', results['nim_node']['vios'][elem]['hostname'],
-                   '"/usr/bin/ls /dev/null; echo rc=$?"']
-            rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+            rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][elem]['hostname'], ['true'])
             if rc != 0:
-                msg = 'Cannot check {0} connectivity with c_rsh: command \'{1}\', rc:{2}, stderr:{3}'.format(elem, ' '.join(cmd), rc, stderr)
-                module.log('[WARNING] ' + msg)
-                results['meta']['messages'].append(msg)
-                error = True
-                continue
-            rc, stdout = compute_c_rsh_rc(elem, rc, stdout)
-            if rc != 0:
-                msg = 'Cannot reach {0} with c_rsh, tuple {1} will be ignored, rc:{2}, stderr:{3}'.format(elem, tuple_elts, rc, stderr)
+                msg = 'skipping {0}: cannot reach {1} with c_rsh, rc:{2}, stderr:{3}, stdout:{4}'.format(elems, elem, rc, stderr, stdout)
                 module.log('[WARNING] ' + msg)
                 results['meta']['message'].append(msg)
                 error = True
@@ -562,20 +567,8 @@ def check_vios_cluster_status(module, target_tuple):
 
     # get the cluster status
     for vios in target_tuple:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               results['nim_node']['vios'][vios]['hostname'],
-               '"LC_ALL=C /usr/ios/cli/ioscli cluster -list &&'
-               ' /usr/ios/cli/ioscli cluster -status -fmt : ; echo rc=$?"']
-
-        rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
-        if rc != 0:
-            msg = 'Cannot get cluster status on {0}: command \'{1}\', rc:{2}, stderr:{3}'.format(vios, ' '.join(cmd), rc, stderr)
-            module.log('[WARNING] ' + msg)
-            results['meta']['messages'].append(msg)
-            results['meta'][vios_key][vios]['stdout'] = stdout
-            results['meta'][vios_key][vios]['stderr'] = stderr
-            return False
-        rc, stdout = compute_c_rsh_rc(vios, rc, stdout)
+        cmd = ['/usr/ios/cli/ioscli cluster -list && /usr/ios/cli/ioscli cluster -status -fmt :']
+        rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][vios]['hostname'], cmd)
         if rc != 0:
             # Check a cluster is configured
             stdout = stdout.rstrip()
@@ -633,12 +626,14 @@ def check_vios_cluster_status(module, target_tuple):
             return True
         if len(cluster['nodes']) != 1:
             msg = 'VIOS {0} is member of cluster {1}: {2}.'.format(vios, cluster['name'], cluster['nodes'])
+            module.log(msg)
+            results['meta'][vios_key]['messages'].append(msg)
         else:
             msg = 'Cluster {0} node {1} status is: {2}, need to be stopped.'\
                   .format(cluster['name'], cluster['nodes'][0], cluster[cluster['nodes'][0]]['state'])
-        module.log(msg)
-        results['meta'][vios_key]['messages'].append(msg)
-        return False
+            module.log(msg)
+            results['meta'][vios_key]['messages'].append(msg)
+            return False
 
     vios2 = target_tuple[1]
     cluster2 = results['nim_node']['vios'][vios2]['cluster']
@@ -667,13 +662,13 @@ def check_vios_cluster_status(module, target_tuple):
             return False
         found = False
         for node in cluster['nodes']:
-            if vios in cluster['nodes'][node]:
+            if vios in node:
                 found = True
-            if cluster['nodes'][node]['state'] != 'OK':
-                msg = 'Cluster {0} node {1} state must be OK, got: {2}'.format(cluster['name'], node, cluster['nodes'][node]['state'])
-                module.log(msg)
-                results['meta'][vios_key]['messages'].append(msg)
-                return False
+                if cluster[node]['state'] != 'OK':
+                    msg = 'Cluster {0} node {1} state must be OK, got: {2}'.format(cluster['name'], node, cluster['nodes'][node]['state'])
+                    module.log(msg)
+                    results['meta'][vios_key]['messages'].append(msg)
+                    return False
         if not found:
             msg = 'VIOS {0} not found in cluster {1} nodes: {2}'.format(vios, cluster['name'], cluster['nodes'])
             module.log(msg)
@@ -702,39 +697,27 @@ def cluster_stop_start(module, target_tuple, vios_key, vios, action):
     node = vios
     if action == 'start':
         for cur_node in target_tuple:
-            if results['nim_node']['vios'][cur_node]['cluster_node_state'] == "OK":
+            if results['nim_node']['vios'][cur_node]['cluster']['state'] == "OK":
                 node = cur_node
                 break
 
-    cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-           results['nim_node']['vios'][node]['hostname'],
-           '"/usr/sbin/clctrl -{0} -n {1} -m {2}; echo rc=$?"'
-           .format(action, results['nim_node']['vios'][vios]['cluster_name'], vios)]
-
-    rc, stdout, stderr = module.run_command(cmd)
+    cmd = ['/usr/sbin/clctrl -{0} -n {1} -m {2}'.format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios)]
+    rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][node]['hostname'], cmd)
     if rc != 0:
-        msg = 'Cannot {0} cluster on {1} with c_rsh: \'{2}\', rc:{3}, stderr:{4}'\
-              .format(action, results['nim_node']['vios'][node]['hostname'], ' '.join(cmd), rc, stderr)
-        module.log('[WARNING] ' + msg)
+        msg = 'Failed to {0} cluster {1} on {2}: {3}'\
+              .format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios, stdout)
         results['meta'][vios_key]['messages'].append(msg)
+        module.log(msg)
         return False
-    else:
-        rc, stdout = compute_c_rsh_rc(node, rc, stdout)
-        if rc != 0:
-            msg = 'Failed to {0} cluster {1} on {2}: {3}'\
-                  .format(action, results['nim_node']['vios'][vios]['cluster_name'], vios, stdout)
-            results['meta'][vios_key]['messages'].append(msg)
-            module.log(msg)
-            return False
 
     # update the cluster status
     if action == 'stop':
-        results['nim_node']['vios'][vios]['cluster_node_state'] = 'DOWN'
+        results['nim_node']['vios'][vios]['cluster'][vios]['state'] = 'DOWN'
     else:
-        results['nim_node']['vios'][vios]['cluster_node_state'] = 'OK'
+        results['nim_node']['vios'][vios]['cluster'][vios]['state'] = 'OK'
 
     msg = '{0} cluster {1} on {2} succeeded'\
-          .format(action, results['nim_node']['vios'][vios]['cluster_name'], vios)
+          .format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios)
     module.log(msg)
     results['meta'][vios_key]['messages'].append(msg)
     return True
@@ -803,12 +786,12 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
     # build the updateios command from the playbook parameters
     updateios_cmd = get_updateios_cmd(module)
 
+    got_cluster_status = False
     for target_tuple in targets_list:
         module.debug('Processing target_tuple: {0}'.format(target_tuple))
 
         tuple_len = len(target_tuple)
         vios_key = tuple_str(target_tuple)
-        vios1 = target_tuple[0]
 
         # if previous status (health check) is known, check the vios tuple has passed
         if vios_status is not None:
@@ -836,9 +819,10 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             results['status'][vios_key] = "SKIPPED-TIMEOUT"
             return
 
-        if module.params['action'] in ['install', 'cleanup'] and module.params['manage_cluster']:
+        if module.params['action'] in ['install', 'cleanup'] and module.params['manage_cluster'] and not got_cluster_status:
             # check if cluster is defined for this VIOSes tuple.
-            if not check_vios_cluster_status(module, target_tuple):
+            cluster_ok = check_vios_cluster_status(module, target_tuple)
+            if not cluster_ok:
                 msg = "{0} VIOSes skipped (bad cluster status)".format(vios_key)
                 module.log('[WARNING] ' + msg)
                 results['meta'][vios_key]['messages'].append(msg)
@@ -849,6 +833,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 results['meta'][vios_key]['messages'].append(msg)
                 results['status'][vios_key] = 'FAILURE-CLUSTER'
                 continue
+            got_cluster_status = True
 
         results['status'][vios_key] = "SUCCESS-UPDT"
         # DEBUG-Begin : Uncomment for testing without effective update operation
@@ -863,14 +848,17 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             module.log('Updating VIOS: {0}'.format(vios))
 
             # set the error label to be used in sub routines
-            err_label = "FAILURE-UPDT1"
-            if vios != vios1:
+            if vios == target_tuple[0]:
+                err_label = "FAILURE-UPDT1"
+                vios_cluster = target_tuple[1]
+            else:
                 err_label = "FAILURE-UPDT2"
+                vios_cluster = target_tuple[2]
 
             # if needed stop the cluster for the VIOS
             restart_needed = False
             if tuple_len == 2 and module.params['action'] in ['install', 'cleanup'] and module.params['manage_cluster']:
-                if not cluster_stop_start(module, target_tuple, vios_key, vios, 'stop'):
+                if not cluster_stop_start(module, target_tuple, vios_key, vios_cluster, 'stop'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
                 restart_needed = True
@@ -898,7 +886,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             # if needed restart the cluster for the VIOS
             # TODO check if updateios returns before it finishes
             if restart_needed:
-                if not cluster_stop_start(module, target_tuple, vios_key, vios, 'start'):
+                if not cluster_stop_start(module, target_tuple, vios_key, vios_cluster, 'start'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
 
