@@ -693,19 +693,20 @@ def cluster_stop_start(module, target_tuple, vios_key, vios, action):
     """
     global results
 
-    # if action is start, find the first node running cluster
     node = vios
     if action == 'start':
+        # if action is start, find the first node running cluster
         for cur_node in target_tuple:
-            if results['nim_node']['vios'][cur_node]['cluster']['state'] == "OK":
+            if results['nim_node']['vios'][vios]['cluster'][cur_node]['state'] == "OK":
                 node = cur_node
                 break
 
+    module.log('{0}-ing cluster {1} for node {2} from {3}'.format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios, node))
     cmd = ['/usr/sbin/clctrl -{0} -n {1} -m {2}'.format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios)]
     rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][node]['hostname'], cmd)
     if rc != 0:
         msg = 'Failed to {0} cluster {1} on {2}: {3}'\
-              .format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios, stdout)
+              .format(action, results['nim_node']['vios'][vios]['cluster']['name'], node, stdout)
         results['meta'][vios_key]['messages'].append(msg)
         module.log(msg)
         return False
@@ -850,15 +851,13 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             # set the error label to be used in sub routines
             if vios == target_tuple[0]:
                 err_label = "FAILURE-UPDT1"
-                vios_cluster = target_tuple[1]
             else:
                 err_label = "FAILURE-UPDT2"
-                vios_cluster = target_tuple[2]
 
             # if needed stop the cluster for the VIOS
             restart_needed = False
             if tuple_len == 2 and module.params['action'] in ['install', 'cleanup'] and module.params['manage_cluster']:
-                if not cluster_stop_start(module, target_tuple, vios_key, vios_cluster, 'stop'):
+                if not cluster_stop_start(module, target_tuple, vios_key, vios, 'stop'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
                 restart_needed = True
@@ -886,7 +885,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             # if needed restart the cluster for the VIOS
             # TODO check if updateios returns before it finishes
             if restart_needed:
-                if not cluster_stop_start(module, target_tuple, vios_key, vios_cluster, 'start'):
+                if not cluster_stop_start(module, target_tuple, vios_key, vios, 'start'):
                     results['status'][vios_key] = err_label
                     break  # cannot continue
 
