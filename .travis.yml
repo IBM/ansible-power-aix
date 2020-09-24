@@ -9,7 +9,7 @@ python:
 install:
   - sudo add-apt-repository ppa:deadsnakes/ppa --yes
   - sudo apt-get --yes --force-yes install python3-venv
-  - pip install ansible
+  - pip install ansible==2.9
   - pip install flake8
   - pip3 install ansible-doc-extractor
   - pip install sphinx
