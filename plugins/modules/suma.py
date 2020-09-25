@@ -387,7 +387,7 @@ def suma_command(action):
         results['msg'] = msg
         module.fail_json(**results)
 
-    return stdout
+    return rc, stdout
 
 
 def suma_list():
@@ -666,7 +666,7 @@ def suma_download():
     # ========================================================================
     # SUMA command for preview
     # ========================================================================
-    rc, stdout = suma_command('Preview')
+    stdout = suma_command('Preview')
     module.debug("SUMA preview stdout:{0}".format(stdout))
 
     # parse output to see if there is something to download
@@ -705,7 +705,7 @@ def suma_download():
     # SUMA command for download
     # ================================================================
     if downloaded != 0:
-        rc, stdout = suma_command('Download')
+        stdout = suma_command('Download')
         module.debug("SUMA dowload stdout:{0}".format(stdout))
 
         # parse output to see if something has been downloaded
