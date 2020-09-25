@@ -1,0 +1,133 @@
+.. _inittab_module:
+
+
+inittab -- Create/change/remove entries in the inittab file on AIX
+==================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates the creation/change/removal of entries in the /etc/inittab file.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  state (True, str, None)
+    Specifies the action to be performed for the entry.
+
+    ``present`` to create entry with provided *name*, *runlevel*, *action* and *command* in the /etc/inittab file.
+
+    ``absent`` to delete entry with provided *name*. If entry is not present then message will be displayed for the same.
+
+    ``modify`` to change the entry with provided value of the given entry.
+
+
+  name (True, str, None)
+    Entry should be specified for which the action is to taken
+
+
+  runlevel (True, str, None)
+    Defines the run levels in which the *name* can be processed.
+
+
+  action (True, str, None)
+    Describes what action init has to perform with *name*.
+
+
+  command (True, str, None)
+    Specifies the command that has to run.
+
+
+  insertafter (optional, str, None)
+    Specifies the identifier of the entry after which new entry is to be created.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Create new entry for uprintfd
+      inittab:
+        state: present
+        name: uprintfd
+        runlevel: '23456789'
+        action: 'respawn'
+        command: '/usr/sbin/uprintfd'
+        insertafter: 'perfstat'
+
+    - name: Change entry for uprintfd
+      inittab:
+        state: modify
+        name: uprintfd
+        runlevel: '1234567'
+        action: 'respawn'
+        command: '/usr/sbin/uprintfd'
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  The execution message.
+
+
+rc' (If the command failed., int, )
+  The return code.
+
+
+stdout' (If the command failed., str, )
+  The standard output.
+
+
+stderr' (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX development Team (@pbfinley1911)
+

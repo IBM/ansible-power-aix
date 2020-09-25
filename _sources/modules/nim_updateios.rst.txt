@@ -16,9 +16,9 @@ Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) t
 
 Checks status of previous operation if provided before running its operations.
 
-VIOSes of a tuple must be on the same SSP cluster and its state must be OK.
+VIOSes of a tuple must be on the same cluster and the node states must be OK.
 
-When updating VIOSes pair, it checks the SSP cluster state, stop it before installing the VIOS, and restart it after installation.
+When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and restart it after installation.
 
 
 
@@ -72,8 +72,8 @@ Parameters
     Specifies whether the software licenses should be automatically accepted during the installation.
 
 
-  manage_ssp (optional, bool, False)
-    Specifies whether the SSP cluster should be check and stop before updating the vios and restarted after.
+  manage_cluster (optional, bool, False)
+    Specifies whether the cluster should be check and stop before updating the vios and restarted after.
 
 
   preview (optional, bool, True)
@@ -119,7 +119,7 @@ Examples
         action: install
         lpp_source: 723lpp_res
         preview: yes
-    - name: Update VIOSes as a pair and a VIOS alone discarding SSP
+    - name: Update VIOSes as a pair and a VIOS alone discarding cluster
       nim_updateios:
         targets:
         - nimvios01,nimvios02
@@ -127,8 +127,14 @@ Examples
         action: install
         lpp_source: 723lpp_res
         time_limit: '07/21/2020 17:02'
-        manage_ssp: no
+        manage_cluster: no
         preview: no
+    - name: Remove a fileset of a VIOS
+      nim_updateios:
+        targets: 'nimvios01'
+        action: remove
+        filesets: openssh.base.server
+        preview: yes
 
 
 
@@ -151,7 +157,7 @@ stderr (always, str, )
   The standard error.
 
 
-status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-SSP', 'vios6-vios7': 'FAILURE-UPDT1'}})
+status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-CLUSTER', 'vios6-vios7': 'FAILURE-UPDT1'}})
   Status of the execution on each target <tuple>.
 
   If the operation status is not avalaible, the *vios_status* passed in parameter is returned.
@@ -160,13 +166,15 @@ status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCE
   <tuple> (when tuple are actually a NIM client and reachable with c_rsh., str, SUCCESS-UPDT)
     Status of the execution on the <tuple>.
 
+    The <tuple> elements are sorted to form the key of the dictionary.
+
     *SKIPPED-NO-PREV-STATUS* when no *vios_status* value is found for the tuple.
 
     Previous *vios_status* when the tuple status does not contains SUCCESS.
 
     *SKIPPED-TIMEOUT* when the *time_limit* is reached before updating the 1st VIOS of the tuple.
 
-    *FAILURE-SSP* when SSP cluster checks or operation failed.
+    *FAILURE-CLUSTER* when cluster checks or operation failed.
 
     *FAILURE-UPDT1* when update of first VIOS of the tuple failed.
 
@@ -174,7 +182,7 @@ status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCE
 
 
 
-nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone', 'hostname': 'nimclient01.aus.stglabs.ibm.com'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'ssp_cluster_name': 'porthos_cl1', 'ssp_status': 'DOWN'}}}})
+nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone', 'hostname': 'nimclient01.aus.stglabs.ibm.com'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'cluster': {'vios1': {'repos_state': '', 'state': 'DOWN'}, 'vios2': {'repos_state': 'OK', 'state': 'OK'}, 'name': 'mycluster', 'nodes': ['vios1', 'vios2'], 'state': 'DEGRADED'}}}}})
   NIM node info. It can contains more information if passed as option *nim_node*.
 
 
@@ -208,11 +216,11 @@ meta (always, dict, )
 
 
       stdout (If the command was run., str, )
-        Standard output of the updateios command.
+        Standard output of the command.
 
 
       stderr (If the command was run., str, )
-        Standard error of the updateios command.
+        Standard error of the command.
 
 
 

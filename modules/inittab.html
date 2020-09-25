@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>suma – Download/Install fixes, SP or TL on an AIX server. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>inittab – Create/change/remove entries in the inittab file on AIX &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="user – Create new users or change/remove attributes of users on AIX." href="user.html" />
-    <link rel="prev" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" href="nim_viosupgrade.html" /> 
+    <link rel="next" title="installp – Installs and updates software" href="installp.html" />
+    <link rel="prev" title="group – Create new group or change/remove attributes of group on AIX" href="group.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -102,7 +102,15 @@
 <li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">inittab – Create/change/remove entries in the inittab file on AIX</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
@@ -118,15 +126,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">suma – Download/Install fixes, SP or TL on an AIX server.</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -195,14 +195,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>suma – Download/Install fixes, SP or TL on an AIX server.</li>
+      <li>inittab – Create/change/remove entries in the inittab file on AIX</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/suma.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/inittab.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -216,8 +216,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="suma-download-install-fixes-sp-or-tl-on-an-aix-server">
-<span id="suma-module"></span><h1>suma – Download/Install fixes, SP or TL on an AIX server.<a class="headerlink" href="#suma-download-install-fixes-sp-or-tl-on-an-aix-server" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="inittab-create-change-remove-entries-in-the-inittab-file-on-aix">
+<span id="inittab-module"></span><h1>inittab – Create/change/remove entries in the inittab file on AIX<a class="headerlink" href="#inittab-create-change-remove-entries-in-the-inittab-file-on-aix" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -230,7 +230,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Creates a task to automate the download and installation of technology level (TL) and service packs (SP) from a fix server using the Service Update Management Assistant (SUMA).</p>
+<p>This module facilitates the creation/change/removal of entries in the /etc/inittab file.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -238,106 +238,62 @@
 <ul class="simple">
 <li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
+<li><p>Root user is required.</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>action (optional, str, preview)</dt><dd><p>Controls the action to be performed.</p>
-<p><code class="docutils literal notranslate"><span class="pre">download</span></code> to download and install all fixes.</p>
-<p><code class="docutils literal notranslate"><span class="pre">preview</span></code> to execute all the checks without downloading the fixes.</p>
-<p><code class="docutils literal notranslate"><span class="pre">list</span></code> to list all SUMA tasks.</p>
-<p><code class="docutils literal notranslate"><span class="pre">edit</span></code> to edit an exiting SUMA task.</p>
-<p><code class="docutils literal notranslate"><span class="pre">run</span></code> to run an exiting SUMA task.</p>
-<p><code class="docutils literal notranslate"><span class="pre">unschedule</span></code> to remove any scheduling information for the specified SUMA task.</p>
-<p><code class="docutils literal notranslate"><span class="pre">delete</span></code> to delete a SUMA task and remove any schedules for this task.</p>
-<p><code class="docutils literal notranslate"><span class="pre">config</span></code> to list global SUMA configuration settings.</p>
-<p><code class="docutils literal notranslate"><span class="pre">default</span></code> to list default SUMA tasks.</p>
+<dt>state (True, str, None)</dt><dd><p>Specifies the action to be performed for the entry.</p>
+<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create entry with provided <em>name</em>, <em>runlevel</em>, <em>action</em> and <em>command</em> in the /etc/inittab file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> to delete entry with provided <em>name</em>. If entry is not present then message will be displayed for the same.</p>
+<p><code class="docutils literal notranslate"><span class="pre">modify</span></code> to change the entry with provided value of the given entry.</p>
 </dd>
-<dt>oslevel (optional, str, Latest)</dt><dd><p>Specifies the Operating System level to update to;</p>
-<p><code class="docutils literal notranslate"><span class="pre">Latest</span></code> indicates the latest SP suma can update the target to (for the current TL).</p>
-<p><code class="docutils literal notranslate"><span class="pre">xxxx-xx(-00-0000</span></code>) sepcifies a TL.</p>
-<p><code class="docutils literal notranslate"><span class="pre">xxxx-xx-xx-xxxx</span></code> or <code class="docutils literal notranslate"><span class="pre">xxxx-xx-xx</span></code> specifies a SP.</p>
-<p>Required when <em>action=download</em> or <em>action=preview</em>.</p>
+<dt>name (True, str, None)</dt><dd><p>Entry should be specified for which the action is to taken</p>
 </dd>
-<dt>download_dir (optional, path, /usr/sys/inst.images)</dt><dd><p>Directory where updates are downloaded.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
+<dt>runlevel (True, str, None)</dt><dd><p>Defines the run levels in which the <em>name</em> can be processed.</p>
 </dd>
-<dt>download_only (optional, bool, False)</dt><dd><p>Download only. Do not perform installation of updates.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
+<dt>action (True, str, None)</dt><dd><p>Describes what action init has to perform with <em>name</em>.</p>
 </dd>
-<dt>last_sp (optional, bool, False)</dt><dd><p>Specifies to download the last SP of the TL specified in <em>oslevel</em>. If no is specified only the TL is downloaded.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
+<dt>command (True, str, None)</dt><dd><p>Specifies the command that has to run.</p>
 </dd>
-<dt>extend_fs (optional, bool, True)</dt><dd><p>Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
-</dd>
-<dt>task_id (optional, str, None)</dt><dd><p>SUMA task identification number.</p>
-<p>Can be used if <em>action=list</em> or <em>action=edit</em> or <em>action=delete</em> or <em>action=run</em> or <em>action=unschedule</em>.</p>
-<p>Required when <em>action=edit</em> or <em>action=delete</em> or <em>action=run</em> or <em>action=unschedule</em>.</p>
-</dd>
-<dt>sched_time (optional, str, None)</dt><dd><p>Schedule time. Specifying an empty or space filled string results in unscheduling the task. If not set, it saves the task.</p>
-<p>Can be used if <em>action=edit</em>.</p>
-</dd>
-<dt>save_task (optional, bool, False)</dt><dd><p>Saves the SUMA task. The task is saved, allowing scheduling information to be added later.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em>.</p>
-<p>If <em>oslevel</em> is a TL and <em>last_sp=yes</em> the task is saved with the last SP available at the saving time.</p>
-</dd>
-<dt>description (optional, str, None)</dt><dd><p>Display name for SUMA task.</p>
-<p>If not set the will be labelled ‘<em>action</em> request for oslevel <em>oslevel</em>’</p>
-<p>Can be used for <em>action=download</em> or <em>action=preview</em>.</p>
-</dd>
-<dt>metadata_dir (optional, path, /var/adm/ansible/metadata)</dt><dd><p>Directory where metadata files are downloaded.</p>
-<p>Can be used if <em>action=download</em> or <em>action=preview</em> when <em>last_sp=yes</em> or <em>oslevel</em> is not exact, for example <em>oslevel=Latest</em>.</p>
+<dt>insertafter (optional, str, None)</dt><dd><p>Specifies the identifier of the entry after which new entry is to be created.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Check, download and install system updates for the current oslevel of the system</span>
-  <span class="nt">suma</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">download</span>
-    <span class="nt">oslevel</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Latest</span>
-    <span class="nt">download_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst.images</span>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create new entry for uprintfd</span>
+  <span class="nt">inittab</span><span class="p">:</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">present</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">uprintfd</span>
+    <span class="nt">runlevel</span><span class="p">:</span> <span class="s">&#39;23456789&#39;</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="s">&#39;respawn&#39;</span>
+    <span class="nt">command</span><span class="p">:</span> <span class="s">&#39;/usr/sbin/uprintfd&#39;</span>
+    <span class="nt">insertafter</span><span class="p">:</span> <span class="s">&#39;perfstat&#39;</span>
 
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Check and download required to update to SP 7.2.3.2</span>
-  <span class="nt">suma</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">download</span>
-    <span class="nt">oslevel</span><span class="p">:</span> <span class="s">&#39;7200-03-02&#39;</span>
-    <span class="nt">download_only</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">download_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/tmp/dl_updt_7200-03-02</span>
-  <span class="nt">when</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ansible_distribution == &#39;AIX&#39;</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Check, download and install to latest SP of TL 7.2.4</span>
-  <span class="nt">suma</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">download</span>
-    <span class="nt">oslevel</span><span class="p">:</span> <span class="s">&#39;7200-04&#39;</span>
-    <span class="nt">last_sp</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
-    <span class="nt">extend_fs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
-
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Check, download and install to TL 7.2.3</span>
-  <span class="nt">suma</span><span class="p">:</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">download</span>
-    <span class="nt">oslevel</span><span class="p">:</span> <span class="s">&#39;7200-03&#39;</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Change entry for uprintfd</span>
+  <span class="nt">inittab</span><span class="p">:</span>
+    <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">modify</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">uprintfd</span>
+    <span class="nt">runlevel</span><span class="p">:</span> <span class="s">&#39;1234567&#39;</span>
+    <span class="nt">action</span><span class="p">:</span> <span class="s">&#39;respawn&#39;</span>
+    <span class="nt">command</span><span class="p">:</span> <span class="s">&#39;/usr/sbin/uprintfd&#39;</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<dl>
-<dt>msg (always, str, Suma preview completed successfully)</dt><dd><p>The execution message.</p>
-</dd>
-<dt>stdout (always, str, )</dt><dd><p>The standard output.</p>
-</dd>
-<dt>stderr (always, str, )</dt><dd><p>The standard error.</p>
-</dd>
-<dt>meta (always, dict, {‘meta’: {‘messages’: [‘Parameter last_sp=yes is ignored when oslevel is a TL ‘, ‘Suma metadata: 7200-02-01-1732 is the latest SP of TL 7200-02’, ‘…’]}})</dt><dd><p>Detailed information on the module execution.</p>
 <dl class="simple">
-<dt>messages (always, list, Parameter last_sp=yes is ignored when oslevel is a TL 7200-02-00)</dt><dd><p>Details on errors/warnings/inforamtion</p>
+<dt>msg (always, str, )</dt><dd><p>The execution message.</p>
 </dd>
-</dl>
+<dt>rc’ (If the command failed., int, )</dt><dd><p>The return code.</p>
+</dd>
+<dt>stdout’ (If the command failed., str, )</dt><dd><p>The standard output.</p>
+</dd>
+<dt>stderr’ (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>
@@ -350,7 +306,7 @@
 <div class="section" id="authors">
 <h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>AIX Development Team (&#64;pbfinley1911)</p></li>
+<li><p>AIX development Team (&#64;pbfinley1911)</p></li>
 </ul>
 </div>
 </div>
@@ -364,10 +320,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="user.html" class="btn btn-neutral float-right" title="user – Create new users or change/remove attributes of users on AIX." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="installp.html" class="btn btn-neutral float-right" title="installp – Installs and updates software" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_viosupgrade.html" class="btn btn-neutral float-left" title="nim_viosupgrade – Perform an upgrade with the viosupgrade tool" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="group.html" class="btn btn-neutral float-left" title="group – Create new group or change/remove attributes of group on AIX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

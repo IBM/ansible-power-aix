@@ -56,6 +56,26 @@ Parameters
     Forces removal of any existing alternate disk copy on target disks.
 
 
+  bootlist (optional, bool, False)
+    When *action=copy*, specifies to run bootlist after the alternate disk copy.
+
+
+  remain_nim_client (optional, bool, False)
+    When *action=copy*, specifies to copy the ``/.rhosts`` and ``/etc/niminfo`` files to the alternate rootvg.
+
+
+  device_reset (optional, bool, False)
+    When *action=copy*, specifies to reset any user-defined device configurations on the target ``altinst_rootvg``.
+
+
+  first_boot_script (optional, str, None)
+    When *action=copy*, specifies an optional customization script to run during the initial boot of the alternate rootvg, after all file systems are mounted.
+
+
+  resolvconf (optional, str, None)
+    When *action=copy*, specifies the ``resolv.conf`` file to replace the existing one after the rootvg has been cloned.
+
+
 
 
 

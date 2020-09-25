@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="lvg – Create/Modify/Remove a volume group" href="lvg.html" />
-    <link rel="prev" title="group – Create new group or change/remove attributes of group on AIX" href="group.html" /> 
+    <link rel="prev" title="inittab – Create/change/remove entries in the inittab file on AIX" href="inittab.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -102,6 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">installp – Installs and updates software</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -113,6 +114,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
@@ -294,31 +296,31 @@
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">List all software products and installable options contained on an installation cartridge tape</span>
-  <span class="nt">installp</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.installp</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">list</span>
     <span class="nt">device</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/rmt0.1</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">List all customer-reported problems fixed by all software products on an installation tape</span>
-  <span class="nt">installp</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.installp</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">list_fixes</span>
     <span class="nt">device</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/rmt0.1</span>
     <span class="nt">install_list</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">all</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Install all filesets within the bos.net software package and expand file systems if necessary</span>
-  <span class="nt">installp</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.installp</span><span class="p">:</span>
     <span class="nt">extend_fs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">device</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst.images</span>
     <span class="nt">install_list</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bos.net</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Reinstall and commit the NFS software product option that is already installed on the system at the same level</span>
-  <span class="nt">installp</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.installp</span><span class="p">:</span>
     <span class="nt">commit</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">force</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">device</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/rmt0.1</span>
     <span class="nt">install_list</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bos.net.nfs.client:4.1.0.0</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove a fileset named bos.net.tcp.server</span>
-  <span class="nt">installp</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.installp</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">deinstall</span>
     <span class="nt">install_list</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bos.net.tcp.server</span>
 </pre></div>
@@ -390,7 +392,7 @@ Specify a valid device name.)</p>
         <a href="lvg.html" class="btn btn-neutral float-right" title="lvg – Create/Modify/Remove a volume group" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="group.html" class="btn btn-neutral float-left" title="group – Create new group or change/remove attributes of group on AIX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="inittab.html" class="btn btn-neutral float-left" title="inittab – Create/change/remove entries in the inittab file on AIX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
