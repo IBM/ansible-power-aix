@@ -73,7 +73,7 @@
 
   - name: Mount target filesystem
     raw: "mount {{ target_dir }}"
-    when: crfs_result.rc == 0
+    when: crfs_result.rc is defined and crfs_result.rc == 0
 
 # TRANSFER files to target inventory
   - name: Transfer install images
