@@ -58,6 +58,10 @@ options:
   password:
     description: Specifies the encrypted string for the password to create or change the password.
     type: str
+  cleartext_password:
+    description: Specifies and unencrypted cleartext string for the password to create or change the password. 
+                 It will be encrypted automatically while setting the password.
+    type: str
 '''
 
 EXAMPLES = r'''
@@ -70,6 +74,15 @@ EXAMPLES = r'''
     attributes:
       home: /home/test/aixguest1010
       data: 1272
+'''
+
+EXAMPLES = r'''
+- name: Modify password of aixuser4711
+  user:
+    state: modify
+    name: aixguest4711
+    change_passwd_on_login: False
+    cleartext_password: '{{ pw_retrieved_from_vault }}'
 '''
 
 RETURN = r'''
@@ -130,7 +143,7 @@ def modify_user(module):
         else:
             msg = "\nAll provided attributes for the user: %s is set SUCCESSFULLY" % module.params['name']
 
-    if module.params['password'] is not None:
+    if module.params['password'] is not None or module.params['cleartext_password'] is not None:
         pass_msg = change_password(module)
         if msg is not None:
             msg += pass_msg
@@ -166,7 +179,7 @@ def create_user(module):
     else:
         msg = "Username is created SUCCESSFULLY: %s" % module.params['name']
 
-    if attributes is not None or module.params['password'] is not None:
+    if attributes is not None or module.params['password'] is not None or module.params['cleartext_password'] is not None:
         msg_attr = modify_user(module)
         msg += msg_attr
 
@@ -237,12 +250,24 @@ def change_password(module):
     '''
     name = module.params['name']
     passwd = module.params['password']
+    cleartext_passwd = module.params['cleartext_passwd']
     change_passwd_on_login = module.params['change_passwd_on_login']
-
-    if change_passwd_on_login:
+    
+    if passwd and cleartext_passwd:
+        msg = "\Specify either 'passwd' and 'cleartext_passwd', not both"
+        module.fail_json(msg=msg, rc=pass_rc, stdout=pass_out, stderr=pass_err)
+        
+    if passwd:    
+      if change_passwd_on_login:
         cmd = "echo \'{user}:{password}\' | chpasswd -e".format(user=name, password=passwd)
-    else:
+      else:
         cmd = "echo \'{user}:{password}\' | chpasswd -ec".format(user=name, password=passwd)
+        
+    if cleartext_passwd:    
+      if change_passwd_on_login:
+        cmd = "echo \'{user}:{cleartext_passwd}\' | chpasswd".format(user=name, password=cleartext_passwd)
+      else:
+        cmd = "echo \'{user}:{cleartext_passwd}\' | chpasswd -c".format(user=name, password=cleartext_passwd)
 
     pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
     if pass_rc != 0:
@@ -262,6 +287,7 @@ def main():
             attributes=dict(type='dict'),
             remove_password=dict(type='bool', default=True),
             change_passwd_on_login=dict(type='bool', default=False),
+            cleartext_password=dict(type='str'),
             password=dict(type='str'),
         ),
         supports_check_mode=False
@@ -284,7 +310,7 @@ def main():
         else:
             msg = "User %s already exists." % module.params['name']
     elif module.params['state'] == 'modify':
-        if attributes is None and module.params['password'] is None:
+        if attributes is None and module.params['password'] is None and module.params['cleartext_password'] is None:
             msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
         else:
             if user_exists(module):
