@@ -5,6 +5,34 @@
 Releases
 ========
 
+Version 1.1.0
+-------------
+Notes
+  * Refresh of patch management capability (Update recommended)
+  * new modules: inittab, mkfilt
+  * aixpert: new module for AIXPert
+  * lvol: new module for logical volume management
+  * alt_disk: new options for alt_disk_copy
+  * backup: add restore and view operation for mksysb + playbook
+  * nim_backup: fix multithreading for simultaneous mksysb creation with NIM
+  * nim_updateios: major fixes and improvements for cluster management
+  * nim_updateios: fix cluster -list that returns 7 fields if not verbose not 21 fields
+  * suma: fix issue #40 (unpack return value calling suma_command())
+
+Availability
+  * `Automation Hub v1.1.0`_
+  * `Galaxy v1.1.0`_
+  * `GitHub v1.1.0`_
+
+.. _Automation Hub v1.1.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.1.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.1.0.tar.gz
+
+.. _GitHub v1.1.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.1.0/ibm-power_aix-1.1.0.tar.gz
+
 Version 1.0.2
 -------------
 Notes
