@@ -62,7 +62,7 @@ options:
 
 EXAMPLES = r'''
 - name: Create user aixguest1010
-  user:
+  ibm.power_aix.user:
     state: present
     name: aixguest1010
     change_passwd_on_login: False

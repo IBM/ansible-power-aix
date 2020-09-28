@@ -132,13 +132,13 @@ options:
 
 EXAMPLES = r'''
 - name: Extend a volume group
-  lvg:
+  ibm.power_aix.lvg:
     pvs=hdisk1
     vg_name=datavg
     state=present
 
 - name: Varyon a volume group
-  lvg:
+  ibm.power_aix.lvg:
     vg_name=datavg
     state=varyon
 '''

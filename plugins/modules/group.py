@@ -74,7 +74,7 @@ options:
 
 EXAMPLES = r'''
 - name: Change group ansible
-  group:
+  ibm.power_aix.group:
     state: present
     name: ansible
     user_list_action: 'add'
