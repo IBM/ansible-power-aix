@@ -260,9 +260,9 @@ def main():
             state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
             name=dict(type='str', required=True, aliases=['user']),
             attributes=dict(type='dict'),
-            remove_password=dict(type='bool', default=True),
-            change_passwd_on_login=dict(type='bool', default=False),
-            password=dict(type='str'),
+            remove_password=dict(type='bool', default=True, no_log=False),
+            change_passwd_on_login=dict(type='bool', default=False, no_log=False),
+            password=dict(type='str', no_log=True),
         ),
         supports_check_mode=False
     )
