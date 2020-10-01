@@ -387,7 +387,7 @@ def suma_command(action):
         results['msg'] = msg
         module.fail_json(**results)
 
-    return rc, stdout
+    return stdout
 
 
 def suma_list():
