@@ -267,7 +267,7 @@ msg:
     returned: always
     type: str
 targets:
-    description: List of VIOSes.
+    description: List of NIM client actually targeted for the operation.
     returned: always
     type: list
     elements: str
@@ -790,14 +790,8 @@ def nim_mksysb_restore(module, target, params):
     else:
         results['meta'][target]['messages'].append('Warning: No bosinst_data specified, you will be prompted for additional settings on the console.')
 
-    if params['accept_licenses']:
-        cmd += ['-a', 'accept_licenses=yes']
-    else:
-        cmd += ['-a', 'accept_licenses=no']
-    if params['boot_target']:
-        cmd += ['-a', 'boot_client=yes']
-    else:
-        cmd += ['-a', 'boot_client=no']
+    cmd += ['-a', 'accept_licenses=yes' if module.params['accept_licenses'] else 'accept_licenses=no']
+    cmd += ['-a', 'boot_client=yes' if module.params['boot_target'] else 'boot_client=no']
     if params['other_attributes']:
         cmd += params['other_attributes'].split(' ')
     cmd += [target]
@@ -1138,10 +1132,7 @@ def nim_savevg_restore(module, target, params):
     # nim -o restvg -a savevg=savevg_res_name -a shrink=<yes|no> lpar_name
     cmd = ['nim', '-o', 'restvg']
     cmd += ['-a', 'savevg={0}'.format(name)]
-    if params['shrink_fs']:
-        cmd += ['-a', 'shrink=yes']
-    else:
-        cmd += ['-a', 'shrink=no']
+    cmd += ['-a', 'shrink=yes' if module.params['shrink_fs'] else 'shrink=no']
     if params['other_attributes']:
         cmd += params['other_attributes'].split(' ')
     cmd += [target]

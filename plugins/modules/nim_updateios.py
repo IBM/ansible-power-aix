@@ -123,10 +123,10 @@ msg:
     type: str
     sample: 'NIM updateios operation completed successfully'
 targets:
-    description: The execution message.
+    description: List of VIOSes actually targeted for the operation.
     returned: always
     type: str
-    sample: '[nimclient01, nimclient02, ...]'
+    sample: [vios1, 'vios2, vios3', ...]
 stdout:
     description: The standard output.
     returned: always
@@ -167,36 +167,12 @@ nim_node:
     returned: always
     type: dict
     contains:
-        standalone:
-            description: List of standalone NIM resources.
-            returned: always
-            type: dict
         vios:
             description: List of VIOS NIM resources.
             returned: always
             type: dict
     sample:
         "nim_node": {
-            "standalone": {
-                "nimclient01": {
-                    "Cstate": "ready for a NIM operation",
-                    "Cstate_result": "success",
-                    "Mstate": "currently running",
-                    "cable_type1": "N/A",
-                    "class": "machines",
-                    "comments": "object defined using nimquery -d",
-                    "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0",
-                    "installed_image": "ansible_img",
-                    "mgmt_profile1": "p8-hmc 2 nimclient-cec nimclient-vios1",
-                    "netboot_kernel": "64",
-                    "platform": "chrp",
-                    "prev_state": "customization is being performed",
-                    "type": "standalone",
-                    "hostname": "nimclient01.aus.stglabs.ibm.com",
-                }
-            },
             "vios": {
                 "vios1": {
                     "Cstate": "ready for a NIM operation",
@@ -338,13 +314,44 @@ def nim_exec(module, node, command):
     return (rc, stdout, stderr)
 
 
+def refresh_nim_node(module, type):
+    """
+    Get nim client information of provided type and update nim_node dictionary.
+
+    arguments:
+        module  (dict): The Ansible module
+        type     (str): type of the nim object to get information
+    note:
+        Exits with fail_json in case of error
+    return:
+        none
+    """
+    global results
+
+    if module.params['nim_node']:
+        results['nim_node'] = module.params['nim_node']
+
+    nim_info = get_nim_type_info(module, type)
+
+    if type not in results['nim_node']:
+        results['nim_node'].update({type: nim_info})
+    else:
+        for elem in nim_info.keys():
+            if elem in results['nim_node']:
+                results['nim_node'][type][elem].update(nim_info[elem])
+            else:
+                results['nim_node'][type][elem] = nim_info[elem]
+    module.debug('module.nim_node[{0}]: {1}'.format(type, module.nim_node[type]))
+
+
 def get_nim_type_info(module, type):
     """
     Build the hash of nim client of type=lpar_type defined on the
     nim master and their associated key = value information.
 
     arguments:
-        module      (dict): The Ansible module
+        module  (dict): The Ansible module
+        type     (str): type of the nim object to get information
     note:
         Exits with fail_json in case of error
     return:
@@ -748,15 +755,8 @@ def get_updateios_cmd(module):
         if check_lpp_source(module, module.params['lpp_source']):
             cmd += ['-a', 'lpp_source={0}'.format(module.params['lpp_source'])]
 
-    if module.params['accept_licenses']:
-        cmd += ['-a', 'accept_licenses=yes']
-    else:
-        cmd += ['-a', 'accept_licenses=no']    # default in NIM
-
-    if module.params['preview']:
-        cmd += ['-a', 'preview=yes']     # default in NIM
-    else:
-        cmd += ['-a', 'preview=no']
+    cmd += ['-a', 'accept_licenses=yes' if module.params['accept_licenses'] else 'accept_licenses=no']
+    cmd += ['-a', 'preview=yes' if module.params['preview'] else 'preview=no']
 
     return cmd
 
@@ -804,7 +804,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
                 continue
 
             if 'SUCCESS' not in vios_status[vios_key]:
-                msg = '{0} VIOSes skipped (vios_status: {1})'.format(vios_key, vios_status[vios_key])
+                msg = '{0} tuple skipped (vios_status: {1})'.format(vios_key, vios_status[vios_key])
                 module.log('[WARNING] ' + msg)
                 results['status'][vios_key] = vios_status[vios_key]
                 results['meta'][vios_key]['messages'].append(msg)
@@ -922,16 +922,19 @@ def main():
     results = dict(
         changed=False,
         msg='',
+        targets=[],
         stdout='',
         stderr='',
         meta={'messages': []},
         # meta structure will be updated as follow:
         # meta={
-        #   target_name:{
-        #       'messages': [],     detail execution messages
-        #       'res_name': '',     resource name create for backup creation
-        #       'stdout': '',
-        #       'stderr': '',
+        #   'messages': [],
+        #   tuple:{
+        #       'messages': [],
+        #       vios:{
+        #           'stdout': '',
+        #           'stderr': '',
+        #       }
         #   }
         # }
         nim_node={},
@@ -970,10 +973,7 @@ def main():
     module.debug('*** START UPDATEIOS OPERATION ***')
 
     # build_nim_node
-    if module.params['nim_node']:
-        results['nim_node'] = module.params['nim_node']
-    if 'vios' not in results['nim_node']:
-        results['nim_node'].update({'vios': get_nim_type_info(module, 'vios')})
+    refresh_nim_node(module, 'vios')
 
     # check targets are valid NIM clients
     results['targets'] = check_vios_targets(module, module.params['targets'])
@@ -984,6 +984,7 @@ def main():
         module.exit_json(**results)
 
     module.debug('Target list: {0}'.format(results['targets']))
+    # initialize the results dictionary for target tuple keys
     for target in results['targets']:
         vios_key = tuple_str(target)
         results['status'][vios_key] = ''  # first time init
@@ -994,18 +995,22 @@ def main():
     # Perfom the update
     nim_updateios(module, results['targets'], vios_status, time_limit)
 
+    # set status and exit
     if not results['status']:
         module.log('NIM updateios operation: status table is empty')
         results['meta']['messages'].append('Warning: status table is empty, returning initial vios_status.')
-        results['status'] = vios_status
+        results['status'] = module.params['vios_status']
         results['msg'] = "NIM updateios operation completed. See meta data for details."
+        module.log(results['msg'])
     else:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
         if len(target_errored):
             results['msg'] = "NIM updateios operation failed for {0}. See status and meta for details.".format(target_errored)
+            module.log(results['msg'])
             module.fail_json(**results)
         else:
             results['msg'] = "NIM updateios operation completed. See status and meta for details."
+            module.log(results['msg'])
             module.exit_json(**results)
 
 
