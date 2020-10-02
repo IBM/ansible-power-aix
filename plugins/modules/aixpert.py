@@ -16,13 +16,11 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: aixpert
-short_description: Apply/Check/Save/Undo/Query security settings
+short_description: System security settings management.
 description:
-- This module facilitates
-    a. Application of security rules on the system using aixpert
-    b. Checking of security settings
-    c. Undo of the previously applied set of security rules
-    d. Saving of security rules in normal or abbreviated mode.
+- This module uses the B(aixpert) command to manage a variety of system configuration settings
+  enabling the desired security level on a logical partition (LPAR).
+- It allows to query, check, apply, save, undo security settings.
 version_added: '2.9'
 requirements:
 - AIX
@@ -31,67 +29,71 @@ requirements:
 options:
   mode:
     description:
-    - Specifies the action to be performed
-      I(mode=apply), applies the security settings based on the level
-         specified or profile provided. If both are provided, 'level'
-         will take precedence.
-      I(mode=check), checks the security settings against the previously
-         applied set of rules or the provided 'profile' file
-      I(mode=save), saves the security settings for the level specified
-         or based on the specified 'profile' file.
-         - If I(abbr_fmt_file), is provided, the security rules are saved in
-           the abbreviated file format.
-         - If I(norm_fmt_file) is provided, the security rules are saved in
-           normal format.
-      I(mode=undo), undoes the previously applied security settings.
-      I(mode=query), get the type of the profile applied on the system.
+    - Specifies the action to be performed.
+    - C(apply) applies the security settings based on the level specified or profile provided. If
+      both are provided, I(level) will take precedence.
+    - C(check) checks the security settings against the previously applied set of rules or the
+      provided I(profile) file.
+    - C(save) saves the security settings for the level specified or based on the specified
+      I(profile) file. If I(abbr_fmt_file) is provided, the security rules are saved in the
+      abbreviated file format. If I(norm_fmt_file) is provided, the security rules are saved in
+      normal format.
+    - C(undo) undoes the previously applied security settings.
+    - C(query) gets the type of the profile applied on the system.
     type: str
     choices: [apply, check, save, undo, query]
     required: true
   level:
     description:
     - Specifies the security level settings to be applied or saved.
-      I(high) - Specifies high-level security options
-      I(low) - Specifies low-level security options.
-      I(medium) - Specifies medium-level security options.
-      I(default) - Specifies AIX® standards-level security options.
-      I(sox-cobit) - Specifies SOX-COBIT best practices-level security options.
+    - C(high) specifies high-level security options.
+    - C(low) specifies low-level security options.
+    - C(medium) specifies medium-level security options.
+    - C(default) specifies AIX standards-level security options.
+    - C(sox-cobit) specifies SOX-COBIT best practices-level security options.
     type: str
     choices: [ high, medium, low, default, sox-cobit ]
   profile:
     description:
-    - When I(mode=apply), specifies the profile to be applied on the system
-    - When I(mode=check), specified the profile to be used to check the
-        security settings.
+    - When I(mode=apply), specifies the profile to be applied on the system.
+    - When I(mode=check), specified the profile to be used to check the security settings.
     type: str
   abbr_fmt_file:
     description:
-    - When I(mode=save) or I(mode=apply), specifies the file where the
-      security settings needs to be saved in abbreviated format.
+    - When I(mode=save) or I(mode=apply), specifies the file where the security settings needs to
+      be saved in abbreviated format.
     type: str
   norm_fmt_file:
     description:
-    - When I(mode=apply) or I(mode=save), specifies the file where the
-      settings should be saved in normal format.
+    - When I(mode=apply) or I(mode=save), specifies the file where the settings should be saved in
+      normal format.
     type: str
-
 '''
 
 EXAMPLES = r'''
-  - name: "Save default level rules in normal format"
-    aixpert:
-       mode: save
-       level: default
-       norm_fmt_file: /home/kavana/norm.xml
+- name: "Save default level rules in normal format"
+  aixpert:
+    mode: save
+    level: default
+    norm_fmt_file: /home/kavana/norm.xml
 
-  - name: "Apply using saved profile"
-    aixpert:
-       mode: apply
-       profile: /home/kavana/norm.xml
+- name: "Apply using saved profile"
+  aixpert:
+    mode: apply
+    profile: /home/kavana/norm.xml
 
-  - name: "Undo the settings"
-    aixpert:
-       mode: undo
+- name: "Undo the settings"
+  aixpert:
+    mode: undo
+
+- name: "Check the settings match the provided profile"
+  aixpert:
+    mode: check
+    profile: /home/kavana/high.xml
+
+- name: "Query the settings"
+  aixpert:
+    mode: query
 '''
 
 RETURN = r'''
@@ -99,6 +101,7 @@ msg:
     description: The execution message.
     returned: always
     type: str
+    sample: 'aixpert security check completed successfully.'
 rc:
     description: The return code.
     returned: If the command failed.
@@ -131,11 +134,11 @@ def check_settings(module):
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Aixpert security check failed. Command in failure '%s'" % cmd
+        msg = "aixpert security check failed. Command in failure '%s'" % cmd
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     changed = True
-    msg = "Aixpert security check completed successfully."
+    msg = "aixpert security check completed successfully."
     return changed, msg
 
 

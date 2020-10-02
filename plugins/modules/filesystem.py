@@ -16,90 +16,81 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: filesystem
-short_description: Create/Modify/Remove Local and NFS filesystems
+short_description: Local and NFS filesystems management.
 description:
-- This module facilitates
-    a. Creation of Local and NFS filesystems
-    b. Modification of filesystems
-    c. Removal of filesystems
+- This module allows to create, modify and remove local and NFS filesystems.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX
+- Python >= 2.7
 options:
   filesystem:
     description:
-    - Specifies the mount point, which is the directory where the file system
-      will be mounted.
+    - Specifies the mount point that is the directory where the file system will be mounted.
     type: str
     required: true
   state:
     description:
     - Specifies the action to be performed on the filesystem.
-      I(present) - Specifies to create a filesystem if it doesn't exist
-                   else to change the specified filesystem attributes
-      I(absent) - Specifies to remove a filesystem
+    - C(present) specifies to create a filesystem if it does not exist, otherwise it changes the
+      attributes of the specified filesystem.
+    - C(absent) specifies to remove a filesystem.
     type: str
     choices: [ present, absent ]
     default: present
   rm_mount_point:
     description:
-    - When state is I(state=absent), specifies to remove the mount directory along
-      with the entry in the filesystem.
+    - When state is I(state=absent), specifies to remove the mount directory along with the entry in
+      the filesystem.
     type: bool
     default: false
   attributes:
     description:
-    - When I(state=present), specifies comma separated attribute=value pairs
-      used for creation/modification of local filesystem.
-      Refer to 'crfs' AIX command documentation for more details on the
-      supported attributes.
+    - When I(state=present), specifies comma separated 'attribute=value' pairs used to create or
+      modify the local filesystem.
+    - Refer to 'crfs' AIX command documentation for more details on the supported attributes.
     type: list
     elements: str
   device:
     description:
-    - When I(state=present),
-      a. For local filesystem, specifies the logical volume to use for filesystem
-      creation. If not specified, a new logical volume will be created.
-      b. For NFS filesystem, specifies the remote export device to use for
-      creation/modification of the filesystem
+    - When I(state=present), for local filesystem, it specifies the logical volume to use to create
+      the filesystem. If not specified, a new logical volume will be created.
+    - When I(state=present), for NFS filesystem, it specifies the remote export device to use to
+      create or modify the filesystem.
     type: str
   vg:
     description:
-    - When I(state=present), specifies an existing volume group
+    - When I(state=present), specifies an existing volume group.
     type: str
   account_subsystem:
     description:
-    - When I(state=present), for local filesystems, specifies whether the
-      file system is to be processed by the accounting subsystem
-      If not specified, a default value of 'false' will be used for filesystem
-      creation
+    - When I(state=present), for local filesystems, specifies whether the file system is to be
+      processed by the accounting subsystem.
     type: bool
   fs_type:
     description:
-    - Specifies the virtual filesystem type for local filesystem creation
-      If not specified, creates jfs2 filesystem by default.
+    - Specifies the virtual filesystem type to create the local filesystem.
     type: str
     default: jfs2
   auto_mount:
     description:
-    - Specifies whether to automatically mount the filesystem at system restart
-      while creation/updation of any filesystem. If not specified, default value
-      for filesystem creation will be 'false'
+    - Specifies whether to automatically mount the filesystem at system restart while creating or
+      updating filesystem.
     type: bool
   permissions:
     description:
-    - Specifies file system permissions while creation/updation of any filesystem
-      I(rw) - specifies read-write mode
-      I(ro) - specifies read-only mode
-      If not specified, default value of 'rw' will be used for filesystem creation
+    - Specifies file system permissions while creation/updation of any filesystem.
+    - C(rw) specifies read-write mode.
+    - C(ro) specifies read-only mode.
     type: str
     choices: [ ro, rw ]
   mount_group:
     description:
-    - Specifies the mount group to be set/modified for a filesystem
+    - Specifies the mount group to be set/modified for a filesystem.
     type: str
   nfs_server:
     description:
-    - Specifies a Network File System (NFS) server for NFS filesystem
+    - Specifies a Network File System (NFS) server for NFS filesystem.
     type: str
 '''
 
@@ -317,12 +308,11 @@ def mkfs(module, filesystem):
             attr_str = ""
 
         acct_sub_sys_opt = {
+            None: '',
             True: '-t yes ',
             False: '-t no '
         }
         acct_sub_sys = module.params['account_subsystem']
-        if acct_sub_sys is None:
-            acct_sub_sys = False
         acct_sub_sys = acct_sub_sys_opt[acct_sub_sys]
 
         vg = module.params['vg']

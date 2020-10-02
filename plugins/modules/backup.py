@@ -16,12 +16,14 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: backup
-short_description: Manage data or system volume group backup on a LPAR.
+short_description: Data or system volume group backup management.
 description:
-- This module manages backup image of data or system volume group.
-- It uses mksysb or savevg command to create the backup image of the volume group either in a file
-  or onto a device.
+- This module manages backup image of data or system volume group on a logical partition (LPAR).
+- It uses mksysb or savevg commands to create backup image of a volume group either in a file or
+  onto a device.
 - It uses restvg or alt_disk_mksysb to restore a backup image to disk(s).
+- mksysb and alt_disk_mksysb operate on system volume group creating and restoring installable
+  backup image while savevg and restvg operate on data volume group.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -39,8 +41,8 @@ options:
   type:
     description:
     - Specifies the type of backup object to operate.
-    - C(mksysb) is under construction.
-    - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
+    - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a
+      LPAR target.
     - C(savevg) operates on LPAR savevg, that is all files belonging to a volume group.
     - Discarded for I(action=view) as this action only applies to savevg.
     type: str
@@ -50,15 +52,18 @@ options:
     description:
     - Specifies the targets of the operation.
     - Discarded if I(type=mksysb).
-    - Required if I(action=create) and I(type=savevg), then it specifies the volume group to back up.
-    - If I(action=restore) and I(type=savevg), it specifies the disk device to restore to and do not use the one in
-      the vgname.data file.
+    - Required if I(action=create) and I(type=savevg), then it specifies the volume group to back
+      up.
+    - If I(action=restore) and I(type=savevg), it specifies the disk device to restore to and do
+      not use the one in the vgname.data file.
     type: str
   flags:
     description:
     - Specifies additional flag to pass to the command. Refers to IBM documentation for details.
-    - For I(action=create) and I(type=mksysb), you could use C(-a -A -b number -F filename -G|-N -M -P -t path -T -V -Z).
-    - For I(action=restore) and I(type=mksysb), you could use C(-p platform -L mksysb_level -c console -K -O -g -k -r -z -T -S -C).
+    - For I(action=create) and I(type=mksysb), you could use
+      C(-a -A -b number -F filename -G|-N -M -P -t path -T -V -Z).
+    - For I(action=restore) and I(type=mksysb), you could use
+      C(-p platform -L mksysb_level -c console -K -O -g -k -r -z -T -S -C).
     - For I(action=create) and I(type=savevg), you could use C(-a -A -b Blocks -p -T -V -Z).
     - For I(action=restore) and I(type=savevg), you could use C(-b Blocks -n -P PPsize).
     type: str
@@ -77,12 +82,14 @@ options:
     elements: str
   script:
     description:
-    - Specifies the full path of a customiation script file to run at the end of the mksysb installation.
+    - Specifies the full path of a customiation script file to run at the end of the mksysb
+      installation.
     - Can be used if I(action=restore) or I(type=mksysb).
     type: path
   resolv_conf:
     description:
-    - Specifies the full path of a alternate resolv.conf file to replace the existing one after the mksysb installation.
+    - Specifies the full path of a alternate resolv.conf file to replace the existing one after the
+      mksysb installation.
     - Can be used if I(action=restore) or I(type=mksysb).
     type: path
   phase:
@@ -103,10 +110,11 @@ options:
     - Specifies to create the data file containing information on the vloume group, logical volumes,
       file systems and their sizes.
     - If I(volume_group=rootvg), then data file will be in C(/image.data).
-    - If C(volume_group) is a data volume group, data file will be in C(/tmp/vgdata/vgname/vgname.data).
-    - Specify I(create_data_file=mapfile) to creates the MAPFILE containing the mapping of the logical
-      to physical partitions for each logical volume in the volume group. This mapping can be used
-      to allocate the same logical-to-physical mapping when the image is restored.
+    - If C(volume_group) is a data volume group, data file will be in
+      C(/tmp/vgdata/vgname/vgname.data).
+    - Specify I(create_data_file=mapfile) to creates the MAPFILE containing the mapping of the
+      logical to physical partitions for each logical volume in the volume group. This mapping can
+      be used to allocate the same logical-to-physical mapping when the image is restored.
     - Can be used if I(action=create).
     type: str
     choices: [ 'yes', 'mapfile', 'no' ]
@@ -202,6 +210,8 @@ notes:
     JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up
     using a savevg.
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
+  - This M(backup) module only operates on LPAR, for operation on VIOS, please checkout the
+    M(backupios) module in the power-vios collection.
 '''
 
 EXAMPLES = r'''
@@ -312,6 +322,7 @@ rc:
     - Equal I(-1) when the command has not been run.
     returned: always
     type: int
+    sample: 0
 '''
 
 from ansible.module_utils.basic import AnsibleModule
