@@ -105,7 +105,7 @@ options:
 
 EXAMPLES = r'''
 - name: Creation of a JFS2 filesystem
-  filesystem:
+  ibm.power_aix.filesystem:
     state: present
     filesystem: /mnt3
     fs_type: jfs2
@@ -113,12 +113,12 @@ EXAMPLES = r'''
     mount_group: test
     vg: rootvg
 - name: Increase size of a filesystem
-  filesystem:
+  ibm.power_aix.filesystem:
     filesystem: /mnt3
     state: present
     attributes: size=+5M
 - name: Remove a NFS filesystem
-  filesystem:
+  ibm.power_aix.filesystem:
     filesystem: /mnt
     state: absent
     rm_mount_point: true

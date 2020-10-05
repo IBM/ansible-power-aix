@@ -91,30 +91,30 @@ options:
 
 EXAMPLES = r'''
 - name: Create a logical volume of 64M
-  lvol:
+  ibm.power_aix.lvol:
     vg: test1vg
     lv: test1lv
     size: 64M
 - name: Create a logical volume of 32M with disks testdisk1 and testdisk2
-  lvol:
+  ibm.power_aix.lvol:
     vg: test2vg
     lv: test2lv
     size: 32M
     pvs: [ testdisk1, testdisk2 ]
 - name: Create a logical volume of 32M with a minimum placement policy
-  lvol:
+  ibm.power_aix.lvol:
     vg: rootvg
     lv: test4lv
     size: 32M
     policy: minimum
 - name: Create a logical volume with extra options like mirror pool
-  lvol:
+  ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     size: 128M
     extra_opts: -p copy1=poolA -p copy2=poolB
 - name: Remove the logical volume
-  lvol:
+  ibm.power_aix.lvol:
     vg: test1vg
     lv: test1lv
     state: absent
