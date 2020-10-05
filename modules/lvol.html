@@ -278,30 +278,30 @@
 <div class="section" id="examples">
 <h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 64M</span>
-  <span class="nt">lvol</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1lv</span>
     <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64M</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with disks testdisk1 and testdisk2</span>
-  <span class="nt">lvol</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2lv</span>
     <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
     <span class="nt">pvs</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">testdisk1</span><span class="p p-Indicator">,</span> <span class="nv">testdisk2</span> <span class="p p-Indicator">]</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with a minimum placement policy</span>
-  <span class="nt">lvol</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rootvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test4lv</span>
     <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
     <span class="nt">policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimum</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume with extra options like mirror pool</span>
-  <span class="nt">lvol</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testlv</span>
     <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128M</span>
     <span class="nt">extra_opts</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-p copy1=poolA -p copy2=poolB</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove the logical volume</span>
-  <span class="nt">lvol</span><span class="p">:</span>
+  <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1lv</span>
     <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">absent</span>

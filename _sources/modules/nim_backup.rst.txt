@@ -328,7 +328,7 @@ msg (always, str, )
 
 
 targets (always, list, ['nimclient01', 'nimclient02', '...'])
-  List of VIOSes.
+  List of NIM client actually targeted for the operation.
 
 
 status (always, dict, { nimclient01: 'SUCCESS', nimclient02: 'FAILURE' })

@@ -94,17 +94,17 @@ Examples
 
     
     - name: Mount filesystems
-      mount:
+      ibm.power_aix.mount:
         mount_dir: /dev/hd1
         mount_over_dir: /home
 
     - name: Mount filesystems provided by a node"
-      mount:
+      ibm.power_aix.mount:
         node: aixbase.aus.stglabs.ibm.com
         mount_dir: /mnt
 
     - name: Unmount remote filesystems
-      mount:
+      ibm.power_aix.mount:
        state: umount
        mount_all: remote
        force: True

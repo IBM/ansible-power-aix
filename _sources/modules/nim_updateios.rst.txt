@@ -145,8 +145,8 @@ msg (always, str, NIM updateios operation completed successfully)
   The execution message.
 
 
-targets (always, str, [nimclient01, nimclient02, ...])
-  The execution message.
+targets (always, str, ['vios1', 'vios2, vios3', '...'])
+  List of VIOSes actually targeted for the operation.
 
 
 stdout (always, str, )
@@ -182,12 +182,8 @@ status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCE
 
 
 
-nim_node (always, dict, {'nim_node': {'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed', 'type': 'standalone', 'hostname': 'nimclient01.aus.stglabs.ibm.com'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'cluster': {'vios1': {'repos_state': '', 'state': 'DOWN'}, 'vios2': {'repos_state': 'OK', 'state': 'OK'}, 'name': 'mycluster', 'nodes': ['vios1', 'vios2'], 'state': 'DEGRADED'}}}}})
+nim_node (always, dict, {'nim_node': {'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'cluster': {'vios1': {'repos_state': '', 'state': 'DOWN'}, 'vios2': {'repos_state': 'OK', 'state': 'OK'}, 'name': 'mycluster', 'nodes': ['vios1', 'vios2'], 'state': 'DEGRADED'}}}}})
   NIM node info. It can contains more information if passed as option *nim_node*.
-
-
-  standalone (always, dict, )
-    List of standalone NIM resources.
 
 
   vios (always, dict, )
