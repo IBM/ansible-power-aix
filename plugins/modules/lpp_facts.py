@@ -46,6 +46,16 @@ options:
 '''
 
 EXAMPLES = r'''
+- name: Gather the fileset facts
+  lpp_facts:
+- name: Print the fileset facts
+  debug:
+    var: ansible_facts.filesets
+- name: Check whether a fileset called 'openssh.base.client' is installed
+  debug:
+    msg: Fileset 'openssh.base.client' is installed
+  when: "'openssh.base.client' in ansible_facts.filesets"
+
 - name: Populate fileset facts with the installation state for the most recent
         level of installed filesets for all of the bos.rte filesets
   lpp_facts:
@@ -70,9 +80,9 @@ ansible_facts:
   contains:
     filesets:
       description:
-      - List of installed software products
+      - Maps the fileset name to a dictionary of installed levels.
       returned: success
-      type: list
+      type: dict
       elements: dict
       contains:
         name:
@@ -81,68 +91,75 @@ ansible_facts:
           returned: always
           type: str
           sample: "devices.scsi.disk.rte"
-        level:
+        levels:
           description:
-          - Fileset level
-          returned: always
-          type: str
-          sample: "7.2.3.0"
-        vrmf:
-          description:
-          - Fileset vrmf
-          returned: always
+          - Maps the fileset level to the fileset information.
           type: dict
-          sample: "vrmf: { ver: 7, rel: 2, mod: 3, fix: 0 }"
-        state:
-          description:
-          - State of the fileset on the system
-          - C(applied) specifies that the fileset is installed on the system.
-          - C(applying) specifies that an attempt was made to apply the specified
-            fileset, but it did not complete successfully, and cleanup was not performed.
-          - C(broken) specifies that the fileset or fileset update is broken and should be
-            reinstalled before being used.
-          - C(committed) specifies that the fileset is installed on the system.
-          - C(efixlocked) specifies that the fileset is installed on the system and is
-            locked by the interim fix manager.
-          - C(obsolete) specifies that the fileset was installed with an earlier version
-            of the operating system but has been replaced by a repackaged (renamed)
-            newer version.
-          - C(committing) specifies that an attempt was made to commit the specified
-            fileset, but it did not complete successfully, and cleanup was not performed.
-          - C(rejecting) specifies that an attempt was made to reject the specified
-            fileset, but it did not complete successfully, and cleanup was not performed.
-          returned: always
-          type: str
-        ptf:
-          description:
-          - Program temporary fix
-          returned: when available
-          type: str
-        type:
-          description:
-          - Fileset type
-          - C(install) specifies install image (base level).
-          - C(maintenance) specifies maintenance level update.
-          - C(enhancement).
-          - C(fix).
-          returned: always
-          type: str
-        description:
-          description:
-          - Fileset description
-          returned: always
-          type: str
-        emgr_locked:
-          description:
-          - Specifies whether fileset is locked by the interim fix manager
-          returned: always
-          type: bool
-        source:
-          description:
-          - Source path
-          returned: always
-          type: str
-          sample: "/etc/objrepos"
+          elements: dict
+          contains:
+            vrmf:
+              description:
+              - Fileset vrmf
+              returned: always
+              type: dict
+              sample: |-
+                "vrmf": {
+                    "fix": 0,
+                    "mod": 3,
+                    "rel": 2,
+                    "ver": 7
+                }
+            state:
+              description:
+              - State of the fileset on the system
+              - C(applied) specifies that the fileset is installed on the system.
+              - C(applying) specifies that an attempt was made to apply the specified
+                fileset, but it did not complete successfully, and cleanup was not performed.
+              - C(broken) specifies that the fileset or fileset update is broken and should be
+                reinstalled before being used.
+              - C(committed) specifies that the fileset is installed on the system.
+              - C(efixlocked) specifies that the fileset is installed on the system and is
+                locked by the interim fix manager.
+              - C(obsolete) specifies that the fileset was installed with an earlier version
+                of the operating system but has been replaced by a repackaged (renamed)
+                newer version.
+              - C(committing) specifies that an attempt was made to commit the specified
+                fileset, but it did not complete successfully, and cleanup was not performed.
+              - C(rejecting) specifies that an attempt was made to reject the specified
+                fileset, but it did not complete successfully, and cleanup was not performed.
+              returned: always
+              type: str
+            ptf:
+              description:
+              - Program temporary fix
+              returned: when available
+              type: str
+            type:
+              description:
+              - Fileset type
+              - C(install) specifies install image (base level).
+              - C(maintenance) specifies maintenance level update.
+              - C(enhancement).
+              - C(fix).
+              returned: always
+              type: str
+            description:
+              description:
+              - Fileset description
+              returned: always
+              type: str
+            emgr_locked:
+              description:
+              - Specifies whether fileset is locked by the interim fix manager
+              returned: always
+              type: bool
+            sources:
+              description:
+              - Source paths
+              returned: always
+              type: list
+              elements: str
+              sample: ["/etc/objrepos"]
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -188,36 +205,43 @@ def main():
 
     # List of fields returned by lslpp -lac:
     # Source:Fileset:Level:PTF Id:State:Type:Description:EFIX Locked
-    filesets = []
+    filesets = {}
     for line in stdout.splitlines():
         raw_fields = line.split(':')
         if len(raw_fields) < 8:
             continue
         fields = [field.strip() for field in raw_fields]
 
-        fileset = {}
-        fileset['source'] = fields[0]
-        fileset['name'] = fields[1]
-        fileset['level'] = fields[2]
-        vrmf = fields[2].split('.')
-        if len(vrmf) == 4:
-            fileset['vrmf'] = {
-                'ver': int(vrmf[0]),
-                'rel': int(vrmf[1]),
-                'mod': int(vrmf[2]),
-                'fix': int(vrmf[3])
-            }
-        if fields[3]:
-            fileset['ptf'] = fields[3]
-        fileset['state'] = fields[4].lower()
-        if fields[5]:
-            fileset['type'] = LPP_TYPE.get(fields[5], '')
-        fileset['description'] = fields[6]
+        name = fields[1]
+        level = fields[2]
 
-        if fields[7] == 'EFIXLOCKED':
-            fileset['emgr_locked'] = True
+        if name not in filesets:
+            filesets[name] = {'name': name, 'levels': {}}
 
-        filesets.append(fileset)
+        if level not in filesets[name]['levels']:
+            info = {}
+
+            vrmf = level.split('.')
+            if len(vrmf) == 4:
+                info['vrmf'] = {
+                    'ver': int(vrmf[0]),
+                    'rel': int(vrmf[1]),
+                    'mod': int(vrmf[2]),
+                    'fix': int(vrmf[3])
+                }
+            if fields[3]:
+                info['ptf'] = fields[3]
+            info['state'] = fields[4].lower()
+            if fields[5]:
+                info['type'] = LPP_TYPE.get(fields[5], '')
+            info['description'] = fields[6]
+            if fields[7] == 'EFIXLOCKED':
+                info['emgr_locked'] = True
+            info['sources'] = [fields[0]]
+
+            filesets[name]['levels'][level] = info
+        else:
+            filesets[name]['levels'][level]['sources'].append(fields[0])
 
     results = dict(ansible_facts=dict(filesets=filesets))
 
