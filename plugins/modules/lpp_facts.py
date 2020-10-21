@@ -38,6 +38,11 @@ options:
     description:
     - Specifies an alternate install location.
     type: str
+  all_updates:
+    description:
+    - Returns all updates for a fileset (default is to return the most recent level only).
+    type: bool
+    default: no
   base_levels_only:
     description:
     - Limits listings to base level filesets (no updates returned).
@@ -94,6 +99,7 @@ ansible_facts:
         levels:
           description:
           - Maps the fileset level to the fileset information.
+          returned: always
           type: dict
           elements: dict
           contains:
@@ -102,13 +108,7 @@ ansible_facts:
               - Fileset vrmf
               returned: always
               type: dict
-              sample: |-
-                "vrmf": {
-                    "fix": 0,
-                    "mod": 3,
-                    "rel": 2,
-                    "ver": 7
-                }
+              sample: '"vrmf": { "fix": 0, "mod": 3, "rel": 2, "ver": 7 }'
             state:
               description:
               - State of the fileset on the system
@@ -179,17 +179,21 @@ def main():
             filesets=dict(type='list', elements='str'),
             bundle=dict(type='str'),
             path=dict(type='str'),
+            all_updates=dict(type='bool', default=False),
             base_levels_only=dict(type='bool', default=False)
         ),
         mutually_exclusive=[
             ['filesets', 'bundle'],
+            ['all_updates', 'base_levels_only']
         ],
         supports_check_mode=True
     )
 
     lslpp_path = module.get_bin_path('lslpp', required=True)
 
-    cmd = [lslpp_path, '-lacq']
+    cmd = [lslpp_path, '-lcq']
+    if module.params['all_updates']:
+        cmd += ['-a']
     if module.params['base_levels_only']:
         cmd += ['-I']
     if module.params['path']:
@@ -203,7 +207,7 @@ def main():
     ret, stdout, stderr = module.run_command(cmd)
     # Ignore errors as lslpp might return 1 with -b
 
-    # List of fields returned by lslpp -lac:
+    # List of fields returned by lslpp -lc:
     # Source:Fileset:Level:PTF Id:State:Type:Description:EFIX Locked
     filesets = {}
     for line in stdout.splitlines():
@@ -218,6 +222,8 @@ def main():
         if name not in filesets:
             filesets[name] = {'name': name, 'levels': {}}
 
+        # There can be multiple levels for the same fileset if all_updates
+        # is set (otherwise only most recent level is returned).
         if level not in filesets[name]['levels']:
             info = {}
 
@@ -235,8 +241,7 @@ def main():
             if fields[5]:
                 info['type'] = LPP_TYPE.get(fields[5], '')
             info['description'] = fields[6]
-            if fields[7] == 'EFIXLOCKED':
-                info['emgr_locked'] = True
+            info['emgr_locked'] = fields[7] == 'EFIXLOCKED'
             info['sources'] = [fields[0]]
 
             filesets[name]['levels'][level] = info
