@@ -28,11 +28,13 @@ options:
     description:
     - Specifies the names of software products.
     - Pattern matching characters, such as C(*) (asterisk) and C(?) (question mark), are valid.
+    - Mutually exclusive with I(bundle).
     type: list
     elements: str
   bundle:
     description:
     - Specifies a file or bundle to use as the fileset list source.
+    - Mutually exclusive with I(filesets).
     type: str
   path:
     description:
@@ -41,11 +43,13 @@ options:
   all_updates:
     description:
     - Returns all updates for a fileset (default is to return the most recent level only).
+    - Mutually exclusive with I(base_levels_only).
     type: bool
     default: no
   base_levels_only:
     description:
     - Limits listings to base level filesets (no updates returned).
+    - Mutually exclusive with I(all_updates).
     type: bool
     default: no
 '''
@@ -53,9 +57,6 @@ options:
 EXAMPLES = r'''
 - name: Gather the fileset facts
   lpp_facts:
-- name: Print the fileset facts
-  debug:
-    var: ansible_facts.filesets
 - name: Check whether a fileset called 'openssh.base.client' is installed
   debug:
     msg: Fileset 'openssh.base.client' is installed
@@ -65,14 +66,16 @@ EXAMPLES = r'''
         level of installed filesets for all of the bos.rte filesets
   lpp_facts:
     filesets: bos.rte.*
-- debug:
+- name: Print the fileset facts
+  debug:
     var: ansible_facts.filesets
 
 - name: Populate fileset facts with the installation state for all the filesets
         contained in the Server bundle
   lpp_facts:
     bundle: Server
-- debug:
+- name: Print the fileset facts
+  debug:
     var: ansible_facts.filesets
 '''
 
@@ -194,7 +197,7 @@ def main():
     cmd = [lslpp_path, '-lcq']
     if module.params['all_updates']:
         cmd += ['-a']
-    if module.params['base_levels_only']:
+    elif module.params['base_levels_only']:
         cmd += ['-I']
     if module.params['path']:
         cmd += ['-R', module.params['path']]
@@ -223,7 +226,7 @@ def main():
             filesets[name] = {'name': name, 'levels': {}}
 
         # There can be multiple levels for the same fileset if all_updates
-        # is set (otherwise only most recent level is returned).
+        # is set (otherwise only the most recent level is returned).
         if level not in filesets[name]['levels']:
             info = {}
 
