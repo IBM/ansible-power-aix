@@ -240,9 +240,9 @@ def change_password(module):
     change_passwd_on_login = module.params['change_passwd_on_login']
 
     if change_passwd_on_login:
-        cmd = "echo \'{user}:{password}\' | chpasswd -ec".format(user=name, password=passwd)
-    else:
         cmd = "echo \'{user}:{password}\' | chpasswd -e".format(user=name, password=passwd)
+    else:
+        cmd = "echo \'{user}:{password}\' | chpasswd -ec".format(user=name, password=passwd)
 
     pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
     if pass_rc != 0:
