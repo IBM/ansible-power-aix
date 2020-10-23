@@ -233,6 +233,10 @@ meta:
                     returned: when target is actually a NIM client.
                     type: dict
                     contains:
+                        cmd:
+                            description: Command exectued.
+                            returned: If the command was run.
+                            type: str
                         stdout:
                             description: Standard output of the command.
                             returned: If the command was run.
@@ -341,7 +345,7 @@ def refresh_nim_node(module, type):
                 results['nim_node'][type][elem].update(nim_info[elem])
             else:
                 results['nim_node'][type][elem] = nim_info[elem]
-    module.debug('module.nim_node[{0}]: {1}'.format(type, module.nim_node[type]))
+    module.debug("results['nim_node'][{0}]: {1}".format(type, results['nim_node'][type]))
 
 
 def get_nim_type_info(module, type):
@@ -865,6 +869,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             # Perform the updateios operation
             cmd = updateios_cmd + [vios]
             rc, stdout, stderr = module.run_command(cmd)
+            results['meta'][vios_key][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios_key][vios]['stdout'] = stdout
             results['meta'][vios_key][vios]['stderr'] = stderr
             skip_next_target = False

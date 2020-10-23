@@ -158,6 +158,18 @@ status:
     - When C(target_file) is set, then the key is 'all'.
     returned: always
     type: dict
+cmd:
+    description: Command exectued.
+    returned: If the command was run.
+    type: str
+stdout:
+    description: Standard output of the command.
+    returned: If the command was run.
+    type: str
+stderr:
+    description: Standard error of the command.
+    returned: If the command was run.
+    type: str
 '''
 
 import re
@@ -232,7 +244,7 @@ def refresh_nim_node(module, type):
                 results['nim_node'][type][elem].update(nim_info[elem])
             else:
                 results['nim_node'][type][elem] = nim_info[elem]
-    module.debug('module.nim_node[{0}]: {1}'.format(type, module.nim_node[type]))
+    module.debug("results['nim_node'][{0}]: {1}".format(type, results['nim_node'][type]))
 
 
 def get_nim_type_info(module, type):
@@ -402,6 +414,7 @@ def viosupgrade_query(module):
         rc, stdout, stderr = module.run_command(cmd)
 
         results['changed'] = True  # don't really know
+        results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
 
@@ -418,6 +431,7 @@ def viosupgrade_query(module):
             rc, stdout, stderr = module.run_command(cmd)
 
             results['changed'] = True  # don't really know
+            results['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
             if rc == 0:
@@ -474,6 +488,7 @@ def viosupgrade(module):
         rc, stdout, stderr = module.run_command(cmd)
 
         results['changed'] = True  # don't really know
+        results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
 
@@ -557,6 +572,10 @@ def viosupgrade(module):
         rc, stdout, stderr = module.run_command(cmd)
 
         results['changed'] = True  # don't really know
+        results['cmd'] = ' '.join(cmd)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+
         if rc == 0:
             module.log("[STDERR] {0}".format(stderr))
             results['status'][vios] = 'SUCCESS'

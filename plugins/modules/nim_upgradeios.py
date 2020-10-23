@@ -35,7 +35,7 @@ options:
     - C(viosupgrade) to use the viosupgrade command to upgrade. Not supported yet.
     type: str
     choices: [ migrate ]
-    required: yes
+    default: migrate
   targets:
     description:
     - Specifies the list of VIOSes NIM targets to update.
@@ -137,9 +137,9 @@ options:
     - TODO document log parameter.
     - Can be used with I(action=migrate).
     type: str
-  file_res:
+  file_resource:
     description:
-    - TODO document file_res parameter.
+    - TODO document file_resource parameter.
     - Can be used with I(action=migrate).
     type: str
   group:
@@ -354,6 +354,10 @@ meta:
                     returned: when target is actually a NIM client.
                     type: dict
                     contains:
+                        cmd:
+                            description: Command exectued.
+                            returned: If the command was run.
+                            type: str
                         stdout:
                             description: Standard output of the command.
                             returned: If the command was run.
@@ -402,7 +406,7 @@ def refresh_nim_node(module, type):
                 results['nim_node'][type][elem].update(nim_info[elem])
             else:
                 results['nim_node'][type][elem] = nim_info[elem]
-    module.debug('module.nim_node[{0}]: {1}'.format(type, module.nim_node[type]))
+    module.debug("results['nim_node'][{0}]: {1}".format(type, results['nim_node'][type]))
 
 
 def get_nim_type_info(module, type):
@@ -788,9 +792,10 @@ def nim_migvios(module, target_tuple, vios_key, vios):
     backup_name = build_name(vios, module.params['backup_name'], module.params['backup_prefix'], module.params['backup_postfix'])
 
     # Note: the option -a time_limit is not yet supported by migvios
+    # time_limit attribute is only valid with the following operations: bos_inst, cust, and alt_disk_install.
     cmd = ['nim', '-Fo', 'migvios']
 
-    cmd += ['-a', 'mksysb={0}'.format(mksysb_name)]
+    cmd += ['-a', 'ios_mksysb={0}'.format(mksysb_name)]
     cmd += ['-a', 'ios_backup={0}'.format(backup_name)]
 
     if module.params['group']:
@@ -828,11 +833,15 @@ def nim_migvios(module, target_tuple, vios_key, vios):
 
     cmd += ['-a', 'mk_image=yes' if module.params['mk_image'] else 'mk_image=no']
     cmd += ['-a', 'boot_client=yes' if module.params['boot_client'] else 'boot_client=no']
-    cmd += ['-a', 'set_boot_list=yes' if module.params['set_boot_list'] else 'set_boot_list=no']
-    cmd += ['-a', 'concurrent=yes' if module.params['concurrent'] else 'concurrent=no']
+    cmd += ['-a', 'set_bootlist=yes' if module.params['set_boot_list'] else 'set_bootlist=no']
+    # TODO check when concurrent=no we get an error:
+    # time_limit attribute is only valid with the following operations: bos_inst, cust, and alt_disk_install
+    if module.params['concurrent']:
+        cmd += ['-a', 'concurrent=yes']
     cmd += ['-a', 'skipcluster=no' if module.params['manage_cluster'] else 'skipcluster=yes']
     # TODO should we get debug settings from Ansible to set migvios -a debug
     cmd += ['-a', 'debug=yes' if module.params['debug'] else 'debug=no']
+    cmd += [vios]
 
     # DEBUG - Begin: Uncomment for testing without effective migvios operation
     # results['meta'][vios_key]['messages'].append('Warning: testing without effective migvios command')
@@ -842,6 +851,8 @@ def nim_migvios(module, target_tuple, vios_key, vios):
     # msg = 'VIOS {0} migration successfully initiated'.format(vios)
     # module.log(msg)
     # results['meta'][vios_key]['messages'].append(msg)
+    # results['meta'][vios_key][vios]['stdout'] = 'No stdout: DEBUG testing.'
+    # results['meta'][vios_key][vios]['stderr'] = 'No stderr: DEBUG testing.'
     # results['changed'] = True
     # return rc
     # DEBUG - End
@@ -851,8 +862,9 @@ def nim_migvios(module, target_tuple, vios_key, vios):
     if rc != 0:
         msg = 'Failed to migrate {0} VIOS, migvios returned {1}'.format(vios, rc)
         module.log(msg)
-        module.log('cmd {0}, stdout: {1}, stderr:{2}'.format(' '.join(cmd), stdout, stderr))
+        module.log('cmd \'{0}\' failed, stdout: {1}, stderr:{2}'.format(' '.join(cmd), stdout, stderr))
         results['meta'][vios_key]['messages'].append(msg)
+        results['meta'][vios_key][vios]['cmd'] = ' '.join(cmd)
         results['meta'][vios_key][vios]['stdout'] = stdout
         results['meta'][vios_key][vios]['stderr'] = stderr
     else:
@@ -921,6 +933,7 @@ def nim_wait_migvios(module, vios_key, vios):
             module.log(msg)
             module.log('cmd {0}, stdout: {1}, stderr:{2}'.format(' '.join(cmd), stdout, stderr))
             results['meta'][vios_key]['messages'].append(msg)
+            results['meta'][vios_key][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios_key][vios]['stdout'] = stdout
             results['meta'][vios_key][vios]['stderr'] = stderr
             return 2
@@ -995,7 +1008,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(choices=['migrate'], required=True, type='str'),
+            action=dict(choices=['migrate'], required=False, type='str', default='migrate'),
             targets=dict(required=True, type='list', elements='str'),
             time_limit=dict(required=False, type='str'),
             vios_status=dict(required=False, type='dict'),
@@ -1017,7 +1030,7 @@ def main():
             resolv_conf=dict(type='str'),
             image_data=dict(type='str'),
             log=dict(type='str'),
-            file_res=dict(type='str'),
+            file_resource=dict(type='str'),
             group=dict(type='str'),
 
             disk=dict(type='str'),
@@ -1058,7 +1071,6 @@ def main():
         nim_node={},
         status={},
     )
-
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # build a time structure for time_limit attribute,
