@@ -170,6 +170,39 @@ stderr:
     description: Standard error of the command.
     returned: If the command was run.
     type: str
+meta:
+    description: Detailed information on the module execution.
+    returned: always
+    type: dict
+    contains:
+        messages:
+            description: Details on errors/warnings not related to a specific tuple.
+            returned: always
+            type: list
+            elements: str
+            sample: see below
+        <vios>:
+            description: Detailed information on the execution on the target vios
+            returned: when target is actually a NIM client
+            type: dict
+            contains:
+                messages:
+                    description: Details on errors/warnings.
+                    returned: always
+                    type: list
+                    elements: str
+                cmd:
+                    description: Command exectued.
+                    returned: If the command was run.
+                    type: str
+                stdout:
+                    description: Standard output of the command.
+                    returned: If the command was run.
+                    type: str
+                stderr:
+                    description: Standard error of the command.
+                    returned: If the command was run.
+                    type: str
 '''
 
 import re
@@ -204,7 +237,7 @@ def param_one_of(one_of_list, required=True, exclusive=True):
 
     count = 0
     for param in one_of_list:
-        if module.params[param] is not None and module.params[param]:
+        if param in module.params and module.params[param] is not None and module.params[param]:
             count += 1
             break
     if count == 0 and required:
@@ -315,12 +348,11 @@ def check_vios_targets(module, targets):
         module  (dict): the Ansible module
         targets (list): list of tuple of NIM name of vios machine
     return:
-        res_list    (list): The list of the existing vios tuple matching the target list
+        vios_list    (list): The list of the existing vios matching the target list
     """
     global results
 
     vios_list = []
-    res_list = []
 
     # Build targets list
     for elems in targets:
@@ -381,9 +413,8 @@ def check_vios_targets(module, targets):
 
         if not error:
             vios_list.extend(tuple_elts)
-            res_list.append(tuple_elts)
 
-    return res_list
+    return vios_list
 
 
 # TODO: test viosupgrade_query
@@ -408,8 +439,8 @@ def viosupgrade_query(module):
     ret = 0
 
     cmd = ['/usr/sbin/viosupgrade', '-q']
-    if module.param['target_file']:
-        cmd += ['-f', module.param['target_file']]
+    if module.params['target_file']:
+        cmd += ['-f', module.params['target_file']]
 
         rc, stdout, stderr = module.run_command(cmd)
 
@@ -420,29 +451,34 @@ def viosupgrade_query(module):
 
         if rc == 0:
             msg = 'Command \'{0}\' successful'.format(' '.join(cmd))
+            # TODO What should we put in results['status'] as we used target_file?
         else:
             msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+            # TODO Could we check results['status'][vios] when we used target_file?
             ret += 1
         module.log(msg)
         results['meta']['messages'].append(msg)
     else:
-        for vios in module.param['targets']:
-            cmd += ['-n', vios]
+        for vios in module.params['targets']:
+            # get the fqdn hostname because short hostname can match several NIM objects
+            # and require user input to select the right one.
+            target_fqdn = socket.getfqdn(vios)
+            cmd += ['-n', target_fqdn]
             rc, stdout, stderr = module.run_command(cmd)
 
             results['changed'] = True  # don't really know
-            results['cmd'] = ' '.join(cmd)
+            results['meta'][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
             if rc == 0:
-                msg = 'Command \'{0}\' successful: {1}'.format(' '.join(cmd), stdout)
+                msg = 'Command \'{0}\' successful. See meta data "stdout".'.format(' '.join(cmd))
                 results['status'][vios] = 'SUCCESS'
             else:
                 msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+                results['status'][vios] = 'FAILURE'
                 ret += 1
             module.log(msg)
             results['meta'][vios]['messages'].append(msg)
-            results['status'][vios] = 'FAILURE'
     return ret
 
 
@@ -478,12 +514,12 @@ def viosupgrade(module):
 
     cmd = '/usr/sbin/viosupgrade'
 
-    if module.param['target_file']:
-        if 'altdisk' in module.param['action']:
+    if module.params['target_file']:
+        if 'altdisk' in module.params['action']:
             cmd += ' -t altdisk'
-        elif 'bosinst' in module.param['action']:
+        elif 'bosinst' in module.params['action']:
             cmd += ' -t bosinst'
-        cmd += ['-f', module.param['target_file']]
+        cmd += ['-f', module.params['target_file']]
 
         rc, stdout, stderr = module.run_command(cmd)
 
@@ -497,76 +533,76 @@ def viosupgrade(module):
             results['status']['all'] = 'SUCCESS'
         else:
             msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
-            ret += 1
             results['status']['all'] = 'FAILURE'
+            ret += 1
         module.log(msg)
         results['meta']['messages'].append(msg)
         return ret
 
-    for vios in module.param['targets']:
-        if 'altdisk' in module.param['action']:
+    for vios in module.params['targets']:
+        if 'altdisk' in module.params['action']:
             cmd += ' -t altdisk'
-        elif 'bosinst' in module.param['action']:
+        elif 'bosinst' in module.params['action']:
             cmd += ' -t bosinst'
 
         # get the fqdn hostname because short hostname can match several NIM objects
         # and require user input to select the right one.
         target_fqdn = socket.getfqdn(vios)
-        cmd += ['-n ', target_fqdn]
+        cmd += ['-n', target_fqdn]
 
-        if vios in module.param['mksysb_name']:
-            cmd += ' -m ' + module.param['mksysb_name'][vios]
-        elif 'all' in module.param['mksysb_name']:
-            cmd += ' -m ' + module.param['mksysb_name']['all']
+        if vios in module.params['mksysb_name']:
+            cmd += ' -m ' + module.params['mksysb_name'][vios]
+        elif 'all' in module.params['mksysb_name']:
+            cmd += ' -m ' + module.params['mksysb_name']['all']
 
-        if vios in module.param['spot_name']:
-            cmd += ' -p ' + module.param['spot_name'][vios]
-        elif 'all' in module.param['spot_name']:
-            cmd += ' -p ' + module.param['spot_name']['all']
+        if vios in module.params['spot_name']:
+            cmd += ' -p ' + module.params['spot_name'][vios]
+        elif 'all' in module.params['spot_name']:
+            cmd += ' -p ' + module.params['spot_name']['all']
 
-        if vios in module.param['rootvg_clone_disk']:
-            cmd += ' -a ' + module.param['rootvg_clone_disk'][vios]
-        elif 'all' in module.param['rootvg_clone_disk']:
-            cmd += ' -a ' + module.param['rootvg_clone_disk']['all']
+        if vios in module.params['rootvg_clone_disk']:
+            cmd += ' -a ' + module.params['rootvg_clone_disk'][vios]
+        elif 'all' in module.params['rootvg_clone_disk']:
+            cmd += ' -a ' + module.params['rootvg_clone_disk']['all']
 
-        if vios in module.param['rootvg_install_disk']:
-            cmd += ' -r ' + module.param['rootvg_install_disk'][vios]
-        elif 'all' in module.param['rootvg_install_disk']:
-            cmd += ' -r ' + module.param['rootvg_install_disk']['all']
+        if vios in module.params['rootvg_install_disk']:
+            cmd += ' -r ' + module.params['rootvg_install_disk'][vios]
+        elif 'all' in module.params['rootvg_install_disk']:
+            cmd += ' -r ' + module.params['rootvg_install_disk']['all']
 
-        if vios in module.param['skip_rootvg_cloning']:
-            if distutils.util.strtobool(module.param['skip_rootvg_cloning'][vios]):
+        if vios in module.params['skip_rootvg_cloning']:
+            if distutils.util.strtobool(module.params['skip_rootvg_cloning'][vios]):
                 cmd += ' -s'
-        elif 'all' in module.param['skip_rootvg_cloning']:
-            if distutils.util.strtobool(module.param['skip_rootvg_cloning']['all']):
+        elif 'all' in module.params['skip_rootvg_cloning']:
+            if distutils.util.strtobool(module.params['skip_rootvg_cloning']['all']):
                 cmd += ' -s'
 
-        if vios in module.param['backup_file']:
-            cmd += ' -b ' + module.param['backup_file'][vios]
-        elif 'all' in module.param['backup_file']:
-            cmd += ' -b ' + module.param['backup_file']['all']
+        if vios in module.params['backup_file']:
+            cmd += ' -b ' + module.params['backup_file'][vios]
+        elif 'all' in module.params['backup_file']:
+            cmd += ' -b ' + module.params['backup_file']['all']
 
-        if vios in module.param['manage_cluster']:
-            if distutils.util.strtobool(module.param['manage_cluster'][vios]):
+        if vios in module.params['manage_cluster']:
+            if distutils.util.strtobool(module.params['manage_cluster'][vios]):
                 cmd += ' -c'
-        elif 'all' in module.param['manage_cluster']:
-            if distutils.util.strtobool(module.param['manage_cluster']['all']):
+        elif 'all' in module.params['manage_cluster']:
+            if distutils.util.strtobool(module.params['manage_cluster']['all']):
                 cmd += ' -c'
 
-        if vios in module.param['preview']:
-            if distutils.util.strtobool(module.param['preview'][vios]):
+        if vios in module.params['preview']:
+            if distutils.util.strtobool(module.params['preview'][vios]):
                 cmd += ' -v'
-        elif 'all' in module.param['preview']:
-            if distutils.util.strtobool(module.param['preview']['all']):
+        elif 'all' in module.params['preview']:
+            if distutils.util.strtobool(module.params['preview']['all']):
                 cmd += ' -v'
 
         supported_res = ['res_resolv_conf', 'res_script', 'res_fb_script',
                          'res_file_res', 'res_image_data', 'res_log']
         for res in supported_res:
-            if vios in module.param[res]:
-                cmd += ' -e {0}:{1}'.format(res, module.param[res][vios])
-            elif 'all' in module.param[res]:
-                cmd += ' -e {0}:{1}'.format(res, module.param[res]['all'])
+            if vios in module.params[res]:
+                cmd += ' -e {0}:{1}'.format(res, module.params[res][vios])
+            elif 'all' in module.params[res]:
+                cmd += ' -e {0}:{1}'.format(res, module.params[res]['all'])
 
         # run the command
         rc, stdout, stderr = module.run_command(cmd)
@@ -577,12 +613,14 @@ def viosupgrade(module):
         results['stderr'] = stderr
 
         if rc == 0:
-            module.log("[STDERR] {0}".format(stderr))
-            results['status'][vios] = 'SUCCESS'
+            msg = 'Command \'{0}\' successful'.format(' '.join(cmd))
+            results['status']['all'] = 'SUCCESS'
         else:
-            module.log("command {0} failed: {1}".format(cmd, stderr))
+            msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+            results['status']['all'] = 'FAILURE'
             ret += 1
-            results['status'][vios] = 'FAILURE'
+        module.log(msg)
+        results['meta']['messages'].append(msg)
 
     return ret
 
@@ -658,7 +696,8 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    param_one_of(['installp_bundle', 'filesets'])
+    if 'get_status' not in module.params['action']:
+        param_one_of(['installp_bundle', 'filesets'])
 
     module.debug('*** START NIM VIOSUPGRADE OPERATION ***')
 
@@ -666,31 +705,33 @@ def main():
     refresh_nim_node(module, 'vios')
 
     # get targests and check they are valid NIM clients
+    targets = []
     if module.params['target_file']:
         try:
             myfile = open(module.params['target_file'], 'r')
             csvreader = csv.reader(myfile, delimiter=':')
             for line in csvreader:
-                results['targets'].append(line[0].strip())
+                targets.append(line[0].strip())
             myfile.close()
         except IOError as e:
             msg = 'Failed to parse file {0}: {1}. Check the file content is '.format(e.filename, e.strerror)
             module.log(msg)
             module.fail_json(**results)
     else:
-        results['targets'] = module.params['targets']
+        targets = module.params['targets']
 
-    if not results['targets']:
-        module.log('Warning: Empty target list, targets: \'{0}\''.format(module.params['targets']))
+    if not targets:
+        module.log('Warning: Empty target list.')
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.exit_json(**results)
 
-    results['targets'] = check_vios_targets(module, module.params['targets'])
+    results['targets'] = check_vios_targets(module, targets)
 
     module.debug('Target list: {0}'.format(results['targets']))
 
     # initialize the results dictionary for target tuple keys
     for vios in results['targets']:
+        module.debug('results: {0}, vios: {1}'.format(results, vios))
         results['status'][vios] = ''
         results['meta'][vios] = {'messages': []}
 
@@ -700,41 +741,23 @@ def main():
     else:
         viosupgrade(module)
 
-    # # Prints status for each targets
-    # nb_error = 0
-    # msg = 'VIOSUpgrade {0} operation status:'.format(module.params['action'])
-    # if module.status:
-    #     OUTPUT.append(msg)
-    #     module.log(msg)
-    #     for vios_key in module.status:
-    #         OUTPUT.append('    {0} : {1}'.format(vios_key, module.status[vios_key]))
-    #         module.log('    {0} : {1}'.format(vios_key, module.status[vios_key]))
-    #         if not re.match(r"^SUCCESS", module.status[vios_key]):
-    #             nb_error += 1
-    # else:
-    #     module.log(msg + ' module.status table is empty')
-    #     OUTPUT.append(msg + ' Error getting the status')
-    #     module.status = module.params['vios_status']  # can be None
-
-    # # Prints a global result statement
-    # if nb_error == 0:
-    #     msg = 'VIOSUpgrade {0} operation succeeded'\
-    #           .format(module.params['action'])
-    #     OUTPUT.append(msg)
-    #     module.log(msg)
-    # else:
-    #     msg = 'VIOSUpgrade {0} operation failed: {1} errors'\
-    #           .format(module.params['action'], nb_error)
-    #     OUTPUT.append(msg)
-    #     module.log(msg)
-
-    # # =========================================================================
-    # # Exit
-    # # =========================================================================
-    # if nb_error == 0:
-    #     module.exit_json(**results)
-
-    module.fail_json(**results)
+    # set status and exit
+    if not results['status']:
+        module.log('NIM upgradeios operation: status table is empty')
+        results['meta']['messages'].append('Warning: status table is empty, returning initial vios_status.')
+        results['status'] = module.params['vios_status']
+        results['msg'] = "NIM updateios operation completed. See meta data for details."
+        module.log(results['msg'])
+    else:
+        target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
+        if len(target_errored):
+            results['msg'] = "NIM upgradeios operation failed for {0}. See status and meta for details.".format(target_errored)
+            module.log(results['msg'])
+            module.fail_json(**results)
+        else:
+            results['msg'] = "NIM upgradeios operation completed. See status and meta for details."
+            module.log(results['msg'])
+            module.exit_json(**results)
 
 
 if __name__ == '__main__':
