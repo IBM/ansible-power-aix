@@ -16,14 +16,16 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: devices
-short_description: Configure/Modify/Unconfigure devices
+short_description: Devices management.
 description:
-- This module facilitates
-    a. Configuration of a defined specified device or all devices
-    b. Modification of attributes of a device in 'Defined/Available' state
-    c. Unconfigure/stop of a device in 'Available' state
+- Configures, modifies and unconfigures devices of a logical partition (LPAR).
+- This module allows to configure a specified device or all devices in defined state. It can change
+  attributes of a device in 'Defined/Available' state. At last it can unconfigure or stop a device
+  in 'Available' state.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX
+- Python >= 2.7
 options:
   attributes:
     description:
@@ -33,7 +35,7 @@ options:
   device:
     description:
     - Specifies the device logical name in the Customized Devices object class.
-      I(all) - specifies all devices to be configured when I(state=available).
+    - C(all) specifies to configure all devices when I(state=available).
     type: str
     default: all
   force:
@@ -48,36 +50,35 @@ options:
     default: false
   state:
     description:
-    - Specifies the action to be performed on the device.
-      I(available) - If the device is in 'defined' state, configure device
-                     else change device attributes when in 'available' state.
-      I(defined) - If the device is in 'available' state, Unconfigure/Stop device
-                   else change device attributes when in 'defined' state.
+    - Specifies the desired state of the device.
+    - C(available) configures device when its state is 'defined', otherwise it changes the device
+      attributes.
+    - C(defined) unconfigures/stops the device when its state is 'available', otherwise it changes
+      the device attributes.
     type: str
     choices: [ available, defined ]
     default: available
   chtype:
     description:
-    - Specifies the change type.
-      I(reboot) - Changes are applied to the device when the system is rebooted.
-      I(current) - Changes the current state of the device temporarily.
-      I(both) - Changes are applied both to the current state of the device
-                and the device database.
+    - Specifies the change type that is when the change should take place.
+    - C(reboot) changes the device at system reboot.
+    - C(current) changes the current state of the device temporarily. Not persistent after a reboot.
+    - C(both) changes both the current state of the device and the device database. Persistent after
+      a reboot.
     type: str
     choices: [ reboot, current, both ]
     default: both
   parent_device:
     description:
-    - While modifying device, specifies the parent device of the device to be
-      updated.
-      For unconfigure/stop operation, specifies the parent device whose
-      children needs to be unconfigured recursively.
+    - While modifying device, specifies the parent device of the device to be updated.
+      For unconfigure/stop operation, specifies the parent device whose children need to be
+      unconfigured recursively.
     type: str
   rmtype:
     description:
     - Specifies whether to unconfigure/stop the device.
-      I(unconfigure) - Changes are applied to the device when the system is rebooted.
-      I(stop) - Changes the current state of the device temporarily.
+    - C(unconfigure) changes are applied to the device when the system is rebooted.
+    - C(stop) changes the current state of the device temporarily.
     type: str
     choices: [ unconfigure, stop ]
     default: unconfigure

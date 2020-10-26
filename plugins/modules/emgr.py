@@ -16,10 +16,12 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: emgr
-short_description: The interim fix manager installs and manages system interim fixes.
+short_description: System interim fixes management.
 description:
-- The interim fix manager installs packages created with the epkg command and maintains a database containing interim fix information.
-- It can perform the following operations install, commit, check, mount, unmount, remove, list interim fix and view package locks.
+- Uses the interim fix manager (emgr) to install packages created with the epkg command and maintain
+  the database containing interim fix information.
+- It can perform the following operations install, commit, check, mount, unmount, remove, list
+  interim fix (ifix) and view package locks.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -27,44 +29,55 @@ requirements:
 options:
   action:
     description:
-    - Controls what is performed.
-    - C(install) performs an install of specified interim fix package
-    - C(commit) performs a commit operation of the specified interim fix.
+    - Controls what action is performed.
+    - C(install) performs an interim fix package installation.
+    - C(commit) performs a commit operation on specified interim fix.
     - C(check) performs a check operation on installed interim fix.
-    - C(mount) mounts specified interim fix that have been mount-installed
-    - C(unmount) unmounts specified interim fix that have been mount-installed
+    - C(mount) mounts specified interim fix that have been mount-installed.
+    - C(unmount) unmounts specified interim fix that have been mount-installed.
     - C(remove) performs an uninstall of the specified interim fix.
-    - C(view_package) displays all packages that are locked, their installer, and the locking label or labels.
-    - C(display_ifix) displays the contents and topology of specified interim fix. This option is useful with C(verbose).
-    - C(list) lists interim fix data
+    - C(view_package) displays all packages that are locked, their installer, and the locking
+      label or labels.
+    - C(display_ifix) displays the contents and topology of specified interim fix. This option is
+      useful with C(verbose).
+    - C(list) lists interim fix data.
     type: str
     choices: [ install, commit, check, mount, unmount, remove, view_package, display_ifix, list ]
     default: list
   ifix_package:
     description:
     - Specifies the path of the interim fix package file.
-    - If I(from_epkg=yes), then the file must be created with the epkg command and must end with the 16-bit compression extension, .Z.
+    - If I(from_epkg=yes), then the file must be created with the epkg command and must end with
+      the 16-bit compression extension '.Z'.
       Otherwise the file is manage as a concurrent update ifix package file.
     - Can be used if I(action) has one of following values C(install), C(display_ifix).
     - Mutually exclusive with I(list_file).
     type: path
   ifix_label:
     description:
-    - Specifies the interim fix label.
-    - Can be used if I(action) has one of following values C(list), C(commit), C(remove), C(check), C(mount), C(unmount), C(remove).
-    - Required if I(action==remove) and I(force=True).
+    - Specifies the interim fix label that is the unique key that binds all of the different
+      database objects.
+    - Can be used if I(action) has one of following values C(list), C(commit), C(remove), C(check),
+      C(mount), C(unmount), C(remove).
+    - Required if I(action=remove) and I(force=True).
     - Mutually exclusive with I(ifix_number), I(ifix_vuid), I(list_file).
     type: str
   ifix_number:
     description:
-    - Specifies the interim fix ID.
-    - Can be used if I(action) has one of following values C(list), C(remove), C(check), C(mount), C(unmount), C(remove).
+    - Specifies the interim fix identification number (ID).
+    - The interim fix ID is simply the order number in which the interim fix is listed in the
+      interim fix database. Using this option may be convenient if you are performing operations on
+      interim fixes based on interim fix listings.
+    - Can be used if I(action) has one of following values C(list), C(remove), C(check), C(mount),
+      C(unmount), C(remove).
     - Mutually exclusive with I(ifix_label), I(ifix_vuid), I(list_file).
     type: str
   ifix_vuid:
     description:
-    - Specifies the interim fix VUID.
-    - Can be used if I(action) has one of following values C(list), C(remove), C(check), C(mount), C(unmount).
+    - Specifies the interim fix Virtually Unique ID (VUID) that can be used to differentiate
+      packages with the same interim fix label.
+    - Can be used if I(action) has one of following values C(list), C(remove), C(check), C(mount),
+      C(unmount).
     - Mutually exclusive with I(ifix_label), I(ifix_number), I(list_file).
     type: str
   list_file:
@@ -72,24 +85,27 @@ options:
     - Specifies a file that contains a list of package locations if I(action=install)
       or a list of interim fix labels for the remove, mount, unmount and check operations.
     - The file must have one item per line, blank lines or starting with # character are ignored.
-    - Can be used if I(action) has one of following values C(install), C(remove), C(check), C(mount), C(unmount), C(display_ifix).
+    - Can be used if I(action) has one of following values C(install), C(remove), C(check),
+      C(mount), C(unmount), C(display_ifix).
     - Mutually exclusive with I(ifix_label), I(ifix_number), I(ifix_vuid), I(ifix_package).
     type: path
   package:
     description:
     - Specifies the package to view.
-    - Can be used if I(action==view_package)
+    - Can be used if I(action=view_package)
     type: str
   alternate_dir:
     description:
-    - Specifies an alternative directory path.
-    - Can be used if I(action) has one of following values C(list), C(install), C(remove), C(check), C(mount), C(unmount), C(view_package).
+    - Specifies an alternative directory path for installation.
+    - Can be used if I(action) has one of following values C(list), C(install), C(remove), C(check),
+      C(mount), C(unmount), C(view_package).
     type: path
   working_dir:
     description:
     - Specifies an alternative working directory path instead of the default /tmp directory.
     - If not specified the emgr command will use the /tmp directory.
-    - Can be used if I(action) has one of following values C(install), C(remove), C(check), C(mount), C(unmount), C(display_ifix).
+    - Can be used if I(action) has one of following values C(install), C(remove), C(check),
+      C(mount), C(unmount), C(display_ifix).
     type: path
   from_epkg:
     description:
@@ -99,7 +115,8 @@ options:
     default: no
   mount_install:
     description:
-    - Perform a mount installation. When and interim fix is mount-installed, the interim fix files are mounted over the target files.
+    - Perform a mount installation. When and interim fix is mount-installed, the interim fix files
+      are mounted over the target files.
     - This option is not supported for interim fix packages that require rebooting.
     - Can be used if I(action=install). Cannot be set when I(from_epkg=no).
     type: bool
@@ -119,8 +136,10 @@ options:
     description:
     - Forces action.
     - Can be used if I(action) has one of following values C(install), C(remove).
-    - When used I(action=install), it specifies the interim fix installation can overwrite an existing package.
-    - When used I(action=remove), it should be considered an emergency procedure because this method can create inconsistencies on the system.
+    - When I(action=install), it specifies the interim fix installation can overwrite an existing
+      package.
+    - When I(action=remove), it should be considered an emergency procedure because this method can
+      create inconsistencies on the system.
     type: bool
     default: no
   preview:
@@ -138,9 +157,9 @@ options:
   bosboot:
     description:
     - Controls the bosboot process.
-    - C(skip) skip the usual bosboot process for Ifix that require rebooting.
+    - C(skip) skips the usual bosboot process for ifix that require rebooting.
     - C(load_debugger) loads the low-level debugger during AIX bosboot.
-    - C(invoke_debugger) invoke the low-level debugger for AIX bosboot.
+    - C(invoke_debugger) invokes the low-level debugger for AIX bosboot.
     - Can be used if I(action) has one of following values C(install), C(commit), C(remove).
     type: str
     choices: [ skip, load_debugger, invoke_debugger ]
@@ -150,6 +169,10 @@ options:
     - Can be used if I(action) has one of following values C(list), C(check), C(view_package).
     type: int
     choices: [ 1, 2, 3 ]
+notes:
+  - System administrators or users with the aix.system.install authorization can run the emgr
+    command on a multi-level secure (MLS) system.
+  - Ifix data, saved files, and temporary files are accessible only by the root user.
 '''
 
 EXAMPLES = r'''
@@ -201,7 +224,7 @@ msg:
     type: str
     sample: 'Missing parameter: force remove requires: ifix_label'
 stdout:
-    description: The standard output
+    description: The standard output.
     returned: always
     type: str
     sample: '
@@ -229,7 +252,7 @@ stdout:
          QN = BOOT IMAGE MODIFIED + NOT PATCHED\n
          RQ = REMOVING + REBOOT REQUIRED'
 stderr:
-    description: The standard error
+    description: The standard error.
     returned: always
     type: str
     sample: 'There is no efix data on this system.'

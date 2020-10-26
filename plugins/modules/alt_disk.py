@@ -16,9 +16,9 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: alt_disk
-short_description: Create/Cleanup an alternate rootvg disk
+short_description: Alternate rootvg disk management.
 description:
-- Copy the rootvg to an alternate disk or cleanup an existing one.
+- Copy the rootvg to an alternate disk or cleanup an existing one on a logical partition (LPAR).
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -35,11 +35,15 @@ options:
   targets:
     description:
     - Specifies the target disks.
+    - Either I(targets) or I(disk_size_policy) must be specified.
+    - If no I(targets) disk is specified, it will look for a valid candidate disk based on
+      the provided I(disk_size_policy) policy.
     type: list
     elements: str
   disk_size_policy:
     description:
-    - When I(action=copy), specifies how to choose the alternate disk if I(targets) is not specified.
+    - When I(action=copy), specifies how to choose the alternate disk if I(targets) is not
+      specified.
     - C(minimize) smallest disk that can be selected.
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
@@ -81,8 +85,8 @@ options:
 notes:
   - M(alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
-  - when no target is specified, copy is performed to only one alternate
-    disk even if the rootvg contains multiple disks
+  - When no target is specified, copy is performed to only one alternate
+    disk even if the rootvg contains multiple disks.
 '''
 
 EXAMPLES = r'''
@@ -106,12 +110,12 @@ msg:
     type: str
     sample: 'alt disk copy operation completed successfully'
 stdout:
-    description: The standard output
+    description: The standard output.
     returned: always
     type: str
     sample: 'Bootlist is set to the boot disk: hdisk0 blv=hd5'
 stderr:
-    description: The standard error
+    description: The standard error.
     returned: always
     type: str
 '''
