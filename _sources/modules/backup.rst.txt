@@ -1,8 +1,8 @@
 .. _backup_module:
 
 
-backup -- Manage data or system volume group backup on a LPAR.
-==============================================================
+backup -- Data or system volume group backup management.
+========================================================
 
 .. contents::
    :local:
@@ -12,11 +12,13 @@ backup -- Manage data or system volume group backup on a LPAR.
 Synopsis
 --------
 
-This module manages backup image of data or system volume group.
+This module manages backup image of data or system volume group on a logical partition (LPAR).
 
-It uses mksysb or savevg command to create the backup image of the volume group either in a file or onto a device.
+It uses mksysb or savevg commands to create backup image of a volume group either in a file or onto a device.
 
 It uses restvg or alt_disk_mksysb to restore a backup image to disk(s).
+
+mksysb and alt_disk_mksysb operate on system volume group creating and restoring installable backup image while savevg and restvg operate on data volume group.
 
 
 
@@ -45,9 +47,7 @@ Parameters
   type (optional, str, savevg)
     Specifies the type of backup object to operate.
 
-    ``mksysb`` is under construction.
-
-    ``mksysb`` operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
+    ``mksysb`` operates on backup of the operating system (that is, the root volume group) of a LPAR target.
 
     ``savevg`` operates on LPAR savevg, that is all files belonging to a volume group.
 
@@ -225,6 +225,7 @@ Notes
    - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
    - ``savevg`` backs up all logical volume information and will be recreated. However, only JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up using a savevg.
    - ``savevg`` only backs up varied-on volume group. The file systems must be mounted.
+   - This :ref:`backup <backup_module>` module only operates on LPAR, for operation on VIOS, please checkout the :ref:`backupios <backupios_module>` module in the power-vios collection.
 
 
 
@@ -313,7 +314,7 @@ New volume on /tmp/datavg_backup: Cluster 51200 bytes (100 blocks). Volume numbe
   The standard error of the command.
 
 
-rc (always, int, )
+rc (always, int, 0)
   The return code of the command.
 
   Equal *-1* when the command has not been run.

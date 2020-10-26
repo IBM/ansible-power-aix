@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>filesystem – Create/Modify/Remove Local and NFS filesystems &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>filesystem – Local and NFS filesystems management. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="flrtvc – Generate FLRTVC report, download and install efix." href="flrtvc.html" />
-    <link rel="prev" title="emgr – The interim fix manager installs and manages system interim fixes." href="emgr.html" /> 
+    <link rel="prev" title="emgr – System interim fixes management." href="emgr.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,12 +93,12 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – Apply/Check/Save/Undo/Query security settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Configure/Modify/Unconfigure devices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">filesystem – Create/Modify/Remove Local and NFS filesystems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">filesystem – Local and NFS filesystems management.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -112,6 +112,7 @@
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
@@ -122,7 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
@@ -195,7 +196,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>filesystem – Create/Modify/Remove Local and NFS filesystems</li>
+      <li>filesystem – Local and NFS filesystems management.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -216,8 +217,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="filesystem-create-modify-remove-local-and-nfs-filesystems">
-<span id="filesystem-module"></span><h1>filesystem – Create/Modify/Remove Local and NFS filesystems<a class="headerlink" href="#filesystem-create-modify-remove-local-and-nfs-filesystems" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="filesystem-local-and-nfs-filesystems-management">
+<span id="filesystem-module"></span><h1>filesystem – Local and NFS filesystems management.<a class="headerlink" href="#filesystem-local-and-nfs-filesystems-management" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -230,42 +231,49 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module facilitates a. Creation of Local and NFS filesystems b. Modification of filesystems c. Removal of filesystems</p>
+<p>This module allows to create, modify and remove local and NFS filesystems.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>AIX</p></li>
+<li><p>Python &gt;= 2.7</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="simple">
-<dt>filesystem (True, str, None)</dt><dd><p>Specifies the mount point, which is the directory where the file system will be mounted.</p>
+<div><dl>
+<dt>filesystem (True, str, None)</dt><dd><p>Specifies the mount point that is the directory where the file system will be mounted.</p>
 </dd>
-<dt>state (optional, str, present)</dt><dd><p>Specifies the action to be performed on the filesystem. <em>present</em> - Specifies to create a filesystem if it doesn’t exist else to change the specified filesystem attributes <em>absent</em> - Specifies to remove a filesystem</p>
+<dt>state (optional, str, present)</dt><dd><p>Specifies the action to be performed on the filesystem.</p>
+<p><code class="docutils literal notranslate"><span class="pre">present</span></code> specifies to create a filesystem if it does not exist, otherwise it changes the attributes of the specified filesystem.</p>
+<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> specifies to remove a filesystem.</p>
 </dd>
 <dt>rm_mount_point (optional, bool, False)</dt><dd><p>When state is <em>state=absent</em>, specifies to remove the mount directory along with the entry in the filesystem.</p>
 </dd>
-<dt>attributes (optional, list, None)</dt><dd><p>When <em>state=present</em>, specifies comma separated attribute=value pairs used for creation/modification of local filesystem. Refer to ‘crfs’ AIX command documentation for more details on the supported attributes.</p>
+<dt>attributes (optional, list, None)</dt><dd><p>When <em>state=present</em>, specifies comma separated ‘attribute=value’ pairs used to create or modify the local filesystem.</p>
+<p>Refer to ‘crfs’ AIX command documentation for more details on the supported attributes.</p>
 </dd>
-<dt>device (optional, str, None)</dt><dd><p>When <em>state=present</em>, a. For local filesystem, specifies the logical volume to use for filesystem creation. If not specified, a new logical volume will be created. b. For NFS filesystem, specifies the remote export device to use for creation/modification of the filesystem</p>
+<dt>device (optional, str, None)</dt><dd><p>When <em>state=present</em>, for local filesystem, it specifies the logical volume to use to create the filesystem. If not specified, a new logical volume will be created.</p>
+<p>When <em>state=present</em>, for NFS filesystem, it specifies the remote export device to use to create or modify the filesystem.</p>
 </dd>
-<dt>vg (optional, str, None)</dt><dd><p>When <em>state=present</em>, specifies an existing volume group</p>
+<dt>vg (optional, str, None)</dt><dd><p>When <em>state=present</em>, specifies an existing volume group.</p>
 </dd>
-<dt>account_subsystem (optional, bool, None)</dt><dd><p>When <em>state=present</em>, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem If not specified, a default value of ‘false’ will be used for filesystem creation</p>
+<dt>account_subsystem (optional, bool, None)</dt><dd><p>When <em>state=present</em>, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem.</p>
 </dd>
-<dt>fs_type (optional, str, jfs2)</dt><dd><p>Specifies the virtual filesystem type for local filesystem creation If not specified, creates jfs2 filesystem by default.</p>
+<dt>fs_type (optional, str, jfs2)</dt><dd><p>Specifies the virtual filesystem type to create the local filesystem.</p>
 </dd>
-<dt>auto_mount (optional, bool, None)</dt><dd><p>Specifies whether to automatically mount the filesystem at system restart while creation/updation of any filesystem. If not specified, default value for filesystem creation will be ‘false’</p>
+<dt>auto_mount (optional, bool, None)</dt><dd><p>Specifies whether to automatically mount the filesystem at system restart while creating or updating filesystem.</p>
 </dd>
-<dt>permissions (optional, str, None)</dt><dd><p>Specifies file system permissions while creation/updation of any filesystem <em>rw</em> - specifies read-write mode <em>ro</em> - specifies read-only mode If not specified, default value of ‘rw’ will be used for filesystem creation</p>
+<dt>permissions (optional, str, None)</dt><dd><p>Specifies file system permissions while creation/updation of any filesystem.</p>
+<p><code class="docutils literal notranslate"><span class="pre">rw</span></code> specifies read-write mode.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ro</span></code> specifies read-only mode.</p>
 </dd>
-<dt>mount_group (optional, str, None)</dt><dd><p>Specifies the mount group to be set/modified for a filesystem</p>
+<dt>mount_group (optional, str, None)</dt><dd><p>Specifies the mount group to be set/modified for a filesystem.</p>
 </dd>
-<dt>nfs_server (optional, str, None)</dt><dd><p>Specifies a Network File System (NFS) server for NFS filesystem</p>
+<dt>nfs_server (optional, str, None)</dt><dd><p>Specifies a Network File System (NFS) server for NFS filesystem.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -332,7 +340,7 @@
         <a href="flrtvc.html" class="btn btn-neutral float-right" title="flrtvc – Generate FLRTVC report, download and install efix." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="emgr.html" class="btn btn-neutral float-left" title="emgr – The interim fix manager installs and manages system interim fixes." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="emgr.html" class="btn btn-neutral float-left" title="emgr – System interim fixes management." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -1,8 +1,8 @@
 .. _filesystem_module:
 
 
-filesystem -- Create/Modify/Remove Local and NFS filesystems
-============================================================
+filesystem -- Local and NFS filesystems management.
+===================================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ filesystem -- Create/Modify/Remove Local and NFS filesystems
 Synopsis
 --------
 
-This module facilitates a. Creation of Local and NFS filesystems b. Modification of filesystems c. Removal of filesystems
+This module allows to create, modify and remove local and NFS filesystems.
 
 
 
@@ -21,6 +21,7 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - AIX
+- Python >= 2.7
 
 
 
@@ -28,11 +29,15 @@ Parameters
 ----------
 
   filesystem (True, str, None)
-    Specifies the mount point, which is the directory where the file system will be mounted.
+    Specifies the mount point that is the directory where the file system will be mounted.
 
 
   state (optional, str, present)
-    Specifies the action to be performed on the filesystem. *present* - Specifies to create a filesystem if it doesn't exist else to change the specified filesystem attributes *absent* - Specifies to remove a filesystem
+    Specifies the action to be performed on the filesystem.
+
+    ``present`` specifies to create a filesystem if it does not exist, otherwise it changes the attributes of the specified filesystem.
+
+    ``absent`` specifies to remove a filesystem.
 
 
   rm_mount_point (optional, bool, False)
@@ -40,39 +45,47 @@ Parameters
 
 
   attributes (optional, list, None)
-    When *state=present*, specifies comma separated attribute=value pairs used for creation/modification of local filesystem. Refer to 'crfs' AIX command documentation for more details on the supported attributes.
+    When *state=present*, specifies comma separated 'attribute=value' pairs used to create or modify the local filesystem.
+
+    Refer to 'crfs' AIX command documentation for more details on the supported attributes.
 
 
   device (optional, str, None)
-    When *state=present*, a. For local filesystem, specifies the logical volume to use for filesystem creation. If not specified, a new logical volume will be created. b. For NFS filesystem, specifies the remote export device to use for creation/modification of the filesystem
+    When *state=present*, for local filesystem, it specifies the logical volume to use to create the filesystem. If not specified, a new logical volume will be created.
+
+    When *state=present*, for NFS filesystem, it specifies the remote export device to use to create or modify the filesystem.
 
 
   vg (optional, str, None)
-    When *state=present*, specifies an existing volume group
+    When *state=present*, specifies an existing volume group.
 
 
   account_subsystem (optional, bool, None)
-    When *state=present*, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem If not specified, a default value of 'false' will be used for filesystem creation
+    When *state=present*, for local filesystems, specifies whether the file system is to be processed by the accounting subsystem.
 
 
   fs_type (optional, str, jfs2)
-    Specifies the virtual filesystem type for local filesystem creation If not specified, creates jfs2 filesystem by default.
+    Specifies the virtual filesystem type to create the local filesystem.
 
 
   auto_mount (optional, bool, None)
-    Specifies whether to automatically mount the filesystem at system restart while creation/updation of any filesystem. If not specified, default value for filesystem creation will be 'false'
+    Specifies whether to automatically mount the filesystem at system restart while creating or updating filesystem.
 
 
   permissions (optional, str, None)
-    Specifies file system permissions while creation/updation of any filesystem *rw* - specifies read-write mode *ro* - specifies read-only mode If not specified, default value of 'rw' will be used for filesystem creation
+    Specifies file system permissions while creation/updation of any filesystem.
+
+    ``rw`` specifies read-write mode.
+
+    ``ro`` specifies read-only mode.
 
 
   mount_group (optional, str, None)
-    Specifies the mount group to be set/modified for a filesystem
+    Specifies the mount group to be set/modified for a filesystem.
 
 
   nfs_server (optional, str, None)
-    Specifies a Network File System (NFS) server for NFS filesystem
+    Specifies a Network File System (NFS) server for NFS filesystem.
 
 
 

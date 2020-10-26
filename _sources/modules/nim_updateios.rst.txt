@@ -211,6 +211,10 @@ meta (always, dict, )
       updateios information for a specific vios.
 
 
+      cmd (If the command was run., str, )
+        Command exectued.
+
+
       stdout (If the command was run., str, )
         Standard output of the command.
 

@@ -1,8 +1,8 @@
 .. _aixpert_module:
 
 
-aixpert -- Apply/Check/Save/Undo/Query security settings
-========================================================
+aixpert -- System security settings management.
+===============================================
 
 .. contents::
    :local:
@@ -12,7 +12,9 @@ aixpert -- Apply/Check/Save/Undo/Query security settings
 Synopsis
 --------
 
-This module facilitates a. Application of security rules on the system using aixpert b. Checking of security settings c. Undo of the previously applied set of security rules d. Saving of security rules in normal or abbreviated mode.
+This module uses the **aixpert** command to manage a variety of system configuration settings enabling the desired security level on a logical partition (LPAR).
+
+It allows to query, check, apply, save, undo security settings.
 
 
 
@@ -30,15 +32,35 @@ Parameters
 ----------
 
   mode (True, str, None)
-    Specifies the action to be performed *mode=apply*, applies the security settings based on the level specified or profile provided. If both are provided, 'level' will take precedence. *mode=check*, checks the security settings against the previously applied set of rules or the provided 'profile' file *mode=save*, saves the security settings for the level specified or based on the specified 'profile' file. - If *abbr_fmt_file*, is provided, the security rules are saved in the abbreviated file format. - If *norm_fmt_file* is provided, the security rules are saved in normal format. *mode=undo*, undoes the previously applied security settings. *mode=query*, get the type of the profile applied on the system.
+    Specifies the action to be performed.
+
+    ``apply`` applies the security settings based on the level specified or profile provided. If both are provided, *level* will take precedence.
+
+    ``check`` checks the security settings against the previously applied set of rules or the provided *profile* file.
+
+    ``save`` saves the security settings for the level specified or based on the specified *profile* file. If *abbr_fmt_file* is provided, the security rules are saved in the abbreviated file format. If *norm_fmt_file* is provided, the security rules are saved in normal format.
+
+    ``undo`` undoes the previously applied security settings.
+
+    ``query`` gets the type of the profile applied on the system.
 
 
   level (optional, str, None)
-    Specifies the security level settings to be applied or saved. *high* - Specifies high-level security options *low* - Specifies low-level security options. *medium* - Specifies medium-level security options. *default* - Specifies AIX® standards-level security options. *sox-cobit* - Specifies SOX-COBIT best practices-level security options.
+    Specifies the security level settings to be applied or saved.
+
+    ``high`` specifies high-level security options.
+
+    ``low`` specifies low-level security options.
+
+    ``medium`` specifies medium-level security options.
+
+    ``default`` specifies AIX standards-level security options.
+
+    ``sox-cobit`` specifies SOX-COBIT best practices-level security options.
 
 
   profile (optional, str, None)
-    When *mode=apply*, specifies the profile to be applied on the system
+    When *mode=apply*, specifies the profile to be applied on the system.
 
     When *mode=check*, specified the profile to be used to check the security settings.
 
@@ -64,27 +86,36 @@ Examples
 .. code-block:: yaml+jinja
 
     
-      - name: "Save default level rules in normal format"
-        aixpert:
-           mode: save
-           level: default
-           norm_fmt_file: /home/kavana/norm.xml
+    - name: "Save default level rules in normal format"
+      aixpert:
+        mode: save
+        level: default
+        norm_fmt_file: /home/kavana/norm.xml
 
-      - name: "Apply using saved profile"
-        aixpert:
-           mode: apply
-           profile: /home/kavana/norm.xml
+    - name: "Apply using saved profile"
+      aixpert:
+        mode: apply
+        profile: /home/kavana/norm.xml
 
-      - name: "Undo the settings"
-        aixpert:
-           mode: undo
+    - name: "Undo the settings"
+      aixpert:
+        mode: undo
+
+    - name: "Check the settings match the provided profile"
+      aixpert:
+        mode: check
+        profile: /home/kavana/high.xml
+
+    - name: "Query the settings"
+      aixpert:
+        mode: query
 
 
 
 Return Values
 -------------
 
-msg (always, str, )
+msg (always, str, aixpert security check completed successfully.)
   The execution message.
 
 

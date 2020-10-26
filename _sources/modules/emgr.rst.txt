@@ -1,8 +1,8 @@
 .. _emgr_module:
 
 
-emgr -- The interim fix manager installs and manages system interim fixes.
-==========================================================================
+emgr -- System interim fixes management.
+========================================
 
 .. contents::
    :local:
@@ -12,9 +12,9 @@ emgr -- The interim fix manager installs and manages system interim fixes.
 Synopsis
 --------
 
-The interim fix manager installs packages created with the epkg command and maintains a database containing interim fix information.
+Uses the interim fix manager (emgr) to install packages created with the epkg command and maintain the database containing interim fix information.
 
-It can perform the following operations install, commit, check, mount, unmount, remove, list interim fix and view package locks.
+It can perform the following operations install, commit, check, mount, unmount, remove, list interim fix (ifix) and view package locks.
 
 
 
@@ -31,17 +31,17 @@ Parameters
 ----------
 
   action (optional, str, list)
-    Controls what is performed.
+    Controls what action is performed.
 
-    ``install`` performs an install of specified interim fix package
+    ``install`` performs an interim fix package installation.
 
-    ``commit`` performs a commit operation of the specified interim fix.
+    ``commit`` performs a commit operation on specified interim fix.
 
     ``check`` performs a check operation on installed interim fix.
 
-    ``mount`` mounts specified interim fix that have been mount-installed
+    ``mount`` mounts specified interim fix that have been mount-installed.
 
-    ``unmount`` unmounts specified interim fix that have been mount-installed
+    ``unmount`` unmounts specified interim fix that have been mount-installed.
 
     ``remove`` performs an uninstall of the specified interim fix.
 
@@ -49,13 +49,13 @@ Parameters
 
     ``display_ifix`` displays the contents and topology of specified interim fix. This option is useful with ``verbose``.
 
-    ``list`` lists interim fix data
+    ``list`` lists interim fix data.
 
 
   ifix_package (optional, path, None)
     Specifies the path of the interim fix package file.
 
-    If *from_epkg=yes*, then the file must be created with the epkg command and must end with the 16-bit compression extension, .Z. Otherwise the file is manage as a concurrent update ifix package file.
+    If *from_epkg=yes*, then the file must be created with the epkg command and must end with the 16-bit compression extension '.Z'. Otherwise the file is manage as a concurrent update ifix package file.
 
     Can be used if *action* has one of following values ``install``, ``display_ifix``.
 
@@ -63,17 +63,19 @@ Parameters
 
 
   ifix_label (optional, str, None)
-    Specifies the interim fix label.
+    Specifies the interim fix label that is the unique key that binds all of the different database objects.
 
     Can be used if *action* has one of following values ``list``, ``commit``, ``remove``, ``check``, ``mount``, ``unmount``, ``remove``.
 
-    Required if *action==remove* and *force=True*.
+    Required if *action=remove* and *force=True*.
 
     Mutually exclusive with *ifix_number*, *ifix_vuid*, *list_file*.
 
 
   ifix_number (optional, str, None)
-    Specifies the interim fix ID.
+    Specifies the interim fix identification number (ID).
+
+    The interim fix ID is simply the order number in which the interim fix is listed in the interim fix database. Using this option may be convenient if you are performing operations on interim fixes based on interim fix listings.
 
     Can be used if *action* has one of following values ``list``, ``remove``, ``check``, ``mount``, ``unmount``, ``remove``.
 
@@ -81,7 +83,7 @@ Parameters
 
 
   ifix_vuid (optional, str, None)
-    Specifies the interim fix VUID.
+    Specifies the interim fix Virtually Unique ID (VUID) that can be used to differentiate packages with the same interim fix label.
 
     Can be used if *action* has one of following values ``list``, ``remove``, ``check``, ``mount``, ``unmount``.
 
@@ -101,11 +103,11 @@ Parameters
   package (optional, str, None)
     Specifies the package to view.
 
-    Can be used if *action==view_package*
+    Can be used if *action=view_package*
 
 
   alternate_dir (optional, path, None)
-    Specifies an alternative directory path.
+    Specifies an alternative directory path for installation.
 
     Can be used if *action* has one of following values ``list``, ``install``, ``remove``, ``check``, ``mount``, ``unmount``, ``view_package``.
 
@@ -147,9 +149,9 @@ Parameters
 
     Can be used if *action* has one of following values ``install``, ``remove``.
 
-    When used *action=install*, it specifies the interim fix installation can overwrite an existing package.
+    When *action=install*, it specifies the interim fix installation can overwrite an existing package.
 
-    When used *action=remove*, it should be considered an emergency procedure because this method can create inconsistencies on the system.
+    When *action=remove*, it should be considered an emergency procedure because this method can create inconsistencies on the system.
 
 
   preview (optional, bool, False)
@@ -167,11 +169,11 @@ Parameters
   bosboot (optional, str, None)
     Controls the bosboot process.
 
-    ``skip`` skip the usual bosboot process for Ifix that require rebooting.
+    ``skip`` skips the usual bosboot process for ifix that require rebooting.
 
     ``load_debugger`` loads the low-level debugger during AIX bosboot.
 
-    ``invoke_debugger`` invoke the low-level debugger for AIX bosboot.
+    ``invoke_debugger`` invokes the low-level debugger for AIX bosboot.
 
     Can be used if *action* has one of following values ``install``, ``commit``, ``remove``.
 
@@ -185,6 +187,12 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - System administrators or users with the aix.system.install authorization can run the emgr command on a multi-level secure (MLS) system.
+   - Ifix data, saved files, and temporary files are accessible only by the root user.
 
 
 
@@ -245,11 +253,11 @@ msg (always, str, Missing parameter: force remove requires: ifix_label)
 
 
 stdout (always, str,  ID  STATE LABEL      INSTALL TIME      UPDATED BY ABSTRACT\n === ===== ========== ================= ========== ======================================\n 1    S    IJ20785s2a 04/30/20 11:03:46            tcpdump CVEs fixed                    \n 2    S    IJ17065m3a 04/30/20 11:03:57            IJ17065 is for AIX 7.2 TL03           \n 3   *Q*   IJ09625s2a 04/30/20 11:04:14            IJ09624 7.2.3.2                       \n 4    S    IJ11550s0a 04/30/20 11:04:34            Xorg Security Vulnerability fix       \n \n STATE codes:\n S = STABLE\n M = MOUNTED\n U = UNMOUNTED\n Q = REBOOT REQUIRED\n B = BROKEN\n I = INSTALLING\n R = REMOVING\n T = TESTED\n P = PATCHED\n N = NOT PATCHED\n SP = STABLE + PATCHED\n SN = STABLE + NOT PATCHED\n QP = BOOT IMAGE MODIFIED + PATCHED\n QN = BOOT IMAGE MODIFIED + NOT PATCHED\n RQ = REMOVING + REBOOT REQUIRED)
-  The standard output
+  The standard output.
 
 
 stderr (always, str, There is no efix data on this system.)
-  The standard error
+  The standard error.
 
 
 

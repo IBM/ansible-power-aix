@@ -1,8 +1,8 @@
 .. _alt_disk_module:
 
 
-alt_disk -- Create/Cleanup an alternate rootvg disk
-===================================================
+alt_disk -- Alternate rootvg disk management.
+=============================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ alt_disk -- Create/Cleanup an alternate rootvg disk
 Synopsis
 --------
 
-Copy the rootvg to an alternate disk or cleanup an existing one.
+Copy the rootvg to an alternate disk or cleanup an existing one on a logical partition (LPAR).
 
 
 
@@ -38,6 +38,10 @@ Parameters
 
   targets (optional, list, None)
     Specifies the target disks.
+
+    Either *targets* or *disk_size_policy* must be specified.
+
+    If no *targets* disk is specified, it will look for a valid candidate disk based on the provided *disk_size_policy* policy.
 
 
   disk_size_policy (optional, str, None)
@@ -84,7 +88,7 @@ Notes
 
 .. note::
    - :ref:`alt_disk <alt_disk_module>` only backs up mounted file systems. Mount all file systems that you want to back up.
-   - when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks
+   - When no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks.
 
 
 
@@ -117,11 +121,11 @@ msg (always, str, alt disk copy operation completed successfully)
 
 
 stdout (always, str, Bootlist is set to the boot disk: hdisk0 blv=hd5)
-  The standard output
+  The standard output.
 
 
 stderr (always, str, )
-  The standard error
+  The standard error.
 
 
 

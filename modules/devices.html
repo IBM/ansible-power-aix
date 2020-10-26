@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>devices – Configure/Modify/Unconfigure devices &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>devices – Devices management. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="emgr – The interim fix manager installs and manages system interim fixes." href="emgr.html" />
-    <link rel="prev" title="backup – Manage data or system volume group backup on a LPAR." href="backup.html" /> 
+    <link rel="next" title="emgr – System interim fixes management." href="emgr.html" />
+    <link rel="prev" title="backup – Data or system volume group backup management." href="backup.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,10 +93,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../modules.html">Modules</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../modules.html#module-reference">Module reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – Apply/Check/Save/Undo/Query security settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Manage data or system volume group backup on a LPAR.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">devices – Configure/Modify/Unconfigure devices</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">devices – Devices management.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -105,13 +105,14 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – The interim fix manager installs and manages system interim fixes.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Create/Modify/Remove Local and NFS filesystems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
@@ -122,7 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Perform a VIOS upgrade with NIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_upgradeios.html">nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Perform an upgrade with the viosupgrade tool</a></li>
@@ -195,7 +196,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>devices – Configure/Modify/Unconfigure devices</li>
+      <li>devices – Devices management.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -216,8 +217,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="devices-configure-modify-unconfigure-devices">
-<span id="devices-module"></span><h1>devices – Configure/Modify/Unconfigure devices<a class="headerlink" href="#devices-configure-modify-unconfigure-devices" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="devices-devices-management">
+<span id="devices-module"></span><h1>devices – Devices management.<a class="headerlink" href="#devices-devices-management" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -230,34 +231,44 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module facilitates a. Configuration of a defined specified device or all devices b. Modification of attributes of a device in ‘Defined/Available’ state c. Unconfigure/stop of a device in ‘Available’ state</p>
+<p>Configures, modifies and unconfigures devices of a logical partition (LPAR).</p>
+<p>This module allows to configure a specified device or all devices in defined state. It can change attributes of a device in ‘Defined/Available’ state. At last it can unconfigure or stop a device in ‘Available’ state.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
 <li><p>AIX</p></li>
+<li><p>Python &gt;= 2.7</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="simple">
+<div><dl>
 <dt>attributes (optional, dict, None)</dt><dd><p>When <em>state=available</em>, specifies the device attribute-value pairs used for changing specific attribute values.</p>
 </dd>
-<dt>device (optional, str, all)</dt><dd><p>Specifies the device logical name in the Customized Devices object class. <em>all</em> - specifies all devices to be configured when <em>state=available</em>.</p>
+<dt>device (optional, str, all)</dt><dd><p>Specifies the device logical name in the Customized Devices object class.</p>
+<p><code class="docutils literal notranslate"><span class="pre">all</span></code> specifies to configure all devices when <em>state=available</em>.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Forces the change/unconfigure operation to take place on a locked device.</p>
 </dd>
 <dt>recursive (optional, bool, False)</dt><dd><p>Specifies to unconfigure the device and its children recursively.</p>
 </dd>
-<dt>state (optional, str, available)</dt><dd><p>Specifies the action to be performed on the device. <em>available</em> - If the device is in ‘defined’ state, configure device else change device attributes when in ‘available’ state. <em>defined</em> - If the device is in ‘available’ state, Unconfigure/Stop device else change device attributes when in ‘defined’ state.</p>
+<dt>state (optional, str, available)</dt><dd><p>Specifies the desired state of the device.</p>
+<p><code class="docutils literal notranslate"><span class="pre">available</span></code> configures device when its state is ‘defined’, otherwise it changes the device attributes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">defined</span></code> unconfigures/stops the device when its state is ‘available’, otherwise it changes the device attributes.</p>
 </dd>
-<dt>chtype (optional, str, both)</dt><dd><p>Specifies the change type. <em>reboot</em> - Changes are applied to the device when the system is rebooted. <em>current</em> - Changes the current state of the device temporarily. <em>both</em> - Changes are applied both to the current state of the device and the device database.</p>
+<dt>chtype (optional, str, both)</dt><dd><p>Specifies the change type that is when the change should take place.</p>
+<p><code class="docutils literal notranslate"><span class="pre">reboot</span></code> changes the device at system reboot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">current</span></code> changes the current state of the device temporarily. Not persistent after a reboot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">both</span></code> changes both the current state of the device and the device database. Persistent after a reboot.</p>
 </dd>
-<dt>parent_device (optional, str, None)</dt><dd><p>While modifying device, specifies the parent device of the device to be updated. For unconfigure/stop operation, specifies the parent device whose children needs to be unconfigured recursively.</p>
+<dt>parent_device (optional, str, None)</dt><dd><p>While modifying device, specifies the parent device of the device to be updated. For unconfigure/stop operation, specifies the parent device whose children need to be unconfigured recursively.</p>
 </dd>
-<dt>rmtype (optional, str, unconfigure)</dt><dd><p>Specifies whether to unconfigure/stop the device. <em>unconfigure</em> - Changes are applied to the device when the system is rebooted. <em>stop</em> - Changes the current state of the device temporarily.</p>
+<dt>rmtype (optional, str, unconfigure)</dt><dd><p>Specifies whether to unconfigure/stop the device.</p>
+<p><code class="docutils literal notranslate"><span class="pre">unconfigure</span></code> changes are applied to the device when the system is rebooted.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stop</span></code> changes the current state of the device temporarily.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -320,10 +331,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="emgr.html" class="btn btn-neutral float-right" title="emgr – The interim fix manager installs and manages system interim fixes." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="emgr.html" class="btn btn-neutral float-right" title="emgr – System interim fixes management." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="backup.html" class="btn btn-neutral float-left" title="backup – Manage data or system volume group backup on a LPAR." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="backup.html" class="btn btn-neutral float-left" title="backup – Data or system volume group backup management." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

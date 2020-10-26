@@ -31,27 +31,25 @@ Parameters
   action (True, str, None)
     Specifies the operation to perform.
 
-    ``altdisk_install`` to perform and alternate disk install.
+    ``bosinst`` to perform and bosinst installation.
 
-    ``alt_disk_clean`` to cleanup an existing alternate disk install.
+    ``altdisk`` to perform and alternate disk installation.
 
     ``get_status`` to get the status of the upgrade.
-
-
-  vars (optional, dict, None)
-    Specifies additional parameters.
-
-
-  vios_status (optional, dict, None)
-    Specifies the result of a previous operation.
 
 
   targets (optional, list, None)
     NIM targets.
 
 
-  target_file_name (optional, str, None)
-    File name containing NIM targets in CSV format.
+  target_file (optional, str, None)
+    Specifies the file name that contains the list of VIOS nodes.
+
+    The values and fields in the file must be specified in a particular sequence and format. The details of the format are specified in the /usr/samples/nim/viosupgrade.inst file and they are comma-separated. The maximum number of nodes that can be installed through the -f option is 30.
+
+    The VIOS images are installed on the nodes simultaneously.
+
+    For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the n number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time. Hence, you must ensure that at least one node is always active in the cluster and is not part of the upgrade process.
 
 
   mksysb_name (optional, dict, None)
@@ -63,7 +61,7 @@ Parameters
 
 
   backup_file (optional, dict, None)
-    Backup file name.
+    Specifies the resource name of the VIOS configuration backup file.
 
 
   rootvg_clone_disk (optional, dict, None)
@@ -98,21 +96,44 @@ Parameters
     NIM log resource name.
 
 
-  cluster_exists (optional, dict, None)
-    Check if cluster exists.
+  manage_cluster (optional, bool, False)
+    Specifies that cluster-level backup and restore operations are performed.
+
+    The -c flag is mandatory for the VIOS that is part of an SSP cluster.
 
 
-  validate_input_data (optional, dict, None)
-    Validate input data.
+  preview (optional, bool, False)
+    Validates whether VIOS hosts are ready for the installation.
+
+    It must be specified only for validation and can be used for preview of the installation image only.
 
 
-  skip_rootvg_cloning (optional, dict, None)
-    Skip rootvg cloning.
+  skip_rootvg_cloning (optional, bool, False)
+    Skips the cloning of current rootvg disks to alternative disks and continues with the VIOS installation on the current rootvg disk.
+
+    If the storage disks are not available, you can specify the -s flag to continue with the installation.
+
+
+  vios_status (optional, dict, None)
+    Specifies the result of a previous operation.
+
+    If set then the *vios_status* of a target tuple must contain *SUCCESS* to attempt update.
+
+    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to *SKIPPED-NO-PREV-STATUS*.
+
+
+  nim_node (optional, dict, None)
+    Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
 
 
 
 
 
+Notes
+-----
+
+.. note::
+   - See IBM documentation about requirements for the viosupgrade command.
 
 
 
@@ -126,7 +147,7 @@ Examples
     - name: Perform an upgrade of nimvios01
       nim_viosupgrade:
         targets: nimvios01
-        action: altdisk_install
+        action: altdisk
 
 
 
@@ -147,6 +168,50 @@ nim_node (always, dict, )
 
 status (always, dict, )
   Status for each VIOS (dicionnary key).
+
+  When ``target_file`` is set, then the key is 'all'.
+
+
+cmd (If the command was run., str, )
+  Command exectued.
+
+
+stdout (If the command was run., str, )
+  Standard output of the command.
+
+
+stderr (If the command was run., str, )
+  Standard error of the command.
+
+
+meta (always, dict, )
+  Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific tuple.
+
+
+  <vios> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the target vios
+
+
+    messages (always, list, )
+      Details on errors/warnings.
+
+
+    cmd (If the command was run., str, )
+      Command exectued.
+
+
+    stdout (If the command was run., str, )
+      Standard output of the command.
+
+
+    stderr (If the command was run., str, )
+      Standard error of the command.
+
+
 
 
 
