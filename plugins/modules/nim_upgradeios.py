@@ -220,6 +220,9 @@ options:
     - Allows to pass along NIM node info from a task to another so that it
       discovers NIM info only one time for all tasks.
     type: dict
+  note:
+    - Debug on NIM master could be done using the following command:
+      B(nim -o showlog -a full_log=yes -a log_type=script vios_target)
 '''
 
 EXAMPLES = r'''
@@ -793,6 +796,9 @@ def nim_migvios(module, target_tuple, vios_key, vios):
 
     # Note: the option -a time_limit is not yet supported by migvios
     # time_limit attribute is only valid with the following operations: bos_inst, cust, and alt_disk_install.
+    # nim -o migvios -a spot=jaguar12_ios_mksysb_spot -a ios_mksysb=jaguar12_ios_mksysb -a ios_backup=fake
+    #                -a resolv_conf=resolv_conf -a bosinst_data=bosinst_data_jaguar12_new
+    #                -a boot_client=no -a mk_image=yes jaguar12
     cmd = ['nim', '-Fo', 'migvios']
 
     cmd += ['-a', 'ios_mksysb={0}'.format(mksysb_name)]

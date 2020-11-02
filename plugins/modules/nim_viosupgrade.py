@@ -16,13 +16,19 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_viosupgrade
-short_description: Perform an upgrade with the viosupgrade tool
+short_description: Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.
 description:
-- Tool to upgrade VIOSes in NIM environment.
+- Performs the operations of backing up the virtual and logical configuration data, installing the
+  specified image, and restoring the virtual and logical configuration data of the Virtual I/O
+  Server (VIOS) from the NIM master.
+- The installation is a new and complete installation using the provided VIOS image, any customized
+  configurations that might exist on the currently running system before the installation starts
+  (including the timezone), are not included in the new installation image.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- ios_mksysb >= 3.1.0.0
 options:
   action:
     description:
@@ -35,12 +41,14 @@ options:
     required: true
   targets:
     description:
-    - NIM targets.
+    - Specifies the list of VIOSes NIM targets to update.
+    - Either I(targets) or I(target_file) must be specified.
     type: list
     elements: str
   target_file:
     description:
     - Specifies the file name that contains the list of VIOS nodes.
+    - Either I(targets) or I(target_file) must be specified.
     - The values and fields in the file must be specified in a particular sequence and format. The
       details of the format are specified in the /usr/samples/nim/viosupgrade.inst file and they
       are comma-separated. The maximum number of nodes that can be installed through the -f option
@@ -50,92 +58,84 @@ options:
       number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time.
       Hence, you must ensure that at least one node is always active in the cluster and is not part
       of the upgrade process.
+    - Only the I(action) and I(preview) parameters will be considered as others should be provided
+      in file.
     type: str
-  mksysb_name:
+  viosupgrade_params:
     description:
-    - mksysb name.
+    - Specifies the parameters for the viosupgrade command in a dictionary of disctionaries.
+    - The keys of this dictionary can be the target name or the specific key 'all'. Then associated
+      parameters will apply to the target or all of them. When I(target_file) is specified, then
+      you must use the key 'all'.
+    - When building the viosugrade command, it will look first if the parameter is present for the
+      target then into the 'all' section.
+    - Valid keys are the follwoing.
+    - I(ios_mksysb), specifies the ios_mksysb resource name on the NIM Master server for the
+      specified VIOS installation.
+    - I(spotname), when C(action=bosinst) it specifies the resource object name of the Shared
+      Product Object Tree (SPOT) for NIM installation.
+    - I(rootvg_clone_disk), mandatory if C(action=altdisk) this colon-separated list specifies
+      alternative disks to install the selected VIOS image, current rootvg disk on the VIOS
+      partition is not impacted by this installation.
+    - I(skip_rootvg_cloning), when C(action=bosinst) boolean (default=no) to skip the cloning of
+      current rootvg disks to alternative disks and continues with the VIOS installation on the
+      current rootvg disk.
+    - I(rootvg_install_disk), when C(action=bosinst) this colon-separated list specifies new rootvg
+      disks where the specified image must be installed instead of the existing rootvg disks, one of
+      I(rootvg_clone_disk) or I(rootvg_install_disk) or I(skip_rootvg_cloning) must be specified.
+    - I(backup_file_resource), specifies the resource name of the VIOS configuration backup file.
+    - I(resources), specifies the configuration resources to be applied after the installation,
+      valid values are resolv_conf, script, fb_script, file_res, image_data, and log.
+    - I(manage_cluster), boolean (default=yes) that specifies that cluster-level backup and restore
+      operations are performed, mandatory for the VIOS that is part of an SSP cluster.
+    - I(preview), boolean (default=yes) that specifies only validation of VIOS hosts readyness for
+      installation is performed, can be used for preview of the installation image only.
     type: dict
-  spot_name:
-    description:
-    - SPOT name.
-    type: dict
-  backup_file:
-    description:
-    - Specifies the resource name of the VIOS configuration backup file.
-    type: dict
-  rootvg_clone_disk:
-    description:
-    - Clone disk name.
-    type: dict
-  rootvg_install_disk:
-    description:
-    - Install disk name.
-    type: dict
-  res_resolv_conf:
-    description:
-    - NIM resolv_conf resource name.
-    type: dict
-  res_script:
-    description:
-    - NIM script resource name.
-    type: dict
-  res_fb_script:
-    description:
-    - NIM fb_script resource name.
-    type: dict
-  res_file_res:
-    description:
-    - NIM file_res resource name.
-    type: dict
-  res_image_data:
-    description:
-    - NIM image_data resource name.
-    type: dict
-  res_log:
-    description:
-    - NIM log resource name.
-    type: dict
-  manage_cluster:
-    description:
-    - Specifies that cluster-level backup and restore operations are performed.
-    - The -c flag is mandatory for the VIOS that is part of an SSP cluster.
-    type: bool
-    default: no
-  preview:
-    description:
-    - Validates whether VIOS hosts are ready for the installation.
-    - It must be specified only for validation and can be used for preview of the installation
-      image only.
-    type: bool
-    default: no
-  skip_rootvg_cloning:
-    description:
-    - Skips the cloning of current rootvg disks to alternative disks and continues with the VIOS
-      installation on the current rootvg disk.
-    - If the storage disks are not available, you can specify the -s flag to continue with the
-      installation.
-    type: bool
-    default: no
+    required: true
   vios_status:
     description:
     - Specifies the result of a previous operation.
     - If set then the I(vios_status) of a target tuple must contain I(SUCCESS) to attempt update.
-    - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set to I(SKIPPED-NO-PREV-STATUS).
+    - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set
+      to I(SKIPPED-NO-PREV-STATUS).
     type: dict
   nim_node:
     description:
-    - Allows to pass along NIM node info from a task to another so that it
-      discovers NIM info only one time for all tasks.
+    - Allows to pass along NIM node info from a task to another so that it discovers NIM info only
+      one time for all tasks.
     type: dict
 notes:
   - See IBM documentation about requirements for the viosupgrade command.
+  - The viosupgrade command on NIM server is supported from IBM AIX 7.2 with Technology Level 3, or
+    later.
+  - For NIM bosinst method of installation, supported current VIOS levels are 2.2.6.30, or later.
+  - If the altinst_rootvg or old_rootvg disks are already available in the VIOS, you must rename
+    them.
+  - The disks that are specified for the VIOS installation must not be in use.
+  - In an SSP cluster, you must ensure that at least one node is always active in the cluster and is
+    not part of the upgrade process.
+  - If the viosupgrade command fails to restore all of the mappings, you must manually re-initiate
+    the restore operation on the VIOS.
+  - If you have installed any additional software on the VIOS apart from what is supplied as part of
+    the base VIOS image, the viosupgrade command might fail to restore configurations that are
+    related to that software. To manage this scenario, you must create a customized VIOS image with
+    the software applications that you might want to include and provide this customized VIOS image
+    as an input to the viosupgrade command for installation.
+
 '''
 
+# TODO
 EXAMPLES = r'''
-- name: Perform an upgrade of nimvios01
+- name: Query viosupgrade status
   nim_viosupgrade:
+    action: get_status
     targets: nimvios01
+
+- name: Perform an altdisk viosupgrade of nimvios01
+  nim_viosupgrade:
     action: altdisk
+    targets: nimvios01
+    viosupgrade_params: {'all': {}}
 '''
 
 RETURN = r'''
@@ -144,45 +144,71 @@ msg:
     returned: always
     type: str
 targets:
-    description: List of VIOSes.
+    description: List of NIM client actually targeted for the operation.
     returned: always
     type: list
     elements: str
-nim_node:
-    description: NIM node info.
-    returned: always
-    type: dict
+    sample: [vios1, vios2, ...]
 status:
     description:
-    - Status for each VIOS (dicionnary key).
+    - Status of the operation for each VIOS C(target). It can be empty, SUCCESS or FAILURE.
     - When C(target_file) is set, then the key is 'all'.
     returned: always
     type: dict
+    sample: "{ vios1: 'SUCCESS', vios2: 'FAILURE' }"
 cmd:
     description: Command exectued.
-    returned: If the command was run.
+    returned: If the command was run when C(target_file) is set.
     type: str
 stdout:
     description: Standard output of the command.
-    returned: If the command was run.
+    returned: If the command was run when C(target_file) is set.
     type: str
 stderr:
     description: Standard error of the command.
-    returned: If the command was run.
+    returned: If the command was run when C(target_file) is set.
     type: str
+nim_node:
+    description: NIM node info. It can contains more information if passed as option I(nim_node).
+    returned: always
+    type: dict
+    contains:
+        vios:
+            description: List of VIOS NIM resources.
+            returned: always
+            type: dict
+    sample:
+        "nim_node": {
+            "vios": {
+                "vios1": {
+                    "Cstate": "ready for a NIM operation",
+                    "Cstate_result": "success",
+                    "Mstate": "currently running",
+                    "cable_type1": "N/A",
+                    "class": "management",
+                    "connect": "nimsh",
+                    "cpuid": "00F600004C00",
+                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "mgmt_profile1": "p8-hmc 1 vios-cec",
+                    "netboot_kernel": "64",
+                    "platform": "chrp",
+                    "prev_state": "alt_disk_install operation is being performed",
+                }
+            }
+        }
 meta:
     description: Detailed information on the module execution.
     returned: always
     type: dict
     contains:
         messages:
-            description: Details on errors/warnings not related to a specific tuple.
+            description: Details on errors/warnings not related to a specific target vios.
             returned: always
             type: list
             elements: str
             sample: see below
         <vios>:
-            description: Detailed information on the execution on the target vios
+            description: Detailed information on the execution on the target vios. Can be 'all'.
             returned: when target is actually a NIM client
             type: dict
             contains:
@@ -207,7 +233,6 @@ meta:
 
 import re
 import csv
-import distutils.util
 import socket
 
 # Ansible module 'boilerplate'
@@ -418,26 +443,26 @@ def check_vios_targets(module, targets):
 
 
 # TODO: test viosupgrade_query
-def viosupgrade_query(module):
+def viosupgrade_query(module, params_flags):
     """
-    Query to get the status of the upgrade for each target
-    runs: viosupgrade -q [-n hostname | -f filename] }
+    Query to get the status of the upgrade .
 
-    args:
+    arguments:
         module        (dict): The Ansible module
-
+        params_flags  (dict): Supported parameter flags.
     module.param used:
         target_file   (optional) filename with targets info
         targets       (required if not target_file)
-
+        viosupgrade_params  (required)
     note:
-        set results['status'][target] with the status
-
+        Set the upgrade status in results['status'][vios] or results['status']['all'].
     return:
         ret     (int) the number of error
     """
+    global results
     ret = 0
 
+    # viosupgrade -q { [-n hostname | -f filename] }
     cmd = ['/usr/sbin/viosupgrade', '-q']
     if module.params['target_file']:
         cmd += ['-f', module.params['target_file']]
@@ -450,10 +475,10 @@ def viosupgrade_query(module):
         results['stderr'] = stderr
 
         if rc == 0:
-            msg = 'Command \'{0}\' successful'.format(' '.join(cmd))
+            msg = 'viosupgrade command successful'
             # TODO What should we put in results['status'] as we used target_file?
         else:
-            msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+            msg = 'Command failed with rc: {0}'.format(rc)
             # TODO Could we check results['status'][vios] when we used target_file?
             ret += 1
         module.log(msg)
@@ -471,10 +496,10 @@ def viosupgrade_query(module):
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
             if rc == 0:
-                msg = 'Command \'{0}\' successful. See meta data "stdout".'.format(' '.join(cmd))
+                msg = 'viosupgrade command successful. See meta data "stdout".'
                 results['status'][vios] = 'SUCCESS'
             else:
-                msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+                msg = 'Command failed with rc: {0}'.format(rc)
                 results['status'][vios] = 'FAILURE'
                 ret += 1
             module.log(msg)
@@ -483,43 +508,51 @@ def viosupgrade_query(module):
 
 
 # TODO: test viosupgrade
-def viosupgrade(module):
+def viosupgrade(module, params_flags):
     """
-    Upgrade each VIOS specified in the provided file
-    runs one of:
-        viosupgrade -t bosinst -n hostname -m mksysb_name -p spotname
-                    {-a rootvg_vg_clone_disk | -r rootvg_inst_disk | -s}
-                    [-b backupFile] [-c] [-v]
-        viosupgrade -t altdisk -n hostname -m mksysb_name
-                    -a rootvg_vg_clone_disk [-b backup_file] [-c] [-v]
-        viosupgrade -t {bosinst | altdisk} -f [filename] [-v]
+    Upgrade each VIOS.
 
-    args:
+    arguments:
         module        (dict): The Ansible module
-
+        params_flags  (dict): Supported parameter flags.
     module.param used:
-        target_file   (optional) filename with targets info
-        targets       (required if not target_file)
-        resources     resource require to run the command
-
+        action              (required)
+        target_file         (optional) filename with targets info
+        targets             (required if not target_file)
+        viosupgrade_params  (required)
     note:
-        set results['status'][target] with the status
-        when target_file is set, the key is 'all'
-
+        Set the upgrade status in results['status'][vios] or results['status']['all'].
     return:
         ret     (int) the number of error
     """
     global results
     ret = 0
 
-    cmd = '/usr/sbin/viosupgrade'
+    cmd = ['/usr/sbin/viosupgrade']
+    cmd += ['-t', module.params['action']]
 
+    # viosupgrade -t {bosinst | altdisk} -f filename [-v]
     if module.params['target_file']:
-        if 'altdisk' in module.params['action']:
-            cmd += ' -t altdisk'
-        elif 'bosinst' in module.params['action']:
-            cmd += ' -t bosinst'
+        # check parameters
+        for key in module.params['viosupgrade_params']['all'].keys():
+            if key not in params_flags['file'].keys():
+                msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params are: {1}'.format(key, params_flags['file'])
+                ret += 1
+                module.log(msg)
+                results['meta']['messages'].append(msg)
+        if ret != 0:
+            results['status']['all'] = 'FAILURE'
+            return ret
+
         cmd += ['-f', module.params['target_file']]
+
+        for key, flag in params_flags['file'].items():
+            if key in module.params['viosupgrade_params']['all'].keys():
+                if module.params['viosupgrade_params']['all'][key]:
+                    if isinstance(module.params['viosupgrade_params']['all'][key], (bool)) and module.params['viosupgrade_params']['all'][key]:
+                        cmd += [flag]
+                    else:
+                        cmd += [flag, module.params['viosupgrade_params']['all'][key]]
 
         rc, stdout, stderr = module.run_command(cmd)
 
@@ -529,98 +562,72 @@ def viosupgrade(module):
         results['stderr'] = stderr
 
         if rc == 0:
-            msg = 'Command \'{0}\' successful'.format(' '.join(cmd))
+            msg = 'viosupgrade command successful'
             results['status']['all'] = 'SUCCESS'
         else:
-            msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
+            msg = 'Command failed with rc: {0}'.format(rc)
             results['status']['all'] = 'FAILURE'
             ret += 1
         module.log(msg)
         results['meta']['messages'].append(msg)
         return ret
 
-    for vios in module.params['targets']:
-        if 'altdisk' in module.params['action']:
-            cmd += ' -t altdisk'
-        elif 'bosinst' in module.params['action']:
-            cmd += ' -t bosinst'
+    # check parameters
+    for vios in module.params['viosupgrade_params'].keys():
+        for key in module.params['viosupgrade_params'][vios].keys():
+            if key not in params_flags[module.params['action']].keys():
+                msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params for action={1} are: {2}'\
+                      .format(key, module.params['action'], params_flags[module.params['action']].keys())
+                ret += 1
+                module.log(msg)
+                results['meta']['messages'].append(msg)
+        if ret != 0:
+            results['status'][vios] = 'FAILURE'
+            return ret
 
+    # viosupgrade -t bosinst -n hostname -m mksysbname -p spotname
+    #             {-a RootVGCloneDisk: ... | -r RootVGInstallDisk: ...| -s}
+    #             [-b BackupFileResource] [-c] [-e Resources: ...] [-v]
+    # viosupgrade -t altdisk -n hostname -m mksysbname
+    #             -a RootVGCloneDisk
+    #             [-b BackupFileResource] [-c] [-e Resources: ...] [-v]
+    for vios in module.params['targets']:
         # get the fqdn hostname because short hostname can match several NIM objects
         # and require user input to select the right one.
         target_fqdn = socket.getfqdn(vios)
         cmd += ['-n', target_fqdn]
 
-        if vios in module.params['mksysb_name']:
-            cmd += ' -m ' + module.params['mksysb_name'][vios]
-        elif 'all' in module.params['mksysb_name']:
-            cmd += ' -m ' + module.params['mksysb_name']['all']
-
-        if vios in module.params['spot_name']:
-            cmd += ' -p ' + module.params['spot_name'][vios]
-        elif 'all' in module.params['spot_name']:
-            cmd += ' -p ' + module.params['spot_name']['all']
-
-        if vios in module.params['rootvg_clone_disk']:
-            cmd += ' -a ' + module.params['rootvg_clone_disk'][vios]
-        elif 'all' in module.params['rootvg_clone_disk']:
-            cmd += ' -a ' + module.params['rootvg_clone_disk']['all']
-
-        if vios in module.params['rootvg_install_disk']:
-            cmd += ' -r ' + module.params['rootvg_install_disk'][vios]
-        elif 'all' in module.params['rootvg_install_disk']:
-            cmd += ' -r ' + module.params['rootvg_install_disk']['all']
-
-        if vios in module.params['skip_rootvg_cloning']:
-            if distutils.util.strtobool(module.params['skip_rootvg_cloning'][vios]):
-                cmd += ' -s'
-        elif 'all' in module.params['skip_rootvg_cloning']:
-            if distutils.util.strtobool(module.params['skip_rootvg_cloning']['all']):
-                cmd += ' -s'
-
-        if vios in module.params['backup_file']:
-            cmd += ' -b ' + module.params['backup_file'][vios]
-        elif 'all' in module.params['backup_file']:
-            cmd += ' -b ' + module.params['backup_file']['all']
-
-        if vios in module.params['manage_cluster']:
-            if distutils.util.strtobool(module.params['manage_cluster'][vios]):
-                cmd += ' -c'
-        elif 'all' in module.params['manage_cluster']:
-            if distutils.util.strtobool(module.params['manage_cluster']['all']):
-                cmd += ' -c'
-
-        if vios in module.params['preview']:
-            if distutils.util.strtobool(module.params['preview'][vios]):
-                cmd += ' -v'
-        elif 'all' in module.params['preview']:
-            if distutils.util.strtobool(module.params['preview']['all']):
-                cmd += ' -v'
-
-        supported_res = ['res_resolv_conf', 'res_script', 'res_fb_script',
-                         'res_file_res', 'res_image_data', 'res_log']
-        for res in supported_res:
-            if vios in module.params[res]:
-                cmd += ' -e {0}:{1}'.format(res, module.params[res][vios])
-            elif 'all' in module.params[res]:
-                cmd += ' -e {0}:{1}'.format(res, module.params[res]['all'])
+        for key, flag in params_flags[module.params['action']].items():
+            if vios in module.params['viosupgrade_params'] and key in module.params['viosupgrade_params'][vios].keys():
+                if module.params['viosupgrade_params'][vios][key]:
+                    if isinstance(module.params['viosupgrade_params'][vios][key], (bool)) and module.params['viosupgrade_params'][vios][key]:
+                        cmd += [flag]
+                    else:
+                        cmd += [flag, module.params['viosupgrade_params'][vios][key]]
+            elif key in module.params['viosupgrade_params']['all'].keys():
+                if module.params['viosupgrade_params']['all'][key]:
+                    if isinstance(module.params['viosupgrade_params']['all'][key], (bool)) and module.params['viosupgrade_params']['all'][key]:
+                        cmd += [flag]
+                    else:
+                        cmd += [flag, module.params['viosupgrade_params']['all'][key]]
 
         # run the command
         rc, stdout, stderr = module.run_command(cmd)
 
         results['changed'] = True  # don't really know
-        results['cmd'] = ' '.join(cmd)
-        results['stdout'] = stdout
-        results['stderr'] = stderr
+        results['meta'][vios]['cmd'] = ' '.join(cmd)
+        results['meta'][vios]['stdout'] = stdout
+        results['meta'][vios]['stderr'] = stderr
 
         if rc == 0:
-            msg = 'Command \'{0}\' successful'.format(' '.join(cmd))
-            results['status']['all'] = 'SUCCESS'
+            msg = 'viosupgrade command successful.'
+            results['status'][vios] = 'SUCCESS'
         else:
-            msg = 'Command \'{0}\' failed with rc: {1}'.format(' '.join(cmd), rc)
-            results['status']['all'] = 'FAILURE'
+            msg = 'Command failed with rc: {0}'.format(rc)
+            results['status'][vios] = 'FAILURE'
             ret += 1
+        results['meta'][vios]['messages'].append(msg)
         module.log(msg)
-        results['meta']['messages'].append(msg)
 
     return ret
 
@@ -634,58 +641,35 @@ def main():
     module = AnsibleModule(
         # TODO: remove not needed attributes
         argument_spec=dict(
-            # description=dict(required=False, type='str'),
-
-            # IBM automation generic attributes
-            action=dict(required=True, type='str',
+            action=dict(type='str', required=True,
                         choices=['altdisk', 'bosinst', 'get_status']),
             vios_status=dict(type='dict'),
             nim_node=dict(type='dict'),
-
-            # mutually exclisive
             targets=dict(type='list', elements='str'),
             target_file=dict(type='str'),
-
-            # following attributes are dictionaries with
-            # key: 'all' or hostname and value: a string
-            # example:
-            # mksysb_name={"tgt1": "hdisk1", "tgt2": "hdisk1"}
-            # mksysb_name={"all": "hdisk1"}
-            mksysb_name=dict(type='dict'),
-            spot_name=dict(type='dict'),
-            backup_file=dict(type='dict'),
-            rootvg_clone_disk=dict(type='dict'),
-            rootvg_install_disk=dict(type='dict'),
-            # Resources (-e option):
-            res_resolv_conf=dict(type='dict'),
-            res_script=dict(type='dict'),
-            res_fb_script=dict(type='dict'),
-            res_file_res=dict(type='dict'),
-            res_image_data=dict(type='dict'),
-            res_log=dict(type='dict'),
-
-            # dictionaries with key: 'all' or hostname and value: bool
-            manage_cluster=dict(type='bool', default=False),
-            preview=dict(type='bool', default=False),
-            skip_rootvg_cloning=dict(type='bool', default=False),
+            # viosupgrade_params={
+            #   all:   { ios_mksysb: 'vios3-1-1-0_mksysb', preview: false, resources: 'my_resolv_conf:my_fb_script'}
+            #   vios1: { rootvg_clone_disk: 'hdisk1', 'backup_file_resource': 'vios1_fb'}
+            #   vios2: { rootvg_clone_disk: 'hdisk2:hdisk3', 'backup_file_resource': 'vios2_filebackup'}
+            viosupgrade_params=dict(type='dict', required=True),
         ),
         mutually_exclusive=[['targets', 'target_file']],
-        # TODO: determine mandatory attributes
-        required_if=[],
     )
 
     results = dict(
         changed=False,
         msg='',
         targets=[],
-        stdout='',
-        stderr='',
+        # cmd='',
+        # stdout='',
+        # stderr='',
         meta={'messages': []},
         # meta structure will be updated as follow:
         # meta={
         #   'messages': [],
         #   target:{
         #       'messages': [],
+        #       'cmd': '',
         #       'stdout': '',
         #       'stderr': '',
         #   }
@@ -694,12 +678,18 @@ def main():
         status={},
     )
 
+    params_flags = {
+        'file': {'preview': '-v'},
+        'bosinst': {'ios_mksysb': '-m', 'spotname': '-p', 'rootvg_clone_disk': '-a',
+                    'skip_rootvg_cloning': '-s', 'rootvg_install_disk': '-r',
+                    'backup_file_resource': '-b', 'resources': '-e', 'manage_cluster': '-c', 'preview': '-v'},
+        'altdisk': {'ios_mksysb': '-m', 'rootvg_clone_disk': '-a',
+                    'backup_file_resource': '-b', 'resources': '-e', 'manage_cluster': '-c', 'preview': '-v'},
+    }
+
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    if 'get_status' not in module.params['action']:
-        param_one_of(['installp_bundle', 'filesets'])
-
-    module.debug('*** START NIM VIOSUPGRADE OPERATION ***')
+    param_one_of(['targets', 'target_file'])
 
     # build NIM node info (if needed)
     refresh_nim_node(module, 'vios')
@@ -720,26 +710,24 @@ def main():
     else:
         targets = module.params['targets']
 
-    if not targets:
+    results['targets'] = check_vios_targets(module, targets)
+
+    if not results['targets']:
         module.log('Warning: Empty target list.')
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.exit_json(**results)
-
-    results['targets'] = check_vios_targets(module, targets)
-
     module.debug('Target list: {0}'.format(results['targets']))
 
     # initialize the results dictionary for target tuple keys
     for vios in results['targets']:
-        module.debug('results: {0}, vios: {1}'.format(results, vios))
         results['status'][vios] = ''
         results['meta'][vios] = {'messages': []}
 
     # perfom the operation
     if 'get_status' in module.params['action']:
-        viosupgrade_query(module)
+        viosupgrade_query(module, params_flags)
     else:
-        viosupgrade(module)
+        viosupgrade(module, params_flags)
 
     # set status and exit
     if not results['status']:
