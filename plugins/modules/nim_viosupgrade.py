@@ -206,7 +206,6 @@ meta:
             returned: always
             type: list
             elements: str
-            sample: see below
         <vios>:
             description: Detailed information on the execution on the target vios. Can be 'all'.
             returned: when target is actually a NIM client

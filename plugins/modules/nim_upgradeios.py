@@ -172,7 +172,6 @@ options:
     - Specifies additional flags to pass to the viosbr command.
     - Can be used with I(action=migrate).
     type: str
-
   mk_image:
     description:
     - Specifies to create the system backup image (mksysb) and create the NIM resource.
@@ -220,9 +219,9 @@ options:
     - Allows to pass along NIM node info from a task to another so that it
       discovers NIM info only one time for all tasks.
     type: dict
-  note:
-    - Debug on NIM master could be done using the following command:
-      B(nim -o showlog -a full_log=yes -a log_type=script vios_target)
+notes:
+  - Debug on NIM master could be done using the following command
+    B(nim -o showlog -a full_log=yes -a log_type=script vios_target)
 '''
 
 EXAMPLES = r'''
@@ -1052,8 +1051,6 @@ def main():
             manage_cluster=dict(type='bool', default=True),
             debug=dict(type='bool', default=False),
         ),
-        required_if=[
-        ],
     )
 
     results = dict(
