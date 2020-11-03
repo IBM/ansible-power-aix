@@ -33,9 +33,12 @@ options:
   action:
     description:
     - Specifies the operation to perform.
-    - C(bosinst) to perform and bosinst installation.
-    - C(altdisk) to perform and alternate disk installation.
     - C(get_status) to get the status of the upgrade.
+    - C(bosinst) to perform a new and fresh installation on the current rootvg disk.
+    - C(altdisk) to perform a new installation on the alternative disk. The current rootvg disk on
+      the VIOS partition is not impacted by this installation. The VIOS partition that has the
+      current rootvg disk, remains in the running state during the installation of the alternative
+      disk.
     type: str
     choices: [ altdisk, bosinst, get_status ]
     required: true
@@ -77,6 +80,9 @@ options:
     - I(rootvg_clone_disk), mandatory if C(action=altdisk) this colon-separated list specifies
       alternative disks to install the selected VIOS image, current rootvg disk on the VIOS
       partition is not impacted by this installation.
+      When C(action=bosinst), the provided disks are used to clone the current rootvg. After the
+      completion of the migration process, the current rootvg disk is installed with the provided
+      image. The provided disks are at the VIOS level before the migration process.
     - I(skip_rootvg_cloning), when C(action=bosinst) boolean (default=no) to skip the cloning of
       current rootvg disks to alternative disks and continues with the VIOS installation on the
       current rootvg disk.
@@ -88,7 +94,7 @@ options:
       valid values are resolv_conf, script, fb_script, file_res, image_data, and log.
     - I(manage_cluster), boolean (default=yes) that specifies that cluster-level backup and restore
       operations are performed, mandatory for the VIOS that is part of an SSP cluster.
-    - I(preview), boolean (default=yes) that specifies only validation of VIOS hosts readyness for
+    - I(preview), boolean (default=false) that specifies only validation of VIOS hosts readyness for
       installation is performed, can be used for preview of the installation image only.
     type: dict
     required: true
@@ -124,18 +130,59 @@ notes:
 
 '''
 
-# TODO
 EXAMPLES = r'''
-- name: Query viosupgrade status
-  nim_viosupgrade:
-    action: get_status
-    targets: nimvios01
-
-- name: Perform an altdisk viosupgrade of nimvios01
+- name: Validate an altdisk viosupgrade, no change on the vios
   nim_viosupgrade:
     action: altdisk
     targets: nimvios01
-    viosupgrade_params: {'all': {}}
+    viosupgrade_params:
+      all:
+        resources:              master_net_conf:logdir
+        manage_cluster:         False
+        preview:                True
+      nimvios01:
+        ios_mksysb:             vios-3-1-1-0_sysb
+        rootvg_clone_disk:      hdisk1
+        backup_file_resource:   nimvios01_iosb
+
+- name: Perform an altdisk viosupgrade
+  nim_viosupgrade:
+    action: altdisk
+    targets: nimvios01
+    viosupgrade_params:
+      all:
+        resources:              master_net_conf:logdir
+        manage_cluster:         False
+        preview:                False
+      nimvios01:
+        ios_mksysb:             vios-3-1-1-0_sysb
+        rootvg_clone_disk:      hdisk1
+        backup_file_resource:   nimvios01_iosb
+
+- name: Wait for up to an hour for the viosupgrade status to complete
+  nim_viosupgrade:
+    action: get_status
+    targets: nimvios01
+  register: result
+  until: result.meta['nimvios01'].stdout.find("ready for a NIM operation") != -1
+  retries: 30
+  delay: 120
+
+- name: Validate an bosinst viosupgrade, no change on the vios
+  nim_viosupgrade:
+    action: bosinst
+    targets: nimvios02
+    viosupgrade_params:
+      all:
+        resources:              master_net_conf:logdir:my_filebackup_res
+        manage_cluster:         False
+        preview:                True
+      nimvios02:
+        ios_mksysb:             vios-3-1-1-0_sysb
+        spotname:               vios-3-1-1-0_spot
+        rootvg_install_disk:    "hdisk1:hdisk2"
+        skip_rootvg_cloning:    True
+        backup_file_resource:   nimvios02_iosb
 '''
 
 RETURN = r'''
@@ -237,11 +284,8 @@ import socket
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-# TODO Later, check SSP support (option -c of viosupgrade)
-# TODO Later, check mirrored rootvg support for upgrade & upgrade all in one
 # TODO Could we tune more precisly CHANGED (stderr parsing/analysis)?
 # TODO Skip operation if vios_status is defined and not SUCCESS, set the vios_status after operation
-# TODO a time_limit could be used in status to loop for a period of time (might want to add parameter for sleep period)
 
 
 def param_one_of(one_of_list, required=True, exclusive=True):
@@ -468,7 +512,6 @@ def viosupgrade_query(module, params_flags):
 
         rc, stdout, stderr = module.run_command(cmd)
 
-        results['changed'] = True  # don't really know
         results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
@@ -490,7 +533,6 @@ def viosupgrade_query(module, params_flags):
             cmd += ['-n', target_fqdn]
             rc, stdout, stderr = module.run_command(cmd)
 
-            results['changed'] = True  # don't really know
             results['meta'][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
@@ -613,12 +655,15 @@ def viosupgrade(module, params_flags):
         # run the command
         rc, stdout, stderr = module.run_command(cmd)
 
-        results['changed'] = True  # don't really know
         results['meta'][vios]['cmd'] = ' '.join(cmd)
         results['meta'][vios]['stdout'] = stdout
         results['meta'][vios]['stderr'] = stderr
 
         if rc == 0:
+            if vios in module.params['viosupgrade_params'] and 'preview' in module.params['viosupgrade_params'][vios] and \
+               not module.params['viosupgrade_params'][vios]['preview'] or 'preview' in module.params['viosupgrade_params']['all'] and \
+               not module.params['viosupgrade_params'][vios]['preview']:
+                results['changed'] = True
             msg = 'viosupgrade command successful.'
             results['status'][vios] = 'SUCCESS'
         else:
@@ -717,10 +762,14 @@ def main():
         module.exit_json(**results)
     module.debug('Target list: {0}'.format(results['targets']))
 
-    # initialize the results dictionary for target tuple keys
+    # initialize the results dictionary for targets
     for vios in results['targets']:
         results['status'][vios] = ''
         results['meta'][vios] = {'messages': []}
+
+    if not module.params['target_file']:
+        if 'all' not in module.params['viosupgrade_params']:
+            module.params['viosupgrade_params']['all'] = {}
 
     # perfom the operation
     if 'get_status' in module.params['action']:
