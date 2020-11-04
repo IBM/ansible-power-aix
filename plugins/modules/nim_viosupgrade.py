@@ -97,7 +97,7 @@ options:
     - I(preview), boolean (default=false) that specifies only validation of VIOS hosts readyness for
       installation is performed, can be used for preview of the installation image only.
     type: dict
-    required: true
+    required: false
   vios_status:
     description:
     - Specifies the result of a previous operation.
@@ -164,7 +164,7 @@ EXAMPLES = r'''
     action: get_status
     targets: nimvios01
   register: result
-  until: result.meta['nimvios01'].stdout.find("ready for a NIM operation") != -1
+  until: result.status['nimvios01'] == 'ONGOING'
   retries: 30
   delay: 120
 
@@ -536,9 +536,20 @@ def viosupgrade_query(module, params_flags):
             results['meta'][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
+
             if rc == 0:
-                msg = 'viosupgrade command successful. See meta data "stdout".'
-                results['status'][vios] = 'SUCCESS'
+                # Parse stdout to get viosupgrade result
+                info_hash = build_dict(module, stdout)
+                if vios in info_hash and 'Cstate' in info_hash[vios] and info_hash[vios]['Cstate'] == 'ready for a NIM operation':
+                    if 'Cstate_result' in info_hash[vios] and info_hash[vios]['Cstate_result'] == 'success':
+                        msg = 'viosupgrade command successful. See results or meta data "stdout".'
+                        results['status'][vios] = 'SUCCESS'
+                    else:
+                        msg = 'viosupgrade command might have failed. See meta data "stdout" and log on NIM master.'
+                        results['status'][vios] = 'FAILURE'
+                else:
+                    msg = 'viosupgrade command ongoing. See meta data "stdout" and log on NIM master.'
+                    results['status'][vios] = 'ONGOING'
             else:
                 msg = 'Command failed with rc: {0}'.format(rc)
                 results['status'][vios] = 'FAILURE'
@@ -576,7 +587,7 @@ def viosupgrade(module, params_flags):
     if module.params['target_file']:
         # check parameters
         for key in module.params['viosupgrade_params']['all'].keys():
-            if key not in params_flags['file'].keys():
+            if key not in params_flags['file']:
                 msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params are: {1}'.format(key, params_flags['file'])
                 ret += 1
                 module.log(msg)
@@ -588,7 +599,7 @@ def viosupgrade(module, params_flags):
         cmd += ['-f', module.params['target_file']]
 
         for key, flag in params_flags['file'].items():
-            if key in module.params['viosupgrade_params']['all'].keys():
+            if key in module.params['viosupgrade_params']['all']:
                 if module.params['viosupgrade_params']['all'][key]:
                     if isinstance(module.params['viosupgrade_params']['all'][key], (bool)) and module.params['viosupgrade_params']['all'][key]:
                         cmd += [flag]
@@ -616,7 +627,7 @@ def viosupgrade(module, params_flags):
     # check parameters
     for vios in module.params['viosupgrade_params'].keys():
         for key in module.params['viosupgrade_params'][vios].keys():
-            if key not in params_flags[module.params['action']].keys():
+            if key not in params_flags[module.params['action']]:
                 msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params for action={1} are: {2}'\
                       .format(key, module.params['action'], params_flags[module.params['action']].keys())
                 ret += 1
@@ -639,13 +650,13 @@ def viosupgrade(module, params_flags):
         cmd += ['-n', target_fqdn]
 
         for key, flag in params_flags[module.params['action']].items():
-            if vios in module.params['viosupgrade_params'] and key in module.params['viosupgrade_params'][vios].keys():
+            if vios in module.params['viosupgrade_params'] and key in module.params['viosupgrade_params'][vios]:
                 if module.params['viosupgrade_params'][vios][key]:
                     if isinstance(module.params['viosupgrade_params'][vios][key], (bool)) and module.params['viosupgrade_params'][vios][key]:
                         cmd += [flag]
                     else:
                         cmd += [flag, module.params['viosupgrade_params'][vios][key]]
-            elif key in module.params['viosupgrade_params']['all'].keys():
+            elif key in module.params['viosupgrade_params']['all']:
                 if module.params['viosupgrade_params']['all'][key]:
                     if isinstance(module.params['viosupgrade_params']['all'][key], (bool)) and module.params['viosupgrade_params']['all'][key]:
                         cmd += [flag]
@@ -695,7 +706,7 @@ def main():
             #   all:   { ios_mksysb: 'vios3-1-1-0_mksysb', preview: false, resources: 'my_resolv_conf:my_fb_script'}
             #   vios1: { rootvg_clone_disk: 'hdisk1', 'backup_file_resource': 'vios1_fb'}
             #   vios2: { rootvg_clone_disk: 'hdisk2:hdisk3', 'backup_file_resource': 'vios2_filebackup'}
-            viosupgrade_params=dict(type='dict', required=True),
+            viosupgrade_params=dict(type='dict'),
         ),
         mutually_exclusive=[['targets', 'target_file']],
     )
@@ -733,6 +744,8 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
+    if not module.params['viosupgrade_params']:
+        module.params['viosupgrade_params'] = {}
     param_one_of(['targets', 'target_file'])
 
     # build NIM node info (if needed)
@@ -767,9 +780,16 @@ def main():
         results['status'][vios] = ''
         results['meta'][vios] = {'messages': []}
 
+    # check viosupgrade_params dict keys are in target list (can help debuging issue with playbook)
     if not module.params['target_file']:
         if 'all' not in module.params['viosupgrade_params']:
             module.params['viosupgrade_params']['all'] = {}
+    if not module.params['target_file']:
+        for vios in module.params['viosupgrade_params'].keys():
+            if vios != 'all' and vios not in results['targets']:
+                msg = 'Warning: \'viosupgrade_params\' key \'{0}\' is not in targets list. Please check your playbook.'.format(vios)
+                module.log(msg)
+                results['meta']['messages'].append(msg)
 
     # perfom the operation
     if 'get_status' in module.params['action']:
