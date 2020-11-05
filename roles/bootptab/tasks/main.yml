@@ -1,0 +1,23 @@
+# Copyright (c) IBM Corporation 2020
+---
+- name: add bootptab entry
+  ansible.builtin.lineinfile:
+    path: /etc/bootptab
+    regexp: '^{{ hostname }}:'
+    line: '{{ hostname }}:{% if bootfile %}bf={{ bootfile }}:{% endif %}{% if address %}ip={{ address }}:{% endif %}{% if server %}sa={{ server }}:{% endif %}{% if gateway %}gw={{ gateway }}:{% endif %}{% if mask %}sm={{ mask }}:{% endif %}{% if hwaddr %}hw={{ hwaddr }}:{% endif %}{% if hwtype %}ht={{ hwtype }}:{% endif %}{% if homedir %}hd={{ homedir }}:{% endif %}'
+  when: state == 'present' and hostname
+
+- name: remove bootptab entry
+  ansible.builtin.lineinfile:
+    path: /etc/bootptab
+    regexp: '^{{ hostname }}:'
+    state: 'absent'
+  when: state == 'absent' and hostname
+
+- name: enable bootp server
+  include_role:
+    name: ibm.power_aix.inetd
+  vars:
+    - state: enabled
+    - services: [bootps]
+  when: state == 'present' and hostname

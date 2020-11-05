@@ -1,0 +1,12 @@
+# Copyright (c) IBM Corporation 2020
+---
+state: present
+hostname:
+homedir:
+bootfile:
+address:
+mask:
+gateway:
+server:
+hwtype: ethernet
+hwaddr:
