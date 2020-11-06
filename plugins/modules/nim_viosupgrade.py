@@ -46,6 +46,10 @@ options:
     description:
     - Specifies the list of VIOSes NIM targets to update.
     - Either I(targets) or I(target_file) must be specified.
+    - For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the n
+      number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time.
+      Hence, you must ensure that at least one node is always active in the cluster and is not part
+      of the upgrade process.
     type: list
     elements: str
   target_file:
@@ -61,8 +65,8 @@ options:
       number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time.
       Hence, you must ensure that at least one node is always active in the cluster and is not part
       of the upgrade process.
-    - Only the I(action) and I(preview) parameters will be considered as others should be provided
-      in file.
+    - Only the I(action) and I(preview) parameters will be considered while others should be
+      provided in file.
     type: str
   viosupgrade_params:
     description:
@@ -87,8 +91,9 @@ options:
       current rootvg disks to alternative disks and continues with the VIOS installation on the
       current rootvg disk.
     - I(rootvg_install_disk), when C(action=bosinst) this colon-separated list specifies new rootvg
-      disks where the specified image must be installed instead of the existing rootvg disks, one of
-      I(rootvg_clone_disk) or I(rootvg_install_disk) or I(skip_rootvg_cloning) must be specified.
+      disks where the specified image must be installed instead of the existing rootvg disks, one and
+      only one of I(rootvg_clone_disk) or I(rootvg_install_disk) or I(skip_rootvg_cloning) must be
+      specified.
     - I(backup_file_resource), specifies the resource name of the VIOS configuration backup file.
     - I(resources), specifies the configuration resources to be applied after the installation,
       valid values are resolv_conf, script, fb_script, file_res, image_data, and log.
@@ -181,7 +186,7 @@ EXAMPLES = r'''
         ios_mksysb:             vios-3-1-1-0_sysb
         spotname:               vios-3-1-1-0_spot
         rootvg_install_disk:    "hdisk1:hdisk2"
-        skip_rootvg_cloning:    True
+        skip_rootvg_cloning:    False
         backup_file_resource:   nimvios02_iosb
 '''
 
@@ -284,13 +289,10 @@ import socket
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
-# TODO Could we tune more precisly CHANGED (stderr parsing/analysis)?
-# TODO Skip operation if vios_status is defined and not SUCCESS, set the vios_status after operation
-
 
 def param_one_of(one_of_list, required=True, exclusive=True):
     """
-    Check at parameter of one_of_list is defined in module.params dictionary.
+    Check that parameter of one_of_list is defined in module.params dictionary.
 
     arguments:
         one_of_list (list) list of parameter to check
@@ -305,7 +307,7 @@ def param_one_of(one_of_list, required=True, exclusive=True):
 
     count = 0
     for param in one_of_list:
-        if param in module.params and module.params[param] is not None and module.params[param]:
+        if module.params[param] is not None and module.params[param]:
             count += 1
             break
     if count == 0 and required:
@@ -485,7 +487,6 @@ def check_vios_targets(module, targets):
     return vios_list
 
 
-# TODO: test viosupgrade_query
 def viosupgrade_query(module, params_flags):
     """
     Query to get the status of the upgrade .
@@ -515,13 +516,13 @@ def viosupgrade_query(module, params_flags):
         results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
+        module.log('stdout: {0}'.format(stdout))
+        module.log('stderr: {0}'.format(stderr))
 
         if rc == 0:
-            msg = 'viosupgrade command successful'
-            # TODO What should we put in results['status'] as we used target_file?
+            msg = 'viosupgrade get status successful.'
         else:
-            msg = 'Command failed with rc: {0}'.format(rc)
-            # TODO Could we check results['status'][vios] when we used target_file?
+            msg = 'viosupgrade get status command failed with rc: {0}'.format(rc)
             ret += 1
         module.log(msg)
         results['meta']['messages'].append(msg)
@@ -536,6 +537,8 @@ def viosupgrade_query(module, params_flags):
             results['meta'][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
+            module.log('stdout: {0}'.format(stdout))
+            module.log('stderr: {0}'.format(stderr))
 
             if rc == 0:
                 # Parse stdout to get viosupgrade result
@@ -559,7 +562,6 @@ def viosupgrade_query(module, params_flags):
     return ret
 
 
-# TODO: test viosupgrade
 def viosupgrade(module, params_flags):
     """
     Upgrade each VIOS.
@@ -612,6 +614,8 @@ def viosupgrade(module, params_flags):
         results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
+        module.log('stdout: {0}'.format(stdout))
+        module.log('stderr: {0}'.format(stderr))
 
         if rc == 0:
             msg = 'viosupgrade command successful'
@@ -636,6 +640,29 @@ def viosupgrade(module, params_flags):
         if ret != 0:
             results['status'][vios] = 'FAILURE'
             return ret
+
+    # Check previous status if known
+    if module.params['vios_status'] is not None and module.params['vios_status']:
+        for vios in module.params['targets']:
+            if vios in module.params['vios_status'] and 'SUCCESS' not in module.params['vios_status'][vios]:
+                msg = '{0} VIOS skipped (vios_status: {1})'.format(vios, module.params['vios_status'][vios])
+                module.log(msg)
+                results['meta'][vios]['messages'].append(msg)
+                results['status'][vios] = module.params['vios_status'][vios]
+                continue
+            for key in module.params['vios_status']:
+                if vios in key:
+                    if 'SUCCESS' not in module.params['vios_status'][key]:
+                        msg = '{0} VIOS skipped (vios_status[{1}: {2})'.format(vios, key, module.params['vios_status'][key])
+                        module.log(msg)
+                        results['meta'][vios]['messages'].append(msg)
+                        results['status'][vios] = module.params['vios_status'][key]
+                        break
+            else:
+                msg = '{0} vios skipped (no previous status found)'.format(vios)
+                module.log('[WARNING] ' + msg)
+                results['meta'][vios]['messages'].append(msg)
+                results['status'][vios] = 'SKIPPED-NO-PREV-STATUS'
 
     # viosupgrade -t bosinst -n hostname -m mksysbname -p spotname
     #             {-a RootVGCloneDisk: ... | -r RootVGInstallDisk: ...| -s}
@@ -669,11 +696,13 @@ def viosupgrade(module, params_flags):
         results['meta'][vios]['cmd'] = ' '.join(cmd)
         results['meta'][vios]['stdout'] = stdout
         results['meta'][vios]['stderr'] = stderr
+        module.log('stdout: {0}'.format(stdout))
+        module.log('stderr: {0}'.format(stderr))
 
         if rc == 0:
             if vios in module.params['viosupgrade_params'] and 'preview' in module.params['viosupgrade_params'][vios] and \
                not module.params['viosupgrade_params'][vios]['preview'] or 'preview' in module.params['viosupgrade_params']['all'] and \
-               not module.params['viosupgrade_params'][vios]['preview']:
+               not module.params['viosupgrade_params']['all']['preview']:
                 results['changed'] = True
             msg = 'viosupgrade command successful.'
             results['status'][vios] = 'SUCCESS'
@@ -694,7 +723,6 @@ def main():
     global results
 
     module = AnsibleModule(
-        # TODO: remove not needed attributes
         argument_spec=dict(
             action=dict(type='str', required=True,
                         choices=['altdisk', 'bosinst', 'get_status']),
@@ -744,9 +772,12 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
+    param_one_of(module.params, ['targets', 'target_file'])
     if not module.params['viosupgrade_params']:
         module.params['viosupgrade_params'] = {}
-    param_one_of(['targets', 'target_file'])
+    if not module.params['target_file']:
+        if 'all' not in module.params['viosupgrade_params']:
+            module.params['viosupgrade_params']['all'] = {}
 
     # build NIM node info (if needed)
     refresh_nim_node(module, 'vios')
@@ -782,12 +813,9 @@ def main():
 
     # check viosupgrade_params dict keys are in target list (can help debuging issue with playbook)
     if not module.params['target_file']:
-        if 'all' not in module.params['viosupgrade_params']:
-            module.params['viosupgrade_params']['all'] = {}
-    if not module.params['target_file']:
         for vios in module.params['viosupgrade_params'].keys():
             if vios != 'all' and vios not in results['targets']:
-                msg = 'Warning: \'viosupgrade_params\' key \'{0}\' is not in targets list. Please check your playbook.'.format(vios)
+                msg = 'Info: \'viosupgrade_params\' key \'{0}\' is not in targets list.'.format(vios)
                 module.log(msg)
                 results['meta']['messages'].append(msg)
 
@@ -799,19 +827,19 @@ def main():
 
     # set status and exit
     if not results['status']:
-        module.log('NIM upgradeios operation: status table is empty')
+        module.log('NIM upgradeios {0} operation: status table is empty'.format(module.params['action']))
         results['meta']['messages'].append('Warning: status table is empty, returning initial vios_status.')
         results['status'] = module.params['vios_status']
-        results['msg'] = "NIM updateios operation completed. See meta data for details."
+        results['msg'] = 'NIM updateios {0} operation completed. See meta data for details.'.format(module.params['action'])
         module.log(results['msg'])
     else:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
         if len(target_errored):
-            results['msg'] = "NIM upgradeios operation failed for {0}. See status and meta for details.".format(target_errored)
+            results['msg'] = 'NIM upgradeios {0} operation failed for {1}. See status and meta for details.'.format(module.params['action'], target_errored)
             module.log(results['msg'])
             module.fail_json(**results)
         else:
-            results['msg'] = "NIM upgradeios operation completed. See status and meta for details."
+            results['msg'] = 'NIM upgradeios {0} operation completed. See status and meta for details.'.format(module.params['action'])
             module.log(results['msg'])
             module.exit_json(**results)
 
