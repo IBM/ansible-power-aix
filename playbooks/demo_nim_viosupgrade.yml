@@ -1,0 +1,66 @@
+---
+- name: "viosupgrade operation using NIM"
+  hosts: nimserver
+  gather_facts: no
+  vars:
+    # nim_node_v:        {}
+    target_v:       "quimby-vios2"
+    target_file_v:  "/tmp/mytargetfile"
+    params_altdisk_v:
+      all:
+        resources:              master_net_conf:logdir
+        manage_cluster:         True
+        preview:                True
+      quimby-vios2:
+        ios_mksysb:             vios3-1-1-0_sysb
+        rootvg_clone_disk:      hdisk3
+        backup_file_resource:   quimby-vios2_iosb
+    params_bosinst_v:
+      all:
+        ios_mksysb:             vios3-1-1-0_sysb
+        spotname:               vios3-1-1-0_spot
+        resources:              master_net_conf:logdir
+        manage_cluster:         False
+        preview:                True
+      quimby-vios2:
+        rootvg_install_disk:    hdisk3
+        skip_rootvg_cloning:    Flase
+        backup_file_resource:   quimby-vios2_iosb
+
+  tasks:
+
+   - name: Check vios is ready for viosupgrade
+     nim_viosupgrade:
+       action: get_status
+       targets: "{{ target_v }}"
+     register: result
+     until: result.meta["{{ target_v }}"].stdout.find("ready for a NIM operation") != -1
+     retries: 1
+     delay: 5
+
+   - name: viosupgrade altdisk operation
+     nim_viosupgrade:
+       action: altdisk
+       targets: "{{ target_v }}"
+       viosupgrade_params: "{{ params_altdisk_v }}"
+     register: result
+   - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+
+   # - name: viosupgrade bosinst operation
+   #   nim_viosupgrade:
+   #     action: bosinst
+   #     targets: "{{ target_v }}"
+   #     viosupgrade_params: "{{ params_bosinst_v }}"
+   #   register: result
+   # - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+
+   - name: Wait for viosupgrade to complete
+     nim_viosupgrade:
+       action: get_status
+       targets: "{{ target_v }}"
+     register: result
+     until: result.status["{{ target_v }}"] != 'ONGOING'
+     retries: 30
+     delay: 120
+   - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+

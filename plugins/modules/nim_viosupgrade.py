@@ -169,7 +169,7 @@ EXAMPLES = r'''
     action: get_status
     targets: nimvios01
   register: result
-  until: result.status['nimvios01'] == 'ONGOING'
+  until: result.status['nimvios01'] != 'ONGOING'
   retries: 30
   delay: 120
 
