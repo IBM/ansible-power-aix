@@ -8,14 +8,14 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
+                    'status': ['deprecated'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: nim_upgradeios
+module: _nim_upgradeios
 short_description: Use NIM to update a single or a pair of Virtual I/O Servers.
 description:
 - Uses the NIM to perform upgrade to Virtual I/O Server (VIOS) targets tuple.
@@ -226,7 +226,7 @@ notes:
 
 EXAMPLES = r'''
 - name: Perform a backup of nimvios01
-  nim_upgradeios:
+  _nim_upgradeios:
     targets: "(nimvios01)"
     action: backup
 '''
