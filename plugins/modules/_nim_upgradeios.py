@@ -8,14 +8,14 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
+                    'status': ['deprecated'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = r'''
 ---
 author:
 - AIX Development Team (@pbfinley1911)
-module: nim_upgradeios
+module: _nim_upgradeios
 short_description: Use NIM to update a single or a pair of Virtual I/O Servers.
 description:
 - Uses the NIM to perform upgrade to Virtual I/O Server (VIOS) targets tuple.
@@ -172,7 +172,6 @@ options:
     - Specifies additional flags to pass to the viosbr command.
     - Can be used with I(action=migrate).
     type: str
-
   mk_image:
     description:
     - Specifies to create the system backup image (mksysb) and create the NIM resource.
@@ -220,11 +219,14 @@ options:
     - Allows to pass along NIM node info from a task to another so that it
       discovers NIM info only one time for all tasks.
     type: dict
+notes:
+  - Debug on NIM master could be done using the following command
+    B(nim -o showlog -a full_log=yes -a log_type=script vios_target)
 '''
 
 EXAMPLES = r'''
 - name: Perform a backup of nimvios01
-  nim_upgradeios:
+  _nim_upgradeios:
     targets: "(nimvios01)"
     action: backup
 '''
@@ -793,6 +795,9 @@ def nim_migvios(module, target_tuple, vios_key, vios):
 
     # Note: the option -a time_limit is not yet supported by migvios
     # time_limit attribute is only valid with the following operations: bos_inst, cust, and alt_disk_install.
+    # nim -o migvios -a spot=jaguar12_ios_mksysb_spot -a ios_mksysb=jaguar12_ios_mksysb -a ios_backup=fake
+    #                -a resolv_conf=resolv_conf -a bosinst_data=bosinst_data_jaguar12_new
+    #                -a boot_client=no -a mk_image=yes jaguar12
     cmd = ['nim', '-Fo', 'migvios']
 
     cmd += ['-a', 'ios_mksysb={0}'.format(mksysb_name)]
@@ -1046,8 +1051,6 @@ def main():
             manage_cluster=dict(type='bool', default=True),
             debug=dict(type='bool', default=False),
         ),
-        required_if=[
-        ],
     )
 
     results = dict(

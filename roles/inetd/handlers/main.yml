@@ -1,0 +1,4 @@
+# Copyright (c) IBM Corporation 2020
+---
+- name: restart inetd
+  ansible.builtin.service: name=inetd state=restarted
