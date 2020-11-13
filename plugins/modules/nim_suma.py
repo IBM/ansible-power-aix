@@ -16,12 +16,13 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_suma
-short_description: Download fixes, SP or TL on an AIX server
+short_description: Use NIM to download fixes, SP or TL from IBM Fix Central website.
 description:
-- Creates a task to automate the download of technology level (TL) and
-  service pack (SP) from a fix server using the Service Update Management
-  Assistant (SUMA). It can create the NIM resource.
-- Log file is /var/adm/ansible/nim_suma_debug.log.
+- Use the Service Update Management Assistant (SUMA) to download fixes available to update specified
+  target systems up to a specific technology levels (TL) or service packs (SP) level. The fixes are
+  downloaded from the IBM Fix Central website and the related NIM resource is created on the NIM
+  master. The user can then run another task to install the systems with this new resource.
+- Updates are downloaded based on the lowest technical level of all target systems.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -29,74 +30,102 @@ requirements:
 options:
   action:
     description:
-    - Controls what is performed.
-    - C(download) to download fixes and define the NIM resource.
-    - C(preview)  to execute all the checks without downloading the fixes.
+    - Controls the SUMA action to be performed.
+    - C(download) specifies to download fixes and define the NIM resource.
+    - C(preview) specifies to execute all the checks without downloading the fixes.
     type: str
     choices: [ download, preview ]
     default: preview
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - C(foo*) designates all the NIM clients with name starting by C(foo).
-    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(all) designates all the NIM clients.
+    - C(foo*) specifies all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) specifies all the NIM clients.
+    - Can be empty.
+    - But it cannot be empty when I(oslevel) is set to a Service Pack.
     type: list
     elements: str
     required: true
   oslevel:
     description:
-    - Specifies the Operating System level to update to;
-    - C(Latest) indicates the latest SP suma can update the targets to.
-    - C(xxxx-xx(-00-0000)) sepcifies a TL.
-    - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies a SP.
+    - Specifies the Operating System level to build the resource to update to;
+    - C(Latest) specifies to update the target to the latest SP suma can update for the current TL.
+    - C(xxxx-xx(-00-0000)) sepcifies to update the target to a specif TL.
+    - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies to update the target to a specific SP.
     - Required when I(action=download) or I(action=preview).
+    - When target list is empty I(targets=[]), then I(oslevel) cannot be empty I(oslevel="") or
+      I(oslevel=Latest).
     type: str
     default: Latest
   lpp_source_name:
     description:
-    - Name of the lpp_source NIM resource.
-    - Required when I(action=download) or I(action=preview).
+    - Name of the lpp_source NIM resource to create when I(action=download).
+    - When not specified the lpp_source_name is returned.
     type: str
   download_dir:
     description:
     - Absolute directory path where to download the packages on the NIM server.
-    - If not set it looks for existing NIM ressource matching I(lpp_source_name) and use its location.
-    - If no NIM ressource is found, the path is set to /usr/sys/inst.images
+    - When not set, if a NIM ressource I(lpp_source_name) exists then it is the resource's location.
+    - If no NIM ressource exists, then it is set to /usr/sys/inst.images
     - Can be used if I(action=download) or I(action=preview).
     type: path
   download_only:
     description:
-    - Download only. Do not create the NIM resource.
+    - Specifies to perform the preview and download operation only. Do not create the NIM resource.
     - Can be used if I(action=download)
     type: bool
     default: no
   extend_fs:
     description:
-    - Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
+    - Specifies to automatically extends the filesystem if extra space is needed.
+    - When I(extend_fs=no) and additional space is required for the download, no download occurs.
+    - When set, a filesystem could have increased while the task returns I(changed=False).
     - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: yes
   description:
     description:
-    - Display name for SUMA task.
-    - If not set the will be labelled 'I(action) request for oslevel I(oslevel)'
+    - Specifies the display name for SUMA task. This is used when viewing existing SUMA tasks in
+      SMIT for example.
+    - If not set the will be labelled as 'I(action) request for oslevel I(oslevel)'.
     - Can be used for I(action=download) or I(action=preview).
     type: str
   metadata_dir:
     description:
-    - Directory where metadata files are downloaded.
-    - Can be used if I(action=download) or I(action=preview) when I(oslevel) is not exact, for example I(oslevel=Latest).
+    - Specifies the directory where metadata files are downloaded.
+    - Can be used if I(action=download) or I(action=preview) when I(oslevel) is not exact, for
+      example I(oslevel=Latest).
     type: path
     default: /var/adm/ansible/metadata
+notes:
+  - The B(/var/adm/ras/suma.log) file on your system contains detailed results from running the SUMA
+    command.
+  - The B(/var/adm/ras/suma_dl.log) file on your system contains a list of files that have been
+    downloaded.
+  - When you configure SUMA in an AIX logical partition (LPAR) or as the NIM master, it establishes
+    a connection to the fix distribution website and downloads the available service update. The fix
+    distribution website is an IBM server with the domain name of esupport.ibm.com. If your
+    configuration contains a firewall that blocks the connection to the fix distribution website,
+    you must customize the firewall rules to allow SUMA to connect to the following IP addresses
+    129.42.56.189, 129.42.60.189, 129.42.54.189. SUMA connects to one of these IP addresses based on
+    your geography.
+  - You can refer to the IBM documentation for additional information on the SUMA command and
+    configuration settings at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/suma.html).
+  - If you hit the known bug that prevent suma from running successfully, contact IBM AIX support
+    and request and ifix for this problem (APAR IJ06197 SUMA MAY CAUSE A NULLPOINTEREXCEPTION) at
+    U(http://www-01.ibm.com/support/docview.wss?uid=isg1IJ06197).
+  - To get assistance for SUMA errors through AIX Support refer to
+    U(https://www-01.ibm.com/support/docview.wss?uid=ibm10719985).
 '''
 
 EXAMPLES = r'''
-- name: Check for, and install, system updates
+- name: Check, download and create the NIM resource to install lastest updates
   nim_suma:
     action: download
     targets: nimclient01
-    oslevel: latest
+    oslevel: Latest
     download_dir: /usr/sys/inst.images
 '''
 
@@ -111,12 +140,24 @@ lpp_source_name:
     returned: always
     type: str
     sample: 'quimby01_lpp_source'
-target_list:
+targets:
     description: Status information.
     returned: always
     type: list
     elements: str
     sample: [nimclient01, nimclient02, ...]
+cmd:
+    description: The command exectued.
+    returned: if a command was run.
+    type: str
+stdout:
+    description: The standard output of the command.
+    returned: always
+    type: str
+stderr:
+    description: The standard error of the command.
+    returned: always
+    type: str
 meta:
     description: Detailed information on the module execution.
     returned: always
@@ -302,6 +343,7 @@ def get_nim_clients(module):
     cmd = ['lsnim', '-t', 'standalone']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
+        results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
@@ -364,6 +406,7 @@ def get_nim_lpp_source(module):
         msg = "Cannot get the list of lpp source, command '{0}' failed with return code {1}".format(cmd, rc)
         module.log(msg)
         results['msg'] = msg
+        results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
         module.fail_json(**results)
@@ -471,7 +514,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             if len(metadata_filter_ml) == 4:
                 metadata_filter_ml += "-00"
         else:
-            # search first the bigest technical level from client list
+            # search first the highest technical level from client list
             tl_max = re.match(
                 r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$",
                 max_oslevel(clients_target_oslevel)).group(1)
@@ -481,7 +524,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
                 r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$",
                 min_oslevel(clients_target_oslevel)).group(1)
 
-            # warn the user if bigest and lowest tl do not belong
+            # warn the user if highest and lowest tl do not belong
             # to the same release
             if re.match(r"^([0-9]{4})", tl_min).group(1) != re.match(r"^([0-9]{4})", tl_max).group(1):
                 module.log("[WARNING] release level mismatch, only AIX {0} SP/TL will be downloaded\n\n".format(tl_max[:2]))
@@ -509,6 +552,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         if rc != 0:
             msg = "Suma metadata command '{0}' failed with return code {1}".format(' '.join(cmd), rc)
             module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
+            results['cmd'] = ' '.join(cmd)
             results['stdout'] = stdout
             results['stderr'] = stderr
             results['msg'] = msg
@@ -555,6 +599,7 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             if rc != 0:
                 msg = "Suma metadata command '{0}' failed with return code {1}".format(' '.join(cmd), rc)
                 module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
+                results['cmd'] = ' '.join(cmd)
                 results['stdout'] = stdout
                 results['stderr'] = stderr
                 results['msg'] = msg
@@ -704,6 +749,7 @@ def suma_command(module, action, suma_params):
         cmd += ['-a', 'Extend=n']
 
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     if rc != 0:
@@ -740,7 +786,7 @@ def suma_download(module, suma_params):
             results['msg'] = msg
             module.fail_json(**results)
         elif re.match(r"^([0-9]{4}-[0-9]{2})(-00|-00-0000)$", req_oslevel):
-            msg = 'When no Service Pack is provided , a target machine list is required'
+            msg = 'When no Service Pack is provided, a target machine list is required'
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
@@ -762,7 +808,7 @@ def suma_download(module, suma_params):
 
     # Build targets list from nim_clients list
     target_clients = expand_targets(module, targets_list, nim_clients)
-    results['target_list'] = target_clients
+    results['targets'] = target_clients
     if targets_list and not target_clients:
         msg = 'No matching NIM client found for target \'{0}\'.'.format(suma_params['targets'])
         module.log(msg)
@@ -929,6 +975,7 @@ def suma_download(module, suma_params):
         cmd += ['{0}'.format(suma_params['LppSource'])]
 
         rc, stdout, stderr = module.run_command(cmd)
+        results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
         if rc != 0:
@@ -966,16 +1013,16 @@ def main():
     results = dict(
         changed=False,
         msg='',
+        cmd='',
         stdout='',
         stderr='',
+        targets=[],
         meta={'messages': []},
-        target_list=(),
     )
 
     module.debug('*** START ***')
 
     suma_params['LppSource'] = ''
-    suma_params['target_clients'] = ()
 
     # Get Module params
     action = module.params['action']
@@ -1003,7 +1050,6 @@ def main():
     module.log(msg)
     results['msg'] = msg
     results['lpp_source_name'] = suma_params['LppSource']
-    results['target_list'] = suma_params['target_clients']
     module.exit_json(**results)
 
 

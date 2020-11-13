@@ -16,14 +16,16 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: flrtvc
-short_description: Generate FLRTVC report, download and install efix.
+short_description: Generate FLRTVC report, download and install security and HIPER fixes.
 description:
-- Creates a task to check targets vulnerability against available fixes, and
-  apply necessary fixes. It downloads and uses the Fix Level Recommendation Tool
-  Vulnerability Checker Script to generates a report. It parses the report,
-  downloads the fixes, checks their versions and if some files are locked. Then
-  it installs the remaining fixes. In case of inter-locking file you could run
-  this several times.
+- Applies known security and HIPER (High Impact PERvasive) fixes on your system based on its
+  inventrory ensuring the systems are at supported and secure levels.
+- It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generates
+  a report. It parses this report, downloads the required fixes, extract the files and checks their
+  versions against installed software levels. It also checks for file locking preventing fix
+  installation. It rejects fixes that do not match these requirements and installs the remaining.
+- In case of inter-locking file(s) you might want run against the task.
+- You will get the list of installed and rejected fixes in the results meta data.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -31,26 +33,27 @@ requirements:
 options:
   apar:
     description:
-    - Type of APAR to check or download.
-    - C(sec) Security vulnerabilities.
-    - C(hiper) Corrections to High Impact PERvasive threats.
-    - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
+    - Type of APAR to check against.
+    - C(sec) stands for Security vulnerabilities.
+    - C(hiper) stands for Corrections to High Impact PERvasive threats.
+    - C(all) has the same behavior as C(None) hence both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
   filesets:
     description:
-    - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
+    - Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified
+      phrase will be checked and so updated.
     type: str
   csv:
     description:
     - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
-    - This file is usually transferred from the fix server; this rather big transfer
-      can be avoided by specifying an already transferred file.
+    - This file is usually transferred from the Fix Central server; you can avoid this rather big
+      transfer by specifying the path to an already transferred file.
     type: str
   path:
     description:
-    - Specifies the directory to save the FLRTVC report. All temporary files such as
-      previously installed filesets, fixes lists and downloaded fixes files will be
+    - Specifies the directory to save the FLRTVC report.
+    - All temporary files such as installed filesets, fixes listings and downloaded fixes files is
       stored in the working subdirectory named 'I(path)/work'.
     type: str
     default: /var/adm/ansible
@@ -62,6 +65,8 @@ options:
   verbose:
     description:
     - Generate full FLRTVC reporting (verbose mode).
+    - It runs the FLRTVC script a second time to save the full report into file. So this option
+      impacts the execution performance.
     type: bool
     default: no
   force:
@@ -78,34 +83,43 @@ options:
   check_only:
     description:
     - Specifies to only check if fixes are already applied on the targets.
-      No download or install operations.
+    - B(No download or installation) operations will be performed.
     type: bool
     default: no
   download_only:
     description:
-    - Specifies to perform check and download operation, do not install anything.
+    - Specifies to perform check and download operation only.
+    - B(No installation) will be performed.
     type: bool
     default: no
   extend_fs:
     description:
-    - Specifies to increase filesystem size of the working directory if needed.
-    - If set a filesystem of the host could have increased even if it returns I(changed=False).
+    - Specifies to increase filesystem size of the working directory when extra space is needed.
+    - When set, a filesystem could have increased while the task returns I(changed=False).
     type: bool
     default: yes
+notes:
+  - Refer to the FLRTVC page for detail on the sctipt
+    U(https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html)
+  - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file.
+    It is downloaded from U(https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip).
+  - The script requires ksh93 to use.
+  - B(v0.8.1) is the current version of the script, depending on changes, this module might need to
+    be udapted.
 '''
 
 EXAMPLES = r'''
 - name: Download patches for security vulnerabilities
   flrtvc:
-    path: /usr/sys/inst.images
-    verbose: yes
     apar: sec
+    path: /usr/sys/inst.images
     download_only: yes
 
 - name: Install both sec and hyper patches for all filesets starting with devices.fcp
   flrtvc:
-    path: /usr/sys/inst
     filesets: devices.fcp.*
+    path: /usr/sys/inst
+    save_report: yes
     verbose: yes
     force: no
     clean: no
@@ -127,49 +141,54 @@ meta:
             returned: always
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         0.report:
-            description: Output of the FLRTVC script, report or details on flrtvc error if any.
-            returned: if the FLRTVC script run succeeds
+            description: Output of the FLRTVC script, report and details on flrtvc error if any.
+            returned: if the FLRTVC script succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         1.parse:
-            description: List of URLs to download or details on parsing error if any.
-            returned: if the parsing succeeds
+            description: List of URLs to download and details on parsing error if any.
+            returned: if the FLRTVC report parsing succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         2.discover:
-            description: List of epkgs found in URLs.
-            returned: if the discovery succeeds
+            description:
+            - List of epkgs found in URLs.
+            - URLs can be eFix or tar files or directories needing parsing.
+            returned: if the URL downloads and epkgs listing succeed
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         3.download:
             description: List of downloaded epkgs.
-            returned: if download succeeds
+            returned: if download operation succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         4.1.reject:
-            description: List of epkgs rejected, refer to messages and log file for reason.
+            description:
+            - List of epkgs rejected. Can be because installed levels do not match ifix required
+              levels or because a file is or will be locked by an other ifix installation.
+            - You should refer to messages or to log file for veray detailled reason.
             returned: if check succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         4.2.check:
-            description: List of epkgs following prerequisites.
+            description: List of epkgs matching the prerequisites and trying to install.
             returned: if check succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         5.install:
-            description: List of epkgs actually installed.
+            description: List of epkgs actually installed on the system.
             returned: if install succeeds
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
     sample:
         "meta": {
             "0.report": [
@@ -899,19 +918,19 @@ def run_flrtvc(flrtvc_path, params, force):
     if params['save_report']:
         filename = os.path.join(params['dst_path'], 'flrtvc.txt')
         with open(filename, 'w') as myfile:
+            # rerun the command in verbose mode if needed
             if params['verbose']:
                 cmd += ['-v']
-
-            module.debug('write flrtvc report to file, cmd "{0}"'.format(' '.join(cmd)))
-            rc, stdout, stderr = module.run_command(cmd)
-            # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
-            if rc != 0 and rc != 2:
-                msg = 'Failed to save flrtvc report in file, rc={0}'.format(rc)
-                module.log(msg)
-                module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
-                module.log('stdout:{0}'.format(stdout))
-                module.log('stderr:{0}'.format(stderr))
-                results['meta']['messages'].append(msg)
+                module.debug('write flrtvc report to file, cmd "{0}"'.format(' '.join(cmd)))
+                rc, stdout, stderr = module.run_command(cmd)
+                # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
+                if rc != 0 and rc != 2:
+                    msg = 'Failed to save flrtvc report in file, rc={0}'.format(rc)
+                    module.log(msg)
+                    module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+                    module.log('stdout:{0}'.format(stdout))
+                    module.log('stderr:{0}'.format(stderr))
+                    results['meta']['messages'].append(msg)
             myfile.write(stdout)
 
     return True
