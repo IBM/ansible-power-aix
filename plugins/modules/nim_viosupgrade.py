@@ -209,7 +209,7 @@ status:
     type: dict
     sample: "{ vios1: 'SUCCESS', vios2: 'FAILURE' }"
 cmd:
-    description: Command exectued.
+    description: Command executed.
     returned: If the command was run when C(target_file) is set.
     type: str
 stdout:
@@ -269,7 +269,7 @@ meta:
                     type: list
                     elements: str
                 cmd:
-                    description: Command exectued.
+                    description: Command executed.
                     returned: If the command was run.
                     type: str
                 stdout:

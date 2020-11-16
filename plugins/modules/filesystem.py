@@ -40,7 +40,7 @@ options:
     default: present
   rm_mount_point:
     description:
-    - When state is I(state=absent), specifies to remove the mount directory along with the entry in
+    - When I(state=absent), specifies to remove the mount directory along with the entry in
       the filesystem.
     type: bool
     default: false

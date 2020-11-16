@@ -16,7 +16,7 @@ DOCUMENTATION = """
 author:
 - AIX development Team (@pbfinley1911)
 module: group
-short_description: Manage presence, attibutes and memeber of AIX groups.
+short_description: Manage presence, attributes and member of AIX groups.
 description:
 - It allows to create new group, to change/remove attributes and administrators or members of a
   group, and to delete an existing group.
@@ -50,7 +50,7 @@ options:
   user_list_action:
     description:
     - Specifies to add or remove members/admins from the group.
-    - C(add) to add members or amdins of the group with provided I(users_list) in group I(name)
+    - C(add) to add members or admins of the group with provided I(users_list) in group I(name)
     - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
     - Can be used when I(state=present) or I(state=modify).
     type: str
@@ -100,7 +100,7 @@ msg:
     type: str
     sample: 'Group: foo SUCCESSFULLY created.'
 cmd:
-    description: The command exectued.
+    description: The command executed.
     returned: always
     type: str
 rc:
@@ -203,7 +203,7 @@ def modify_group(module):
 
 def create_group(module):
     """
-    Creates the group with the attributes provided in the attribiutes field.
+    Creates the group with the attributes provided in the attributes field.
     arguments:
         module  (dict): The Ansible module
     note:

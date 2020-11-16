@@ -19,9 +19,9 @@ module: flrtvc
 short_description: Generate FLRTVC report, download and install security and HIPER fixes.
 description:
 - Applies known security and HIPER (High Impact PERvasive) fixes on your system based on its
-  inventrory ensuring the systems are at supported and secure levels.
-- It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generates
-  a report. It parses this report, downloads the required fixes, extract the files and checks their
+  inventory ensuring the systems are at supported and secure levels.
+- It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generate
+  a report. It parses this report, downloads the required fixes, extracts the files and checks their
   versions against installed software levels. It also checks for file locking preventing fix
   installation. It rejects fixes that do not match these requirements and installs the remaining.
 - In case of inter-locking file(s) you might want run against the task.
@@ -53,7 +53,7 @@ options:
   path:
     description:
     - Specifies the directory to save the FLRTVC report.
-    - All temporary files such as installed filesets, fixes listings and downloaded fixes files is
+    - All temporary files such as installed filesets, fixes listings and downloaded fixes files are
       stored in the working subdirectory named 'I(path)/work'.
     type: str
     default: /var/adm/ansible
@@ -105,7 +105,7 @@ notes:
     It is downloaded from U(https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip).
   - The script requires ksh93 to use.
   - B(v0.8.1) is the current version of the script, depending on changes, this module might need to
-    be udapted.
+    be updated.
 '''
 
 EXAMPLES = r'''
@@ -172,7 +172,7 @@ meta:
             description:
             - List of epkgs rejected. Can be because installed levels do not match ifix required
               levels or because a file is or will be locked by an other ifix installation.
-            - You should refer to messages or to log file for veray detailled reason.
+            - You should refer to messages or to log file for very detailed reason.
             returned: if check succeeds
             type: list
             elements: str

@@ -60,7 +60,7 @@ options:
     type: str
   abbr_fmt_file:
     description:
-    - When I(mode=save) or I(mode=apply), specifies the file where the security settings needs to
+    - When I(mode=save) or I(mode=apply), specifies the file where the security settings need to
       be saved in abbreviated format.
     type: str
   norm_fmt_file:

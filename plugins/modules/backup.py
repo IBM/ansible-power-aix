@@ -82,7 +82,7 @@ options:
     elements: str
   script:
     description:
-    - Specifies the full path of a customiation script file to run at the end of the mksysb
+    - Specifies the full path of a customization script file to run at the end of the mksysb
       installation.
     - Can be used if I(action=restore) or I(type=mksysb).
     type: path
@@ -112,7 +112,7 @@ options:
     - If I(volume_group=rootvg), then data file will be in C(/image.data).
     - If C(volume_group) is a data volume group, data file will be in
       C(/tmp/vgdata/vgname/vgname.data).
-    - Specify I(create_data_file=mapfile) to creates the MAPFILE containing the mapping of the
+    - Specify I(create_data_file=mapfile) to create the MAPFILE containing the mapping of the
       logical to physical partitions for each logical volume in the volume group. This mapping can
       be used to allocate the same logical-to-physical mapping when the image is restored.
     - Can be used if I(action=create).

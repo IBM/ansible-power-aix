@@ -51,7 +51,7 @@ options:
     description:
     - Specifies the Operating System level to build the resource to update to;
     - C(Latest) specifies to update the target to the latest SP suma can update for the current TL.
-    - C(xxxx-xx(-00-0000)) sepcifies to update the target to a specif TL.
+    - C(xxxx-xx(-00-0000)) specifies to update the target to a specific TL.
     - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies to update the target to a specific SP.
     - Required when I(action=download) or I(action=preview).
     - When target list is empty I(targets=[]), then I(oslevel) cannot be empty I(oslevel="") or
@@ -66,7 +66,7 @@ options:
   download_dir:
     description:
     - Absolute directory path where to download the packages on the NIM server.
-    - When not set, if a NIM ressource I(lpp_source_name) exists then it is the resource's location.
+    - When not set, if a NIM resource I(lpp_source_name) exists then it is the resource's location.
     - If no NIM ressource exists, then it is set to /usr/sys/inst.images
     - Can be used if I(action=download) or I(action=preview).
     type: path
@@ -88,7 +88,7 @@ options:
     description:
     - Specifies the display name for SUMA task. This is used when viewing existing SUMA tasks in
       SMIT for example.
-    - If not set the will be labelled as 'I(action) request for oslevel I(oslevel)'.
+    - If not set they will be labelled as 'I(action) request for oslevel I(oslevel)'.
     - Can be used for I(action=download) or I(action=preview).
     type: str
   metadata_dir:
@@ -113,7 +113,7 @@ notes:
   - You can refer to the IBM documentation for additional information on the SUMA command and
     configuration settings at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/suma.html).
-  - If you hit the known bug that prevent suma from running successfully, contact IBM AIX support
+  - If you hit the known bug that prevents suma from running successfully, contact IBM AIX support
     and request and ifix for this problem (APAR IJ06197 SUMA MAY CAUSE A NULLPOINTEREXCEPTION) at
     U(http://www-01.ibm.com/support/docview.wss?uid=isg1IJ06197).
   - To get assistance for SUMA errors through AIX Support refer to
@@ -121,7 +121,7 @@ notes:
 '''
 
 EXAMPLES = r'''
-- name: Check, download and create the NIM resource to install lastest updates
+- name: Check, download and create the NIM resource to install latest updates
   nim_suma:
     action: download
     targets: nimclient01
@@ -147,7 +147,7 @@ targets:
     elements: str
     sample: [nimclient01, nimclient02, ...]
 cmd:
-    description: The command exectued.
+    description: The command executed.
     returned: if a command was run.
     type: str
 stdout:

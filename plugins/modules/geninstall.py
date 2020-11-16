@@ -95,7 +95,7 @@ msg:
     type: str
     sample: 'Invalid parameter: install_list cannot be empty'
 cmd:
-    description: The command exectued.
+    description: The command executed.
     returned: always
     type: str
 rc:
