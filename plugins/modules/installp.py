@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: installp
-short_description: Installs and updates software
+short_description: Installs and updates software.
 description:
 - Installs available software products in a compatible installation package.
 version_added: '2.9'
@@ -24,84 +24,6 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 options:
-  device:
-    description:
-    - The name of the device or directory containing installation images.
-    type: str
-  install_list:
-    description:
-    - List of products to install
-    - C(all) installs all products
-    type: list
-    elements: str
-  force:
-    description:
-    - Forces the installation of a software product even if there exists a previously
-      installed version of the software product that is the same as or newer than the
-      version currently being installed.
-    type: bool
-    default: no
-  bosboot:
-    description:
-    - Performs a bosboot in the event that one is needed.
-    type: bool
-    default: yes
-  delete_image:
-    description:
-    - Deletes the installation image file after the software product or update has
-      been successfully installed.
-    type: bool
-    default: no
-  save:
-    description:
-    - Saves existing files that are replaced when installing or updating.
-    type: bool
-    default: yes
-  parts:
-    description:
-    - Installs the specified part of the software product.
-    - C(root)
-    - C(share)
-    - C(usr)
-    type: list
-    elements: str
-  extend_fs:
-    description:
-    - Attempts to resize any file systems where there is insufficient space to do the installation.
-    type: bool
-    default: yes
-  commit:
-    description:
-    - Commit after apply.
-    type: bool
-    default: no
-  dependencies:
-    description:
-    - Automatically installs any software products or updates that are requisites
-      of the specified software product.
-    - Automatically removes or rejects dependents of the specified software.
-    type: bool
-    default: no
-  base_only:
-    description:
-    - Limits the requested action to base level filesets.
-    type: bool
-    default: no
-  updates_only:
-    description:
-    - Indicates that the requested action should be limited to software updates.
-    type: bool
-    default: no
-  platform:
-    description:
-    - Specifies the platform.
-    - C(POWER) specifies POWER processor-based platform packages only.
-    - C(neutral) specifies neutral packages, that is, packages that are not restricted
-      to the POWER processor-based platform.
-    - C(all) specifies all packages.
-    type: str
-    choices: [ POWER, neutral, all ]
-    default: all
   action:
     description:
     - Controls what is performed.
@@ -116,11 +38,111 @@ options:
     type: str
     choices: [ apply, commit, reject, deinstall, cleanup, list, list_fixes, list_applied ]
     default: apply
+  device:
+    description:
+    - Specifies the device or directory that contains the installation images.
+    type: str
+  install_list:
+    description:
+    - Lists the software products to install.
+    - One can specify either an entire software product or any separately installable filesets
+      within the software product. This can be used to specify the name of a fileset or fileset
+      update.
+    - A specific level of the software can be provided using the following format 'fileset:level'.
+    - It indicates the level of the software product or update that is to be installed and is of
+      the form vv.rr.mmmm.ffff. If a fileset update has an additional fix ID (also know as ptf id),
+      that ID must also be specified in the level as in vv.rr.mmmm.ffff.ppppppp.
+    - C(all) installs all software products available.
+    type: list
+    elements: str
+  force:
+    description:
+    - Forces the installation of a software product even if there exists a previously installed
+      version of the software product that is the same as or newer than the version currently being
+      installed.
+    type: bool
+    default: no
+  bosboot:
+    description:
+    - Performs a bosboot in the event that creating the boot image is needed.
+    type: bool
+    default: yes
+  delete_image:
+    description:
+    - Deletes the installation image file after the software product or update has been successfully
+      installed.
+    type: bool
+    default: no
+  save:
+    description:
+    - Saves existing files that are replaced when installing or updating.
+    - When I(save=no) and there is a failure in the system during the installation, then no recovery
+      of replaced files is performed.
+    type: bool
+    default: yes
+  parts:
+    description:
+    - Installs the specified part of the software product.
+    - C(root)
+    - C(share)
+    - C(usr)
+    - When not specified, all parts of software are installed by default.
+    type: list
+    elements: str
+  extend_fs:
+    description:
+    - Attempts to resize any file systems where there is insufficient space to do the installation.
+    type: bool
+    default: yes
+  commit:
+    description:
+    - Commits all specified updates that are currently applied but not committed.
+    - When an update is committed all other software products it is dependent on must also be
+      committed. If the requisite software products are not in the committed state, the commit fails
+      and error messages are displayed.
+    type: bool
+    default: no
+  dependencies:
+    description:
+    - Automatically installs any software products or updates that are requisites of the specified
+      software product.
+    - Automatically removes or rejects dependents of the specified software.
+    - It causes the newest update to be installed for a given fileset, when there are multiple
+      superseding updates for the same fileset on the installation media.
+    type: bool
+    default: no
+  base_only:
+    description:
+    - Limits the requested action to base level filesets.
+    - Base level filesets can be used to install software, reinstall existing fileset or downlevel
+      existing filesets.
+    - Some fileset do not have a base level version of the software, come preloaded on the system
+      and cannot be force overwritten or reinstalled.
+    type: bool
+    default: no
+  updates_only:
+    description:
+    - Indicates that the requested action should be limited to software updates.
+    type: bool
+    default: no
+  platform:
+    description:
+    - Specifies the platform.
+    - C(POWER) specifies POWER processor-based platform packages only.
+    - C(neutral) specifies neutral packages, that is, packages that are not restricted to the POWER
+      processor-based platform.
+    - C(all) specifies all packages.
+    type: str
+    choices: [ POWER, neutral, all ]
+    default: all
   agree_licenses:
     description:
     - Agrees to required software license agreements for software to be installed.
     type: bool
     default: no
+notes:
+  - You can refer to the IBM documentation for additional information on the installp command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/i_commands/installp.html)
 '''
 
 EXAMPLES = r'''
@@ -159,7 +181,15 @@ msg:
     description: The execution message.
     returned: always
     type: str
-    sample: "Command 'installp' failed with return code 1"
+    sample: "installp 'apply' failed."
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+rc:
+    description: The command return code.
+    returned: always
+    type: int
 stdout:
     description: The standard output.
     returned: always
@@ -329,13 +359,15 @@ def main():
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    result['cmd'] = ' '.join(cmd)
+    result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        result['msg'] = 'installp \'{0}\' failed.'.format(action)
         module.fail_json(**result)
 
-    result['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
+    result['msg'] = 'installp \'{0}\' successful.'.format(action)
     if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
         result['changed'] = True
     module.exit_json(**result)
