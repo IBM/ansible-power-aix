@@ -53,9 +53,9 @@ options:
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - C(foo*) designates all the NIM clients with name starting by C(foo).
-    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(ALL) designates all the NIM clients.
+    - C(foo*) specifies all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) specifies all the NIM clients.
     type: list
     elements: str
   asynchronous:

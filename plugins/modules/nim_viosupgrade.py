@@ -759,6 +759,10 @@ def main():
         # }
         nim_node={},
         status={},
+        # status structure will be updated as follow:
+        # status={
+        #   target_name: 'SUCCESS' or 'FAILURE'
+        # }
     )
 
     params_flags = {

@@ -125,7 +125,8 @@ msg:
 targets:
     description: List of VIOSes actually targeted for the operation.
     returned: always
-    type: str
+    type: list
+    elements: str
     sample: [vios1, 'vios2, vios3', ...]
 stdout:
     description: The standard output.
@@ -234,7 +235,7 @@ meta:
                     type: dict
                     contains:
                         cmd:
-                            description: Command exectued.
+                            description: Command executed.
                             returned: If the command was run.
                             type: str
                         stdout:
@@ -944,6 +945,10 @@ def main():
         # }
         nim_node={},
         status={},
+        # status structure will be updated as follow:
+        # status={
+        #   target_name: 'SUCCESS' or 'FAILURE'
+        # }
     )
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')

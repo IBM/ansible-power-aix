@@ -36,7 +36,7 @@ options:
     - C(list) lists backups for targets on the NIM master.
     type: str
     choices: [ create, restore, view, list ]
-    required: yes
+    required: true
   type:
     description:
     - Specifies the type of backup object to operate.
@@ -51,15 +51,15 @@ options:
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - C(foo*) designates all the NIM clients with name starting by C(foo).
-    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(ALL) designates all the NIM clients.
-    - C(vios) or C(standalone) designates all the NIM clients of this type.
+    - C(foo*) specifies all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) specifies all the NIM clients.
+    - C(vios) or C(standalone) specifies all the NIM clients of this type.
     - Required if I(action=create) and I(action=restore).
     - If I(action=list) it filters the results on the source_image attribute of the NIM resource.
     type: list
     elements: str
-    required: no
+    required: false
   nim_node:
     description:
     - Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
@@ -1217,6 +1217,7 @@ def main():
         msg='',
         stdout='',
         stderr='',
+        targets=[],
         meta={'messages': []},
         # meta structure will be updated as follow:
         # meta={
@@ -1229,6 +1230,10 @@ def main():
         # }
         nim_node={},
         status={},
+        # status structure will be updated as follow:
+        # status={
+        #   target_name: 'SUCCESS' or 'FAILURE'
+        # }
     )
 
     action = module.params['action']
@@ -1248,6 +1253,7 @@ def main():
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.log('Warning: Empty target list: "{0}"'.format(targets))
         module.exit_json(**results)
+    results['targets'] = targets.copy()
 
     for target in targets:
         results['status'][target] = ''  # first time init
