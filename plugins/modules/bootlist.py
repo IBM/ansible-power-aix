@@ -153,6 +153,18 @@ stderr:
     description: The standard error
     returned: always
     type: str
+normal:
+    description:
+    - Normal boot list.
+    returned: always
+    type: list
+    elements: dict
+service:
+    description:
+    - Service boot list.
+    returned: always
+    type: list
+    elements: dict
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -213,6 +225,25 @@ def main():
 
         module.run_command(cmd, check_rc=True)
         results['changed'] = True
+
+    # Retrieve bootlists
+    for mode in ['normal', 'service']:
+        cmd = [bootlist_path, '-m', mode, '-o']
+        ret, stdout, stderr = module.run_command(cmd)
+        if ret != 0:
+            continue
+        results[mode] = []
+        for line in stdout.splitlines():
+            entry = {}
+            elems = line.split(' ')
+            if len(elems) < 1:
+                continue
+            entry['device'] = elems[0]
+            for i in range(1, len(elems)):
+                if '=' in elems[i]:
+                    attr, val = elems[i].split('=', 2)
+                    entry[attr] = val
+            results[mode].append(entry)
 
     module.exit_json(**results)
 
