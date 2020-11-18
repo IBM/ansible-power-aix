@@ -16,77 +16,99 @@ DOCUMENTATION = """
 author:
 - AIX development Team (@pbfinley1911)
 module: lvol
-short_description: Create/Delete logical volume or change characteristics of logical volume on AIX
+short_description: Configure AIX LVM logical volumes
 description:
-    - This module facilitates the creation of a new logical volume with provided characteristics, the
-      modification of characteristics of existing logical volume and its deletion.
+- This module creates, removes and modifies attributes of LVM logical volumes.
 version_added: "2.9"
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - Root user is required.
 options:
-    state:
-        description:
-        - Specifies the action to be performed for the logical volume.
-        - C(present) to create logical volume with I(lv_attributes) in the system. If volume is already
-          present then attributes specified for the volume will be changed with the provided attributes.
-        - C(absent) to delete logial volume with provided I(name). If volume is not present then message will be displayed for the same.
-        type: str
-        choices: [ present, absent ]
-        required: true
-    lv:
-        description:
-        - Logical volume name should be specified for which the action is to taken while removing or modifying
-        type: str
-        aliases: [ logical_volume ]
-        required: true
-    vg:
-        description:
-        - The volume group of the concerned logical volume.
-        type: str
-        required: True
-    lv_type:
-        description:
-        - Type of the logical volume.
-        type: str
-        default: jfs2
-    size:
-        description:
-        - Size of the concerned logical volume. Please check the valid sizes for mklv and chlv commands.
-        type: str
-    extra_opts:
-        description:
-        - Any other options to be passed by the user to mklv or chlv command
-        type: str
-    copies:
-        description:
-        - Specifies number of copies of logical volume
-        - Maximum value allowed is 3
-        type: int
-        default: 1
-    num_of_logical_partitions:
-        description:
-        - Specifies the number of logical partitions
-        type: int
-        default: 1
-    policy:
-        description:
-        - Sets the inter-physical volume allocation policy
-        - C(maximum) Allocates across the maximum number of physical volumes.
-        - C(minimum) Allocates logical partitions across the minimum number of physical volumes.
-        type: str
-        choices: [ maximum, minimum ]
-        default: maximum
-    lv_new_name:
-        description:
-        - New name of the logical volume if user wants to change the name of existing logical volume.
-        type: str
-    phy_vol_list:
-        description:
-        - List of pysical volumes.
-        type: list
-        elements: str
+  state:
+    description:
+    - Specifies the action to be performed on the logical volume.
+    - C(present) creates or modifies the logical volume if already exists with I(lv_attributes).
+    - C(absent) removes a logial volume.
+    type: str
+    choices: [ present, absent ]
+    required: true
+  lv:
+    description:
+    - Specified the logical volume name.
+    type: str
+    aliases: [ logical_volume ]
+    required: true
+  vg:
+    description:
+    - Specifies the volume group name this logical volume is part of.
+    - Required when I(state=present).
+    type: str
+  lv_type:
+    description:
+    - Specifies the type of the logical volume to create.
+    - The standard types are
+      C(jfs) for journaled file systems,
+      C(jfslog) for journaled file system logs,
+      C(jfs2) for enhanced journaled file system,
+      C(jfs2log) for enhanced journaled file system logs,
+      C(paging) for paging spaces.
+    - But you can define other logical volume types with this flag.
+    - You B(cannot) create a striped logical volume of type C(boot).
+    - Can be used to create a logical volume, hence when C(state=present).
+    type: str
+    default: jfs2
+  size:
+    description:
+    - Specifies the size of the logical volume to create.
+    - Can be used to create a logical volume, hence when C(state=present).
+    type: str
+  extra_opts:
+    description:
+    - Any other options to be passed by the user to mklv or chlv command
+    type: str
+  copies:
+    description:
+    - Specifies number of copies of logical volume
+    - Maximum value allowed is 3
+    - Can be used to create a logical volume, hence when C(state=present).
+    type: int
+    default: 1
+  num_of_logical_partitions:
+    description:
+    - Specifies the number of logical partitions
+    - Can be used to create a logical volume, hence when C(state=present).
+    type: int
+    default: 1
+  pv_list:
+    description:
+    - List of pysical volumes.
+    - Can be used to create a logical volume, hence when C(state=present).
+    type: list
+    elements: str
+  policy:
+    description:
+    - Specifies the inter-physical volume allocation policy. It is the number of physical volumes to
+      extend across, using the volumes that provide the best allocation.
+    - C(maximum) allocates across the maximum number of physical volumes.
+    - C(minimum) allocates logical partitions across the minimum number of physical volumes.
+    - Can be used to create or modify a logical volume, hence when C(state=present).
+    type: str
+    choices: [ maximum, minimum ]
+    default: maximum
+  lv_new_name:
+    description:
+    - Specifies the name of the logical volume to change an existing logical volume.
+    - Can be used to modify a logical volume, hence when C(state=present).
+    type: str
+notes:
+  - B(Attention:) using I(state=absent) destroys all data in the specified logical volumes. If the
+    logical volume spans multiple physical volumes, the removal of only logical partitions on the
+    physical volume can jeopardize the integrity of the entire logical volume.
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chlv.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mklv.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmlv.html).
 """
 
 EXAMPLES = r'''
@@ -123,9 +145,25 @@ EXAMPLES = r'''
 RETURN = r'''
 msg:
   type: str
-  description: The execution message along with return code, output/error
+  description: The execution message.
   returned: always
-  sample: 'Logical volume is created SUCCESSFULLY: test1lv'
+  sample: 'Logical volume test1lv created.'
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+rc:
+    description: The command return code.
+    returned: When the command is executed.
+    type: int
+stdout:
+    description: The standard output of the command.
+    returned: always
+    type: str
+stderr:
+    description: The standard error of the command.
+    returned: always
+    type: str
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -140,10 +178,12 @@ def create_modify_lv(module):
     note:
         Exits with fail_json in case of error
     return:
-        msg      (srt): success or error message.
+        none
     """
+    global result
 
     name = module.params['lv']
+    new_name = module.params['lv_new_name']
     vg = module.params['vg']
     lv_type = module.params['lv_type']
     size = module.params['size']
@@ -151,62 +191,64 @@ def create_modify_lv(module):
     num_log_part = module.params['num_of_logical_partitions']
     copies = module.params['copies']
     policy = module.params['policy']
-    msg = ""
-    command_flag = False
-    pvs = module.params['phy_vol_list']
-
-    pv_list = ' '.join(pvs)
+    if module.params['pv_list']:
+        pv_list = ' '.join(module.params['pv_list'])
+    else:
+        pv_list = ''
 
     if size is not None:
-        valid_size = isSizeValid(module)
-
-        if not valid_size:
-            msg = "\nSize provided for the logical volume is not valid: %s" % module.params['lv']
-            module.exit_json(changed=False, msg=msg)
+        isValid, reason = isSizeValid(module)
+        if not isValid:
+            result['msg'] = "Invalid logical volume %s size: '%s'. %s" % (name, size, reason)
+            module.fail_json(**result)
 
     if policy == 'maximum':
         lv_policy = 'x'
     else:
         lv_policy = 'm'
 
-    if not lv_exists(module):
+    exists = lv_exists(module)
+    if not exists:
         cmd = "mklv -t %s -y %s -c %s  -e %s %s -S %s %s %s %s" % (lv_type, name, copies, lv_policy, extra_opts, size, vg, num_log_part, pv_list)
-        command_flag = True
     else:
         cmd = "chlv -e %s %s %s" % (lv_policy, extra_opts, name)
 
     rc, stdout, stderr = module.run_command(cmd)
+    result['cmd'] = cmd
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
 
     if rc != 0:
-        if command_flag:
-            msg += "\nFailed to create logical volume in specified volume group: %s" % module.params['lv']
-            msg += "\nCommand given: %s" % cmd
+        if exists:
+            result['msg'] = "Failed to modify logical volume %s. Command '%s' failed." % (name, cmd)
         else:
-            msg += "\nFailed to modify logical volume with provided attributes: %s" % module.params['lv']
-            msg += "\nCommand given: %s" % cmd
-        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            result['msg'] += "Failed to create logical volume %s in volume group %s. Command '%s' failed." % (name, vg, cmd)
+        module.fail_json(**result)
     else:
-        if command_flag:
-            msg += "\nLogical volume is created SUCCESSFULLY: %s" % module.params['lv']
+        if exists:
+            result['msg'] += "Logical volume %s modified." % name
         else:
-            msg += "\nLogical volume is modified SUCCESSFULLY with given attributes: %s" % module.params['lv']
+            result['msg'] += "Logical volume %s created." % name
+        result['changed'] = True
 
-    if module.params['lv_new_name'] is not None:
-        cmd = 'chlv -n '
-        cmd += module.params['lv_new_name']
-        cmd += ' '
-        cmd += module.params['name']
+    if new_name:
+        cmd = 'chlv -n %s %s' % (new_name, name)
 
         rc, stdout, stderr = module.run_command(cmd)
+        result['cmd'] = cmd
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
 
         if rc != 0:
-            msg += "\nFailed to change the name of the logical volume." % module.params['lv']
-            msg += "\nCommand given: %s" % cmd
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            result['msg'] += "\nFailed to rename %s into %s. Command '%s' failed." % (name, new_name, cmd)
+            result['msg'] += "\nCommand given: %s" % cmd
+            module.fail_json(**result)
         else:
-            msg += "\nSuccesfully changed the name of the logical volume to: %s" % module.params['lv_new_name']
-
-    return msg
+            result['msg'] += "\nLogical volume %s renamed into %s." % (name, new_name)
+            result['changed'] = True
+    return
 
 
 def remove_lv(module):
@@ -217,53 +259,64 @@ def remove_lv(module):
     note:
         Exits with fail_json in case of error
     return:
-        msg      (srt): success or error message.
+        none
     """
-    cmd = 'rmlv -f '
-    cmd += module.params['lv']
+    global result
+    name = module.params['lv']
+
+    cmd = 'rmlv -f %s' % name
 
     rc, stdout, stderr = module.run_command(cmd)
+    result['cmd'] = cmd
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
 
     if rc != 0:
-        msg = "Unable to remove the logical volume: %s" % module.params['lv']
-        msg += "\nCommand given: %s" % cmd
-        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        result['msg'] = "Failed to remove the logical volume: %s" % name
+        module.fail_json(**result)
     else:
-        msg = "Logical volume is REMOVED SUCCESSFULLY: %s" % module.params['lv']
-
-    return msg
+        result['msg'] = "Logical volume %s removed." % name
+    return
 
 
 def isSizeValid(module):
     """
     Checks if the specified size for the logical volume is valid or not.
+
     arguments:
         size     (str): size of the logical volume
     return:
-        true if valid
-        false if not valid
+        valid  (bool): true if valid, false if not valid
+        reason  (str): message for the size invalidity
     """
+    global result
+    reason = ""
+    valid = True
 
     size = module.params['size']
     num_size = int(size[:-1])
 
     isPowerof2 = (num_size and (not(num_size & (num_size - 1))))
     if not isPowerof2:
-        return False
+        valid = False
+        reason = "Must be a power of 2. "
 
     unit = size[-1].upper()
     units = ['K', 'M']
     try:
         mult = 1024 ** units.index(unit)
     except ValueError:
-        module.exit_json(changed=False, msg="Please specify valid size unit. Valid values are K and M.")
+        valid = False
+        reason = "Valid size unit are K and M."
+        return valid, reason    # existing as we cannot compute the size without valid unit
 
     actual_size = num_size * mult
-
     if not 4 <= actual_size <= (128 * 1024):
-        return False
+        valid = False
+        reason += "Must be between 4K and 128M."
 
-    return True
+    return valid, reason
 
 
 def lv_exists(module):
@@ -275,12 +328,10 @@ def lv_exists(module):
         true if exists
         false otherwise
     """
-    cmd = ["lslv"]
-    cmd.append(module.params['lv'])
+    cmd = ["lslv", module.params['lv']]
 
     rc, out, err = module.run_command(cmd)
-
-    if (rc == 0):
+    if rc == 0:
         return True
     else:
         return False
@@ -290,38 +341,49 @@ def main():
     """
     Main function
     """
+    global result
+
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type='str', required=True, choices=['present', 'absent']),
             lv=dict(type='str', required=True, aliases=['logical_volume']),
-            vg=dict(type='str', required=True),
+            vg=dict(type='str'),
             lv_type=dict(type='str', default='jfs2'),
             size=dict(type='str'),
             extra_opts=dict(type='str', default=''),
             copies=dict(type='int', default=1),
             num_of_logical_partitions=dict(type='int', default=1),
+            pv_list=dict(type='list', elements='str'),
             policy=dict(type='str', default='maximum', choices=['maximum', 'minimum']),
             lv_new_name=dict(type='str'),
-            phy_vol_list=dict(type='list', elements='str', default=list())
         ),
-        supports_check_mode=False
+        required_if=[
+            ['state', 'present', ['vg']],
+        ],
+        supports_check_mode=False,
     )
 
-    msg = ""
+    result = dict(
+        changed=False,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
+    )
 
-    if module.params['state'] == 'absent':
-        if lv_exists(module):
-            msg = remove_lv(module)
-        else:
-            msg = "Logical volume is NOT FOUND : %s" % module.params['lv']
-            module.fail_json(msg=msg)
-    elif module.params['state'] == 'present':
-        msg = create_modify_lv(module)
+    name = module.params['lv']
+    state = module.params['state']
+
+    if state == 'absent':
+        if not lv_exists(module):
+            result['msg'] = "Logical volume %s does not exist. State is '%s'." % (name, state)
+            module.fail_json(**result)
+        remove_lv(module)
+
     else:
-        msg = "Invalid state '%s'" % module.params['state']
-        module.exit_json(changed=False, msg=msg)
+        create_modify_lv(module)
 
-    module.exit_json(changed=True, msg=msg)
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':

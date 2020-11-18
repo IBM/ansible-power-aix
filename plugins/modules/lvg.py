@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: lvg
-short_description: Configure LVM volume groups
+short_description: Configure AIX LVM volume groups
 description:
 - This module creates, removes, modifies attributes, resizes, activates and deactivates volume
   groups.
@@ -24,6 +24,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- Root user is required.
 options:
   state:
     description:
@@ -681,12 +682,8 @@ def main():
         # Remove VG if 'pvs' are not provided
         reduce_vg(module, vg_name, vg_state)
 
-    elif state == 'varyon' or state == 'varyoff':
-        vary_vg(module, state, vg_name, vg_state)
-
     else:
-        result['msg'] = "Invalid state '%s'." % state
-        module.fail_json(**result)
+        vary_vg(module, state, vg_name, vg_state)
 
     module.exit_json(**result)
 

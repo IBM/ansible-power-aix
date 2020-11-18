@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: mktcpip
-short_description: Sets the required values for starting TCP/IP on a host
+short_description: Sets the required values for starting TCP/IP on a host.
 description:
 - This module sets the required minimal values required for using TCP/IP on a host machine.
 - These values are written to the configuration database.
@@ -42,7 +42,8 @@ options:
     required: true
   netmask:
     description:
-    - Specifies the mask the gateway should use in determining the appropriate subnetwork for routing.
+    - Specifies the mask the gateway should use in determining the appropriate subnetwork for
+      routing.
     type: str
   gateway:
     description:
@@ -61,6 +62,12 @@ options:
     - Starts the TCP/IP daemons.
     type: bool
     default: no
+notes:
+  - The mktcpip command currently supports IPv4 only.
+  - The B(/etc/resolv.conf) file on your system contains the default system configuration database.
+  - The B(/etc/hosts) file on your system contains the host name and IP address entries.
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mktcpip.html).
 '''
 
 EXAMPLES = r'''
@@ -80,6 +87,14 @@ msg:
     returned: always
     type: str
     sample: "Command 'mktcpip -h quimby01.aus.stglabs.ibm.com -a 9.3.149.150 -i en1' successful."
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+rc:
+    description: The command return code.
+    returned: When the command is executed.
+    type: int
 stdout:
     description: The standard output.
     returned: always
@@ -121,6 +136,7 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        cmd='',
         stdout='',
         stderr='',
     )
@@ -147,13 +163,15 @@ def main():
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    result['cmd'] = ' '.join(cmd)
+    result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        result['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(result['cmd'], rc)
         module.fail_json(**result)
 
-    result['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
+    result['msg'] = 'Command \'{0}\' successful.'.format(result['cmd'])
     result['changed'] = True
     module.exit_json(**result)
 
