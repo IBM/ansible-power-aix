@@ -204,7 +204,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def main():
-    # Attributes common to normal, service and both
+    # Options common to "normal", "service" and "both" dictionary keys
     attrs = dict(
         device=dict(type='str', required=True),
         blv=dict(type='str'),
@@ -240,10 +240,8 @@ def main():
 
     bootlist_path = module.get_bin_path('bootlist', required=True)
 
-    # Set bootlists
+    # Set boot lists
     for mode in ['normal', 'service', 'both']:
-        if mode not in module.params:
-            continue
         if not module.params[mode]:
             continue
         cmd = [bootlist_path, '-m', mode]
@@ -259,7 +257,7 @@ def main():
         module.run_command(cmd, check_rc=True)
         results['changed'] = True
 
-    # Retrieve bootlists
+    # Retrieve boot lists
     bootlists = {}
     for mode in ['normal', 'service']:
         cmd = [bootlist_path, '-m', mode, '-o']
@@ -268,14 +266,13 @@ def main():
             continue
         bootlists[mode] = []
         for line in stdout.splitlines():
-            entry = {}
             elems = line.split()
             if len(elems) < 1:
                 continue
-            entry['device'] = elems[0]
-            for i in range(1, len(elems)):
-                if '=' in elems[i]:
-                    attr, val = elems[i].split('=', 2)
+            entry = dict(device=elems.pop(0))
+            for elem in elems:
+                if '=' in elem:
+                    attr, val = elem.split('=', 2)
                     entry[attr] = val
             bootlists[mode].append(entry)
     results['ansible_facts'] = dict(bootlist=bootlists)
