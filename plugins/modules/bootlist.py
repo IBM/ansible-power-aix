@@ -138,6 +138,12 @@ EXAMPLES = r'''
   bootlist:
     both:
       - device: hdisk0
+
+- name: Retrieve normal and service boot lists
+  bootlist:
+- name: Print the boot lists
+  debug:
+    var: ansible_facts.bootlist
 '''
 
 RETURN = r'''
@@ -153,18 +159,45 @@ stderr:
     description: The standard error
     returned: always
     type: str
-normal:
-    description:
-    - Normal boot list.
-    returned: always
-    type: list
-    elements: dict
-service:
-    description:
-    - Service boot list.
-    returned: always
-    type: list
-    elements: dict
+ansible_facts:
+  description:
+  - Facts to add to ansible_facts about the normal and service boot lists.
+  returned: always
+  type: complex
+  contains:
+    bootlist:
+      description:
+      - Contains information about normal and service boot lists.
+      returned: always
+      type: dict
+      elements: dict
+      contains:
+        normal:
+          description:
+          - Normal boot list.
+          returned: always
+          type: list
+          elements: dict
+          sample:
+            "normal": [
+                {
+                    "blv": "hd5",
+                    "device": "hdisk0",
+                    "pathid": "0"
+                },
+                {
+                    "bserver": "129.12.2.10",
+                    "client": "129.35.9.23",
+                    "device": "ent0",
+                    "gateway": "129.35.21.1"
+                }
+            ]
+        service:
+          description:
+          - Service boot list.
+          returned: always
+          type: list
+          elements: dict
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -227,15 +260,16 @@ def main():
         results['changed'] = True
 
     # Retrieve bootlists
+    bootlists = {}
     for mode in ['normal', 'service']:
         cmd = [bootlist_path, '-m', mode, '-o']
         ret, stdout, stderr = module.run_command(cmd)
         if ret != 0:
             continue
-        results[mode] = []
+        bootlists[mode] = []
         for line in stdout.splitlines():
             entry = {}
-            elems = line.split(' ')
+            elems = line.split()
             if len(elems) < 1:
                 continue
             entry['device'] = elems[0]
@@ -243,7 +277,8 @@ def main():
                 if '=' in elems[i]:
                     attr, val = elems[i].split('=', 2)
                     entry[attr] = val
-            results[mode].append(entry)
+            bootlists[mode].append(entry)
+    results['ansible_facts'] = dict(bootlist=bootlists)
 
     module.exit_json(**results)
 
