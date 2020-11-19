@@ -110,7 +110,7 @@ options:
             - Specifies the operation that will be used in the comparison between the source port of
               the packet and the source port I(s_port) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: &operations [ lt, le, gt, ge, eq, neq ]
           s_port:
             description:
             - Specifies the source port.
@@ -130,7 +130,7 @@ options:
             - Specifies the operation that will be used in the comparison between the destination
               port of the packet and the destination port I(d_port) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           d_port:
             description:
             - Specifies the destination port.
@@ -140,7 +140,7 @@ options:
             - Specifies the operation that will be used in the comparison between the ICMP type of
               the packet and the ICMP type I(icmp_type) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           icmp_type:
             description:
             - Specifies the ICMP type.
@@ -150,7 +150,7 @@ options:
             - Specifies the operation that will be used in the comparison between the ICMP code of
               the packet and the ICMP code I(icmp_code) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           icmp_code:
             description:
             - Specifies the ICMP code.
@@ -261,6 +261,12 @@ EXAMPLES = r'''
       rules:
       - action: remove
         id: all
+
+- name: Export filter rules as is into export text files
+  mkfilt:
+    action: export
+    directory: /root/export
+    rawexport: yes
 '''
 
 RETURN = r'''
@@ -304,13 +310,13 @@ def list_rules(module, version):
     cmd = ['lsfilt', vopt, '-O']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
+        results['stdout'] += stdout
+        results['stderr'] += stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
     rules = []
-    for line in stdout.split('\n'):
+    for line in stdout.splitlines():
         fields = line.split('|', 22)
         if len(fields) < 22:
             continue
@@ -427,9 +433,9 @@ def add_change_rules(module, params, version):
             if params[version]['force']:
                 cmd += ['-f']
             ret, stdout, stderr = module.run_command(cmd)
+            results['stdout'] += stdout
+            results['stderr'] += stderr
             if ret != 0:
-                results['stdout'] = stdout
-                results['stderr'] = stderr
                 results['msg'] = 'Could not remove rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
@@ -440,9 +446,9 @@ def add_change_rules(module, params, version):
                 module.fail_json(**results)
             cmd = ['mvfilt', vopt, '-p', rule['id'], '-n', rule['new_id']]
             ret, stdout, stderr = module.run_command(cmd)
+            results['stdout'] += stdout
+            results['stderr'] += stderr
             if ret != 0:
-                results['stdout'] = stdout
-                results['stderr'] = stderr
                 results['msg'] = 'Could not move rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
@@ -587,12 +593,7 @@ def import_rules(module, params):
     global results
 
     cmd = ['impfilt', '-f', params['directory']]
-    ret, stdout, stderr = module.run_command(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
+    module.run_command(cmd, check_rc=True)
     results['changed'] = True
 
 
@@ -600,17 +601,10 @@ def export_rules(module, params):
     """
     Exports filter rules to an export file.
     """
-    global results
-
     cmd = ['expfilt', '-f', params['directory']]
     if params['rawexport']:
         cmd += ['-r']
-    ret, stdout, stderr = module.run_command(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
+    module.run_command(cmd, check_rc=True)
 
 
 def check_rules(module):
@@ -620,28 +614,18 @@ def check_rules(module):
     global results
 
     cmd = ['ckfilt']
-    ret, stdout, stderr = module.run_command(cmd)
+    ret, stdout, stderr = module.run_command(cmd, check_rc=True)
     results['stdout'] = stdout
     results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
 
 
 def make_devices(module):
     """
     Make sure ipsec_v4 and ipsec_v6 devices are Available.
     """
-    global results
-
     for version in ['4', '6']:
         cmd = ['mkdev', '-l', 'ipsec', '-t', version]
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
+        module.run_command(cmd, check_rc=True)
 
 
 def main():
