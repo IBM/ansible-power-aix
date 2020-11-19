@@ -149,6 +149,8 @@ stderr:
 
 from ansible.module_utils.basic import AnsibleModule
 
+result = None
+
 
 def is_fspath_mounted(module, mount_dir, mount_over_dir):
     """

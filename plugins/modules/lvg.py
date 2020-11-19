@@ -29,10 +29,10 @@ options:
   state:
     description:
     - Specifies the action to be performed on a volume group.
-      I(present) creates, extends or modifies a volume group;
-      I(absent) reduces or removes a volume group;
-      I(varyon) activates a volume group performing a varyon operation;
-      I(varyoff) deactivates a volume group performing a varyoff operation.
+      C(present) creates, extends or modifies a volume group;
+      C(absent) reduces or removes a volume group;
+      C(varyon) activates a volume group performing a varyon operation;
+      C(varyoff) deactivates a volume group performing a varyoff operation.
     type: str
     choices: [ absent, present, varyoff, varyon ]
     default: present
@@ -115,10 +115,10 @@ options:
     description:
     - Changes the limit of the number of physical partitions per physical volume.
     - The maximum number of physical partitions per physical volume for this volume group changes to
-      C(pp_limit) x 1016.
+      I(pp_limit) x 1016.
     - It must be 1 - 16 for 32 PV volume groups and 1 and 64 for 128 PV volume groups.
-    - The maximum number of PVs that can be included in the volume group is MaxPVs / C(pp_limit).
-    - The default is the lowest value to remain within the physical partition limit of C(pp_limit) x
+    - The maximum number of PVs that can be included in the volume group is MaxPVs / I(pp_limit).
+    - The default is the lowest value to remain within the physical partition limit of I(pp_limit) x
       1016.
     - Can be used when creating or changing a volume group, hence when I(state=present).
     type: int
@@ -140,14 +140,12 @@ options:
   mirror_pool_strict:
     description:
     - Enables mirror pool strictness for the volume group.
-    - I(mirror_pool_strict=none) specifies that no restrictions are placed on the user of mirror
-      pool.
-    - I(mirror_pool_strict=normal) specifies that mirror pools must be used on each logical volume
-      in the volume group.
-    - I(mirror_pool_strict=strict) specifies that super-strict mirror pools are enforced on this
-      volume group. Partitions allocated for one mirror cannot share a physical volume with the
-      partitions from another mirror; with this setting each mirror pool must contain at least one
-      copy of each logical volume.
+    - C(none) specifies that no restrictions are placed on the user of mirror pool.
+    - C(normal) specifies that mirror pools must be used on each logical volume in the volume group.
+    - C(strict) specifies that super-strict mirror pools are enforced on this volume group.
+      Partitions allocated for one mirror cannot share a physical volume with the partitions from
+      another mirror; with this setting each mirror pool must contain at least one copy of each
+      logical volume.
     - Can be used when creating or changing a volume group, hence when I(state=present).
     type: str
     choices: [ none, normal, strict ]

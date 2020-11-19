@@ -55,13 +55,13 @@ options:
       C(paging) for paging spaces.
     - But you can define other logical volume types with this flag.
     - You B(cannot) create a striped logical volume of type C(boot).
-    - Can be used to create a logical volume, hence when C(state=present).
+    - Can be used to create a logical volume, hence when I(state=present).
     type: str
     default: jfs2
   size:
     description:
     - Specifies the size of the logical volume to create.
-    - Can be used to create a logical volume, hence when C(state=present).
+    - Can be used to create a logical volume, hence when I(state=present).
     type: str
   extra_opts:
     description:
@@ -71,19 +71,19 @@ options:
     description:
     - Specifies number of copies of logical volume
     - Maximum value allowed is 3
-    - Can be used to create a logical volume, hence when C(state=present).
+    - Can be used to create a logical volume, hence when I(state=present).
     type: int
     default: 1
   num_of_logical_partitions:
     description:
     - Specifies the number of logical partitions
-    - Can be used to create a logical volume, hence when C(state=present).
+    - Can be used to create a logical volume, hence when I(state=present).
     type: int
     default: 1
   pv_list:
     description:
     - List of pysical volumes.
-    - Can be used to create a logical volume, hence when C(state=present).
+    - Can be used to create a logical volume, hence when I(state=present).
     type: list
     elements: str
   policy:
@@ -92,14 +92,14 @@ options:
       extend across, using the volumes that provide the best allocation.
     - C(maximum) allocates across the maximum number of physical volumes.
     - C(minimum) allocates logical partitions across the minimum number of physical volumes.
-    - Can be used to create or modify a logical volume, hence when C(state=present).
+    - Can be used to create or modify a logical volume, hence when I(state=present).
     type: str
     choices: [ maximum, minimum ]
     default: maximum
   lv_new_name:
     description:
     - Specifies the name of the logical volume to change an existing logical volume.
-    - Can be used to modify a logical volume, hence when C(state=present).
+    - Can be used to modify a logical volume, hence when I(state=present).
     type: str
 notes:
   - B(Attention:) using I(state=absent) destroys all data in the specified logical volumes. If the
@@ -167,6 +167,8 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+
+result = None
 
 
 def create_modify_lv(module):

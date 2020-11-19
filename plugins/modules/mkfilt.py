@@ -16,20 +16,22 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: mkfilt
-short_description: Activates or deactivates the filter rules
+short_description: Activates or deactivates the filter rules.
 description:
 - Activates or deactivates the filter rules.
+- This command can also be used to control the filter logging function.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- User with priviledged authorizations.
 options:
   action:
     description:
     - Specifies the action to perform.
     - C(add) to add filter rules.
     - C(check) to check the syntax of filter rules.
-    - C(change) to change a filter rule.
+    - C(change) to change filter rules.
     - C(import) to import filter rules from an export file.
     - C(export) to export filter rules to an export file.
     type: str
@@ -37,14 +39,14 @@ options:
     default: add
   directory:
     description:
-    - When I(action=import) or I(action=export), specifies the directory where
-      the text files are to be read.
+    - When I(action=import) or I(action=export), specifies the directory where the text files are to
+      be read.
     - When I(action=export), directory will be created if it does not exist.
     type: str
   rawexport:
     description:
-    - When I(action=export), specifies to export filter rules as is and to not
-      reverse direction on rules.
+    - When I(action=export), specifies to export filter rules as is and to not reverse direction on
+      rules.
     type: bool
     default: no
   ipv4:
@@ -96,8 +98,8 @@ options:
           s_addr:
             description:
             - Specifies the source address. It can be an IP address or a host name.
-            - If a host name is specified, the first IP address returned by the name server
-              for that host will be used.
+            - If a host name is specified, the first IP address returned by the name server for that
+              host will be used.
             type: str
           s_mask:
             description:
@@ -105,8 +107,8 @@ options:
             type: str
           s_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the source port
-              of the packet and the source port I(s_port) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the source port of
+              the packet and the source port I(s_port) specified in this filter rule.
             type: str
             choices: [ lt, le, gt, ge, eq, neq ]
           s_port:
@@ -116,8 +118,8 @@ options:
           d_addr:
             description:
             - Specifies the destination address. It can be an IP address or a host name.
-            - If a host name is specified, the first IP address returned by the name server
-              for that host will be used.
+            - If a host name is specified, the first IP address returned by the name server for that
+              host will be used.
             type: str
           d_mask:
             description:
@@ -125,8 +127,8 @@ options:
             type: str
           d_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the destination port
-              of the packet and the destination port I(d_port) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the destination
+              port of the packet and the destination port I(d_port) specified in this filter rule.
             type: str
             choices: [ lt, le, gt, ge, eq, neq ]
           d_port:
@@ -135,8 +137,8 @@ options:
             type: str
           icmp_type_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the ICMP type
-              of the packet and the ICMP type I(icmp_type) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the ICMP type of
+              the packet and the ICMP type I(icmp_type) specified in this filter rule.
             type: str
             choices: [ lt, le, gt, ge, eq, neq ]
           icmp_type:
@@ -145,8 +147,8 @@ options:
             type: str
           icmp_code_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the ICMP code
-              of the packet and the ICMP code I(icmp_code) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the ICMP code of
+              the packet and the ICMP code I(icmp_code) specified in this filter rule.
             type: str
             choices: [ lt, le, gt, ge, eq, neq ]
           icmp_code:
@@ -161,8 +163,8 @@ options:
             type: str
           log:
             description:
-            - Specifies the log control. Packets that match this filter rule will be
-              included in the filter log.
+            - Specifies the log control. Packets that match this filter rule will be included in the
+              filter log.
             type: bool
             default: no
           interface:
@@ -180,8 +182,8 @@ options:
             type: str
           timeout:
             description:
-            - Specifies the expiration time. The expiration time is the amount
-              of time the rule should remain active in seconds.
+            - Specifies the expiration time. The expiration time is the amount of time the rule
+              should remain active in seconds.
             type: str
           description:
             description:
@@ -190,7 +192,8 @@ options:
           protocol:
             description:
             - Specifies the protocol to which the filter rule applies.
-            - The valid values are C(udp), C(icmp), C(icmpv6), C(tcp), C(tcp/ack), C(ospf), C(ipip), C(esp), C(ah), and C(all).
+            - The valid values are C(udp), C(icmp), C(icmpv6), C(tcp), C(tcp/ack), C(ospf), C(ipip),
+              C(esp), C(ah), and C(all).
             - The protocol can also be specified numerically (between 1 and 252).
             type: str
           source_routing:
@@ -200,8 +203,8 @@ options:
             default: no
           routing:
             description:
-            - Specifies whether the rule will apply to forwarded packets, packets
-              destined or originated from the local host, or both.
+            - Specifies whether the rule will apply to forwarded packets, packets destined or
+              originated from the local host, or both.
             type: str
             choices: [ route, local, both ]
           antivirus:
@@ -225,6 +228,9 @@ options:
     - Specifies the IPv6 filter module state and rules.
     type: dict
     suboptions: *ipcommon
+notes:
+  - You can refer to the IBM documentation for additional information on the command used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkfilt.html).
 '''
 
 EXAMPLES = r'''
