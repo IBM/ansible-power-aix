@@ -164,7 +164,7 @@ meta:
     type: dict
     contains:
         messages:
-            description: Details on errors/warnings/inforamtion
+            description: Details on errors/warnings/information
             returned: always
             type: list
             elements: str
