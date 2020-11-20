@@ -16,14 +16,17 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: lpar_facts
-short_description: Reports logical partition (LPAR) related information.
+short_description: Reports logical partition (LPAR) related information as facts.
 description:
-- Reports logical partition (LPAR) related information.
+- Lists and reports iformation related to logical partition (LPAR) in Ansible facts.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 options: {}
+notes:
+  - You can refer to the IBM documentation for additional information on the lparstat command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lparstat.html).
 '''
 
 EXAMPLES = r'''

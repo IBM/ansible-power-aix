@@ -16,33 +16,33 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: lvm_facts
-short_description: Provides information about defined LVM components.
+short_description: Reports LVM information as facts.
 
 description:
-- Provides details about defined Logical Volume Manager(LVM) components -
-  Physical volumes, Logical volumes and Volume groups
+- List and reports details about defined AIX Logical Volume Manager (LVM) components such as
+  Physical volumes, Logical volumes and Volume groups in Ansible facts.
 version_added: '2.9'
 requirements: [ AIX ]
 options:
   name:
     description:
-    - Specifies the name of a LVM component
+    - Specifies the name of a LVM component.
     type: str
     default: 'all'
   component:
     description:
-    - Specifies the specified device is a physical/logical volume or a volume group.
-      I(pv) - specifies physical volume
-      I(lv) - specifies logical volume
-      I(vg) - specifies volume group
+    - Specifies the type of LVM component to report information.
+      A(pv) specifies physical volume.
+      A(lv) specifies logical volume.
+      A(vg) specifies volume group.
+      C(all) specifies all previous LVM components to be reported.
     type: str
     choices: [pv, lv, vg, all]
     default: 'all'
   lvm:
     description:
-    - Users can provide the existing LVM facts to which the queried facts should be updated
-      If not specified, the LVM facts in the ansible_facts will be replaced
-      by just the queried facts
+    - Users can provide the existing LVM facts to which the queried facts should be updated.
+      If not specified, the LVM facts in the ansible_facts will be replaced.
     type: dict
     default: {}
 
@@ -69,7 +69,7 @@ EXAMPLES = r'''
 RETURN = r'''
 ansible_facts:
   description:
-  - Facts to add to ansible_facts about the LVM components on the system
+  - Facts to add to ansible_facts about the LVM components on the system.
   returned: always
   type: complex
   contains:
@@ -89,61 +89,61 @@ ansible_facts:
           contains:
             name:
               description:
-              - VG name
+              - Volume Group name.
               returned: always
               type: str
               sample: "rootvg"
             vg_state:
               description:
-              - State of the Volume Group
+              - State of the Volume Group.
               returned: always
               type: str
               sample: "active"
             num_lvs:
               description:
-              - Number of logical volumes
+              - Number of logical volumes.
               returned: always
               type: str
               sample: "2"
             num_pvs:
               description:
-              - Number of physical volumes
+              - Number of physical volumes.
               returned: always
               type: str
               sample: "2"
             total_pps:
               description:
-              - Total number of physical partitions within the volume group
+              - Total number of physical partitions within the volume group.
               returned: always
               type: str
               sample: "952"
             free_pps:
               description:
-              - Number of physical partitions not allocated
+              - Number of physical partitions not allocated.
               returned: always
               type: str
               sample: "100"
             pp_size:
               description:
-              - Size of each physical partition
+              - Size of each physical partition.
               returned: always
               type: str
               sample: "64 megabyte (s)"
             size_g:
               description:
-              - Total size of the volume group in gigabytes
+              - Total size of the volume group in gigabytes.
               returned: always
               type: str
               sample: "18.99"
             free_g:
               description:
-              - Free space of the volume group in gigabytes
+              - Free space of the volume group in gigabytes.
               returned: always
               type: str
               sample: "10.6"
         PVs:
           description:
-          - Contains a list of Physical volumes on the system
+          - Contains a list of physical volumes on the system.
           returned: success
           type: dict
           elements: dict
@@ -156,98 +156,98 @@ ansible_facts:
               sample: "hdisk0"
             vg:
               description:
-              - Volume group to which the Physical Volume has been assigned
+              - Volume group to which the physical volume has been assigned.
               returned: always
               type: str
               sample: "rootvg"
             pv_state:
               description:
-              - PV state
+              - Physical volume state.
               returned: always
               type: str
               sample: "active"
             total_pps:
               description:
-              - Total number of physical partitions in the Physical Volume
+              - Total number of physical partitions in the physical volume.
               returned: always
               type: str
               sample: "476"
             free_pps:
               description:
-              - Number of free physical partitions in the Physical Volume
+              - Number of free physical partitions in the physical volume.
               returned: always
               type: str
               sample: "130"
             pp_size:
               description:
-              - Size of each physical partition
+              - Size of each physical partition.
               returned: always
               type: str
               sample: "64 megabyte (s)"
             size_g:
               description:
-              - Total size of the Physical volume in gigabytes
+              - Total size of the physical volume in gigabytes.
               returned: always
               type: str
               sample: "18.99"
             free_g:
               description:
-              - Free space of the Physical volume in gigabytes
+              - Free space of the physical volume in gigabytes.
               returned: always
               type: str
               sample: "10.6"
         LVs:
           description:
-          - Contains a list of Logical volumes on the system
+          - Contains a list of logical volumes on the system.
           returned: success
           type: dict
           elements: dict
           contains:
             name:
               description:
-              - LV name
+              - Logical volume name.
               returned: always
               type: str
               sample: "hd1"
             vg:
               description:
-              - Volume group to which the Logical Volume belongs to
+              - Volume group to which the Logical Volume belongs to.
               returned: always
               type: str
               sample: "rootvg"
             lv_state:
               description:
-              - LV state
+              - Logical Volume state.
               returned: always
               type: str
               sample: "active"
             type:
               description:
-              - Logical volume type
+              - Logical volume type.
               returned: always
               type: str
               sample: "jfs2"
             LPs:
               description:
-              - Total number of logical partitions in the Logical Volume
+              - Total number of logical partitions in the logical volume.
               returned: always
               type: str
               sample: "476"
             PPs:
               description:
-              - Total number of physical partitions in the Logical Volume
+              - Total number of physical partitions in the logical volume.
               returned: always
               type: str
               sample: "130"
             PVs:
               description:
-              - Number of physical volumes used by the logical volume
+              - Number of physical volumes used by the logical volume.
               returned: always
               type: str
               sample: "2"
             mount_point:
               description:
-              - File system mount point for the logical volume, if applicable
+              - File system mount point for the logical volume, if applicable.
               returned: always
               type: str
               sample: "/home"
@@ -259,10 +259,13 @@ from ansible.module_utils.basic import AnsibleModule
 def load_pvs(module, name, LVM):
     """
     Get the details for the specified PV or all
-    param module: Ansible module argument spec.
-    param name: physical volume name
-    return: msg - message
-            LVM - LVM facts
+    arguments:
+        module  (dict): Ansible module argument spec.
+        name     (str): physical volume name.
+        LVM     (dict): LVM facts.
+    return:
+        msg  (str): message
+        LVM (dict): LVM facts
     """
     msg = ""
     cmd = "lspv"
@@ -302,10 +305,13 @@ def load_pvs(module, name, LVM):
 def load_vgs(module, name, LVM):
     """
     Get the details for the specified VG or all
-    param module: Ansible module argument spec.
-    param name: volume group name
-    return: msg - message
-            LVM - LVM facts
+    arguments:
+        module  (dict): Ansible module argument spec.
+        name     (str): volume group name.
+        LVM     (dict): LVM facts.
+    return:
+        msg  (str): message
+        LVM (dict): LVM facts
     """
     msg = ""
     cmd = "lsvg"
@@ -347,10 +353,13 @@ def load_vgs(module, name, LVM):
 def load_lvs(module, name, LVM):
     """
     Get the details for the specified LV or all
-    param module: Ansible module argument spec.
-    param name: logical volume name
-    return: msg - message
-            LVM - LVM facts
+    arguments:
+        module  (dict): Ansible module argument spec.
+        name     (str): logical volume name.
+        LVM     (dict): LVM facts.
+    return:
+        msg  (str): message
+        LVM (dict): LVM facts
     """
     msg = ""
     cmd = "lsvg"

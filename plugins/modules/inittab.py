@@ -16,9 +16,9 @@ DOCUMENTATION = """
 author:
 - AIX development Team (@pbfinley1911)
 module: inittab
-short_description: Create/change/remove entries in the inittab file on AIX
+short_description: Manage inittab entries on AIX.
 description:
-    - This module facilitates the creation/change/removal of entries in the /etc/inittab file.
+    - It allows to create, change and remove entries in the B(/etc/inittab) file.
 version_added: "2.9"
 requirements:
 - AIX >= 7.1 TL3
@@ -28,26 +28,27 @@ options:
     state:
         description:
         - Specifies the action to be performed for the entry.
-        - C(present) to create entry with provided I(name), I(runlevel), I(action) and I(command) in the /etc/inittab file.
-        - C(absent) to delete entry with provided I(name). If entry is not present then message will be displayed for the same.
-        - C(modify) to change the entry with provided value of the given entry.
+        - C(present) creates the entry in the /etc/inittab file.
+        - C(absent) deletes an existing entry.
+        - C(modify) changes an existing entry.
         type: str
         choices: [ present, absent, modify ]
         required: true
     name:
         description:
-        - Entry should be specified for which the action is to taken
+        - Specifies the name of the entry to manage.
         type: str
         aliases: [ service ]
         required: true
     runlevel:
         description:
-        - Defines the run levels in which the I(name) can be processed.
+        - Specifies the run levels in which the I(name) can be processed.
+        - The format is the level number next to each other without separators, such as C('235789').
         type: str
         required: true
     action:
         description:
-        - Describes what action init has to perform with I(name).
+        - Specifies the action init will perform.
         type: str
         required: true
         choices: [
@@ -66,12 +67,12 @@ options:
             ]
     command:
         description:
-        - Specifies the command that has to run.
+        - Specifies the command to run.
         type: str
         required: true
     insertafter:
         description:
-        - Specifies the identifier of the entry after which new entry is to be created.
+        - Specifies the name of the entry to write the new entry after.
         type: str
 """
 
