@@ -68,6 +68,9 @@ options:
     - When I(mode=apply) or I(mode=save), specifies the file where the settings should be saved in
       normal format.
     type: str
+notes:
+  - You can refer to the IBM documentation for additional information on the aixpert command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/aixpert.html).
 '''
 
 EXAMPLES = r'''

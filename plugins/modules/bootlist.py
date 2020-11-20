@@ -16,21 +16,21 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: bootlist
-short_description: Alters the list of boot devices available to the system
+short_description: Alters the list of boot devices available to the system.
 description:
-- Alters the list of possible boot devices from which the system may be booted.
-  When the system is booted, it will scan the devices in the list and attempt to
-  boot from the first device it finds containing a boot image.
+- Alters the list of possible boot devices from which the system may be booted. When the system is
+  booted, it will scan the devices in the list and attempt to boot from the first device it finds
+  containing a boot image.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- Root user or member of security group is required.
 options:
   force:
     description:
-    - Indicates that the boot list must be modified even if the
-      validation of the I(speed) and I(duplex) attributes, if specified,
-      is not possible.
+    - Indicates that the boot list must be modified even if the validation of the I(speed) and
+      I(duplex) attributes, if specified, is not possible.
     type: bool
     default: no
   normal:
@@ -64,8 +64,8 @@ options:
       pathid:
         description:
         - Specifies the path ID of the target disk.
-        - You can specify one or more path IDs by entering a comma-separated
-          list of the required paths to be added to the boot list.
+        - You can specify one or more path IDs by entering a comma-separated list of the required
+          paths to be added to the boot list.
         type: str
       bserver:
         description:
@@ -97,25 +97,27 @@ options:
         type: int
       filename:
         description:
-        - Specifies the name of the file that is loaded by Trivial File Transfer
-          Protocol (TFTP) from the BOOTP server.
+        - Specifies the name of the file that is loaded by Trivial File Transfer Protocol (TFTP)
+          from the BOOTP server.
         type: str
   service:
     description:
-    - Service boot list. The service list designates possible boot
-      devices for when the system is booted in service mode.
+    - Service boot list. The service list designates possible boot devices for when the system is
+      booted in service mode.
     - Mutually exclusive with I(both).
     type: list
     elements: dict
     suboptions: *attrs
   both:
     description:
-    - Both the normal boot list and the service boot list will be set to the
-      same list of devices.
+    - Both the normal boot list and the service boot list will be set to the same list of devices.
     - Mutually exclusive with I(normal) and I(service).
     type: list
     elements: dict
     suboptions: *attrs
+notes:
+  - You can refer to the IBM documentation for additional information on the bootlist command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/b_commands/bootlist.html).
 '''
 
 EXAMPLES = r'''

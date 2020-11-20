@@ -212,6 +212,12 @@ notes:
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
   - This M(backup) module only operates on LPAR, for operation on VIOS, please checkout the
     M(backupios) module in the power-vios collection.
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_mksysb.html),
+    U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lsmksysb.html),
+    U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mksysb.html),
+    U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/restvg.html),
+    U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/savevg.html).
 '''
 
 EXAMPLES = r'''
