@@ -16,13 +16,18 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_vios_hc
-short_description: Check if a pair of VIOSes can be updated
+short_description: Check if a pair of VIOSes could be updated.
 description:
-- Check if a pair of Virtual I/O Servers can be updated.
+- Uses the Network Installation Management (NIM) and the VIOS health check tool to check several
+  settings required to update a pair of Virtual I/O Servers (VIOS).
+- In the current version, it validates the vSCSI, NPIv, SEA mappings configurations and vNIC
+  configurations (when set) so the update of the VIOS pair can be attempted. The SSP configuration
+  is not checked yet, that is not required so far.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- The B(vioshc.py) must be script installed on the NIM master.
 options:
   action:
     description:
@@ -33,18 +38,16 @@ options:
     required: true
   targets:
     description:
-    - NIM target.
-    - 'To perform a health check on dual VIOSes specify a tuple
-      with the following format: "vios1,vios2".'
+    - Specifies the NIM clients to perform the action on.
+    - To perform a health check on dual VIOSes specify a tuple with the following format
+      I("vios1,vios2").
     type: list
     elements: str
     required: true
-  vars:
-    description:
-    - Specifies additional parameters.
-    type: dict
 notes:
-  - Use the C(power_aix_vioshc) role to install the required C(vioshc.py) script on the NIM master.
+  - Use the B(power_aix_vioshc) role to install the required B(vioshc.py) script on the NIM master.
+  - The default log directory for the B(vioshc.py) script is B(/tmp/vios_maint).
+  - The B(vioshc.py) script uses Curl to get information through the REST API of the VIOSes' HMC.
 '''
 
 EXAMPLES = r'''
@@ -227,26 +230,18 @@ def build_nim_node(module):
 
     global NIM_NODE
 
-    # =========================================================================
     # Build hmc info list
-    # =========================================================================
     nim_hmc = get_hmc_info(module)
     NIM_NODE['nim_hmc'] = nim_hmc
     module.debug('NIM HMC: {0}'.format(nim_hmc))
 
-    # =========================================================================
     # Build CEC info list
-    # =========================================================================
     nim_cec = get_nim_cecs_info(module)
 
-    # =========================================================================
     # Build vios info list
-    # =========================================================================
     nim_vios = get_nim_clients_info(module, 'vios')
 
-    # =========================================================================
     # Complete the CEC serial in nim_vios dict
-    # =========================================================================
     for key in nim_vios:
         mgmt_cec = nim_vios[key]['mgmt_cec']
         if mgmt_cec in nim_cec:
@@ -304,9 +299,7 @@ def check_vios_targets(module, targets):
     vios_list = {}
     vios_list_tuples_res = []
 
-    # ===========================================
     # Build target list
-    # ===========================================
     for vios_tuple in targets:
 
         module.debug('vios_tuple: {0}'.format(vios_tuple))
@@ -444,7 +437,7 @@ def vios_health_init(module, hmc_id, hmc_ip):
     for line in stdout.split('\n'):
         line = line.rstrip()
         # TBC - remove?
-        module.debug('--------line {0}'.format(line))
+        module.debug('-- vioshc stdout line: {0}'.format(line))
         if vios_section == 0:
             # skip the header
             match_key = re.match(r"^-+\s+-+$", line)
@@ -612,7 +605,6 @@ def main():
         argument_spec=dict(
             targets=dict(required=True, type='list', elements='str'),
             action=dict(required=True, choices=['health_check'], type='str'),
-            vars=dict(type='dict'),
         )
     )
 
@@ -623,9 +615,7 @@ def main():
         stderr='',
     )
 
-    # =========================================================================
     # Get module params
-    # =========================================================================
     targets = module.params['targets']
 
     OUTPUT.append('VIOS Health Check operation for {0}'.format(targets))
@@ -633,9 +623,7 @@ def main():
     target_list = []
     targets_health_status = {}
 
-    # =========================================================================
     # Build nim node info
-    # =========================================================================
     build_nim_node(module)
 
     ret = check_vios_targets(module, targets)

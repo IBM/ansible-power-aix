@@ -18,22 +18,22 @@ author:
 module: nim_viosupgrade
 short_description: Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.
 description:
-- Performs the operations of backing up the virtual and logical configuration data, installing the
-  specified image, and restoring the virtual and logical configuration data of the Virtual I/O
-  Server (VIOS) from the NIM master.
+- Uses the Network Installation Management (NIM) to performs the operations of backing up the
+  virtual and logical configuration data, installing the specified image, and restoring the virtual
+  and logical configuration data of the Virtual I/O Server (VIOS) from the NIM master.
 - The installation is a new and complete installation using the provided VIOS image, any customized
   configurations that might exist on the currently running system before the installation starts
-  (including the timezone), are not included in the new installation image.
+  (including the timezone) are not included in the new installation image.
 version_added: '2.9'
 requirements:
-- AIX >= 7.1 TL3
+- AIX >= 7.2 TL3
 - Python >= 2.7
-- ios_mksysb >= 3.1.0.0
+- ios_mksysb VIOS level >= 3.1.0.0
 options:
   action:
     description:
     - Specifies the operation to perform.
-    - C(get_status) to get the status of the upgrade.
+    - C(get_status) to get the status of an ongoing upgrade operation.
     - C(bosinst) to perform a new and fresh installation on the current rootvg disk.
     - C(altdisk) to perform a new installation on the alternative disk. The current rootvg disk on
       the VIOS partition is not impacted by this installation. The VIOS partition that has the
@@ -46,8 +46,8 @@ options:
     description:
     - Specifies the list of VIOSes NIM targets to update.
     - Either I(targets) or I(target_file) must be specified.
-    - For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the n
-      number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time.
+    - For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the B(n)
+      number of nodes in the SSP cluster, maximum B(n-1) nodes can be upgraded at the same time.
       Hence, you must ensure that at least one node is always active in the cluster and is not part
       of the upgrade process.
     type: list
@@ -57,12 +57,12 @@ options:
     - Specifies the file name that contains the list of VIOS nodes.
     - Either I(targets) or I(target_file) must be specified.
     - The values and fields in the file must be specified in a particular sequence and format. The
-      details of the format are specified in the /usr/samples/nim/viosupgrade.inst file and they
+      details of the format are specified in the B(/usr/samples/nim/viosupgrade.inst) file and they
       are comma-separated. The maximum number of nodes that can be installed through the -f option
       is 30.
     - The VIOS images are installed on the nodes simultaneously.
-    - For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the n
-      number of nodes in the SSP cluster, maximum n-1 nodes can be upgraded at the same time.
+    - For an SSP cluster, the viosupgrade command must be run on individual nodes. Out of the B(n)
+      number of nodes in the SSP cluster, maximum B(n-1) nodes can be upgraded at the same time.
       Hence, you must ensure that at least one node is always active in the cluster and is not part
       of the upgrade process.
     - Only the I(action) and I(preview) parameters will be considered while others should be
@@ -71,11 +71,11 @@ options:
   viosupgrade_params:
     description:
     - Specifies the parameters for the viosupgrade command in a dictionary of disctionaries.
-    - The keys of this dictionary can be the target name or the specific key 'all'. Then associated
-      parameters will apply to the target or all of them. When I(target_file) is specified, then
-      you must use the key 'all'.
+    - The keys of this dictionary can be the target name or the specific key B('all'). Then
+      associated parameters will apply to the target or all of them. When I(target_file) is
+      specified, then you must use the key B('all').
     - When building the viosugrade command, it will look first if the parameter is present for the
-      target then into the 'all' section.
+      target then into the B('all') section.
     - Valid keys are the follwoing.
     - I(ios_mksysb), specifies the ios_mksysb resource name on the NIM Master server for the
       specified VIOS installation.
@@ -91,9 +91,9 @@ options:
       current rootvg disks to alternative disks and continues with the VIOS installation on the
       current rootvg disk.
     - I(rootvg_install_disk), when C(action=bosinst) this colon-separated list specifies new rootvg
-      disks where the specified image must be installed instead of the existing rootvg disks, one and
-      only one of I(rootvg_clone_disk) or I(rootvg_install_disk) or I(skip_rootvg_cloning) must be
-      specified.
+      disks where the specified image must be installed instead of the existing rootvg disks, one
+      and only one of I(rootvg_clone_disk) or I(rootvg_install_disk) or I(skip_rootvg_cloning) must
+      be specified.
     - I(backup_file_resource), specifies the resource name of the VIOS configuration backup file.
     - I(resources), specifies the configuration resources to be applied after the installation,
       valid values are resolv_conf, script, fb_script, file_res, image_data, and log.
@@ -106,9 +106,9 @@ options:
   vios_status:
     description:
     - Specifies the result of a previous operation.
-    - If set then the I(vios_status) of a target tuple must contain I(SUCCESS) to attempt update.
+    - If set then the I(vios_status) of a target tuple must contain C(SUCCESS) to attempt update.
     - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set
-      to I(SKIPPED-NO-PREV-STATUS).
+      to C(SKIPPED-NO-PREV-STATUS).
     type: dict
   nim_node:
     description:
@@ -116,7 +116,10 @@ options:
       one time for all tasks.
     type: dict
 notes:
-  - See IBM documentation about requirements for the viosupgrade command.
+  - See IBM documentation about requirements for the viosupgrade command at
+    U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/v_commands/viosupgrade.html).
+  - You can refer to the IBM documentation for additional information on the NIM concept at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
   - The viosupgrade command on NIM server is supported from IBM AIX 7.2 with Technology Level 3, or
     later.
   - For NIM bosinst method of installation, supported current VIOS levels are 2.2.6.30, or later.
@@ -132,7 +135,6 @@ notes:
     related to that software. To manage this scenario, you must create a customized VIOS image with
     the software applications that you might want to include and provide this customized VIOS image
     as an input to the viosupgrade command for installation.
-
 '''
 
 EXAMPLES = r'''

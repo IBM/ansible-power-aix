@@ -16,12 +16,14 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_backup
-short_description: Use NIM to create, list and restore backup on LPAR and VIOS clients.
+short_description: Uses NIM to manage backup of LPAR or VIOS clients.
 description:
-- Uses the NIM define operation it creates mksysb or ios_backup resource on the NIM master
-  depending on the type of the client.
-- Lists the backup resources available on the NIM master and allows to filter results.
-- Uses the NIM bos_inst and viosbr to restore backup images on LPAR or VIOS clients.
+- Performs backup operations through the Network Installation Management (NIM) to create, list and
+  view and restore backup image on LPAR and VIOS clients.
+- Defines mksysb or ios_backup resources on the NIM master depending on the type of the client.
+- Lists the mksysb or ios_backup resources available on the NIM master and allows to filter results.
+- Uses the NIM BOS installation operation to mksysb backup images on clients.
+- Uses the NIM viosbr operation to restore VIOS configuration ios_backup on clients.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -29,8 +31,8 @@ requirements:
 options:
   action:
     description:
-    - Controls what is performed.
-    - C(create) performs an backup operation on targets trough the NIM master.
+    - Specifies the action to perform.
+    - C(create) performs a backup operation on targets trough the NIM master.
     - C(restore) restores a backup on targets trough the NIM master.
     - C(view) displays the content of a VIOS backup, only for I(type=backup).
     - C(list) lists backups for targets on the NIM master.
@@ -40,11 +42,16 @@ options:
   type:
     description:
     - Specifies the type of backup object to operate.
-    - C(mksysb) operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.
-    - C(ios_mksysb) operates on VIOS backup of the operating system (that is, the root volume group).
-    - C(ios_backup) operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.
-    - C(savevg) operates on LPAR savevg, that is all files belonging to a volume group.
-    - Discarded for I(action=view) as this action only applies to ios_backup.
+    - C(mksysb) specifies to operate on installable BOS backup image of the operating system (that
+      is the root volume group) of a LPAR target.
+    - C(ios_mksysb) specifies to operate on installable BOS backup image of the operating system
+      (that is, the root volume group) of a VIOS target.
+    - C(ios_backup) specifies to operate on virtual and logical configuration backup image of VIOS
+      target; that is all the relevant data to recover VIOS after a fresh installation.
+    - C(savevg) specifies to operate volume group files backup image of LPAR target; that is not
+      installable.
+    - It parameter is discarded for I(action=view) as the C(view) action only applies to
+      C(ios_backup).
     type: str
     choices: [ mksysb, ios_mksysb, ios_backup, savevg ]
     default: mksysb
@@ -55,145 +62,164 @@ options:
     - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
     - C(*) or C(ALL) specifies all the NIM clients.
     - C(vios) or C(standalone) specifies all the NIM clients of this type.
-    - Required if I(action=create) and I(action=restore).
-    - If I(action=list) it filters the results on the source_image attribute of the NIM resource.
+    - Required when I(action=create) and I(action=restore).
+    - When I(action=list) it filters the results on the B(source_image) attribute of the NIM
+      resource.
     type: list
     elements: str
     required: false
-  nim_node:
-    description:
-    - Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
-    type: dict
   location:
     description:
     - Specifies the location of the backup files.
-    - If I(objtype=mksysb), the default value is I(location=/export/nim/mksysb).
-    - If I(objtype=ios_mksysb), the default value is I(location=/export/nim/ios_mksysb).
-    - If I(objtype=ios_backup), the default value is I(location=/export/nim/ios_backup).
-    - If I(objtype=savevg), the default value is I(location=/export/nim/savevg).
+    - When I(type=mksysb), the default value is I(location=/export/nim/mksysb).
+    - When I(type=ios_mksysb), the default value is I(location=/export/nim/ios_mksysb).
+    - When I(type=ios_backup), the default value is I(location=/export/nim/ios_backup).
+    - When I(type=savevg), the default value is I(location=/export/nim/savevg).
     type: path
   name:
     description:
-    - Specifies the exact name of the backup to act on.
-    - If I(action=list) it filters the results on the name of the NIM resource.
-    - Required if I(action=view) and if I(action=create) and I(type=savevg).
+    - Specifies the exact name of the backup NIM resource to act on.
+    - When I(action=list) it filters the results on the name of the NIM resource.
+    - Required when I(action=view) and when I(action=create) and I(type=savevg).
     type: str
   name_prefix:
     description:
     - Prefix of the backup NIM resource name to act on.
-    - The name format will be I(<prefix><target_name><postfix>).
-    - Used only if C(name) is not specified.
-    - If I(action=list) it filters the results on the name of the NIM resource.
+    - The name format will be I(<name_prefix><target_name><name_postfix>).
+    - Used only when C(name) is not specified.
+    - When I(action=list) it filters the results on the name of the NIM resource.
     type: str
   name_postfix:
     description:
     - Specifies the postfix of the backup NIM resource name to act on.
-    - If not specified default for mksysb is I(name_postfix=_sysb), for ios_backup it is I(name_postfix=_iosb)
-      and for .
-    - The name format will be I(<prefix><target_name><postfix>).
-    - Used only if C(name) is not specified.
-    - If I(action=list) it filters the results on the name of the NIM resource.
-    - If I(objtype=mksysb) or I(objtype=ios_mksysb), the default value is I(name_postfix=_sysb).
-    - If I(objtype=ios_backup), the default value is I(name_postfix=_iosb).
-    - If I(objtype=savevg), the default value is I(name_postfix=_svg).
+    - The name format will be I(<name_prefix><target_name><name_postfix>).
+    - Used only when C(name) is not specified.
+    - When I(action=list) it filters the results on the name of the NIM resource.
+    - When I(type=mksysb) or I(type=ios_mksysb), the default value is I(name_postfix=_sysb).
+    - When I(type=ios_backup), the default value is I(name_postfix=_iosb).
+    - When I(type=savevg), the default value is I(name_postfix=_svg).
     type: str
   group:
     description:
-    - Specifies the resource group to use for restoration.
-    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Specifies the resource group used to install the BOS backup image on a client.
+    - Can be used on a standalone client when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_name:
     description:
-    - Specifies the exact SPOT resource name to create to restore the backup on a standalone client.
-    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Specifies the exact SPOT resource name used to install the BOS backup image on a client.
+    - When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.
+    - Can be used on a standalone client when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_prefix:
     description:
-    - Specifies the prefix of SPOT resource name created to restore the backup on a standalone client.
+    - Specifies the prefix of SPOT resource name used to install the BOS backup image on a client.
+    - When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.
     - The SPOT name format will be I(<spot_prefix><target_name><spot_postfix>).
-    - Used only if C(spot_name) is not specified.
-    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Used only when C(spot_name) is not specified.
+    - Can be used on a standalone client when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   spot_postfix:
     description:
-    - Specifies the prostfix of SPOT resource name created to restore the backup on a standalone client.
+    - Specifies the postfix of SPOT resource name used to install the BOS backup image on a client.
+    - When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.
     - The SPOT name format will be I(<spot_prefix><target_name><spot_postfix>).
-    - Used only if C(spot_name) is not specified.
-    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Used only when C(spot_name) is not specified.
+    - Can be used on a standalone client when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
     default: _spot
   spot_location:
     description:
-    - Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.
-    - Can be used on a standalone client if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Specifies the location of SPOT resource on the NIM master used to install the BOS backup image
+      on a client. created to restore the backup on a standalone client.
+    - When the SPOT resource does not exist, it is created that this I(location).
+    - Can be used on a standalone client when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: path
     default: /export/nim/spot
   bosinst_data:
     description:
-    - Specifies the bosinst_data resource to restore the backup on a standalone client.
+    - Specifies the bosinst_data NIM resource name to install the BOS backup image on a client.
     - This allows running "non-prompted" installations, and so more automated restorations.
     - If not specified you will be presented with a series of choices on the console.
-    - Can be used if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Can be used when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: str
   oslevel:
     description:
-    - Specifies the oslevel to filter results.
-    - Can be used if I(action=list).
+    - Specifies the oslevel to filter results when listing backup images.
+    - Can be used when I(action=list).
     type: str
   volume_group:
     description:
-    - Specifies the volume group to backup on the target that must be varied-on and the file systems must be mounted.
-    - Required if I(action=create) and I(type=savevg).
+    - Specifies the volume group to backup on the target.
+    - This volume group must be varied-on and the file systems must be mounted.
+    - Required when I(action=create) and I(type=savevg).
     type: str
   exclude_files:
     description:
-    - Specifies the exclude_files NIM resource on the NIM master.
-    - Can be used if I(action=create) and I(type=savevg).
+    - Specifies the exclude_files NIM resource name to create a backup image.
+    - It represents a file that contains a list of files and directories that should be excluded
+      from the creation.
+    - Can be used when I(action=create) and I(type=savevg).
     type: str
   flags:
     description:
-    - Specifies additional flags to pass to the command used. Refers to IBM documentation for details.
+    - Specifies additional flags to pass to the command used.
+    - Refer to IBM documentation for details.
     - For I(action=create) and I(type=mksysb), you could use I(-a -A -b -e -i -m -p -P -T -V -X -Z).
     - For I(action=create) and I(type=ios_mksysb), you could use I(-nosvg -nomedialib).
     - For I(action=create) and I(type=savevg), you could use I(-a -A -e -i -m -p -r -T -v -V -X -Z).
     type: str
   other_attributes:
     description:
-    - Specifies additional attributes to pass to the NIM operation. Refers to IBM documentation for details.
+    - Specifies additional attributes to pass to the NIM operation.
+    - Refer to IBM documentation for details.
     - It is a space separated string such as I(other_attributes='-a attr1=value1 -a attr2=value2').
-    - Discarded if I(action=list).
+    - Discarded when I(action=list).
     type: str
   remove_spot:
     description:
-    - Specifies to remove the SPOT resource created to restore the backup on a standalone client.
-    - Can be used on a standalone client if I(action=restore).
+    - Specifies to remove the SPOT resource after the restoration of the backup image.
+    - The preexistence of the SPOT resource does not condition its removal.
+    - The SPOT resource is B(not) removed when the restore operation fails or in check mode.
+    - Can be used on a standalone client when I(action=restore).
     type: bool
     default: yes
   remove_backup:
     description:
-    - Specifies to remove the backup resource from the NIM master.
-    - Can be used if I(action=restore).
+    - Specifies to remove the backup resource after the restoration of the backup image.
+    - The preexistence of the backup resource does not condition its removal.
+    - The backup resource is B(not) removed when the restore operation fails or in check mode.
+    - Can be used when I(action=restore).
     type: bool
     default: no
   accept_licenses:
     description:
-    - Specifies to automatically accept all licenses during the restoration of the backup.
-    - Can be used if I(action=restore) and I(type=mksysb or ios_mksysb).
+    - Specifies to automatically accept all licenses while installing the BOS backup image.
+    - Can be used when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: bool
     default: yes
   boot_target:
     description:
-    - Specifies to boot the NIM client after restoration of the backup.
-    - Can be used on a standalone client if I(action=restore).
+    - Specifies to boot the NIM client after installing the BOS backup image.
+    - Can be used when I(action=restore) and I(type=mksysb or ios_mksysb).
     type: bool
     default: yes
   shrink_fs:
     description:
     - Specifies to shrink the file system contained in the volume group.
     - Always be sure to check the size of the file systems after the restore is complete.
-    - Can be used if I(action=restore) and I(type=savevg).
+    - Can be used when I(action=restore) and I(type=savevg).
     type: bool
     default: no
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a previous task to another so that it discovers NIM
+      info only one time for all tasks. The current task might update the NIM info it needs.
+    type: dict
+notes:
+  - You can refer to the IBM documentation for additional information on the NIM concept and command
+    at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_op_bos_inst.html).
 '''
 
 EXAMPLES = r'''
