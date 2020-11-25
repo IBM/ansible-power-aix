@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_vios_hc
-short_description: Check if a pair of VIOSes could be updated.
+short_description: Check if a pair of VIOSes can be updated.
 description:
 - Uses the Network Installation Management (NIM) and the VIOS health check tool to check several
   settings required to update a pair of Virtual I/O Servers (VIOS).
@@ -27,7 +27,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- The B(vioshc.py) must be script installed on the NIM master.
+- The B(vioshc.py) script must be installed on the NIM master.
 options:
   action:
     description:
