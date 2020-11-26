@@ -229,6 +229,36 @@ results = None
 nim_node = {}
 
 
+def nim_exec(module, node, command):
+    """
+    Execute the specified command on the specified nim client using c_rsh.
+
+    return
+        - rc      return code of the command
+        - stdout  stdout of the command
+        - stderr  stderr of the command
+    """
+
+    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
+    cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    module.debug('exec command:{0}'.format(cmd))
+
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        return (rc, stdout, stderr)
+
+    s = re.search(r'rc=([-\d]+)$', stdout)
+    if s:
+        rc = int(s.group(1))
+        # remove the rc of c_rsh with echo $?
+        stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('exec command rc:{0}, output:{1}, stderr:{2}'.format(rc, stdout, stderr))
+
+    return (rc, stdout, stderr)
+
+
 def run_oslevel_cmd(module, machine, result):
     """
     Run the oslevel command on target machine.
@@ -242,22 +272,16 @@ def run_oslevel_cmd(module, machine, result):
 
     result[machine] = 'timedout'
 
+    cmd = ['oslevel', '-s']
     if machine == 'master':
-        cmd = ['oslevel', '-s']
+        rc, stdout, stderr = module.run_command(cmd)
     else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               machine,
-               '"/usr/bin/oslevel -s; echo rc=$?"']
+        rc, stdout, stderr = nim_exec(module, machine, cmd)
 
-    rc, stdout, stderr = module.run_command(cmd)
     if rc == 0:
         module.debug('{0} oslevel stdout: "{1}"'.format(machine, stdout))
         if stderr.rstrip():
             module.log('"{0}" command stderr: {1}'.format(' '.join(cmd), stderr))
-
-        # remove the rc of c_rsh with echo $?
-        if machine != 'master':
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
 
         # return stdout only ... stripped!
         result[machine] = stdout.rstrip()
@@ -660,27 +684,16 @@ def list_fixes(module, target):
     global results
 
     fixes = []
-    if target == 'master':
-        cmd = ['emgr', '-l']
-    else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               target,
-               '"LC_ALL=C /usr/sbin/emgr -l; echo rc=$?"']
-
+    cmd = ['emgr', '-l']
     module.debug('EMGR list - Command:{0}'.format(cmd))
 
-    ret, stdout, stderr = module.run_command(cmd)
+    if target == 'master':
+        ret, stdout, stderr = module.run_command(cmd)
+    else:
+        ret, stdout, stderr = nim_exec(module, target, cmd)
 
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-
-    # remove the rc of c_rsh with echo $?
-    if target != 'master':
-        s = re.search(r'rc=([-\d]+)$', stdout)
-        if s:
-            if ret == 0:
-                ret = int(s.group(1))
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
 
     for line in stdout.rstrip().split('\n'):
         line = line.rstrip()
@@ -715,27 +728,16 @@ def remove_fix(module, target, fix):
     """
     global results
 
-    if target == 'master':
-        cmd = ['emgr', '-r', '-L', fix]
-    else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               target,
-               '"/usr/sbin/emgr -r -L {0}; echo rc=$?"'.format(fix)]
-
+    cmd = ['emgr', '-r', '-L', fix]
     module.debug('EMGR remove - Command:{0}'.format(cmd))
 
-    ret, stdout, stderr = module.run_command(cmd)
+    if target == 'master':
+        ret, stdout, stderr = module.run_command(cmd)
+    else:
+        ret, stdout, stderr = nim_exec(module, target, cmd)
 
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-
-    # remove the rc of c_rsh with echo $?
-    if target != 'master':
-        s = re.search(r'rc=([-\d]+)$', stdout)
-        if s:
-            if ret == 0:
-                ret = int(s.group(1))
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
 
     results['nim_output'].append('{0}'.format(stderr))
 
@@ -969,15 +971,15 @@ def nim_maintenance(module, params):
                    '-a', 'installp_flags=' + flag,
                    '-a', 'filesets=ALL',
                    target]
+            module.debug('NIM - Command:{0}'.format(cmd))
+            results['nim_output'].append('NIM - Command:{0}'.format(' '.join(cmd)))
+            ret, stdout, stderr = module.run_command(cmd)
+
         else:
-            cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-                   target,
-                   '"/usr/sbin/installp -c all; echo rc=$?"']
-
-        module.debug('NIM - Command:{0}'.format(cmd))
-        results['nim_output'].append('NIM - Command:{0}'.format(' '.join(cmd)))
-
-        ret, stdout, stderr = module.run_command(cmd)
+            cmd = ['/usr/sbin/installp', '-c', 'all']
+            module.debug('NIM - Command:{0}'.format(cmd))
+            results['nim_output'].append('NIM - Command:{0}'.format(' '.join(cmd)))
+            ret, stdout, stderr = nim_exec(module, target, cmd)
 
         results['cmd'] = ' '.join(cmd)
         results['rc'] = ret
@@ -986,15 +988,6 @@ def nim_maintenance(module, params):
         module.log("[RC] {0}".format(ret))
         module.log("[STDOUT] {0}".format(stdout))
         module.log("[STDERR] {0}".format(stderr))
-
-        # remove the rc of c_rsh with echo $?
-        if target not in nim_node['standalone']:
-            s = re.search(r'rc=([-\d]+)$', stdout)
-            if s:
-                if ret == 0:
-                    ret = int(s.group(1))
-                stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
-
         results['nim_output'].append('{0}'.format(stderr))
 
         results['nim_output'].append('NIM - Finished committing {0}.'.format(target))
