@@ -1,8 +1,8 @@
 .. _mkfilt_module:
 
 
-mkfilt -- Activates or deactivates the filter rules
-===================================================
+mkfilt -- Activates or deactivates the filter rules.
+====================================================
 
 .. contents::
    :local:
@@ -14,6 +14,8 @@ Synopsis
 
 Activates or deactivates the filter rules.
 
+This command can also be used to control the filter logging function.
+
 
 
 Requirements
@@ -22,6 +24,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- User with priviledged authorizations.
 
 
 
@@ -35,7 +38,7 @@ Parameters
 
     ``check`` to check the syntax of filter rules.
 
-    ``change`` to change a filter rule.
+    ``change`` to change filter rules.
 
     ``import`` to import filter rules from an export file.
 
@@ -383,6 +386,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the command used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkfilt.html.
 
 
 
@@ -420,6 +428,12 @@ Examples
           rules:
           - action: remove
             id: all
+
+    - name: Export filter rules as is into export text files
+      mkfilt:
+        action: export
+        directory: /root/export
+        rawexport: yes
 
 
 

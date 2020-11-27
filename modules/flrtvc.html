@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>flrtvc – Generate FLRTVC report, download and install efix. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>flrtvc – Generate FLRTVC report, download and install security and HIPER fixes. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,7 +38,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="geninstall – Generic installer for various packaging formats" href="geninstall.html" />
+    <link rel="next" title="geninstall – Generic installer for various packaging formats." href="geninstall.html" />
     <link rel="prev" title="filesystem – Local and NFS filesystems management." href="filesystem.html" /> 
 </head>
 
@@ -97,37 +97,41 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">flrtvc – Generate FLRTVC report, download and install efix.</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>flrtvc – Generate FLRTVC report, download and install efix.</li>
+      <li>flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -217,21 +221,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="flrtvc-generate-flrtvc-report-download-and-install-efix">
-<span id="flrtvc-module"></span><h1>flrtvc – Generate FLRTVC report, download and install efix.<a class="headerlink" href="#flrtvc-generate-flrtvc-report-download-and-install-efix" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="flrtvc-generate-flrtvc-report-download-and-install-security-and-hiper-fixes">
+<span id="flrtvc-module"></span><h1>flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.<a class="headerlink" href="#flrtvc-generate-flrtvc-report-download-and-install-security-and-hiper-fixes" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Creates a task to check targets vulnerability against available fixes, and apply necessary fixes. It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker Script to generates a report. It parses the report, downloads the fixes, checks their versions and if some files are locked. Then it installs the remaining fixes. In case of inter-locking file you could run this several times.</p>
+<p>Applies known security and HIPER (High Impact PERvasive) fixes on your system based on its inventory ensuring the systems are at supported and secure levels.</p>
+<p>It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generate a report. It parses this report, downloads the required fixes, extracts the files and checks their versions against installed software levels. It also checks for file locking preventing fix installation. It rejects fixes that do not match these requirements and installs the remaining.</p>
+<p>In case of inter-locking file(s) you might want run against the task.</p>
+<p>You will get the list of installed and rejected fixes in the results meta data.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -245,49 +253,65 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>apar (optional, str, None)</dt><dd><p>Type of APAR to check or download.</p>
-<p><code class="docutils literal notranslate"><span class="pre">sec</span></code> Security vulnerabilities.</p>
-<p><code class="docutils literal notranslate"><span class="pre">hiper</span></code> Corrections to High Impact PERvasive threats.</p>
-<p><code class="docutils literal notranslate"><span class="pre">all</span></code> Same behavior as None, both <code class="docutils literal notranslate"><span class="pre">sec</span></code> and <code class="docutils literal notranslate"><span class="pre">hiper</span></code> vulnerabilities.</p>
+<dt>apar (optional, str, None)</dt><dd><p>Type of APAR to check against.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sec</span></code> stands for Security vulnerabilities.</p>
+<p><code class="docutils literal notranslate"><span class="pre">hiper</span></code> stands for Corrections to High Impact PERvasive threats.</p>
+<p><code class="docutils literal notranslate"><span class="pre">all</span></code> has the same behavior as <code class="docutils literal notranslate"><span class="pre">None</span></code> hence both <code class="docutils literal notranslate"><span class="pre">sec</span></code> and <code class="docutils literal notranslate"><span class="pre">hiper</span></code> vulnerabilities.</p>
 </dd>
-<dt>filesets (optional, str, None)</dt><dd><p>Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.</p>
+<dt>filesets (optional, str, None)</dt><dd><p>Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified phrase will be checked and so updated.</p>
 </dd>
 <dt>csv (optional, str, None)</dt><dd><p>Path to a APAR CSV file containing the description of the <code class="docutils literal notranslate"><span class="pre">sec</span></code> and <code class="docutils literal notranslate"><span class="pre">hiper</span></code> fixes.</p>
-<p>This file is usually transferred from the fix server; this rather big transfer can be avoided by specifying an already transferred file.</p>
+<p>This file is usually transferred from the Fix Central server; you can avoid this rather big transfer by specifying the path to an already transferred file.</p>
 </dd>
-<dt>path (optional, str, /var/adm/ansible)</dt><dd><p>Specifies the directory to save the FLRTVC report. All temporary files such as previously installed filesets, fixes lists and downloaded fixes files will be stored in the working subdirectory named ‘<em>path</em>/work’.</p>
+<dt>path (optional, str, /var/adm/ansible)</dt><dd><p>Specifies the directory to save the FLRTVC report.</p>
+<p>All temporary files such as installed filesets, fixes listings and downloaded fixes files are stored in the working subdirectory named ‘<em>path</em>/work’.</p>
 </dd>
 <dt>save_report (optional, bool, False)</dt><dd><p>Specifies to save the FLRTVC report in file ‘<em>path</em>/flrtvc.txt’.</p>
 </dd>
 <dt>verbose (optional, bool, False)</dt><dd><p>Generate full FLRTVC reporting (verbose mode).</p>
+<p>It runs the FLRTVC script a second time to save the full report into file. So this option impacts the execution performance.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Specifies to remove currently installed ifix before running the FLRTVC script.</p>
 </dd>
 <dt>clean (optional, bool, False)</dt><dd><p>Cleanup working directory ‘<em>path</em>/work’ with all temporary and downloaded files at the end of execution.</p>
 </dd>
-<dt>check_only (optional, bool, False)</dt><dd><p>Specifies to only check if fixes are already applied on the targets. No download or install operations.</p>
+<dt>check_only (optional, bool, False)</dt><dd><p>Specifies to only check if fixes are already applied on the targets.</p>
+<p><strong>No download or installation</strong> operations will be performed.</p>
 </dd>
-<dt>download_only (optional, bool, False)</dt><dd><p>Specifies to perform check and download operation, do not install anything.</p>
+<dt>download_only (optional, bool, False)</dt><dd><p>Specifies to perform check and download operation only.</p>
+<p><strong>No installation</strong> will be performed.</p>
 </dd>
-<dt>extend_fs (optional, bool, True)</dt><dd><p>Specifies to increase filesystem size of the working directory if needed.</p>
-<p>If set a filesystem of the host could have increased even if it returns <em>changed=False</em>.</p>
+<dt>extend_fs (optional, bool, True)</dt><dd><p>Specifies to increase filesystem size of the working directory when extra space is needed.</p>
+<p>When set, a filesystem could have increased while the task returns <em>changed=False</em>.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Refer to the FLRTVC page for detail on the sctipt <a class="reference external" href="https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html">https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html</a></p></li>
+<li><p>The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file. It is downloaded from <a class="reference external" href="https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip">https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip</a>.</p></li>
+<li><p>The script requires ksh93 to use.</p></li>
+<li><p><strong>v0.8.1</strong> is the current version of the script, depending on changes, this module might need to be updated.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Download patches for security vulnerabilities</span>
   <span class="nt">flrtvc</span><span class="p">:</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst.images</span>
-    <span class="nt">verbose</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">apar</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">sec</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst.images</span>
     <span class="nt">download_only</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
 
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Install both sec and hyper patches for all filesets starting with devices.fcp</span>
   <span class="nt">flrtvc</span><span class="p">:</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst</span>
     <span class="nt">filesets</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">devices.fcp.*</span>
+    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/usr/sys/inst</span>
+    <span class="nt">save_report</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">verbose</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
     <span class="nt">force</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
     <span class="nt">clean</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">no</span>
@@ -295,34 +319,36 @@
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl>
 <dt>msg (always, str, FLRTVC completed successfully)</dt><dd><p>The execution message.</p>
 </dd>
 <dt>meta (always, dict, {‘meta’: {‘0.report’: [‘Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required| Last Update|Fixed In’, ‘bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15| IJ09625 / CVE-2018-6922|http://aix.software.ibm.com/aix/efixes/security/freebsd_advisory.asc|ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03’, ‘…’], ‘1.parse’: [‘<a class="reference external" href="ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar">ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar</a>’, ‘<a class="reference external" href="ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar">ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar</a>’, ‘…’], ‘2.discover’: [‘ntp_fix12/IJ17059m9b.190719.epkg.Z’, ‘ntp_fix12/IJ17060m9a.190628.epkg.Z’, ‘…’, ‘tcpdump_fix4/IJ12978s9a.190215.epkg.Z’, ‘tcpdump_fix4/IJ12978sBa.190215.epkg.Z’, ‘…’], ‘3.download’: [‘/usr/sys/inst.images/tardir/ntp_fix12/IJ17059m9b.190719.epkg.Z’, ‘/usr/sys/inst.images/tardir/ntp_fix12/IJ17060m9a.190628.epkg.Z’, ‘…’, ‘/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978s9a.190215.epkg.Z’, ‘/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978sBa.190215.epkg.Z’, ‘…’], ‘4.1.reject’: [‘102p_fix: prerequisite openssl.base levels do not satisfy condition string: 1.0.2.1600 =&lt; 1.0.2.1500 =&lt; 1.0.2.1600’, ‘…’, ‘IJ12983m2a: locked by previous efix to install’, ‘…’, ‘IJ17059m9b: prerequisite missing: ntp.rte’, ‘…’], ‘4.2.check’: [‘/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z’, ‘…’], ‘5.install’: [‘/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z’, ‘…’], ‘messages’: [‘a previous efix to install will lock a file of IJ20785s3a preventing its installation, install it manually or run the task again.’, ‘…’]}})</dt><dd><p>Detailed information on the module execution.</p>
-<dl class="simple">
-<dt>messages (always, list, see below)</dt><dd><p>Details on errors/warnings</p>
+<dl>
+<dt>messages (always, list, see sample of meta)</dt><dd><p>Details on errors/warnings</p>
 </dd>
-<dt>0.report (if the FLRTVC script run succeeds, list, see below)</dt><dd><p>Output of the FLRTVC script, report or details on flrtvc error if any.</p>
+<dt>0.report (if the FLRTVC script succeeds, list, see sample of meta)</dt><dd><p>Output of the FLRTVC script, report and details on flrtvc error if any.</p>
 </dd>
-<dt>1.parse (if the parsing succeeds, list, see below)</dt><dd><p>List of URLs to download or details on parsing error if any.</p>
+<dt>1.parse (if the FLRTVC report parsing succeeds, list, see sample of meta)</dt><dd><p>List of URLs to download and details on parsing error if any.</p>
 </dd>
-<dt>2.discover (if the discovery succeeds, list, see below)</dt><dd><p>List of epkgs found in URLs.</p>
+<dt>2.discover (if the URL downloads and epkgs listing succeed, list, see sample of meta)</dt><dd><p>List of epkgs found in URLs.</p>
+<p>URLs can be eFix or tar files or directories needing parsing.</p>
 </dd>
-<dt>3.download (if download succeeds, list, see below)</dt><dd><p>List of downloaded epkgs.</p>
+<dt>3.download (if download operation succeeds, list, see sample of meta)</dt><dd><p>List of downloaded epkgs.</p>
 </dd>
-<dt>4.1.reject (if check succeeds, list, see below)</dt><dd><p>List of epkgs rejected, refer to messages and log file for reason.</p>
+<dt>4.1.reject (if check succeeds, list, see sample of meta)</dt><dd><p>List of epkgs rejected. Can be because installed levels do not match ifix required levels or because a file is or will be locked by an other ifix installation.</p>
+<p>You should refer to messages or to log file for very detailed reason.</p>
 </dd>
-<dt>4.2.check (if check succeeds, list, see below)</dt><dd><p>List of epkgs following prerequisites.</p>
+<dt>4.2.check (if check succeeds, list, see sample of meta)</dt><dd><p>List of epkgs matching the prerequisites and trying to install.</p>
 </dd>
-<dt>5.install (if install succeeds, list, see below)</dt><dd><p>List of epkgs actually installed.</p>
+<dt>5.install (if install succeeds, list, see sample of meta)</dt><dd><p>List of epkgs actually installed on the system.</p>
 </dd>
 </dl>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -344,7 +370,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="geninstall.html" class="btn btn-neutral float-right" title="geninstall – Generic installer for various packaging formats" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="geninstall.html" class="btn btn-neutral float-right" title="geninstall – Generic installer for various packaging formats." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="filesystem.html" class="btn btn-neutral float-left" title="filesystem – Local and NFS filesystems management." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

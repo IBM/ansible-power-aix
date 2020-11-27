@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mount – Mounts/Unmounts a Filesystem/Device &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>mount – Mounts/unmounts a filesystem or device on AIX. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim – Server setup, install packages, update SP or TL." href="nim.html" />
-    <link rel="prev" title="mktcpip – Sets the required values for starting TCP/IP on a host" href="mktcpip.html" /> 
+    <link rel="next" title="nim – Performs NIM operations - server setup, install packages, update SP or TL." href="nim.html" />
+    <link rel="prev" title="mktcpip – Sets the required values for starting TCP/IP on a host." href="mktcpip.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,37 +97,41 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Mounts/Unmounts a Filesystem/Device</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mount – Mounts/unmounts a filesystem or device on AIX.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mount – Mounts/Unmounts a Filesystem/Device</li>
+      <li>mount – Mounts/unmounts a filesystem or device on AIX.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -217,21 +221,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mount-mounts-unmounts-a-filesystem-device">
-<span id="mount-module"></span><h1>mount – Mounts/Unmounts a Filesystem/Device<a class="headerlink" href="#mount-mounts-unmounts-a-filesystem-device" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="mount-mounts-unmounts-a-filesystem-or-device-on-aix">
+<span id="mount-module"></span><h1>mount – Mounts/unmounts a filesystem or device on AIX.<a class="headerlink" href="#mount-mounts-unmounts-a-filesystem-or-device-on-aix" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module mounts/unmounts a Filesystem/Device on the specified path</p>
+<p>This module mounts/unmounts a Filesystem/Device on the specified path.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -239,44 +244,61 @@
 <ul class="simple">
 <li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
+<li><p>User with priviledged authorizations.</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>state (optional, str, mount)</dt><dd><p>Specifies the module to perform mount/unmount operation</p>
+<dt>state (optional, str, mount)</dt><dd><p>Specifies the action to be performed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mount</span></code> makes a file system available for use at a specified location (the mount point). In addition, you can use it to build other file trees made up of directory and file mounts. If no parameter is specified, it gets information for the mounted file systems.</p>
+<p><code class="docutils literal notranslate"><span class="pre">umount</span></code> unmounts a previously mounted device, directory, file, or file system</p>
 </dd>
-<dt>node (optional, str, None)</dt><dd><p>Specifies the node holding the directory/filesystem/device you want to mount/unmount.</p>
+<dt>mount_dir (optional, str, None)</dt><dd><p>Specifies the directory path to mount/unmount.</p>
 </dd>
-<dt>mount_all (optional, str, none)</dt><dd><p>When <em>state=mount</em> and <em>mount_all=all</em>, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute</p>
-<p>When <em>state=umount</em> and <em>mount_all=all</em>, unmounts all mounted filesystem</p>
-<p>When <em>state=umount</em> and <em>mount_all=remote</em>, unmounts all remote mounted filesystems</p>
+<dt>mount_over_dir (optional, str, None)</dt><dd><p>Directory path on which the mount_dir should be mounted.</p>
+<p>If you specify only this directory, it looks up the associated device, directory, or file and mounts/unmounts it.</p>
+</dd>
+<dt>node (optional, str, None)</dt><dd><p>Specifies the remote node holding the directory/filesystem/device to be mounted/unmounted.</p>
+</dd>
+<dt>mount_all (optional, str, None)</dt><dd><p>When <em>state=mount</em> and <em>mount_all=all</em>, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute.</p>
+<p>When <em>state=umount</em> and <em>mount_all=all</em>, unmounts all mounted filesystem.</p>
+<p>When <em>state=umount</em> and <em>mount_all=remote</em>, unmounts all remote mounted filesystems.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>For remote mounted file systems, this attribute forces an unmount to free a client when the server is down and server path names cannot be resolved, or when a file system must be unmounted while it is still in use.</p>
 </dd>
-<dt>alternate_fs (optional, str, None)</dt><dd><p>Mounts on a file of an alternate file system, other than the /etc/filesystems file</p>
+<dt>alternate_fs (optional, str, None)</dt><dd><p>Mounts on a file of an alternate file system, other than the /etc/filesystems file.</p>
 </dd>
-<dt>removable_fs (optional, bool, False)</dt><dd><p>Mounts a file system as a removable file system</p>
+<dt>removable_fs (optional, bool, False)</dt><dd><p>Mounts a file system as a removable file system.</p>
 </dd>
-<dt>read_only (optional, bool, False)</dt><dd><p>Mounts a file system as a read-only file system</p>
+<dt>read_only (optional, bool, False)</dt><dd><p>Mounts a file system as a read-only file system.</p>
 </dd>
-<dt>fs_type (optional, str, None)</dt><dd><p>Mounts/unmounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute</p>
+<dt>fs_type (optional, str, None)</dt><dd><p>It specifies the name of the group to mount. It mounts/unmounts stanzas in the <strong>/etc/filesystems</strong> file that contain the type=``fs_type`` attribute.</p>
 </dd>
-<dt>vfsname (optional, str, None)</dt><dd><p>Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file</p>
+<dt>vfsname (optional, str, None)</dt><dd><p>Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file.</p>
 </dd>
 <dt>options (optional, str, None)</dt><dd><p>Specifies options. Options should be of the form &lt;option-name&gt;=&lt;value&gt; and multiple options should be separated only by a comma.</p>
-</dd>
-<dt>mount_dir (optional, str, None)</dt><dd><p>Directory path to be mounted/unmounted</p>
-</dd>
-<dt>mount_over_dir (optional, str, None)</dt><dd><p>Directory path on which the mount_dir should be mounted.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>This module runs commands that require privileged operations. For more information about authorizations and privileges, see Privileged Command Database in Security. For a list of privileges and the authorizations associated with this command, see the lssecattr command or the getcmdattr subcommand documentation.</p></li>
+<li><p>You can refer to the IBM documentation for additional information on the commands used at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mount.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mount.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/u_commands/umount.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/u_commands/umount.html</a>.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Mount filesystems</span>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">List mounted filesystems</span>
+  <span class="nt">ibm.power_aix.mount</span><span class="p">:</span>
+
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Mount filesystems</span>
   <span class="nt">ibm.power_aix.mount</span><span class="p">:</span>
     <span class="nt">mount_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/hd1</span>
     <span class="nt">mount_over_dir</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/home</span>
@@ -295,9 +317,11 @@
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt>msg (always, str, )</dt><dd><p>The execution message.</p>
+</dd>
+<dt>cmd (always, str, )</dt><dd><p>The command executed.</p>
 </dd>
 <dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
@@ -308,7 +332,7 @@
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -330,10 +354,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim.html" class="btn btn-neutral float-right" title="nim – Server setup, install packages, update SP or TL." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nim.html" class="btn btn-neutral float-right" title="nim – Performs NIM operations - server setup, install packages, update SP or TL." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mktcpip.html" class="btn btn-neutral float-left" title="mktcpip – Sets the required values for starting TCP/IP on a host" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mktcpip.html" class="btn btn-neutral float-left" title="mktcpip – Sets the required values for starting TCP/IP on a host." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

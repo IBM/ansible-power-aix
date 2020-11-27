@@ -1,8 +1,8 @@
 .. _nim_updateios_module:
 
 
-nim_updateios -- Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.
-=========================================================================================================
+nim_updateios -- Use NIM to update a single or a pair of Virtual I/O Servers.
+=============================================================================
 
 .. contents::
    :local:
@@ -12,13 +12,15 @@ nim_updateios -- Use NIM to update a single or a pair of Virtual I/O Servers to 
 Synopsis
 --------
 
-Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
+Uses the Network Installation Management (NIM) to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
 
-Checks status of previous operation if provided before running its operations.
+A tuple can be one VIOS or a pair of VIOSes to update together.
 
-VIOSes of a tuple must be on the same cluster and the node states must be OK.
+Checks status of previous operation if provided before running operation on the tuple.
 
-When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and restart it after installation.
+When a cluster is configured, the VIOSes of a tuple must be on the same cluster and the node states must be OK.
+
+When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and restart it after installation. Then, it starts updating the second VIOS.
 
 
 
@@ -35,7 +37,7 @@ Parameters
 ----------
 
   action (True, str, None)
-    Specifies the operation telling updateios what operation to perform on the VIOS.
+    Specifies the action to perform.
 
     ``install`` installs new and supported filesets.
 
@@ -47,9 +49,9 @@ Parameters
 
 
   targets (True, list, None)
-    Specifies the list of VIOSes NIM targets to update.
+    Specifies the list of VIOSes NIM targets tuple to update.
 
-    You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple. There are called tuple.
+    You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple.
 
 
   filesets (optional, str, None)
@@ -65,7 +67,7 @@ Parameters
 
 
   lpp_source (optional, str, None)
-    Identifies the NIM lpp_source resource that will provide the installation images for the operation.
+    Specifies the NIM *lpp_source* resource that will provide the installation images for the operation.
 
 
   accept_licenses (optional, bool, True)
@@ -73,11 +75,11 @@ Parameters
 
 
   manage_cluster (optional, bool, False)
-    Specifies whether the cluster should be check and stop before updating the vios and restarted after.
+    Specifies whether the cluster should be check and stop before updating the vios and restarted after the update.
 
 
   preview (optional, bool, True)
-    Specifies a preview operation. No action is actually performed.
+    Specifies to run the operations in preview operation. No action is actually performed.
 
 
   time_limit (optional, str, None)
@@ -91,9 +93,9 @@ Parameters
   vios_status (optional, dict, None)
     Specifies the result of a previous operation.
 
-    If set then the *vios_status* of a target tuple must contain *SUCCESS* to attempt update.
+    If set then the *vios_status* of a target tuple must contain ``SUCCESS`` to attempt update.
 
-    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to *SKIPPED-NO-PREV-STATUS*.
+    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to ``SKIPPED-NO-PREV-STATUS``.
 
 
   nim_node (optional, dict, None)
@@ -103,6 +105,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the NIM concept and command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html, https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_updateios.html.
 
 
 
@@ -145,7 +152,7 @@ msg (always, str, NIM updateios operation completed successfully)
   The execution message.
 
 
-targets (always, str, ['vios1', 'vios2, vios3', '...'])
+targets (always, list, ['vios1', 'vios2, vios3', '...'])
   List of VIOSes actually targeted for the operation.
 
 
@@ -212,7 +219,7 @@ meta (always, dict, )
 
 
       cmd (If the command was run., str, )
-        Command exectued.
+        Command executed.
 
 
       stdout (If the command was run., str, )

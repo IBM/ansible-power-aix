@@ -1,8 +1,8 @@
 .. _nim_suma_module:
 
 
-nim_suma -- Download fixes, SP or TL on an AIX server
-=====================================================
+nim_suma -- Use NIM to download fixes, SP or TL from IBM Fix Central website.
+=============================================================================
 
 .. contents::
    :local:
@@ -12,9 +12,9 @@ nim_suma -- Download fixes, SP or TL on an AIX server
 Synopsis
 --------
 
-Creates a task to automate the download of technology level (TL) and service pack (SP) from a fix server using the Service Update Management Assistant (SUMA). It can create the NIM resource.
+Use the Service Update Management Assistant (SUMA) to download fixes available to update specified target systems up to a specific technology levels (TL) or service packs (SP) level. The fixes are downloaded from the IBM Fix Central website and the related NIM resource is created on the NIM master. The user can then run another task to install the systems with this new resource.
 
-Log file is /var/adm/ansible/nim_suma_debug.log.
+Updates are downloaded based on the lowest technical level of all target systems.
 
 
 
@@ -31,73 +31,83 @@ Parameters
 ----------
 
   action (optional, str, preview)
-    Controls what is performed.
+    Controls the SUMA action to be performed.
 
-    ``download`` to download fixes and define the NIM resource.
+    ``download`` specifies to download fixes and define the NIM resource.
 
-    ``preview``  to execute all the checks without downloading the fixes.
+    ``preview`` specifies to execute all the checks without downloading the fixes.
 
 
   targets (True, list, None)
     Specifies the NIM clients to perform the action on.
 
-    ``foo*`` designates all the NIM clients with name starting by ``foo``.
+    ``foo*`` specifies all the NIM clients with name starting by ``foo``.
 
-    ``foo[2:4]`` designates the NIM clients among foo2, foo3 and foo4.
+    ``foo[2:4]`` specifies the NIM clients among foo2, foo3 and foo4.
 
-    ``*`` or ``all`` designates all the NIM clients.
+    ``*`` or ``ALL`` specifies all the NIM clients.
+
+    Can be empty.
+
+    But it cannot be empty when *oslevel* is set to a Service Pack.
 
 
   oslevel (optional, str, Latest)
-    Specifies the Operating System level to update to;
+    Specifies the Operating System level to build the resource to update to;
 
-    ``Latest`` indicates the latest SP suma can update the targets to.
+    ``Latest`` specifies to update the target to the latest SP suma can update for the current TL.
 
-    ``xxxx-xx(-00-0000``) sepcifies a TL.
+    ``xxxx-xx(-00-0000``) specifies to update the target to a specific TL.
 
-    ``xxxx-xx-xx-xxxx`` or ``xxxx-xx-xx`` specifies a SP.
+    ``xxxx-xx-xx-xxxx`` or ``xxxx-xx-xx`` specifies to update the target to a specific SP.
 
     Required when *action=download* or *action=preview*.
+
+    When target list is empty *targets=[]*, then *oslevel* cannot be empty *oslevel=""* or *oslevel=Latest*.
 
 
   lpp_source_name (optional, str, None)
-    Name of the lpp_source NIM resource.
+    Name of the lpp_source NIM resource to create when *action=download*.
 
-    Required when *action=download* or *action=preview*.
+    When not specified the lpp_source_name is returned.
 
 
   download_dir (optional, path, None)
     Absolute directory path where to download the packages on the NIM server.
 
-    If not set it looks for existing NIM ressource matching *lpp_source_name* and use its location.
+    When not set, if a NIM resource *lpp_source_name* exists then it is the resource's location.
 
-    If no NIM ressource is found, the path is set to /usr/sys/inst.images
+    If no NIM ressource exists, then it is set to /usr/sys/inst.images
 
     Can be used if *action=download* or *action=preview*.
 
 
   download_only (optional, bool, False)
-    Download only. Do not create the NIM resource.
+    Specifies to perform the preview and download operation only. Do not create the NIM resource.
 
     Can be used if *action=download*
 
 
   extend_fs (optional, bool, True)
-    Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
+    Specifies to automatically extends the filesystem if extra space is needed.
+
+    When *extend_fs=no* and additional space is required for the download, no download occurs.
+
+    When set, a filesystem could have increased while the task returns *changed=False*.
 
     Can be used if *action=download* or *action=preview*.
 
 
   description (optional, str, None)
-    Display name for SUMA task.
+    Specifies the display name for SUMA task. This is used when viewing existing SUMA tasks in SMIT for example.
 
-    If not set the will be labelled '*action* request for oslevel *oslevel*'
+    If not set they will be labelled as '*action* request for oslevel *oslevel*'.
 
     Can be used for *action=download* or *action=preview*.
 
 
   metadata_dir (optional, path, /var/adm/ansible/metadata)
-    Directory where metadata files are downloaded.
+    Specifies the directory where metadata files are downloaded.
 
     Can be used if *action=download* or *action=preview* when *oslevel* is not exact, for example *oslevel=Latest*.
 
@@ -105,6 +115,16 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - The **/var/adm/ras/suma.log** file on your system contains detailed results from running the SUMA command.
+   - The **/var/adm/ras/suma_dl.log** file on your system contains a list of files that have been downloaded.
+   - When you configure SUMA in an AIX logical partition (LPAR) or as the NIM master, it establishes a connection to the fix distribution website and downloads the available service update. The fix distribution website is an IBM server with the domain name of esupport.ibm.com. If your configuration contains a firewall that blocks the connection to the fix distribution website, you must customize the firewall rules to allow SUMA to connect to the following IP addresses 129.42.56.189, 129.42.60.189, 129.42.54.189. SUMA connects to one of these IP addresses based on your geography.
+   - You can refer to the IBM documentation for additional information on the SUMA command and configuration settings at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/suma.html.
+   - If you hit the known bug that prevents suma from running successfully, contact IBM AIX support and request and ifix for this problem (APAR IJ06197 SUMA MAY CAUSE A NULLPOINTEREXCEPTION) at http://www-01.ibm.com/support/docview.wss?uid=isg1IJ06197.
+   - To get assistance for SUMA errors through AIX Support refer to https://www-01.ibm.com/support/docview.wss?uid=ibm10719985.
 
 
 
@@ -115,11 +135,11 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Check for, and install, system updates
+    - name: Check, download and create the NIM resource to install latest updates
       nim_suma:
         action: download
         targets: nimclient01
-        oslevel: latest
+        oslevel: Latest
         download_dir: /usr/sys/inst.images
 
 
@@ -135,8 +155,20 @@ lpp_source_name (always, str, quimby01_lpp_source)
   Name of the NIM Lpp Source resource used.
 
 
-target_list (always, list, ['nimclient01', 'nimclient02', '...'])
+targets (always, list, ['nimclient01', 'nimclient02', '...'])
   Status information.
+
+
+cmd (if a command was run., str, )
+  The command executed.
+
+
+stdout (always, str, )
+  The standard output of the command.
+
+
+stderr (always, str, )
+  The standard error of the command.
 
 
 meta (always, dict, {'meta': {'messages': ['Unavailable client: nimclient02', 'The latest SP of 7200-02 is: 7200-02-01-1732', '...']}})
@@ -144,7 +176,7 @@ meta (always, dict, {'meta': {'messages': ['Unavailable client: nimclient02', 'T
 
 
   messages (always, list, Unavailable client: nimclient02)
-    Details on errors/warnings/inforamtion
+    Details on errors/warnings/information
 
 
 

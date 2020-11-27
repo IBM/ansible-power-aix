@@ -1,8 +1,8 @@
 .. _nim_vios_alt_disk_module:
 
 
-nim_vios_alt_disk -- Create/Cleanup an alternate rootvg disk
-============================================================
+nim_vios_alt_disk -- Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.
+=========================================================================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ nim_vios_alt_disk -- Create/Cleanup an alternate rootvg disk
 Synopsis
 --------
 
-Copy the rootvg to an alternate disk or cleanup an existing one.
+Performs alternate disk copy and cleanup operations through the Network Installation Management (NIM) copying the root volume group to an alternate disk or cleaning an existing copy.
 
 
 
@@ -31,35 +31,29 @@ Parameters
   action (True, str, None)
     Specifies the operation to perform on the VIOS.
 
+    Specifies the action to perform.
+
     ``alt_disk_copy`` to perform and alternate disk copy.
 
     ``alt_disk_clean`` to cleanup an existing alternate disk copy.
 
 
   targets (True, list, None)
-    NIM VIOS targets.
+    Specifies the NIM VIOS clients to perform the action on.
 
-    Use a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.
+    Uses a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.
+
+    When no target disks is specified, the alternate disk copy is performed to only one alternate disk even if the rootvg contains multiple disks.
 
 
   time_limit (optional, str, None)
-    Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped; the format is ``mm/dd/yyyy hh:mm``.
+    Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped.
 
-
-  vars (optional, dict, None)
-    Specifies additional parameters.
-
-
-  vios_status (optional, dict, None)
-    Specifies the result of a previous operation.
-
-
-  nim_node (optional, dict, None)
-    Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
+    The valid format is ``mm/dd/yyyy hh:mm``.
 
 
   disk_size_policy (optional, str, nearest)
-    Specifies how to choose the alternate disk if not specified.
+    Specifies how to choose the alternate disk when not specified.
 
     ``minimize`` smallest disk that can be selected.
 
@@ -76,6 +70,18 @@ Parameters
     Stops any active rootvg mirroring during the alternate disk copy.
 
 
+  vios_status (optional, dict, None)
+    Specifies the result of a previous operation.
+
+    If set then the *vios_status* of a target tuple must contain ``SUCCESS`` to attempt update.
+
+    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to ``SKIPPED-NO-PREV-STATUS``.
+
+
+  nim_node (optional, dict, None)
+    Allows to pass along NIM node info from a previous task to another so that it discovers NIM info only one time for all tasks. The current task might update the NIM info it needs.
+
+
 
 
 
@@ -84,7 +90,8 @@ Notes
 
 .. note::
    - ``alt_disk_copy`` only backs up mounted file systems. Mount all file systems that you want to back up.
-   - when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks
+   - When no target disks is specified, the alternate disk copy is performed to only one alternate disk even if the rootvg contains multiple disks.
+   - You can refer to the IBM documentation for additional information on the NIM concept and command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html, https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_alt_disk_install.html.
 
 
 
@@ -131,6 +138,10 @@ nim_node (always, dict, )
 
 status (always, dict, )
   Status for each VIOS tuples (dictionary key).
+
+
+output (always, dict, )
+  Detailed information on the module execution.
 
 
 

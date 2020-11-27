@@ -1,8 +1,8 @@
 .. _lpp_facts_module:
 
 
-lpp_facts -- Returns installed software products as facts
-=========================================================
+lpp_facts -- Returns installed software products as facts.
+==========================================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ lpp_facts -- Returns installed software products as facts
 Synopsis
 --------
 
-Returns information about installed filesets or fileset updates.
+Lists and returns information about installed filesets or fileset updates in Ansible facts.
 
 
 
@@ -61,6 +61,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the lslpp command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lslpp.html.
 
 
 
@@ -116,11 +121,11 @@ ansible_facts (always, complex, )
 
 
       vrmf (always, dict, "vrmf": { "fix": 0, "mod": 3, "rel": 2, "ver": 7 })
-        Fileset vrmf
+        Fileset Version Release Modification Fix (vrmf).
 
 
       state (always, str, )
-        State of the fileset on the system
+        State of the fileset on the system.
 
         ``applied`` specifies that the fileset is installed on the system.
 
@@ -140,11 +145,11 @@ ansible_facts (always, complex, )
 
 
       ptf (when available, str, )
-        Program temporary fix
+        Program temporary fix.
 
 
       type (always, str, )
-        Fileset type
+        Fileset type.
 
         ``install`` specifies install image (base level).
 
@@ -156,15 +161,15 @@ ansible_facts (always, complex, )
 
 
       description (always, str, )
-        Fileset description
+        Fileset description.
 
 
       emgr_locked (always, bool, )
-        Specifies whether fileset is locked by the interim fix manager
+        Specifies whether fileset is locked by the interim fix manager.
 
 
       sources (always, list, ['/etc/objrepos'])
-        Source paths
+        Source paths.
 
 
 

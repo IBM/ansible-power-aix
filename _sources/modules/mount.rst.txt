@@ -1,8 +1,8 @@
 .. _mount_module:
 
 
-mount -- Mounts/Unmounts a Filesystem/Device
-============================================
+mount -- Mounts/unmounts a filesystem or device on AIX.
+=======================================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ mount -- Mounts/Unmounts a Filesystem/Device
 Synopsis
 --------
 
-This module mounts/unmounts a Filesystem/Device on the specified path
+This module mounts/unmounts a Filesystem/Device on the specified path.
 
 
 
@@ -22,6 +22,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- User with priviledged authorizations.
 
 
 
@@ -29,19 +30,33 @@ Parameters
 ----------
 
   state (optional, str, mount)
-    Specifies the module to perform mount/unmount operation
+    Specifies the action to be performed.
+
+    ``mount`` makes a file system available for use at a specified location (the mount point). In addition, you can use it to build other file trees made up of directory and file mounts. If no parameter is specified, it gets information for the mounted file systems.
+
+    ``umount`` unmounts a previously mounted device, directory, file, or file system
+
+
+  mount_dir (optional, str, None)
+    Specifies the directory path to mount/unmount.
+
+
+  mount_over_dir (optional, str, None)
+    Directory path on which the mount_dir should be mounted.
+
+    If you specify only this directory, it looks up the associated device, directory, or file and mounts/unmounts it.
 
 
   node (optional, str, None)
-    Specifies the node holding the directory/filesystem/device you want to mount/unmount.
+    Specifies the remote node holding the directory/filesystem/device to be mounted/unmounted.
 
 
-  mount_all (optional, str, none)
-    When *state=mount* and *mount_all=all*, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute
+  mount_all (optional, str, None)
+    When *state=mount* and *mount_all=all*, mounts all file systems in the /etc/filesystems file with stanzas that contain the true mount attribute.
 
-    When *state=umount* and *mount_all=all*, unmounts all mounted filesystem
+    When *state=umount* and *mount_all=all*, unmounts all mounted filesystem.
 
-    When *state=umount* and *mount_all=remote*, unmounts all remote mounted filesystems
+    When *state=umount* and *mount_all=remote*, unmounts all remote mounted filesystems.
 
 
   force (optional, bool, False)
@@ -49,40 +64,38 @@ Parameters
 
 
   alternate_fs (optional, str, None)
-    Mounts on a file of an alternate file system, other than the /etc/filesystems file
+    Mounts on a file of an alternate file system, other than the /etc/filesystems file.
 
 
   removable_fs (optional, bool, False)
-    Mounts a file system as a removable file system
+    Mounts a file system as a removable file system.
 
 
   read_only (optional, bool, False)
-    Mounts a file system as a read-only file system
+    Mounts a file system as a read-only file system.
 
 
   fs_type (optional, str, None)
-    Mounts/unmounts all stanzas in the /etc/filesystems file that contain the type=fs_type attribute
+    It specifies the name of the group to mount. It mounts/unmounts stanzas in the **/etc/filesystems** file that contain the type=``fs_type`` attribute.
 
 
   vfsname (optional, str, None)
-    Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file
+    Specifies that the file system is defined by the vfsname parameter in the /etc/vfs file.
 
 
   options (optional, str, None)
     Specifies options. Options should be of the form <option-name>=<value> and multiple options should be separated only by a comma.
 
 
-  mount_dir (optional, str, None)
-    Directory path to be mounted/unmounted
-
-
-  mount_over_dir (optional, str, None)
-    Directory path on which the mount_dir should be mounted.
 
 
 
+Notes
+-----
 
-
+.. note::
+   - This module runs commands that require privileged operations. For more information about authorizations and privileges, see Privileged Command Database in Security. For a list of privileges and the authorizations associated with this command, see the lssecattr command or the getcmdattr subcommand documentation.
+   - You can refer to the IBM documentation for additional information on the commands used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mount.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/u_commands/umount.html.
 
 
 
@@ -93,6 +106,9 @@ Examples
 .. code-block:: yaml+jinja
 
     
+    - name: List mounted filesystems
+      ibm.power_aix.mount:
+
     - name: Mount filesystems
       ibm.power_aix.mount:
         mount_dir: /dev/hd1
@@ -116,6 +132,10 @@ Return Values
 
 msg (always, str, )
   The execution message.
+
+
+cmd (always, str, )
+  The command executed.
 
 
 rc (If the command failed., int, )

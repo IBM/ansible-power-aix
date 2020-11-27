@@ -66,7 +66,7 @@ Parameters
 
 
   abbr_fmt_file (optional, str, None)
-    When *mode=save* or *mode=apply*, specifies the file where the security settings needs to be saved in abbreviated format.
+    When *mode=save* or *mode=apply*, specifies the file where the security settings need to be saved in abbreviated format.
 
 
   norm_fmt_file (optional, str, None)
@@ -76,6 +76,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the aixpert command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/aixpert.html.
 
 
 

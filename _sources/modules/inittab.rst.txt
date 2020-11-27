@@ -1,8 +1,8 @@
 .. _inittab_module:
 
 
-inittab -- Create/change/remove entries in the inittab file on AIX
-==================================================================
+inittab -- Manage inittab entries on AIX.
+=========================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ inittab -- Create/change/remove entries in the inittab file on AIX
 Synopsis
 --------
 
-This module facilitates the creation/change/removal of entries in the /etc/inittab file.
+It allows to create, change and remove entries in the **/etc/inittab** file.
 
 
 
@@ -32,31 +32,33 @@ Parameters
   state (True, str, None)
     Specifies the action to be performed for the entry.
 
-    ``present`` to create entry with provided *name*, *runlevel*, *action* and *command* in the /etc/inittab file.
+    ``present`` creates the entry in the /etc/inittab file.
 
-    ``absent`` to delete entry with provided *name*. If entry is not present then message will be displayed for the same.
+    ``absent`` deletes an existing entry.
 
-    ``modify`` to change the entry with provided value of the given entry.
+    ``modify`` changes an existing entry.
 
 
   name (True, str, None)
-    Entry should be specified for which the action is to taken
+    Specifies the name of the entry to manage.
 
 
   runlevel (True, str, None)
-    Defines the run levels in which the *name* can be processed.
+    Specifies the run levels in which the *name* can be processed.
+
+    The format is the level number next to each other without separators, such as ``'235789'``.
 
 
   action (True, str, None)
-    Describes what action init has to perform with *name*.
+    Specifies the action init will perform.
 
 
   command (True, str, None)
-    Specifies the command that has to run.
+    Specifies the command to run.
 
 
   insertafter (optional, str, None)
-    Specifies the identifier of the entry after which new entry is to be created.
+    Specifies the name of the entry to write the new entry after.
 
 
 

@@ -81,6 +81,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the commands used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/cfgmgr.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chdev.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmdev.html,
 
 
 

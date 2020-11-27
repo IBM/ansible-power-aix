@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>inittab – Create/change/remove entries in the inittab file on AIX &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>inittab – Manage inittab entries on AIX. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="installp – Installs and updates software" href="installp.html" />
-    <link rel="prev" title="group – Create new group or change/remove attributes of group on AIX" href="group.html" /> 
+    <link rel="next" title="installp – Installs and updates software." href="installp.html" />
+    <link rel="prev" title="group – Manage presence, attributes and member of AIX groups." href="group.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,13 +97,14 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">inittab – Create/change/remove entries in the inittab file on AIX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">inittab – Manage inittab entries on AIX.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -112,22 +113,24 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +199,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>inittab – Create/change/remove entries in the inittab file on AIX</li>
+      <li>inittab – Manage inittab entries on AIX.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -217,8 +220,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="inittab-create-change-remove-entries-in-the-inittab-file-on-aix">
-<span id="inittab-module"></span><h1>inittab – Create/change/remove entries in the inittab file on AIX<a class="headerlink" href="#inittab-create-change-remove-entries-in-the-inittab-file-on-aix" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="inittab-manage-inittab-entries-on-aix">
+<span id="inittab-module"></span><h1>inittab – Manage inittab entries on AIX.<a class="headerlink" href="#inittab-manage-inittab-entries-on-aix" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -231,7 +234,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module facilitates the creation/change/removal of entries in the /etc/inittab file.</p>
+<p>It allows to create, change and remove entries in the <strong>/etc/inittab</strong> file.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -247,19 +250,20 @@
 <blockquote>
 <div><dl>
 <dt>state (True, str, None)</dt><dd><p>Specifies the action to be performed for the entry.</p>
-<p><code class="docutils literal notranslate"><span class="pre">present</span></code> to create entry with provided <em>name</em>, <em>runlevel</em>, <em>action</em> and <em>command</em> in the /etc/inittab file.</p>
-<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> to delete entry with provided <em>name</em>. If entry is not present then message will be displayed for the same.</p>
-<p><code class="docutils literal notranslate"><span class="pre">modify</span></code> to change the entry with provided value of the given entry.</p>
+<p><code class="docutils literal notranslate"><span class="pre">present</span></code> creates the entry in the /etc/inittab file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">absent</span></code> deletes an existing entry.</p>
+<p><code class="docutils literal notranslate"><span class="pre">modify</span></code> changes an existing entry.</p>
 </dd>
-<dt>name (True, str, None)</dt><dd><p>Entry should be specified for which the action is to taken</p>
+<dt>name (True, str, None)</dt><dd><p>Specifies the name of the entry to manage.</p>
 </dd>
-<dt>runlevel (True, str, None)</dt><dd><p>Defines the run levels in which the <em>name</em> can be processed.</p>
+<dt>runlevel (True, str, None)</dt><dd><p>Specifies the run levels in which the <em>name</em> can be processed.</p>
+<p>The format is the level number next to each other without separators, such as <code class="docutils literal notranslate"><span class="pre">'235789'</span></code>.</p>
 </dd>
-<dt>action (True, str, None)</dt><dd><p>Describes what action init has to perform with <em>name</em>.</p>
+<dt>action (True, str, None)</dt><dd><p>Specifies the action init will perform.</p>
 </dd>
-<dt>command (True, str, None)</dt><dd><p>Specifies the command that has to run.</p>
+<dt>command (True, str, None)</dt><dd><p>Specifies the command to run.</p>
 </dd>
-<dt>insertafter (optional, str, None)</dt><dd><p>Specifies the identifier of the entry after which new entry is to be created.</p>
+<dt>insertafter (optional, str, None)</dt><dd><p>Specifies the name of the entry to write the new entry after.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -321,10 +325,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="installp.html" class="btn btn-neutral float-right" title="installp – Installs and updates software" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="installp.html" class="btn btn-neutral float-right" title="installp – Installs and updates software." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="group.html" class="btn btn-neutral float-left" title="group – Create new group or change/remove attributes of group on AIX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="group.html" class="btn btn-neutral float-left" title="group – Manage presence, attributes and member of AIX groups." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

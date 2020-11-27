@@ -1,8 +1,8 @@
 .. _geninstall_module:
 
 
-geninstall -- Generic installer for various packaging formats
-=============================================================
+geninstall -- Generic installer for various packaging formats.
+==============================================================
 
 .. contents::
    :local:
@@ -30,8 +30,24 @@ The below requirements are needed on the host that executes this module.
 Parameters
 ----------
 
+  action (optional, str, install)
+    Controls what is performed.
+
+    ``install`` performs an install of the specified software.
+
+    ``uninstall`` performs an uninstall of the specified software.
+
+    ``list`` lists the contents of the media.
+
+
   device (optional, str, None)
-    The name of the device or directory.
+    Specifies the device or directory that contains the images to install.
+
+    The geninstall command searches for the images in the following paths /mount_point/installp/ppc (installp package), /mount_point/RPMS/ppc (RPM package), /mount_point/emgr/ppc (Interim fix packages for AIX), /mount_point/ISMP/ppc (ISMP packages for AIX).
+
+    If the paths do not exist, it searches in the base directory of the specific device. If the image names are not preceded by a prefix that indicates the image type, it identifies a type for the image.
+
+    If the paths exist and the image is not found in any path, and if the image does not contain any prefix, the image is treated as an RPM-formatted image.
 
 
   install_list (optional, list, [])
@@ -43,17 +59,7 @@ Parameters
 
 
   force (optional, bool, False)
-    Forces action.
-
-
-  action (optional, str, install)
-    Controls what is performed.
-
-    ``install`` performs an install of the specified software.
-
-    ``uninstall`` performs an uninstall of the specified software.
-
-    ``list`` lists the contents of the media.
+    Force the operation allowing to reinstall a package that is already installed, or to install a package that is older than the currently installed version.
 
 
   agree_licenses (optional, bool, False)
@@ -67,6 +73,11 @@ Parameters
 
 
 
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the geninstall command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/g_commands/geninstall.html
 
 
 
@@ -96,12 +107,20 @@ msg (always, str, Invalid parameter: install_list cannot be empty)
   The execution message.
 
 
+cmd (always, str, )
+  The command executed.
+
+
+rc (When the command is executed., int, )
+  The command return code.
+
+
 stdout (always, str, bin:bin:::J:::::::bin Product::::\nsbin:sbin:::J:::::::sbin Product::::)
-  The standard output
+  The standard output of the command.
 
 
 stderr (always, str, 0503-105 geninstall: The device or directory: /dev/cd0 does not exist.)
-  The standard error
+  The standard error of the command.
 
 
 

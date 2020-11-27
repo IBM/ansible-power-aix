@@ -1,8 +1,8 @@
 .. _lvol_module:
 
 
-lvol -- Create/Delete logical volume or change characteristics of logical volume on AIX
-=======================================================================================
+lvol -- Configure AIX LVM logical volumes
+=========================================
 
 .. contents::
    :local:
@@ -12,7 +12,7 @@ lvol -- Create/Delete logical volume or change characteristics of logical volume
 Synopsis
 --------
 
-This module facilitates the creation of a new logical volume with provided characteristics, the modification of characteristics of existing logical volume and its deletion.
+This module creates, removes and modifies attributes of LVM logical volumes.
 
 
 
@@ -30,27 +30,39 @@ Parameters
 ----------
 
   state (True, str, None)
-    Specifies the action to be performed for the logical volume.
+    Specifies the action to be performed on the logical volume.
 
-    ``present`` to create logical volume with *lv_attributes* in the system. If volume is already present then attributes specified for the volume will be changed with the provided attributes.
+    ``present`` creates or modifies the logical volume if already exists with *lv_attributes*.
 
-    ``absent`` to delete logial volume with provided *name*. If volume is not present then message will be displayed for the same.
+    ``absent`` removes a logial volume.
 
 
   lv (True, str, None)
-    Logical volume name should be specified for which the action is to taken while removing or modifying
+    Specified the logical volume name.
 
 
-  vg (True, str, None)
-    The volume group of the concerned logical volume.
+  vg (optional, str, None)
+    Specifies the volume group name this logical volume is part of.
+
+    Required when *state=present*.
 
 
   lv_type (optional, str, jfs2)
-    Type of the logical volume.
+    Specifies the type of the logical volume to create.
+
+    The standard types are ``jfs`` for journaled file systems, ``jfslog`` for journaled file system logs, ``jfs2`` for enhanced journaled file system, ``jfs2log`` for enhanced journaled file system logs, ``paging`` for paging spaces.
+
+    But you can define other logical volume types with this flag.
+
+    You **cannot** create a striped logical volume of type ``boot``.
+
+    Can be used to create a logical volume, hence when *state=present*.
 
 
   size (optional, str, None)
-    Size of the concerned logical volume. Please check the valid sizes for mklv and chlv commands.
+    Specifies the size of the logical volume to create.
+
+    Can be used to create a logical volume, hence when *state=present*.
 
 
   extra_opts (optional, str, None)
@@ -62,30 +74,46 @@ Parameters
 
     Maximum value allowed is 3
 
+    Can be used to create a logical volume, hence when *state=present*.
+
 
   num_of_logical_partitions (optional, int, 1)
     Specifies the number of logical partitions
 
+    Can be used to create a logical volume, hence when *state=present*.
+
+
+  pv_list (optional, list, None)
+    List of pysical volumes.
+
+    Can be used to create a logical volume, hence when *state=present*.
+
 
   policy (optional, str, maximum)
-    Sets the inter-physical volume allocation policy
+    Specifies the inter-physical volume allocation policy. It is the number of physical volumes to extend across, using the volumes that provide the best allocation.
 
-    ``maximum`` Allocates across the maximum number of physical volumes.
+    ``maximum`` allocates across the maximum number of physical volumes.
 
-    ``minimum`` Allocates logical partitions across the minimum number of physical volumes.
+    ``minimum`` allocates logical partitions across the minimum number of physical volumes.
+
+    Can be used to create or modify a logical volume, hence when *state=present*.
 
 
   lv_new_name (optional, str, None)
-    New name of the logical volume if user wants to change the name of existing logical volume.
+    Specifies the name of the logical volume to change an existing logical volume.
 
-
-  phy_vol_list (optional, list, None)
-    List of pysical volumes.
+    Can be used to modify a logical volume, hence when *state=present*.
 
 
 
 
 
+Notes
+-----
+
+.. note::
+   - **Attention:** using *state=absent* destroys all data in the specified logical volumes. If the logical volume spans multiple physical volumes, the removal of only logical partitions on the physical volume can jeopardize the integrity of the entire logical volume.
+   - You can refer to the IBM documentation for additional information on the commands used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chlv.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mklv.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmlv.html.
 
 
 
@@ -130,8 +158,24 @@ Examples
 Return Values
 -------------
 
-msg (always, str, Logical volume is created SUCCESSFULLY: test1lv)
-  The execution message along with return code, output/error
+msg (always, str, Logical volume test1lv created.)
+  The execution message.
+
+
+cmd (always, str, )
+  The command executed.
+
+
+rc (When the command is executed., int, )
+  The command return code.
+
+
+stdout (always, str, )
+  The standard output of the command.
+
+
+stderr (always, str, )
+  The standard error of the command.
 
 
 

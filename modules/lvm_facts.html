@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mktcpip – Sets the required values for starting TCP/IP on a host. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>lvm_facts – Reports LVM information as facts. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mount – Mounts/unmounts a filesystem or device on AIX." href="mount.html" />
-    <link rel="prev" title="mkfilt – Activates or deactivates the filter rules." href="mkfilt.html" /> 
+    <link rel="next" title="lvol – Configure AIX LVM logical volumes" href="lvol.html" />
+    <link rel="prev" title="lvg – Configure AIX LVM volume groups" href="lvg.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -109,19 +109,18 @@
 <li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mktcpip – Sets the required values for starting TCP/IP on a host.</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lvm_facts – Reports LVM information as facts.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
@@ -200,14 +199,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mktcpip – Sets the required values for starting TCP/IP on a host.</li>
+      <li>lvm_facts – Reports LVM information as facts.</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/mktcpip.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/lvm_facts.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -221,97 +220,139 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mktcpip-sets-the-required-values-for-starting-tcp-ip-on-a-host">
-<span id="mktcpip-module"></span><h1>mktcpip – Sets the required values for starting TCP/IP on a host.<a class="headerlink" href="#mktcpip-sets-the-required-values-for-starting-tcp-ip-on-a-host" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="lvm-facts-reports-lvm-information-as-facts">
+<span id="lvm-facts-module"></span><h1>lvm_facts – Reports LVM information as facts.<a class="headerlink" href="#lvm-facts-reports-lvm-information-as-facts" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module sets the required minimal values required for using TCP/IP on a host machine.</p>
-<p>These values are written to the configuration database.</p>
+<p>List and reports details about defined AIX Logical Volume Manager (LVM) components such as Physical volumes, Logical volumes and Volume groups in Ansible facts.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX &gt;= 7.1 TL3</p></li>
-<li><p>Python &gt;= 2.7</p></li>
+<li><p>AIX</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="simple">
-<dt>hostname (True, str, None)</dt><dd><p>Sets the name of the host.</p>
+<dt>name (optional, str, all)</dt><dd><p>Specifies the name of a LVM component.</p>
 </dd>
-<dt>address (True, str, None)</dt><dd><p>Sets the Internet address of the host.</p>
+<dt>component (optional, str, all)</dt><dd><p>Specifies the type of LVM component to report information. A(pv) specifies physical volume. A(lv) specifies logical volume. A(vg) specifies volume group. <code class="docutils literal notranslate"><span class="pre">all</span></code> specifies all previous LVM components to be reported.</p>
 </dd>
-<dt>interface (True, str, None)</dt><dd><p>Specifies a particular network interface.</p>
-</dd>
-<dt>netmask (optional, str, None)</dt><dd><p>Specifies the mask the gateway should use in determining the appropriate subnetwork for routing.</p>
-</dd>
-<dt>gateway (optional, str, None)</dt><dd><p>Adds the default gateway address to the routing table.</p>
-</dd>
-<dt>nameserver (optional, str, None)</dt><dd><p>Specifies the Internet address of the name server the host uses for name resolution.</p>
-</dd>
-<dt>domain (optional, str, None)</dt><dd><p>Specifies the domain name of the name server the host should use for name resolution.</p>
-</dd>
-<dt>start_daemons (optional, bool, False)</dt><dd><p>Starts the TCP/IP daemons.</p>
+<dt>lvm (optional, dict, {})</dt><dd><p>Users can provide the existing LVM facts to which the queried facts should be updated. If not specified, the LVM facts in the ansible_facts will be replaced.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
-<div class="section" id="notes">
-<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p>The mktcpip command currently supports IPv4 only.</p></li>
-<li><p>The <strong>/etc/resolv.conf</strong> file on your system contains the default system configuration database.</p></li>
-<li><p>The <strong>/etc/hosts</strong> file on your system contains the host name and IP address entries.</p></li>
-<li><p>You can refer to the IBM documentation for additional information on the commands used at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mktcpip.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mktcpip.html</a>.</p></li>
-</ul>
-</div>
-</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Set the required values for starting TCP/IP</span>
-  <span class="nt">mktcpip</span><span class="p">:</span>
-    <span class="nt">hostname</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fred.austin.century.com</span>
-    <span class="nt">address</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">192.9.200.4</span>
-    <span class="nt">interface</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">en0</span>
-    <span class="nt">nameserver</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">192.9.200.1</span>
-    <span class="nt">domain</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">austin.century.com</span>
-    <span class="nt">start_daemons</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather all lvm facts</span>
+  <span class="nt">lvm_facts</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather VG facts</span>
+  <span class="nt">lvm_facts</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">all</span>
+    <span class="nt">component</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">vg</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Update PV facts to existing LVM facts</span>
+  <span class="nt">lvm_facts</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">all</span>
+    <span class="nt">component</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pv</span>
+    <span class="nt">lvm</span><span class="p">:</span> <span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">ansible_facts.LVM</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Gather LV facts</span>
+  <span class="nt">lvm_facts</span><span class="p">:</span>
+    <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">all</span>
+    <span class="nt">component</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">lv</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>ansible_facts (always, complex, )</dt><dd><p>Facts to add to ansible_facts about the LVM components on the system.</p>
+<dl>
+<dt>lvm (success, dict, )</dt><dd><p>Contains a list of VGs, PVs and LVs.</p>
+<dl>
+<dt>VGs (success, dict, )</dt><dd><p>Contains the list of volume groups on the system.</p>
 <dl class="simple">
-<dt>msg (always, str, Command ‘mktcpip -h quimby01.aus.stglabs.ibm.com -a 9.3.149.150 -i en1’ successful.)</dt><dd><p>The execution message.</p>
+<dt>name (always, str, rootvg)</dt><dd><p>Volume Group name.</p>
 </dd>
-<dt>cmd (always, str, )</dt><dd><p>The command executed.</p>
+<dt>vg_state (always, str, active)</dt><dd><p>State of the Volume Group.</p>
 </dd>
-<dt>rc (When the command is executed., int, )</dt><dd><p>The command return code.</p>
+<dt>num_lvs (always, str, 2)</dt><dd><p>Number of logical volumes.</p>
 </dd>
-<dt>stdout (always, str, en1n quimby01.aus.stglabs.ibm.comn inet0 changedn en1 changed)</dt><dd><p>The standard output.</p>
+<dt>num_pvs (always, str, 2)</dt><dd><p>Number of physical volumes.</p>
 </dd>
-<dt>stderr (always, str, en1n x.x.x.x is an invalid address.n /usr/sbin/mktcpip: Problem with command: hostent, return code = 1n)</dt><dd><p>The standard error.</p>
+<dt>total_pps (always, str, 952)</dt><dd><p>Total number of physical partitions within the volume group.</p>
+</dd>
+<dt>free_pps (always, str, 100)</dt><dd><p>Number of physical partitions not allocated.</p>
+</dd>
+<dt>pp_size (always, str, 64 megabyte (s))</dt><dd><p>Size of each physical partition.</p>
+</dd>
+<dt>size_g (always, str, 18.99)</dt><dd><p>Total size of the volume group in gigabytes.</p>
+</dd>
+<dt>free_g (always, str, 10.6)</dt><dd><p>Free space of the volume group in gigabytes.</p>
+</dd>
+</dl>
+</dd>
+<dt>PVs (success, dict, )</dt><dd><p>Contains a list of physical volumes on the system.</p>
+<dl class="simple">
+<dt>name (always, str, hdisk0)</dt><dd><p>PV name</p>
+</dd>
+<dt>vg (always, str, rootvg)</dt><dd><p>Volume group to which the physical volume has been assigned.</p>
+</dd>
+<dt>pv_state (always, str, active)</dt><dd><p>Physical volume state.</p>
+</dd>
+<dt>total_pps (always, str, 476)</dt><dd><p>Total number of physical partitions in the physical volume.</p>
+</dd>
+<dt>free_pps (always, str, 130)</dt><dd><p>Number of free physical partitions in the physical volume.</p>
+</dd>
+<dt>pp_size (always, str, 64 megabyte (s))</dt><dd><p>Size of each physical partition.</p>
+</dd>
+<dt>size_g (always, str, 18.99)</dt><dd><p>Total size of the physical volume in gigabytes.</p>
+</dd>
+<dt>free_g (always, str, 10.6)</dt><dd><p>Free space of the physical volume in gigabytes.</p>
+</dd>
+</dl>
+</dd>
+<dt>LVs (success, dict, )</dt><dd><p>Contains a list of logical volumes on the system.</p>
+<dl class="simple">
+<dt>name (always, str, hd1)</dt><dd><p>Logical volume name.</p>
+</dd>
+<dt>vg (always, str, rootvg)</dt><dd><p>Volume group to which the Logical Volume belongs to.</p>
+</dd>
+<dt>lv_state (always, str, active)</dt><dd><p>Logical Volume state.</p>
+</dd>
+<dt>type (always, str, jfs2)</dt><dd><p>Logical volume type.</p>
+</dd>
+<dt>LPs (always, str, 476)</dt><dd><p>Total number of logical partitions in the logical volume.</p>
+</dd>
+<dt>PPs (always, str, 130)</dt><dd><p>Total number of physical partitions in the logical volume.</p>
+</dd>
+<dt>PVs (always, str, 2)</dt><dd><p>Number of physical volumes used by the logical volume.</p>
+</dd>
+<dt>mount_point (always, str, /home)</dt><dd><p>File system mount point for the logical volume, if applicable.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -333,10 +374,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mount.html" class="btn btn-neutral float-right" title="mount – Mounts/unmounts a filesystem or device on AIX." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="lvol.html" class="btn btn-neutral float-right" title="lvol – Configure AIX LVM logical volumes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mkfilt.html" class="btn btn-neutral float-left" title="mkfilt – Activates or deactivates the filter rules." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="lvg.html" class="btn btn-neutral float-left" title="lvg – Configure AIX LVM volume groups" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

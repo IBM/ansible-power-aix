@@ -1,8 +1,8 @@
 .. _flrtvc_module:
 
 
-flrtvc -- Generate FLRTVC report, download and install efix.
-============================================================
+flrtvc -- Generate FLRTVC report, download and install security and HIPER fixes.
+================================================================================
 
 .. contents::
    :local:
@@ -12,7 +12,13 @@ flrtvc -- Generate FLRTVC report, download and install efix.
 Synopsis
 --------
 
-Creates a task to check targets vulnerability against available fixes, and apply necessary fixes. It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker Script to generates a report. It parses the report, downloads the fixes, checks their versions and if some files are locked. Then it installs the remaining fixes. In case of inter-locking file you could run this several times.
+Applies known security and HIPER (High Impact PERvasive) fixes on your system based on its inventory ensuring the systems are at supported and secure levels.
+
+It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generate a report. It parses this report, downloads the required fixes, extracts the files and checks their versions against installed software levels. It also checks for file locking preventing fix installation. It rejects fixes that do not match these requirements and installs the remaining.
+
+In case of inter-locking file(s) you might want run against the task.
+
+You will get the list of installed and rejected fixes in the results meta data.
 
 
 
@@ -29,27 +35,29 @@ Parameters
 ----------
 
   apar (optional, str, None)
-    Type of APAR to check or download.
+    Type of APAR to check against.
 
-    ``sec`` Security vulnerabilities.
+    ``sec`` stands for Security vulnerabilities.
 
-    ``hiper`` Corrections to High Impact PERvasive threats.
+    ``hiper`` stands for Corrections to High Impact PERvasive threats.
 
-    ``all`` Same behavior as None, both ``sec`` and ``hiper`` vulnerabilities.
+    ``all`` has the same behavior as ``None`` hence both ``sec`` and ``hiper`` vulnerabilities.
 
 
   filesets (optional, str, None)
-    Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
+    Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified phrase will be checked and so updated.
 
 
   csv (optional, str, None)
     Path to a APAR CSV file containing the description of the ``sec`` and ``hiper`` fixes.
 
-    This file is usually transferred from the fix server; this rather big transfer can be avoided by specifying an already transferred file.
+    This file is usually transferred from the Fix Central server; you can avoid this rather big transfer by specifying the path to an already transferred file.
 
 
   path (optional, str, /var/adm/ansible)
-    Specifies the directory to save the FLRTVC report. All temporary files such as previously installed filesets, fixes lists and downloaded fixes files will be stored in the working subdirectory named '*path*/work'.
+    Specifies the directory to save the FLRTVC report.
+
+    All temporary files such as installed filesets, fixes listings and downloaded fixes files are stored in the working subdirectory named '*path*/work'.
 
 
   save_report (optional, bool, False)
@@ -58,6 +66,8 @@ Parameters
 
   verbose (optional, bool, False)
     Generate full FLRTVC reporting (verbose mode).
+
+    It runs the FLRTVC script a second time to save the full report into file. So this option impacts the execution performance.
 
 
   force (optional, bool, False)
@@ -69,22 +79,34 @@ Parameters
 
 
   check_only (optional, bool, False)
-    Specifies to only check if fixes are already applied on the targets. No download or install operations.
+    Specifies to only check if fixes are already applied on the targets.
+
+    **No download or installation** operations will be performed.
 
 
   download_only (optional, bool, False)
-    Specifies to perform check and download operation, do not install anything.
+    Specifies to perform check and download operation only.
+
+    **No installation** will be performed.
 
 
   extend_fs (optional, bool, True)
-    Specifies to increase filesystem size of the working directory if needed.
+    Specifies to increase filesystem size of the working directory when extra space is needed.
 
-    If set a filesystem of the host could have increased even if it returns *changed=False*.
-
-
+    When set, a filesystem could have increased while the task returns *changed=False*.
 
 
 
+
+
+Notes
+-----
+
+.. note::
+   - Refer to the FLRTVC page for detail on the sctipt https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html
+   - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file. It is downloaded from https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip.
+   - The script requires ksh93 to use.
+   - **v0.8.1** is the current version of the script, depending on changes, this module might need to be updated.
 
 
 
@@ -97,15 +119,15 @@ Examples
     
     - name: Download patches for security vulnerabilities
       flrtvc:
-        path: /usr/sys/inst.images
-        verbose: yes
         apar: sec
+        path: /usr/sys/inst.images
         download_only: yes
 
     - name: Install both sec and hyper patches for all filesets starting with devices.fcp
       flrtvc:
-        path: /usr/sys/inst
         filesets: devices.fcp.*
+        path: /usr/sys/inst
+        save_report: yes
         verbose: yes
         force: no
         clean: no
@@ -123,36 +145,40 @@ meta (always, dict, {'meta': {'0.report': ['Fileset|Current Version|Type|EFix In
   Detailed information on the module execution.
 
 
-  messages (always, list, see below)
+  messages (always, list, see sample of meta)
     Details on errors/warnings
 
 
-  0.report (if the FLRTVC script run succeeds, list, see below)
-    Output of the FLRTVC script, report or details on flrtvc error if any.
+  0.report (if the FLRTVC script succeeds, list, see sample of meta)
+    Output of the FLRTVC script, report and details on flrtvc error if any.
 
 
-  1.parse (if the parsing succeeds, list, see below)
-    List of URLs to download or details on parsing error if any.
+  1.parse (if the FLRTVC report parsing succeeds, list, see sample of meta)
+    List of URLs to download and details on parsing error if any.
 
 
-  2.discover (if the discovery succeeds, list, see below)
+  2.discover (if the URL downloads and epkgs listing succeed, list, see sample of meta)
     List of epkgs found in URLs.
 
+    URLs can be eFix or tar files or directories needing parsing.
 
-  3.download (if download succeeds, list, see below)
+
+  3.download (if download operation succeeds, list, see sample of meta)
     List of downloaded epkgs.
 
 
-  4.1.reject (if check succeeds, list, see below)
-    List of epkgs rejected, refer to messages and log file for reason.
+  4.1.reject (if check succeeds, list, see sample of meta)
+    List of epkgs rejected. Can be because installed levels do not match ifix required levels or because a file is or will be locked by an other ifix installation.
+
+    You should refer to messages or to log file for very detailed reason.
 
 
-  4.2.check (if check succeeds, list, see below)
-    List of epkgs following prerequisites.
+  4.2.check (if check succeeds, list, see sample of meta)
+    List of epkgs matching the prerequisites and trying to install.
 
 
-  5.install (if install succeeds, list, see below)
-    List of epkgs actually installed.
+  5.install (if install succeeds, list, see sample of meta)
+    List of epkgs actually installed on the system.
 
 
 

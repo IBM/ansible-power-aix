@@ -89,6 +89,7 @@ Notes
 .. note::
    - :ref:`alt_disk <alt_disk_module>` only backs up mounted file systems. Mount all file systems that you want to back up.
    - When no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks.
+   - You can refer to the IBM documentation for additional information on the commands used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_copy.html, https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_rootvg_op.html.
 
 
 

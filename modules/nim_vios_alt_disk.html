@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_vios_hc – Check if a pair of VIOSes can be updated" href="nim_vios_hc.html" />
-    <link rel="prev" title="nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level." href="nim_updateios.html" /> 
+    <link rel="next" title="nim_vios_hc – Check if a pair of VIOSes can be updated." href="nim_vios_hc.html" />
+    <link rel="prev" title="nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers." href="nim_updateios.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,26 +97,29 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
@@ -126,9 +129,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -197,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</li>
+      <li>nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -218,8 +221,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-vios-alt-disk-create-cleanup-an-alternate-rootvg-disk">
-<span id="nim-vios-alt-disk-module"></span><h1>nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk<a class="headerlink" href="#nim-vios-alt-disk-create-cleanup-an-alternate-rootvg-disk" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="nim-vios-alt-disk-uses-nim-to-create-cleanup-an-alternate-rootvg-disk-of-vios-clients">
+<span id="nim-vios-alt-disk-module"></span><h1>nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.<a class="headerlink" href="#nim-vios-alt-disk-uses-nim-to-create-cleanup-an-alternate-rootvg-disk-of-vios-clients" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
@@ -233,7 +236,7 @@
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Copy the rootvg to an alternate disk or cleanup an existing one.</p>
+<p>Performs alternate disk copy and cleanup operations through the Network Installation Management (NIM) copying the root volume group to an alternate disk or cleaning an existing copy.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -248,21 +251,18 @@
 <blockquote>
 <div><dl>
 <dt>action (True, str, None)</dt><dd><p>Specifies the operation to perform on the VIOS.</p>
+<p>Specifies the action to perform.</p>
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> to perform and alternate disk copy.</p>
 <p><code class="docutils literal notranslate"><span class="pre">alt_disk_clean</span></code> to cleanup an existing alternate disk copy.</p>
 </dd>
-<dt>targets (True, list, None)</dt><dd><p>NIM VIOS targets.</p>
-<p>Use a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.</p>
+<dt>targets (True, list, None)</dt><dd><p>Specifies the NIM VIOS clients to perform the action on.</p>
+<p>Uses a dictionary format, with the key being the VIOS NIM name and the value being the list of disks used for the alternate disk copy.</p>
+<p>When no target disks is specified, the alternate disk copy is performed to only one alternate disk even if the rootvg contains multiple disks.</p>
 </dd>
-<dt>time_limit (optional, str, None)</dt><dd><p>Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped; the format is <code class="docutils literal notranslate"><span class="pre">mm/dd/yyyy</span> <span class="pre">hh:mm</span></code>.</p>
+<dt>time_limit (optional, str, None)</dt><dd><p>Before starting the action, the actual date is compared to this parameter value; if it is greater then the task is stopped.</p>
+<p>The valid format is <code class="docutils literal notranslate"><span class="pre">mm/dd/yyyy</span> <span class="pre">hh:mm</span></code>.</p>
 </dd>
-<dt>vars (optional, dict, None)</dt><dd><p>Specifies additional parameters.</p>
-</dd>
-<dt>vios_status (optional, dict, None)</dt><dd><p>Specifies the result of a previous operation.</p>
-</dd>
-<dt>nim_node (optional, dict, None)</dt><dd><p>Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.</p>
-</dd>
-<dt>disk_size_policy (optional, str, nearest)</dt><dd><p>Specifies how to choose the alternate disk if not specified.</p>
+<dt>disk_size_policy (optional, str, nearest)</dt><dd><p>Specifies how to choose the alternate disk when not specified.</p>
 <p><code class="docutils literal notranslate"><span class="pre">minimize</span></code> smallest disk that can be selected.</p>
 <p><code class="docutils literal notranslate"><span class="pre">upper</span></code> first disk found bigger than the rootvg disk.</p>
 <p><code class="docutils literal notranslate"><span class="pre">lower</span></code> disk size less than rootvg disk size but big enough to contain the used PPs.</p>
@@ -270,6 +270,12 @@
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Forces removal of any existing alternate disk copy on target disks.</p>
 <p>Stops any active rootvg mirroring during the alternate disk copy.</p>
+</dd>
+<dt>vios_status (optional, dict, None)</dt><dd><p>Specifies the result of a previous operation.</p>
+<p>If set then the <em>vios_status</em> of a target tuple must contain <code class="docutils literal notranslate"><span class="pre">SUCCESS</span></code> to attempt update.</p>
+<p>If no <em>vios_status</em> value is found for a tuple, then returned <em>status</em> for this tuple is set to <code class="docutils literal notranslate"><span class="pre">SKIPPED-NO-PREV-STATUS</span></code>.</p>
+</dd>
+<dt>nim_node (optional, dict, None)</dt><dd><p>Allows to pass along NIM node info from a previous task to another so that it discovers NIM info only one time for all tasks. The current task might update the NIM info it needs.</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -280,7 +286,8 @@
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> only backs up mounted file systems. Mount all file systems that you want to back up.</p></li>
-<li><p>when no target is specified, copy is performed to only one alternate disk even if the rootvg contains multiple disks</p></li>
+<li><p>When no target disks is specified, the alternate disk copy is performed to only one alternate disk even if the rootvg contains multiple disks.</p></li>
+<li><p>You can refer to the IBM documentation for additional information on the NIM concept and command at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_alt_disk_install.html">https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_alt_disk_install.html</a>.</p></li>
 </ul>
 </div>
 </div>
@@ -318,6 +325,8 @@
 </dd>
 <dt>status (always, dict, )</dt><dd><p>Status for each VIOS tuples (dictionary key).</p>
 </dd>
+<dt>output (always, dict, )</dt><dd><p>Detailed information on the module execution.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="status">
@@ -343,10 +352,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_vios_hc.html" class="btn btn-neutral float-right" title="nim_vios_hc – Check if a pair of VIOSes can be updated" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nim_vios_hc.html" class="btn btn-neutral float-right" title="nim_vios_hc – Check if a pair of VIOSes can be updated." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_updateios.html" class="btn btn-neutral float-left" title="nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nim_updateios.html" class="btn btn-neutral float-left" title="nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

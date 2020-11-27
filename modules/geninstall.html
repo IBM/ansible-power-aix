@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>geninstall – Generic installer for various packaging formats &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>geninstall – Generic installer for various packaging formats. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="group – Create new group or change/remove attributes of group on AIX" href="group.html" />
-    <link rel="prev" title="flrtvc – Generate FLRTVC report, download and install efix." href="flrtvc.html" /> 
+    <link rel="next" title="group – Manage presence, attributes and member of AIX groups." href="group.html" />
+    <link rel="prev" title="flrtvc – Generate FLRTVC report, download and install security and HIPER fixes." href="flrtvc.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,37 +97,41 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">geninstall – Generic installer for various packaging formats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">geninstall – Generic installer for various packaging formats.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>geninstall – Generic installer for various packaging formats</li>
+      <li>geninstall – Generic installer for various packaging formats.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -218,15 +222,16 @@
            <div itemprop="articleBody">
             
   <div class="section" id="geninstall-generic-installer-for-various-packaging-formats">
-<span id="geninstall-module"></span><h1>geninstall – Generic installer for various packaging formats<a class="headerlink" href="#geninstall-generic-installer-for-various-packaging-formats" title="Permalink to this headline">¶</a></h1>
+<span id="geninstall-module"></span><h1>geninstall – Generic installer for various packaging formats.<a class="headerlink" href="#geninstall-generic-installer-for-various-packaging-formats" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
@@ -246,18 +251,21 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>device (optional, str, None)</dt><dd><p>The name of the device or directory.</p>
+<dt>action (optional, str, install)</dt><dd><p>Controls what is performed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">install</span></code> performs an install of the specified software.</p>
+<p><code class="docutils literal notranslate"><span class="pre">uninstall</span></code> performs an uninstall of the specified software.</p>
+<p><code class="docutils literal notranslate"><span class="pre">list</span></code> lists the contents of the media.</p>
+</dd>
+<dt>device (optional, str, None)</dt><dd><p>Specifies the device or directory that contains the images to install.</p>
+<p>The geninstall command searches for the images in the following paths /mount_point/installp/ppc (installp package), /mount_point/RPMS/ppc (RPM package), /mount_point/emgr/ppc (Interim fix packages for AIX), /mount_point/ISMP/ppc (ISMP packages for AIX).</p>
+<p>If the paths do not exist, it searches in the base directory of the specific device. If the image names are not preceded by a prefix that indicates the image type, it identifies a type for the image.</p>
+<p>If the paths exist and the image is not found in any path, and if the image does not contain any prefix, the image is treated as an RPM-formatted image.</p>
 </dd>
 <dt>install_list (optional, list, [])</dt><dd><p>List of products to install</p>
 <p><code class="docutils literal notranslate"><span class="pre">all</span></code> installs all products</p>
 <p><code class="docutils literal notranslate"><span class="pre">update_all</span></code> updates all products</p>
 </dd>
-<dt>force (optional, bool, False)</dt><dd><p>Forces action.</p>
-</dd>
-<dt>action (optional, str, install)</dt><dd><p>Controls what is performed.</p>
-<p><code class="docutils literal notranslate"><span class="pre">install</span></code> performs an install of the specified software.</p>
-<p><code class="docutils literal notranslate"><span class="pre">uninstall</span></code> performs an uninstall of the specified software.</p>
-<p><code class="docutils literal notranslate"><span class="pre">list</span></code> lists the contents of the media.</p>
+<dt>force (optional, bool, False)</dt><dd><p>Force the operation allowing to reinstall a package that is already installed, or to install a package that is older than the currently installed version.</p>
 </dd>
 <dt>agree_licenses (optional, bool, False)</dt><dd><p>Agrees to required software license agreements for software to be installed.</p>
 </dd>
@@ -266,8 +274,17 @@
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>You can refer to the IBM documentation for additional information on the geninstall command at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/g_commands/geninstall.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/g_commands/geninstall.html</a></p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Install all the products on a CD media</span>
   <span class="nt">geninstall</span><span class="p">:</span>
     <span class="nt">device</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/dev/cd0</span>
@@ -281,18 +298,22 @@
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt>msg (always, str, Invalid parameter: install_list cannot be empty)</dt><dd><p>The execution message.</p>
 </dd>
-<dt>stdout (always, str, bin:bin:::J:::::::bin Product::::nsbin:sbin:::J:::::::sbin Product::::)</dt><dd><p>The standard output</p>
+<dt>cmd (always, str, )</dt><dd><p>The command executed.</p>
 </dd>
-<dt>stderr (always, str, 0503-105 geninstall: The device or directory: /dev/cd0 does not exist.)</dt><dd><p>The standard error</p>
+<dt>rc (When the command is executed., int, )</dt><dd><p>The command return code.</p>
+</dd>
+<dt>stdout (always, str, bin:bin:::J:::::::bin Product::::nsbin:sbin:::J:::::::sbin Product::::)</dt><dd><p>The standard output of the command.</p>
+</dd>
+<dt>stderr (always, str, 0503-105 geninstall: The device or directory: /dev/cd0 does not exist.)</dt><dd><p>The standard error of the command.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -314,10 +335,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="group.html" class="btn btn-neutral float-right" title="group – Create new group or change/remove attributes of group on AIX" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="group.html" class="btn btn-neutral float-right" title="group – Manage presence, attributes and member of AIX groups." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="flrtvc.html" class="btn btn-neutral float-left" title="flrtvc – Generate FLRTVC report, download and install efix." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="flrtvc.html" class="btn btn-neutral float-left" title="flrtvc – Generate FLRTVC report, download and install security and HIPER fixes." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

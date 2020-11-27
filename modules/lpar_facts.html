@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mktcpip – Sets the required values for starting TCP/IP on a host. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>lpar_facts – Reports logical partition (LPAR) related information as facts. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mount – Mounts/unmounts a filesystem or device on AIX." href="mount.html" />
-    <link rel="prev" title="mkfilt – Activates or deactivates the filter rules." href="mkfilt.html" /> 
+    <link rel="next" title="lpp_facts – Returns installed software products as facts." href="lpp_facts.html" />
+    <link rel="prev" title="installp – Installs and updates software." href="installp.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -106,22 +106,21 @@
 <li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mktcpip – Sets the required values for starting TCP/IP on a host.</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lpar_facts – Reports logical partition (LPAR) related information as facts.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
@@ -200,14 +199,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>mktcpip – Sets the required values for starting TCP/IP on a host.</li>
+      <li>lpar_facts – Reports logical partition (LPAR) related information as facts.</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/mktcpip.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/lpar_facts.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -221,23 +220,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="mktcpip-sets-the-required-values-for-starting-tcp-ip-on-a-host">
-<span id="mktcpip-module"></span><h1>mktcpip – Sets the required values for starting TCP/IP on a host.<a class="headerlink" href="#mktcpip-sets-the-required-values-for-starting-tcp-ip-on-a-host" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="lpar-facts-reports-logical-partition-lpar-related-information-as-facts">
+<span id="lpar-facts-module"></span><h1>lpar_facts – Reports logical partition (LPAR) related information as facts.<a class="headerlink" href="#lpar-facts-reports-logical-partition-lpar-related-information-as-facts" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
-<li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id3">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module sets the required minimal values required for using TCP/IP on a host machine.</p>
-<p>These values are written to the configuration database.</p>
+<p>Lists and reports information related to logical partition (LPAR) in Ansible facts.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -247,71 +244,134 @@
 <li><p>Python &gt;= 2.7</p></li>
 </ul>
 </div>
-<div class="section" id="parameters">
-<h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><dl class="simple">
-<dt>hostname (True, str, None)</dt><dd><p>Sets the name of the host.</p>
-</dd>
-<dt>address (True, str, None)</dt><dd><p>Sets the Internet address of the host.</p>
-</dd>
-<dt>interface (True, str, None)</dt><dd><p>Specifies a particular network interface.</p>
-</dd>
-<dt>netmask (optional, str, None)</dt><dd><p>Specifies the mask the gateway should use in determining the appropriate subnetwork for routing.</p>
-</dd>
-<dt>gateway (optional, str, None)</dt><dd><p>Adds the default gateway address to the routing table.</p>
-</dd>
-<dt>nameserver (optional, str, None)</dt><dd><p>Specifies the Internet address of the name server the host uses for name resolution.</p>
-</dd>
-<dt>domain (optional, str, None)</dt><dd><p>Specifies the domain name of the name server the host should use for name resolution.</p>
-</dd>
-<dt>start_daemons (optional, bool, False)</dt><dd><p>Starts the TCP/IP daemons.</p>
-</dd>
-</dl>
-</div></blockquote>
-</div>
 <div class="section" id="notes">
-<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
-<li><p>The mktcpip command currently supports IPv4 only.</p></li>
-<li><p>The <strong>/etc/resolv.conf</strong> file on your system contains the default system configuration database.</p></li>
-<li><p>The <strong>/etc/hosts</strong> file on your system contains the host name and IP address entries.</p></li>
-<li><p>You can refer to the IBM documentation for additional information on the commands used at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mktcpip.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mktcpip.html</a>.</p></li>
+<li><p>You can refer to the IBM documentation for additional information on the lparstat command at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lparstat.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lparstat.html</a>.</p></li>
 </ul>
 </div>
 </div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Set the required values for starting TCP/IP</span>
-  <span class="nt">mktcpip</span><span class="p">:</span>
-    <span class="nt">hostname</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fred.austin.century.com</span>
-    <span class="nt">address</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">192.9.200.4</span>
-    <span class="nt">interface</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">en0</span>
-    <span class="nt">nameserver</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">192.9.200.1</span>
-    <span class="nt">domain</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">austin.century.com</span>
-    <span class="nt">start_daemons</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">yes</span>
+<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Retrieve the LPAR related information</span>
+  <span class="nt">lpar_facts</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Print the LPAR related information</span>
+  <span class="nt">debug</span><span class="p">:</span>
+    <span class="nt">var</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">ansible_facts.lpar</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>ansible_facts (always, complex, )</dt><dd><p>Facts to add to ansible_facts about LPAR related information.</p>
+<dl>
+<dt>lpar (always, dict, )</dt><dd><p>Reports logical partition (LPAR) related information.</p>
 <dl class="simple">
-<dt>msg (always, str, Command ‘mktcpip -h quimby01.aus.stglabs.ibm.com -a 9.3.149.150 -i en1’ successful.)</dt><dd><p>The execution message.</p>
+<dt>nodename (always, str, )</dt><dd><p>Node name.</p>
 </dd>
-<dt>cmd (always, str, )</dt><dd><p>The command executed.</p>
+<dt>lpar_name (when available, str, )</dt><dd><p>Partition name.</p>
 </dd>
-<dt>rc (When the command is executed., int, )</dt><dd><p>The command return code.</p>
+<dt>lpar_number (when available, int, )</dt><dd><p>Partition number.</p>
 </dd>
-<dt>stdout (always, str, en1n quimby01.aus.stglabs.ibm.comn inet0 changedn en1 changed)</dt><dd><p>The standard output.</p>
+<dt>lpar_type (always, str, )</dt><dd><p>Type.</p>
 </dd>
-<dt>stderr (always, str, en1n x.x.x.x is an invalid address.n /usr/sbin/mktcpip: Problem with command: hostent, return code = 1n)</dt><dd><p>The standard error.</p>
+<dt>lpar_mode (always, str, )</dt><dd><p>Mode.</p>
+</dd>
+<dt>entitled_capacity (always, float, )</dt><dd><p>Entitled capacity.</p>
+</dd>
+<dt>group_id (when available, int, )</dt><dd><p>Partition Group-ID.</p>
+</dd>
+<dt>pool_id (when available, int, )</dt><dd><p>Shared Pool ID.</p>
+</dd>
+<dt>online_vcpus (always, int, )</dt><dd><p>Online Virtual CPUs.</p>
+</dd>
+<dt>max_vcpus (always, int, )</dt><dd><p>Maximum Virtual CPUs.</p>
+</dd>
+<dt>min_vcpus (always, int, )</dt><dd><p>Minimum Virtual CPUs.</p>
+</dd>
+<dt>online_memory (always, float, )</dt><dd><p>Online Memory.</p>
+</dd>
+<dt>max_memory (always, float, )</dt><dd><p>Maximum Memory.</p>
+</dd>
+<dt>min_memory (always, float, )</dt><dd><p>Minimum Memory.</p>
+</dd>
+<dt>ps_16G (when available, int, )</dt><dd><p>16GB Page Memory.</p>
+</dd>
+<dt>variable_weight (when available, int, )</dt><dd><p>Variable Capacity Weight.</p>
+</dd>
+<dt>minimum_capacity (always, float, )</dt><dd><p>Minimum Capacity.</p>
+</dd>
+<dt>maximum_capacity (always, float, )</dt><dd><p>Maximum Capacity.</p>
+</dd>
+<dt>capacity_increment (always, float, )</dt><dd><p>Capacity Increment.</p>
+</dd>
+<dt>max_pcpus_in_sys (always, int, )</dt><dd><p>Maximum Physical CPUs in system.</p>
+</dd>
+<dt>pcpus_in_sys (always, int, )</dt><dd><p>Active Physical CPUs in system.</p>
+</dd>
+<dt>pcpus_in_pool (when available, int, )</dt><dd><p>Active CPUs in Pool.</p>
+</dd>
+<dt>shcpus_in_sys (when available, int, )</dt><dd><p>Shared Physical CPUs in system.</p>
+</dd>
+<dt>max_pool_capacity (when available, int, )</dt><dd><p>Maximum Capacity of Pool.</p>
+</dd>
+<dt>entitled_pool_capacity (when available, int, )</dt><dd><p>Entitled Capacity of Pool.</p>
+</dd>
+<dt>unalloc_capacity (when available, float, )</dt><dd><p>Unallocated Capacity.</p>
+</dd>
+<dt>pcpu_percent (always, float, )</dt><dd><p>Physical CPU Percentage.</p>
+</dd>
+<dt>unalloc_weight (when available, int, )</dt><dd><p>Unallocated Weight.</p>
+</dd>
+<dt>vrm_mode (when available, str, )</dt><dd><p>Memory Mode.</p>
+</dd>
+<dt>ent_mem_capacity (when available, float, )</dt><dd><p>Total I/O Memory Entitlement.</p>
+</dd>
+<dt>var_mem_weight (when available, int, )</dt><dd><p>Variable Memory Capacity Weight.</p>
+</dd>
+<dt>vrm_pool_id (when available, int, )</dt><dd><p>Memory Pool ID.</p>
+</dd>
+<dt>vrm_pool_physmem (when available, float, )</dt><dd><p>Physical Memory in the Pool.</p>
+</dd>
+<dt>hyp_pagesize (when available, str, )</dt><dd><p>Hypervisor Page Size.</p>
+</dd>
+<dt>unalloc_var_mem_weight (when available, int, )</dt><dd><p>Unallocated Variable Memory Capacity Weight.</p>
+</dd>
+<dt>unalloc_ent_mem_capacity (when available, float, )</dt><dd><p>Unallocated I/O Memory entitlement.</p>
+</dd>
+<dt>vrm_group_id (when available, int, )</dt><dd><p>Memory Group ID of LPAR.</p>
+</dd>
+<dt>desired_vcpus (always, int, )</dt><dd><p>Desired Virtual CPUs.</p>
+</dd>
+<dt>desired_memory (always, float, )</dt><dd><p>Desired Memory.</p>
+</dd>
+<dt>desired_variable_capwt (when available, int, )</dt><dd><p>Desired Variable Capacity Weight.</p>
+</dd>
+<dt>desired_capacity (always, float, )</dt><dd><p>Desired Capacity.</p>
+</dd>
+<dt>ame_factor_tgt (when available, float, )</dt><dd><p>Target Memory Expansion Factor.</p>
+</dd>
+<dt>ame_memsizepgs (when available, float, )</dt><dd><p>Target Memory Expansion Size.</p>
+</dd>
+<dt>psmode (when supported, str, )</dt><dd><p>Power Saving Mode.</p>
+</dd>
+<dt>spcm_status (when supported, str, )</dt><dd><p>Sub Processor Mode.</p>
+</dd>
+<dt>servpar_id (when available, int, )</dt><dd><p>Service Partition ID.</p>
+</dd>
+<dt>num_lpars (when available, int, )</dt><dd><p>Number of Configured LPARs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -333,10 +393,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mount.html" class="btn btn-neutral float-right" title="mount – Mounts/unmounts a filesystem or device on AIX." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="lpp_facts.html" class="btn btn-neutral float-right" title="lpp_facts – Returns installed software products as facts." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mkfilt.html" class="btn btn-neutral float-left" title="mkfilt – Activates or deactivates the filter rules." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="installp.html" class="btn btn-neutral float-left" title="installp – Installs and updates software." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

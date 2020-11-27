@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>nim_backup – Uses NIM to manage backup of LPAR or VIOS clients. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_flrtvc – Generate flrtvc report, download and install efix" href="nim_flrtvc.html" />
-    <link rel="prev" title="nim – Server setup, install packages, update SP or TL." href="nim.html" /> 
+    <link rel="next" title="nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes." href="nim_flrtvc.html" />
+    <link rel="prev" title="nim – Performs NIM operations - server setup, install packages, update SP or TL." href="nim.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,37 +97,41 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Create/Modify/Remove a volume group</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</li>
+      <li>nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -217,23 +221,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-backup-use-nim-to-create-list-and-restore-backup-on-lpar-and-vios-clients">
-<span id="nim-backup-module"></span><h1>nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.<a class="headerlink" href="#nim-backup-use-nim-to-create-list-and-restore-backup-on-lpar-and-vios-clients" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="nim-backup-uses-nim-to-manage-backup-of-lpar-or-vios-clients">
+<span id="nim-backup-module"></span><h1>nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.<a class="headerlink" href="#nim-backup-uses-nim-to-manage-backup-of-lpar-or-vios-clients" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Uses the NIM define operation it creates mksysb or ios_backup resource on the NIM master depending on the type of the client.</p>
-<p>Lists the backup resources available on the NIM master and allows to filter results.</p>
-<p>Uses the NIM bos_inst and viosbr to restore backup images on LPAR or VIOS clients.</p>
+<p>Performs backup operations through the Network Installation Management (NIM) to create, list and view and restore backup image on LPAR and VIOS clients.</p>
+<p>Defines mksysb or ios_backup resources on the NIM master depending on the type of the client.</p>
+<p>Lists the mksysb or ios_backup resources available on the NIM master and allows to filter results.</p>
+<p>Uses the NIM BOS installation operation to mksysb backup images on clients.</p>
+<p>Uses the NIM viosbr operation to restore VIOS configuration ios_backup on clients.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -247,116 +254,136 @@
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl>
-<dt>action (True, str, None)</dt><dd><p>Controls what is performed.</p>
-<p><code class="docutils literal notranslate"><span class="pre">create</span></code> performs an backup operation on targets trough the NIM master.</p>
+<dt>action (True, str, None)</dt><dd><p>Specifies the action to perform.</p>
+<p><code class="docutils literal notranslate"><span class="pre">create</span></code> performs a backup operation on targets trough the NIM master.</p>
 <p><code class="docutils literal notranslate"><span class="pre">restore</span></code> restores a backup on targets trough the NIM master.</p>
 <p><code class="docutils literal notranslate"><span class="pre">view</span></code> displays the content of a VIOS backup, only for <em>type=backup</em>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">list</span></code> lists backups for targets on the NIM master.</p>
 </dd>
 <dt>type (optional, str, mksysb)</dt><dd><p>Specifies the type of backup object to operate.</p>
-<p><code class="docutils literal notranslate"><span class="pre">mksysb</span></code> operates on backup of the operating system (that is, the root volume group) of a LPAR or VIOS target.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ios_mksysb</span></code> operates on VIOS backup of the operating system (that is, the root volume group).</p>
-<p><code class="docutils literal notranslate"><span class="pre">ios_backup</span></code> operates on VIOS backup, that is all the relevant data to recover VIOS after a new installation.</p>
-<p><code class="docutils literal notranslate"><span class="pre">savevg</span></code> operates on LPAR savevg, that is all files belonging to a volume group.</p>
-<p>Discarded for <em>action=view</em> as this action only applies to ios_backup.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mksysb</span></code> specifies to operate on installable BOS backup image of the operating system (that is the root volume group) of a LPAR target.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ios_mksysb</span></code> specifies to operate on installable BOS backup image of the operating system (that is, the root volume group) of a VIOS target.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ios_backup</span></code> specifies to operate on virtual and logical configuration backup image of VIOS target; that is all the relevant data to recover VIOS after a fresh installation.</p>
+<p><code class="docutils literal notranslate"><span class="pre">savevg</span></code> specifies to operate volume group files backup image of LPAR target; that is not installable.</p>
+<p>It parameter is discarded for <em>action=view</em> as the <code class="docutils literal notranslate"><span class="pre">view</span></code> action only applies to <code class="docutils literal notranslate"><span class="pre">ios_backup</span></code>.</p>
 </dd>
 <dt>targets (False, list, None)</dt><dd><p>Specifies the NIM clients to perform the action on.</p>
-<p><code class="docutils literal notranslate"><span class="pre">foo*</span></code> designates all the NIM clients with name starting by <code class="docutils literal notranslate"><span class="pre">foo</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">foo[2:4]</span></code> designates the NIM clients among foo2, foo3 and foo4.</p>
-<p><code class="docutils literal notranslate"><span class="pre">*</span></code> or <code class="docutils literal notranslate"><span class="pre">ALL</span></code> designates all the NIM clients.</p>
-<p><code class="docutils literal notranslate"><span class="pre">vios</span></code> or <code class="docutils literal notranslate"><span class="pre">standalone</span></code> designates all the NIM clients of this type.</p>
-<p>Required if <em>action=create</em> and <em>action=restore</em>.</p>
-<p>If <em>action=list</em> it filters the results on the source_image attribute of the NIM resource.</p>
-</dd>
-<dt>nim_node (optional, dict, None)</dt><dd><p>Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.</p>
+<p><code class="docutils literal notranslate"><span class="pre">foo*</span></code> specifies all the NIM clients with name starting by <code class="docutils literal notranslate"><span class="pre">foo</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">foo[2:4]</span></code> specifies the NIM clients among foo2, foo3 and foo4.</p>
+<p><code class="docutils literal notranslate"><span class="pre">*</span></code> or <code class="docutils literal notranslate"><span class="pre">ALL</span></code> specifies all the NIM clients.</p>
+<p><code class="docutils literal notranslate"><span class="pre">vios</span></code> or <code class="docutils literal notranslate"><span class="pre">standalone</span></code> specifies all the NIM clients of this type.</p>
+<p>Required when <em>action=create</em> and <em>action=restore</em>.</p>
+<p>When <em>action=list</em> it filters the results on the <strong>source_image</strong> attribute of the NIM resource.</p>
 </dd>
 <dt>location (optional, path, None)</dt><dd><p>Specifies the location of the backup files.</p>
-<p>If <em>objtype=mksysb</em>, the default value is <em>location=/export/nim/mksysb</em>.</p>
-<p>If <em>objtype=ios_mksysb</em>, the default value is <em>location=/export/nim/ios_mksysb</em>.</p>
-<p>If <em>objtype=ios_backup</em>, the default value is <em>location=/export/nim/ios_backup</em>.</p>
-<p>If <em>objtype=savevg</em>, the default value is <em>location=/export/nim/savevg</em>.</p>
+<p>When <em>type=mksysb</em>, the default value is <em>location=/export/nim/mksysb</em>.</p>
+<p>When <em>type=ios_mksysb</em>, the default value is <em>location=/export/nim/ios_mksysb</em>.</p>
+<p>When <em>type=ios_backup</em>, the default value is <em>location=/export/nim/ios_backup</em>.</p>
+<p>When <em>type=savevg</em>, the default value is <em>location=/export/nim/savevg</em>.</p>
 </dd>
-<dt>name (optional, str, None)</dt><dd><p>Specifies the exact name of the backup to act on.</p>
-<p>If <em>action=list</em> it filters the results on the name of the NIM resource.</p>
-<p>Required if <em>action=view</em> and if <em>action=create</em> and <em>type=savevg</em>.</p>
+<dt>name (optional, str, None)</dt><dd><p>Specifies the exact name of the backup NIM resource to act on.</p>
+<p>When <em>action=list</em> it filters the results on the name of the NIM resource.</p>
+<p>Required when <em>action=view</em> and when <em>action=create</em> and <em>type=savevg</em>.</p>
 </dd>
 <dt>name_prefix (optional, str, None)</dt><dd><p>Prefix of the backup NIM resource name to act on.</p>
-<p>The name format will be <em>&lt;prefix&gt;&lt;target_name&gt;&lt;postfix&gt;</em>.</p>
-<p>Used only if <code class="docutils literal notranslate"><span class="pre">name</span></code> is not specified.</p>
-<p>If <em>action=list</em> it filters the results on the name of the NIM resource.</p>
+<p>The name format will be <em>&lt;name_prefix&gt;&lt;target_name&gt;&lt;name_postfix&gt;</em>.</p>
+<p>Used only when <code class="docutils literal notranslate"><span class="pre">name</span></code> is not specified.</p>
+<p>When <em>action=list</em> it filters the results on the name of the NIM resource.</p>
 </dd>
 <dt>name_postfix (optional, str, None)</dt><dd><p>Specifies the postfix of the backup NIM resource name to act on.</p>
-<p>If not specified default for mksysb is <em>name_postfix=_sysb</em>, for ios_backup it is <em>name_postfix=_iosb</em> and for .</p>
-<p>The name format will be <em>&lt;prefix&gt;&lt;target_name&gt;&lt;postfix&gt;</em>.</p>
-<p>Used only if <code class="docutils literal notranslate"><span class="pre">name</span></code> is not specified.</p>
-<p>If <em>action=list</em> it filters the results on the name of the NIM resource.</p>
-<p>If <em>objtype=mksysb</em> or <em>objtype=ios_mksysb</em>, the default value is <em>name_postfix=_sysb</em>.</p>
-<p>If <em>objtype=ios_backup</em>, the default value is <em>name_postfix=_iosb</em>.</p>
-<p>If <em>objtype=savevg</em>, the default value is <em>name_postfix=_svg</em>.</p>
+<p>The name format will be <em>&lt;name_prefix&gt;&lt;target_name&gt;&lt;name_postfix&gt;</em>.</p>
+<p>Used only when <code class="docutils literal notranslate"><span class="pre">name</span></code> is not specified.</p>
+<p>When <em>action=list</em> it filters the results on the name of the NIM resource.</p>
+<p>When <em>type=mksysb</em> or <em>type=ios_mksysb</em>, the default value is <em>name_postfix=_sysb</em>.</p>
+<p>When <em>type=ios_backup</em>, the default value is <em>name_postfix=_iosb</em>.</p>
+<p>When <em>type=savevg</em>, the default value is <em>name_postfix=_svg</em>.</p>
 </dd>
-<dt>group (optional, str, None)</dt><dd><p>Specifies the resource group to use for restoration.</p>
-<p>Can be used on a standalone client if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<dt>group (optional, str, None)</dt><dd><p>Specifies the resource group used to install the BOS backup image on a client.</p>
+<p>Can be used on a standalone client when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>spot_name (optional, str, None)</dt><dd><p>Specifies the exact SPOT resource name to create to restore the backup on a standalone client.</p>
-<p>Can be used on a standalone client if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<dt>spot_name (optional, str, None)</dt><dd><p>Specifies the exact SPOT resource name used to install the BOS backup image on a client.</p>
+<p>When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.</p>
+<p>Can be used on a standalone client when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>spot_prefix (optional, str, None)</dt><dd><p>Specifies the prefix of SPOT resource name created to restore the backup on a standalone client.</p>
+<dt>spot_prefix (optional, str, None)</dt><dd><p>Specifies the prefix of SPOT resource name used to install the BOS backup image on a client.</p>
+<p>When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.</p>
 <p>The SPOT name format will be <em>&lt;spot_prefix&gt;&lt;target_name&gt;&lt;spot_postfix&gt;</em>.</p>
-<p>Used only if <code class="docutils literal notranslate"><span class="pre">spot_name</span></code> is not specified.</p>
-<p>Can be used on a standalone client if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<p>Used only when <code class="docutils literal notranslate"><span class="pre">spot_name</span></code> is not specified.</p>
+<p>Can be used on a standalone client when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>spot_postfix (optional, str, _spot)</dt><dd><p>Specifies the prostfix of SPOT resource name created to restore the backup on a standalone client.</p>
+<dt>spot_postfix (optional, str, _spot)</dt><dd><p>Specifies the postfix of SPOT resource name used to install the BOS backup image on a client.</p>
+<p>When the SPOT resource exists, it is used; otherwise it creates it pior to run BOS install.</p>
 <p>The SPOT name format will be <em>&lt;spot_prefix&gt;&lt;target_name&gt;&lt;spot_postfix&gt;</em>.</p>
-<p>Used only if <code class="docutils literal notranslate"><span class="pre">spot_name</span></code> is not specified.</p>
-<p>Can be used on a standalone client if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<p>Used only when <code class="docutils literal notranslate"><span class="pre">spot_name</span></code> is not specified.</p>
+<p>Can be used on a standalone client when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>spot_location (optional, path, /export/nim/spot)</dt><dd><p>Specifies the location of SPOT resource on the NIM master created to restore the backup on a standalone client.</p>
-<p>Can be used on a standalone client if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<dt>spot_location (optional, path, /export/nim/spot)</dt><dd><p>Specifies the location of SPOT resource on the NIM master used to install the BOS backup image on a client. created to restore the backup on a standalone client.</p>
+<p>When the SPOT resource does not exist, it is created that this <em>location</em>.</p>
+<p>Can be used on a standalone client when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>bosinst_data (optional, str, None)</dt><dd><p>Specifies the bosinst_data resource to restore the backup on a standalone client.</p>
+<dt>bosinst_data (optional, str, None)</dt><dd><p>Specifies the bosinst_data NIM resource name to install the BOS backup image on a client.</p>
 <p>This allows running “non-prompted” installations, and so more automated restorations.</p>
 <p>If not specified you will be presented with a series of choices on the console.</p>
-<p>Can be used if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<p>Can be used when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>oslevel (optional, str, None)</dt><dd><p>Specifies the oslevel to filter results.</p>
-<p>Can be used if <em>action=list</em>.</p>
+<dt>oslevel (optional, str, None)</dt><dd><p>Specifies the oslevel to filter results when listing backup images.</p>
+<p>Can be used when <em>action=list</em>.</p>
 </dd>
-<dt>volume_group (optional, str, None)</dt><dd><p>Specifies the volume group to backup on the target that must be varied-on and the file systems must be mounted.</p>
-<p>Required if <em>action=create</em> and <em>type=savevg</em>.</p>
+<dt>volume_group (optional, str, None)</dt><dd><p>Specifies the volume group to backup on the target.</p>
+<p>This volume group must be varied-on and the file systems must be mounted.</p>
+<p>Required when <em>action=create</em> and <em>type=savevg</em>.</p>
 </dd>
-<dt>exclude_files (optional, str, None)</dt><dd><p>Specifies the exclude_files NIM resource on the NIM master.</p>
-<p>Can be used if <em>action=create</em> and <em>type=savevg</em>.</p>
+<dt>exclude_files (optional, str, None)</dt><dd><p>Specifies the exclude_files NIM resource name to create a backup image.</p>
+<p>It represents a file that contains a list of files and directories that should be excluded from the creation.</p>
+<p>Can be used when <em>action=create</em> and <em>type=savevg</em>.</p>
 </dd>
-<dt>flags (optional, str, None)</dt><dd><p>Specifies additional flags to pass to the command used. Refers to IBM documentation for details.</p>
+<dt>flags (optional, str, None)</dt><dd><p>Specifies additional flags to pass to the command used.</p>
+<p>Refer to IBM documentation for details.</p>
 <p>For <em>action=create</em> and <em>type=mksysb</em>, you could use <em>-a -A -b -e -i -m -p -P -T -V -X -Z</em>.</p>
 <p>For <em>action=create</em> and <em>type=ios_mksysb</em>, you could use <em>-nosvg -nomedialib</em>.</p>
 <p>For <em>action=create</em> and <em>type=savevg</em>, you could use <em>-a -A -e -i -m -p -r -T -v -V -X -Z</em>.</p>
 </dd>
-<dt>other_attributes (optional, str, None)</dt><dd><p>Specifies additional attributes to pass to the NIM operation. Refers to IBM documentation for details.</p>
+<dt>other_attributes (optional, str, None)</dt><dd><p>Specifies additional attributes to pass to the NIM operation.</p>
+<p>Refer to IBM documentation for details.</p>
 <p>It is a space separated string such as <em>other_attributes=’-a attr1=value1 -a attr2=value2’</em>.</p>
-<p>Discarded if <em>action=list</em>.</p>
+<p>Discarded when <em>action=list</em>.</p>
 </dd>
-<dt>remove_spot (optional, bool, True)</dt><dd><p>Specifies to remove the SPOT resource created to restore the backup on a standalone client.</p>
-<p>Can be used on a standalone client if <em>action=restore</em>.</p>
+<dt>remove_spot (optional, bool, True)</dt><dd><p>Specifies to remove the SPOT resource after the restoration of the backup image.</p>
+<p>The preexistence of the SPOT resource does not condition its removal.</p>
+<p>The SPOT resource is <strong>not</strong> removed when the restore operation fails or in check mode.</p>
+<p>Can be used on a standalone client when <em>action=restore</em>.</p>
 </dd>
-<dt>remove_backup (optional, bool, False)</dt><dd><p>Specifies to remove the backup resource from the NIM master.</p>
-<p>Can be used if <em>action=restore</em>.</p>
+<dt>remove_backup (optional, bool, False)</dt><dd><p>Specifies to remove the backup resource after the restoration of the backup image.</p>
+<p>The preexistence of the backup resource does not condition its removal.</p>
+<p>The backup resource is <strong>not</strong> removed when the restore operation fails or in check mode.</p>
+<p>Can be used when <em>action=restore</em>.</p>
 </dd>
-<dt>accept_licenses (optional, bool, True)</dt><dd><p>Specifies to automatically accept all licenses during the restoration of the backup.</p>
-<p>Can be used if <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
+<dt>accept_licenses (optional, bool, True)</dt><dd><p>Specifies to automatically accept all licenses while installing the BOS backup image.</p>
+<p>Can be used when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
-<dt>boot_target (optional, bool, True)</dt><dd><p>Specifies to boot the NIM client after restoration of the backup.</p>
-<p>Can be used on a standalone client if <em>action=restore</em>.</p>
+<dt>boot_target (optional, bool, True)</dt><dd><p>Specifies to boot the NIM client after installing the BOS backup image.</p>
+<p>Can be used when <em>action=restore</em> and <em>type=mksysb or ios_mksysb</em>.</p>
 </dd>
 <dt>shrink_fs (optional, bool, False)</dt><dd><p>Specifies to shrink the file system contained in the volume group.</p>
 <p>Always be sure to check the size of the file systems after the restore is complete.</p>
-<p>Can be used if <em>action=restore</em> and <em>type=savevg</em>.</p>
+<p>Can be used when <em>action=restore</em> and <em>type=savevg</em>.</p>
+</dd>
+<dt>nim_node (optional, dict, None)</dt><dd><p>Allows to pass along NIM node info from a previous task to another so that it discovers NIM info only one time for all tasks. The current task might update the NIM info it needs.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>You can refer to the IBM documentation for additional information on the NIM concept and command at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_op_bos_inst.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_op_bos_inst.html</a>.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">List mksysb targeting nimclient1 at a specific level and name starting with ansible</span>
   <span class="nt">nim_backup</span><span class="p">:</span>
     <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">list</span>
@@ -423,7 +450,7 @@
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl>
 <dt>msg (always, str, )</dt><dd><p>Status information.</p>
 </dd>
@@ -476,7 +503,7 @@
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -498,10 +525,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_flrtvc.html" class="btn btn-neutral float-right" title="nim_flrtvc – Generate flrtvc report, download and install efix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="nim_flrtvc.html" class="btn btn-neutral float-right" title="nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim.html" class="btn btn-neutral float-left" title="nim – Server setup, install packages, update SP or TL." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nim.html" class="btn btn-neutral float-left" title="nim – Performs NIM operations - server setup, install packages, update SP or TL." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lvg – Create/Modify/Remove a volume group &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>lvg – Configure AIX LVM volume groups &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="lvol – Create/Delete logical volume or change characteristics of logical volume on AIX" href="lvol.html" />
-    <link rel="prev" title="lpp_facts – Returns installed software products as facts" href="lpp_facts.html" /> 
+    <link rel="next" title="lvm_facts – Reports LVM information as facts." href="lvm_facts.html" />
+    <link rel="prev" title="lpp_facts – Returns installed software products as facts." href="lpp_facts.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,37 +97,41 @@
 <li class="toctree-l3"><a class="reference internal" href="aixpert.html">aixpert – System security settings management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="devices.html">devices – Devices management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="emgr.html">emgr – System interim fixes management.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install efix.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats</a></li>
-<li class="toctree-l3"><a class="reference internal" href="group.html">group – Create new group or change/remove attributes of group on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Create/change/remove entries in the inittab file on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software</a></li>
-<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">lvg – Create/Modify/Remove a volume group</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lpp_facts.html">lpp_facts – Returns installed software products as facts.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">lvg – Configure AIX LVM volume groups</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Create/Delete logical volume or change characteristics of logical volume on AIX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/Unmounts a Filesystem/Device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Server setup, install packages, update SP or TL.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Use NIM to create, list and restore backup on LPAR and VIOS clients.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Generate flrtvc report, download and install efix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Download fixes, SP or TL on an AIX server</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Create/Cleanup an alternate rootvg disk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL on an AIX server.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
 </li>
@@ -196,7 +200,7 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>lvg – Create/Modify/Remove a volume group</li>
+      <li>lvg – Configure AIX LVM volume groups</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -217,81 +221,129 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="lvg-create-modify-remove-a-volume-group">
-<span id="lvg-module"></span><h1>lvg – Create/Modify/Remove a volume group<a class="headerlink" href="#lvg-create-modify-remove-a-volume-group" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="lvg-configure-aix-lvm-volume-groups">
+<span id="lvg-module"></span><h1>lvg – Configure AIX LVM volume groups<a class="headerlink" href="#lvg-configure-aix-lvm-volume-groups" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
+<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>This module facilitates a. Creation of a volume group b. Modification of attributes of an existing volume group c. Extension of a volume group d. Varyon/Varyoff of a volume group e. Reduction/Removal of a volume group</p>
+<p>This module creates, removes, modifies attributes, resizes, activates and deactivates volume groups.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX</p></li>
+<li><p>AIX &gt;= 7.1 TL3</p></li>
+<li><p>Python &gt;= 2.7</p></li>
+<li><p>Root user is required.</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="simple">
-<dt>vg_type (optional, str, None)</dt><dd><p>Specifies the type of the volume group.</p>
+<div><dl>
+<dt>state (optional, str, present)</dt><dd><p>Specifies the action to be performed on a volume group. <code class="docutils literal notranslate"><span class="pre">present</span></code> creates, extends or modifies a volume group; <code class="docutils literal notranslate"><span class="pre">absent</span></code> reduces or removes a volume group; <code class="docutils literal notranslate"><span class="pre">varyon</span></code> activates a volume group performing a varyon operation; <code class="docutils literal notranslate"><span class="pre">varyoff</span></code> deactivates a volume group performing a varyoff operation.</p>
 </dd>
-<dt>enhanced_con_vg (optional, bool, None)</dt><dd><p>Specifies Enhanced Concurrent Capable volume group.</p>
+<dt>vg_name (True, str, None)</dt><dd><p>Specifies the volume group name.</p>
+</dd>
+<dt>vg_type (optional, str, None)</dt><dd><p>Specifies the type of the volume group.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>enhanced_concurrent_vg (optional, bool, None)</dt><dd><p>Specifies Enhanced Concurrent Capable volume group.</p>
+<p>Cannot be used on volume groups and systems that do not use the PowerHA SystemMirror enhanced scalability (ES) product.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>critical_vg (optional, bool, None)</dt><dd><p>Enables the Critical VG option of the volume group.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>pvs (optional, list, None)</dt><dd><p>Specifies the list of physical volumes.</p>
+<p>When <em>state=present</em> and the VG exists, adds the PVs to the existing VG; otherwise creates the VG with the PVs.</p>
+<p>When <em>state=absent</em>, removes the PVs from the VG.</p>
+<p>Can be used when <em>state=present</em> or <em>state=absent</em>.</p>
 </dd>
 <dt>critical_pvs (optional, bool, None)</dt><dd><p>Specifies the Critical PVs option for the volume group. If write request failures occur in the mirrored logical volume, the PV is marked as missing and it stops sending I/O requests to the failed mirrored logical volume.</p>
+<p>Available only in IBM AIX 7.2 with Technology Level 1, or later.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>num_lvs (optional, int, None)</dt><dd><p>Number of logical volumes that can be created.</p>
+<p>Can be used with <em>vg_type=scalable</em> volume groups.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>delete_lvs (optional, bool, None)</dt><dd><p>Deallocates existing logical volume partitions and then deletes resultant empty logical volumes from the specified physical volumes.</p>
+<p><strong>Attention:</strong> using <em>delete_lvs=yes</em> automatically deletes all logical volume data on the physical volume before removing the physical volume from the volume group. If a logical volume spans multiple physical volumes, the removal of any of those physical volumes may jeopardize the integrity of the entire logical volume.</p>
+<p>Can be used when <em>state=absent</em>.</p>
+</dd>
+<dt>num_partitions (optional, int, None)</dt><dd><p>Total number of units of 1024 partitions in the volume group.</p>
+<p>Can be used with <em>vg_type=scalable</em> volume groups.</p>
+<p>Default when not set is 32 hence 32k (32768 partitions).</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>pp_size (optional, int, None)</dt><dd><p>Sets physical partition size expressed in units of megabytes from 1 (1 MB) through 131072 (128 GB). It must be equal to a power of 2 (example 1, 2, 4, 8).</p>
+<p>The default value for 32 and 128 PV volume groups is the lowest value to remain within the limitation of 1016 physical partitions per PV.</p>
+<p>The default value for scalable volume groups is the lowest value to accommodate 2040 physical partitions per PV.</p>
+<p>Can be used when creating a volume group, hence when <em>state=present</em>.</p>
+</dd>
+<dt>pp_limit (optional, int, None)</dt><dd><p>Changes the limit of the number of physical partitions per physical volume.</p>
+<p>The maximum number of physical partitions per physical volume for this volume group changes to <em>pp_limit</em> x 1016.</p>
+<p>It must be 1 - 16 for 32 PV volume groups and 1 and 64 for 128 PV volume groups.</p>
+<p>The maximum number of PVs that can be included in the volume group is MaxPVs / <em>pp_limit</em>.</p>
+<p>The default is the lowest value to remain within the physical partition limit of <em>pp_limit</em> x 1016.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
 </dd>
 <dt>force (optional, bool, None)</dt><dd><p>When <em>state=present</em>, forces the volume group to be created on the specified physical volume unless the physical volume is part of another volume group in the Device Configuration Database or a volume group that is active.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.  Discaded when <em>state=absent</em>.</p>
 </dd>
-</dl>
-</div></blockquote>
-<p>When <em>state=absent</em>, removes the requirement for user confirmation when delete_lvs has been specified</p>
-<blockquote>
-<div><dl class="simple">
-<dt>delete_lvs (optional, bool, None)</dt><dd><p>When <em>state=absent</em>, deallocates the existing logical volume partitions and then deletes resultant empty logical volumes</p>
+<dt>mirror_pool (optional, str, None)</dt><dd><p>Specifies the mirror pool name to assigns the physical volumes to.</p>
+<p>After mirror pools are enabled in a volume group, the volume group can no longer be imported into a version of AIX that does not support mirror pools.</p>
+<p>Can be used only when creating a volume group, hence when <em>state=present</em>.</p>
 </dd>
-<dt>mpool_strict (optional, str, None)</dt><dd><p>Enables mirror pool strictness for the volume group.</p>
+<dt>mirror_pool_strict (optional, str, none)</dt><dd><p>Enables mirror pool strictness for the volume group.</p>
+<p><code class="docutils literal notranslate"><span class="pre">none</span></code> specifies that no restrictions are placed on the user of mirror pool.</p>
+<p><code class="docutils literal notranslate"><span class="pre">normal</span></code> specifies that mirror pools must be used on each logical volume in the volume group.</p>
+<p><code class="docutils literal notranslate"><span class="pre">strict</span></code> specifies that super-strict mirror pools are enforced on this volume group. Partitions allocated for one mirror cannot share a physical volume with the partitions from another mirror; with this setting each mirror pool must contain at least one copy of each logical volume.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
 </dd>
-<dt>multi_node_vary (optional, bool, None)</dt><dd><p>Creates a volume group that is allowed to varyon in non-concurrent mode in more than one node at the same time</p>
+<dt>multi_node_vary (optional, bool, None)</dt><dd><p>Specified that the volume group is allowed to varyon in non-concurrent mode in more than one node at the same time or not. This is the default behavior.</p>
+<p>This option is not available for volume groups varied on in the concurrent mode.</p>
+<p>This VG can no longer be imported on a version of AIX that does not support this flag.</p>
+<p>When <em>multi_node_vary=no</em> the VG can no longer be imported on a version of AIX that does not support this mode.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
 </dd>
-<dt>sysstart_avail (optional, bool, None)</dt><dd><p>Specifies that the volume group is automatically available during a system restart</p>
+<dt>auto_on (optional, bool, None)</dt><dd><p>Specifies that the volume group is automatically available during a system restart.</p>
+<p>By default <em>auto_on=yes</em> when creating a volume group.</p>
+<p>Can be used when creating or changing a volume group, hence when <em>state=present</em>.</p>
 </dd>
 <dt>retry (optional, bool, None)</dt><dd><p>Enables the infinite retry option of the logical volume.</p>
+<p>When (retry=no), a failing I/O of the logical volume is not retried. This is the default behavior.</p>
+<p>When (retry=yes), a failed I/O request is retried until it is successful.</p>
 </dd>
-<dt>mpool (optional, str, None)</dt><dd><p>Assigns each of the physical volumes that are being added to the specified mirror pool</p>
-</dd>
-<dt>num_partitions (optional, int, None)</dt><dd><p>Total number of partitions in the volume group This attribute is valid for scalable volume groups.</p>
-</dd>
-<dt>critical_vg (optional, bool, None)</dt><dd><p>Enables the Critical VG option of the volume group</p>
-</dd>
-<dt>pp_size (optional, int, None)</dt><dd><p>Sets the number of megabytes in each physical partition, which is expressed in units of megabytes from 1 (1 MB) through 131072 (128 GB)</p>
-</dd>
-<dt>pp_limit (optional, int, None)</dt><dd><p>Changes the limit of the number of physical partitions per physical volume. It must be 1 - 16 for 32 PV volume groups and 1 and 64 for 128 PV volume groups</p>
-</dd>
-<dt>major_num (optional, int, None)</dt><dd><p>Specifies the major number of the volume group that is created</p>
-</dd>
-<dt>num_lvs (optional, int, None)</dt><dd><p>Number of logical volumes that can be created. This attribute is valid for only scalable volume groups</p>
-</dd>
-<dt>vg_name (True, str, None)</dt><dd><p>Specifies the volume group name</p>
-</dd>
-<dt>state (optional, str, present)</dt><dd><p>Specifies the action to be performed on a VG. <em>present</em> - Create/Extends/Modifies VG, <em>absent</em> - Reduce/Remove VG, <em>varyon</em> - Varyon VG, <em>varyoff</em> - Varyoff VG</p>
-</dd>
-<dt>pvs (optional, list, None)</dt><dd><p>Comma separated list of physical volumes</p>
+<dt>major_num (optional, int, None)</dt><dd><p>Specifies the major number of the volume group that is created.</p>
+<p>Can be used only when creating a volume group, hence when <em>state=present</em>.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
+<div class="section" id="notes">
+<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p><strong>Attention:</strong> using <em>state=absent</em> with <em>delete_lvs=yes</em> automatically deletes all logical volume data on the physical volume before removing the physical volume from the volume group. If a logical volume spans multiple physical volumes, the removal of any of those physical volumes may jeopardize the integrity of the entire logical volume.</p></li>
+<li><p>You can refer to the IBM documentation for additional information on the commands used at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chvg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chvg.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/e_commands/extendvg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/e_commands/extendvg.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkvg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkvg.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/reducevg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/reducevg.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/v_commands/varyonvg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/v_commands/varyonvg.html</a>, <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/v_commands/varyoffvg.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/v_commands/varyoffvg.html</a>.</p></li>
+</ul>
+</div>
+</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Extend a volume group</span>
   <span class="nt">ibm.power_aix.lvg</span><span class="p">:</span>
     <span class="l l-Scalar l-Scalar-Plain">pvs=hdisk1</span>
@@ -306,18 +358,22 @@
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, Volume group ‘rootvg’ is in varyon state.)</dt><dd><p>The execution message.</p>
+<dt>msg (always, str, Volume group ‘rootvg’ activated.)</dt><dd><p>The execution message.</p>
 </dd>
-<dt>stdout (always, str, datavg)</dt><dd><p>The standard output</p>
+<dt>cmd (always, str, )</dt><dd><p>The command executed.</p>
 </dd>
-<dt>stderr (always, str, 0516-321 mkvg: Physical volume rootvg is not configured.n 0516-306 mkvg: Unable to find physical volume hdisk3 in the Device Configuration Database.n 0516-862 mkvg: Unable to create volume group.)</dt><dd><p>The standard error</p>
+<dt>rc (When the command is executed., int, )</dt><dd><p>The command return code.</p>
+</dd>
+<dt>stdout (always, str, datavg)</dt><dd><p>The standard output of the command.</p>
+</dd>
+<dt>stderr (always, str, 0516-321 mkvg: Physical volume rootvg is not configured.n 0516-306 mkvg: Unable to find physical volume hdisk3 in the Device Configuration Database.n 0516-862 mkvg: Unable to create volume group.)</dt><dd><p>The standard error of the command.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -339,10 +395,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="lvol.html" class="btn btn-neutral float-right" title="lvol – Create/Delete logical volume or change characteristics of logical volume on AIX" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="lvm_facts.html" class="btn btn-neutral float-right" title="lvm_facts – Reports LVM information as facts." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="lpp_facts.html" class="btn btn-neutral float-left" title="lpp_facts – Returns installed software products as facts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="lpp_facts.html" class="btn btn-neutral float-left" title="lpp_facts – Returns installed software products as facts." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
