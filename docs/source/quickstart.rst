@@ -43,6 +43,51 @@ to refer to the collection repeatedly. For example, you can use the
       suma:
           oslevel: 'latest'
 
+ansible user
+------------
+
+Some modules included in this collection perform privileged operations. Only
+authorized users can run privileged operations.
+It is recommended to create an ``ansible`` user with a the proper roles on the
+system.
+
+For example the ``alt_disk`` module runs ``alt_disk_copy`` and
+``alt_rootvg_op`` commands that require ``aix.system.install`` authorization,
+and ``chpv`` command that requires ``aix.lvm.manage.change`` authorization.
+
+You can get the list of commands run as part of the ``alt_disk`` module with:
+
+.. code-block:: shell-session
+
+   # awk -F\' '/cmd =/ {print $2}' .ansible/collections/ansible_collections/ibm/power_aix/plugins/modules/alt_disk.py | sort -u
+
+Then on your managed node running AIX, you can use the following to define an
+``ansible_backup`` role with the proper authorizations and create an
+``ansible`` user owning this role:
+
+.. code-block:: shell-session
+
+   # cmds="alt_disk_copy getconf lquerypv lspv lsvg /usr/sbin/alt_rootvg_op /usr/sbin/chpv"
+   # for cmd in $cmds; do lssecattr -c `which $cmd`; done
+   # mkrole authorizations=aix.system.install,aix.lvm.manage.change dfltmsg="Ansible Role for bakcup" ansible_backup
+   # mkuser roles=ansible_backup default_roles=ansible_backup ansible
+   # setkst
+
+Note that the ``mkrole`` command is itself a privileged command. Hence you
+must assume a role that has the ``aix.security.role.create`` authorization to
+run the command successfully.
+
+To connect to the endpoint using this ``ansible`` user, specify
+``user: ansible`` in the playbook or ``ansible_user=ansible`` in the
+inventory.
+
+For more information on using authorizations and privileges, refer to the
+`IBM RBAC documentation`_.
+
+When a user is not authorized to run a privileged operations, it will get a
+error message such as: ``alt_disk_copy: cannot execute``.
+
+
 ansible-doc
 -----------
 
@@ -72,3 +117,5 @@ to the `Ansible guide`_.
 .. _Ansible guide:
    https://docs.ansible.com/ansible/latest/cli/ansible-doc.html#ansible-doc
 
+.. _IBM RBAC documentation:
+   https://www.ibm.com/support/knowledgecenter/ssw_aix_72/security/rbac.html
