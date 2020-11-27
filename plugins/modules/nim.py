@@ -27,6 +27,8 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - User with root authority to run the nim command.
+- 'Privileged user with authorization:
+  B(aix.system.install,aix.system.nim.config.server,aix.system.nim.stat)'
 options:
   action:
     description:

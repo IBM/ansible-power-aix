@@ -23,7 +23,8 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- User with priviledged authorizations.
+- 'Privileged user with authorizations:
+  B(aix.fs.manage.list,aix.fs.manage.create,aix.fs.manage.change,aix.fs.manage.remove,aix.fs.manage.mount,aix.fs.manage.unmount)'
 options:
   state:
     description:

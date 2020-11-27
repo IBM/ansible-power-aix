@@ -30,6 +30,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorizations: B(aix.fs.manage.change,aix.system.install)'
 options:
   apar:
     description:
@@ -106,6 +107,8 @@ notes:
   - The script requires ksh93 to use.
   - B(v0.8.1) is the current version of the script, depending on changes, this module might need to
     be updated.
+  - When the FLRTVC ksh script cannot execute the emgr command, it tries with B(sudo), so you can
+    try installing B(sudo) on the managed system.
 '''
 
 EXAMPLES = r'''

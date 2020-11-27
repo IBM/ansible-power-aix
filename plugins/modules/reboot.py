@@ -19,6 +19,7 @@ description:
 version_added: '2.9'
 requirements:
 - Python >= 2.7
+- 'Privileged user with authorization: B(aix.system.boot.shutdown)'
 - In ansible.cfg file, ensure that ssh_args are properly set, so that ssh connection does not end up in a hang.
   For example, ssh_args = -o ForwardAgent=yes -o ControlPersist=30m -o ServerAliveInterval=45 -o ServerAliveCountMax=10
 options:

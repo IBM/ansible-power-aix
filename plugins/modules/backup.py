@@ -28,6 +28,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorization: B(aix.system.install)'
 options:
   action:
     description:

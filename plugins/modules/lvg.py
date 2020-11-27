@@ -24,7 +24,8 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- Root user is required.
+- 'Privileged user with authorizations:
+  B(aix.lvm.manage.extend,aix.lvm.manage.change,aix.lvm.manage.create,aix.lvm.manage.remove)'
 options:
   state:
     description:

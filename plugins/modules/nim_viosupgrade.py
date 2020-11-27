@@ -29,6 +29,7 @@ requirements:
 - AIX >= 7.2 TL3
 - Python >= 2.7
 - ios_mksysb VIOS level >= 3.1.0.0
+- 'Privileged user with authorizations: B(aix.system.install,aix.system.nim.config.server)'
 options:
   action:
     description:

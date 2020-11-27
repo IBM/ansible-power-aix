@@ -22,7 +22,9 @@ description:
 - List and reports details about defined AIX Logical Volume Manager (LVM) components such as
   Physical volumes, Logical volumes and Volume groups in Ansible facts.
 version_added: '2.9'
-requirements: [ AIX ]
+requirements:
+- AIX >= 7.1 TL3
+- Python >= 2.7
 options:
   name:
     description:

@@ -27,6 +27,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorizations: B(aix.system.install,aix.system.nim.config.server)'
 options:
   action:
     description:
