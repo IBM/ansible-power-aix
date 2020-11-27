@@ -16,9 +16,10 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_vios_alt_disk
-short_description: Create/Cleanup an alternate rootvg disk
+short_description: Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.
 description:
-- Copy the rootvg to an alternate disk or cleanup an existing one.
+- Performs alternate disk copy and cleanup operations through the Network Installation Management
+  (NIM) copying the root volume group to an alternate disk or cleaning an existing copy.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -27,6 +28,7 @@ options:
   action:
     description:
     - Specifies the operation to perform on the VIOS.
+    - Specifies the action to perform.
     - C(alt_disk_copy) to perform and alternate disk copy.
     - C(alt_disk_clean) to cleanup an existing alternate disk copy.
     type: str
@@ -34,33 +36,23 @@ options:
     required: true
   targets:
     description:
-    - NIM VIOS targets.
-    - Use a dictionary format, with the key being the VIOS NIM name and the
-      value being the list of disks used for the alternate disk copy.
+    - Specifies the NIM VIOS clients to perform the action on.
+    - Uses a dictionary format, with the key being the VIOS NIM name and the value being the list of
+      disks used for the alternate disk copy.
+    - When no target disks is specified, the alternate disk copy is performed to only one alternate
+      disk even if the rootvg contains multiple disks.
     type: list
     elements: dict
     required: true
   time_limit:
     description:
-    - Before starting the action, the actual date is compared to this parameter value;
-      if it is greater then the task is stopped; the format is C(mm/dd/yyyy hh:mm).
+    - Before starting the action, the actual date is compared to this parameter value; if it is
+      greater then the task is stopped.
+    - The valid format is C(mm/dd/yyyy hh:mm).
     type: str
-  vars:
-    description:
-    - Specifies additional parameters.
-    type: dict
-  vios_status:
-    description:
-    - Specifies the result of a previous operation.
-    type: dict
-  nim_node:
-    description:
-    - Allows to pass along NIM node info from a task to another so that it
-      discovers NIM info only one time for all tasks.
-    type: dict
   disk_size_policy:
     description:
-    - Specifies how to choose the alternate disk if not specified.
+    - Specifies how to choose the alternate disk when not specified.
     - C(minimize) smallest disk that can be selected.
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
@@ -74,11 +66,26 @@ options:
     - Stops any active rootvg mirroring during the alternate disk copy.
     type: bool
     default: no
+  vios_status:
+    description:
+    - Specifies the result of a previous operation.
+    - If set then the I(vios_status) of a target tuple must contain C(SUCCESS) to attempt update.
+    - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set
+      to C(SKIPPED-NO-PREV-STATUS).
+    type: dict
+  nim_node:
+    description:
+    - Allows to pass along NIM node info from a previous task to another so that it discovers NIM
+      info only one time for all tasks. The current task might update the NIM info it needs.
+    type: dict
 notes:
-  - C(alt_disk_copy) only backs up mounted file systems. Mount all file
-    systems that you want to back up.
-  - when no target is specified, copy is performed to only one alternate
-    disk even if the rootvg contains multiple disks
+  - C(alt_disk_copy) only backs up mounted file systems. Mount all file systems that you want to
+    back up.
+  - When no target disks is specified, the alternate disk copy is performed to only one alternate
+    disk even if the rootvg contains multiple disks.
+  - You can refer to the IBM documentation for additional information on the NIM concept and command
+    at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
+    U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_alt_disk_install.html).
 '''
 
 EXAMPLES = r'''
@@ -115,6 +122,10 @@ nim_node:
     type: dict
 status:
     description: Status for each VIOS tuples (dictionary key).
+    returned: always
+    type: dict
+output:
+    description: Detailed information on the module execution.
     returned: always
     type: dict
 '''
@@ -1022,7 +1033,7 @@ def alt_disk_action(module, action, targets, vios_status, time_limit):
                            .format(vios_key))
                 continue
 
-            if vios_status[vios_key] != 'SUCCESS-HC' and vios_status[vios_key] != 'SUCCESS-UPDT':
+            if 'SUCCESS' not in vios_status[vios_key]:
                 altdisk_op_tab[vios_key] = vios_status[vios_key]
                 OUTPUT.append("    {0} vioses skipped ({1})"
                               .format(vios_key, vios_status[vios_key]))
@@ -1241,7 +1252,6 @@ def main():
             action=dict(required=True, type='str',
                         choices=['alt_disk_copy', 'alt_disk_clean']),
             time_limit=dict(type='str'),
-            vars=dict(type='dict'),
             vios_status=dict(type='dict'),
             nim_node=dict(type='dict'),
             disk_size_policy=dict(type='str',
@@ -1258,9 +1268,7 @@ def main():
         stderr='',
     )
 
-    # =========================================================================
     # Get module params
-    # =========================================================================
     action = module.params['action']
     targets = module.params['targets']
 
@@ -1274,9 +1282,7 @@ def main():
     vios_status = {}
     targets_altdisk_status = {}
 
-    # =========================================================================
     # Build nim node info
-    # =========================================================================
     if module.params['nim_node']:
         NIM_NODE = module.params['nim_node']
     else:
@@ -1295,13 +1301,12 @@ def main():
         if match_key:
             time_limit = time.strptime(module.params['time_limit'], '%m/%d/%Y %H:%M')
         else:
+            results['output'] = OUTPUT
             results['msg'] = 'Malformed time limit "{0}", please use mm/dd/yyyy hh:mm format.'\
                              .format(module.params['time_limit'])
             module.fail_json(**results)
 
-    # =========================================================================
     # Perfom check and operation
-    # =========================================================================
     ret = check_vios_targets(module, targets)
     if not ret:
         results['output'] = OUTPUT
@@ -1325,7 +1330,7 @@ def main():
     results['nim_node'] = NIM_NODE
     results['status'] = targets_altdisk_status
     results['output'] = OUTPUT
-    results['msg'] = 'VIOS alt disk operation completed successfully'
+    results['msg'] = 'VIOS alt disk operation completed. See status and output for details.'
     module.exit_json(**results)
 
 

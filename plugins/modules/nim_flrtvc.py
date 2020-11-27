@@ -16,15 +16,16 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_flrtvc
-short_description: Generate flrtvc report, download and install efix
+short_description: Use NIM to generate FLRTVC report, download and install security and HIPER fixes.
 description:
-- Generate flrtvc report, download and install efix.
-- Check targets vulnerability against available fixes, and apply necessary fixes.
-  It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker
-  Script to generates a report. It parses the report, downloads the fixes,
-  checks their versions and if some files are locked. Then it installs the
-  remaining fixes. In case of inter-locking file you could run this several
-  times.
+- Use the NIM master to apply known security and HIPER (High Impact PERvasive) fixes on target
+  systems based on their inventory ensuring the systems are at supported and secure levels.
+- It downloads and uses the Fix Level Recommendation Tool Vulnerability Checker script to generate
+  a report. It parses this report, downloads the required fixes, extracts the files and checks their
+  versions against installed software levels. It also checks for file locking preventing fix
+  installation. It rejects fixes that do not match these requirements and installs the remaining.
+- In case of inter-locking file(s) you might want run against the task.
+- You will get the list of installed and rejected fixes in the results meta data.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -33,34 +34,35 @@ options:
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - C(foo*) designates all the NIM clients with name starting by C(foo).
-    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(ALL) designates all the NIM clients.
+    - C(foo*) specifies all the NIM clients with name starting by C(foo).
+    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) specifies all the NIM clients.
     type: list
     elements: str
     required: true
   apar:
     description:
     - Type of APAR to check or download.
-    - C(sec) Security vulnerabilities.
-    - C(hiper) Corrections to High Impact PERvasive threats.
-    - C(all) Same behavior as None, both C(sec) and C(hiper) vulnerabilities.
+    - C(sec) stands for Security vulnerabilities.
+    - C(hiper) stands for Corrections to High Impact PERvasive threats.
+    - C(all) has the same behavior as C(None) hence both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
   filesets:
     description:
-    - Filter filesets for specific phrase. Only fixes on the filesets specified will be checked and updated.
+    - Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified
+      phrase will be checked and so updated.
     type: str
   csv:
     description:
     - Path to a APAR CSV file containing the description of the C(sec) and C(hiper) fixes.
-    - This file is usually transferred from the fix server; this rather big transfer
-      can be avoided by specifying an already transferred file.
+    - This file is usually transferred from the Fix Central server; you can avoid this rather big
+      transfer by specifying the path to an already transferred file.
     type: str
   path:
     description:
-    - Specifies the directory to save the FLRTVC report. All temporary files such as
-      previously installed filesets, fixes lists and downloaded fixes files will be
+    - Specifies the directory to save the FLRTVC report.
+    - All temporary files such as installed filesets, fixes listings and downloaded fixes files are
       stored in the working subdirectory named 'I(path)/work'.
     type: str
     default: /var/adm/ansible
@@ -72,6 +74,8 @@ options:
   verbose:
     description:
     - Generate full FLRTVC reporting (verbose mode).
+    - It runs the FLRTVC script a second time to save the full report into file. So this option
+      impacts the execution performance.
     type: bool
     default: no
   force:
@@ -88,36 +92,45 @@ options:
   check_only:
     description:
     - Specifies to only check if fixes are already applied on the targets.
-      No download or install operations.
+    - B(No download or installation) operations will be performed.
     type: bool
     default: no
   download_only:
     description:
-    - Specifies to perform check and download operation, do not install anything.
+    - Specifies to perform check and download operation only.
+    - B(No installation) will be performed.
     type: bool
     default: no
   extend_fs:
     description:
-    - Specifies to increase filesystem size of the working directory if needed.
-    - If set a filesystem of the host could have increased even if it returns I(changed=False).
+    - Specifies to increase filesystem size of the working directory when extra space is needed.
+    - When set, a filesystem could have increased while the task returns I(changed=False).
     type: bool
     default: yes
+notes:
+  - Refer to the FLRTVC page for detail on the sctipt
+    U(https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html)
+  - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file.
+    It is downloaded from U(https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip).
+  - The script requires ksh93 to use.
+  - B(v0.8.1) is the current version of the script, depending on changes, this module might need to
+    be updated.
 '''
 
 EXAMPLES = r'''
 - name: Download patches for security vulnerabilities
   nim_flrtvc:
     targets: nimclient01
-    path: /usr/sys/inst.images
-    verbose: yes
     apar: sec
+    path: /usr/sys/inst.images
     download_only: yes
 
 - name: Install both sec and hyper patches for all filesets starting with devices.fcp
   nim_flrtvc:
     targets: nimclient02
-    path: /usr/sys/inst
     filesets: devices.fcp.*
+    path: /usr/sys/inst
+    save_report: yes
     verbose: yes
     force: no
     clean: no
@@ -129,10 +142,16 @@ msg:
     returned: always
     type: str
     sample: 'exit on download only'
+targets:
+    description: List of NIM clients actually targeted for the operation.
+    returned: always
+    type: list
+    elements: str
+    sample: [nimclient01, nimclient02, ...]
 status:
     description:
-    - Status for each target. It can be empty, SUCCESS or FAILURE.
-    - If I(download_only=True), refer to C(meta[<target>][message]) and
+    - Status for each C(target). It can be empty, SUCCESS or FAILURE.
+    - If I(download_only=True), refer to C(meta[<target>][messages]) and
       C(meta[<target>][4.1.reject]) for error checking.
     returned: always
     type: dict
@@ -147,7 +166,7 @@ meta:
             returned: always
             type: list
             elements: str
-            sample: see below
+            sample: see sample of meta
         <target>:
             description: Detailed information on the execution on the <target>.
             returned: when target is actually a NIM client or master
@@ -158,49 +177,54 @@ meta:
                     returned: always
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 0.report:
                     description: Output of the FLRTVC script, report or details on flrtvc error if any.
-                    returned: if the FLRTVC script run succeeds
+                    returned: if the FLRTVC script succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 1.parse:
-                    description: List of URLs to download or details on parsing error if any.
-                    returned: if the parsing succeeds
+                    description: List of URLs to download and details on parsing error if any.
+                    returned: if the FLRTVC report parsing succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 2.discover:
-                    description: List of epkgs found in URLs.
-                    returned: if the discovery succeeds
+                    description:
+                    - List of epkgs found in URLs.
+                    - URLs can be eFix or tar files or directories needing parsing.
+                    returned: if the URL downloads and epkgs listing succeed
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 3.download:
                     description: List of downloaded epkgs.
-                    returned: if download succeeds
+                    returned: if download operation succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 4.1.reject:
-                    description: List of epkgs rejected, refer to messages and log file for reason.
+                    description:
+                    - List of epkgs rejected. Can be because installed levels do not match ifix required
+                      levels or because a file is or will be locked by an other ifix installation.
+                    - You should refer to messages or to log file for very detailed reason.
                     returned: if check succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 4.2.check:
-                    description: List of epkgs following prerequisites.
+                    description: List of epkgs matching the prerequisites and trying to install.
                     returned: if check succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
                 5.install:
-                    description: List of epkgs actually installed.
+                    description: List of epkgs actually installed on the <target> system.
                     returned: if install succeeds
                     type: list
                     elements: str
-                    sample: see below
+                    sample: see sample of meta
     sample:
         "meta": {
             "messages": [
@@ -274,6 +298,7 @@ import zipfile
 import stat
 import time
 import calendar
+
 from collections import OrderedDict
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
@@ -981,17 +1006,16 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
         with open(filename, 'w') as myfile:
             if params['verbose']:
                 cmd += ['-v']
-
-            module.debug('{0}: write flrtvc report to file, cmd "{1}"'.format(machine, ' '.join(cmd)))
-            rc, stdout, stderr = module.run_command(cmd)
-            # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
-            if rc != 0 and rc != 2:
-                msg = 'Failed to save flrtvc report in file, rc={0}'.format(rc)
-                module.log(machine + ': ' + msg)
-                module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
-                module.log('stdout:{0}'.format(stdout))
-                module.log('stderr:{0}'.format(stderr))
-                output['messages'].append(msg)
+                module.debug('{0}: write flrtvc report to file, cmd "{1}"'.format(machine, ' '.join(cmd)))
+                rc, stdout, stderr = module.run_command(cmd)
+                # quick fix as flrtvc.ksh returns 2 if vulnerabities with some fixes found
+                if rc != 0 and rc != 2:
+                    msg = 'Failed to save flrtvc report in file, rc={0}'.format(rc)
+                    module.log(machine + ': ' + msg)
+                    module.log('cmd:{0} failed rc={1}'.format(cmd, rc))
+                    module.log('stdout:{0}'.format(stdout))
+                    module.log('stderr:{0}'.format(stderr))
+                    output['messages'].append(msg)
             myfile.write(stdout)
 
     return True
@@ -1271,10 +1295,30 @@ def get_nim_clients_info(module):
     cmd = ['lsnim', '-c', 'machines', '-l']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
+        msg = 'Cannot get NIM Client information. Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        module.log(msg)
+        results['msg'] = msg
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
         module.fail_json(**results)
+
+    info = build_dict(module, stdout)
+    info['master'] = {}
+
+    return info
+
+
+def build_dict(module, stdout):
+    """
+    Build dictionary with the stdout info
+
+    arguments:
+        module  (dict): The Ansible module
+        stdout   (str): stdout of the command to parse
+    returns:
+        info    (dict): NIM info dictionary
+    """
+    info = {}
 
     for line in stdout.rstrip().splitlines():
         line = line.rstrip()
@@ -1287,8 +1331,6 @@ def get_nim_clients_info(module):
         if rmatch_attr:
             info[obj_key][rmatch_attr.group(1)] = rmatch_attr.group(2)
             continue
-    info['master'] = {}
-
     return info
 
 
@@ -1389,7 +1431,7 @@ def check_targets(module, output, targets, nim_clients):
         if rc != 0:
             msg = 'Cannot reach {0} with c_rsh, rc:{1}, stderr:{2}'.format(machine, rc, stderr)
             module.log('[WARNING] ' + msg)
-            output[machine]['message'].append(msg)
+            output[machine]['messages'].append(msg)
         else:
             targets_ok.append(machine)
 
@@ -1425,11 +1467,7 @@ def main():
     results = dict(
         changed=False,
         msg='',
-        status={},
-        # status structure will be updated as follow:
-        # status={
-        #   target_name: [ SUCCESS, FAILURE ]
-        # }
+        targets=[],
         meta={'messages': []},
         # meta structure will be updated as follow:
         # meta={
@@ -1443,6 +1481,11 @@ def main():
         #       '4.2.check': [],    check_epkgs builds the list of epkgs checking prerequisites
         #       '5.install': [],    run_installer builds the list of installed epkgs
         #   }
+        # }
+        status={},
+        # status structure will be updated as follow:
+        # status={
+        #   target_name: 'SUCCESS' or 'FAILURE'
         # }
     )
 
@@ -1494,6 +1537,7 @@ def main():
         msg = 'Empty target list'
         results['meta']['messages'].append(msg)
         module.log(msg)
+    results['targets'] = targets.copy()
 
     # ===========================================
     # Install flrtvc script

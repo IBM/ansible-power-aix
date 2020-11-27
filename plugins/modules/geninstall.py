@@ -16,7 +16,7 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: geninstall
-short_description: Generic installer for various packaging formats
+short_description: Generic installer for various packaging formats.
 description:
 - A generic installer that installs software products of various packaging formats.
 - For example, installp, RPM, SI, and ISMP.
@@ -25,9 +25,28 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 options:
+  action:
+    description:
+    - Controls what is performed.
+    - C(install) performs an install of the specified software.
+    - C(uninstall) performs an uninstall of the specified software.
+    - C(list) lists the contents of the media.
+    type: str
+    choices: [ install, uninstall, list ]
+    default: install
   device:
     description:
-    - The name of the device or directory.
+    - Specifies the device or directory that contains the images to install.
+    - The geninstall command searches for the images in the following paths
+      /mount_point/installp/ppc (installp package),
+      /mount_point/RPMS/ppc (RPM package),
+      /mount_point/emgr/ppc (Interim fix packages for AIX),
+      /mount_point/ISMP/ppc (ISMP packages for AIX).
+    - If the paths do not exist, it searches in the base directory of the specific device. If the
+      image names are not preceded by a prefix that indicates the image type, it identifies a type
+      for the image.
+    - If the paths exist and the image is not found in any path, and if the image does not contain
+      any prefix, the image is treated as an RPM-formatted image.
     type: str
   install_list:
     description:
@@ -39,18 +58,10 @@ options:
     default: []
   force:
     description:
-    - Forces action.
+    - Force the operation allowing to reinstall a package that is already installed, or to install
+      a package that is older than the currently installed version.
     type: bool
     default: no
-  action:
-    description:
-    - Controls what is performed.
-    - C(install) performs an install of the specified software.
-    - C(uninstall) performs an uninstall of the specified software.
-    - C(list) lists the contents of the media.
-    type: str
-    choices: [ install, uninstall, list ]
-    default: install
   agree_licenses:
     description:
     - Agrees to required software license agreements for software to be installed.
@@ -60,6 +71,9 @@ options:
     description:
     - Specifies the installp flags to use when calling the installp command.
     type: str
+notes:
+  - You can refer to the IBM documentation for additional information on the geninstall command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/g_commands/geninstall.html)
 '''
 
 EXAMPLES = r'''
@@ -80,13 +94,21 @@ msg:
     returned: always
     type: str
     sample: 'Invalid parameter: install_list cannot be empty'
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+rc:
+    description: The command return code.
+    returned: When the command is executed.
+    type: int
 stdout:
-    description: The standard output
+    description: The standard output of the command.
     returned: always
     type: str
     sample: 'bin:bin:::J:::::::bin Product::::\nsbin:sbin:::J:::::::sbin Product::::'
 stderr:
-    description: The standard error
+    description: The standard error of the command.
     returned: always
     type: str
     sample: '0503-105 geninstall: The device or directory: /dev/cd0 does not exist.'
@@ -116,6 +138,7 @@ def main():
     result = dict(
         changed=False,
         msg='',
+        cmd='',
         stdout='',
         stderr='',
     )
@@ -152,6 +175,8 @@ def main():
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    result['cmd'] = ' '.join(cmd)
+    result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:

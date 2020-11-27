@@ -16,20 +16,22 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: mkfilt
-short_description: Activates or deactivates the filter rules
+short_description: Activates or deactivates the filter rules.
 description:
 - Activates or deactivates the filter rules.
+- This command can also be used to control the filter logging function.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- User with priviledged authorizations.
 options:
   action:
     description:
     - Specifies the action to perform.
     - C(add) to add filter rules.
     - C(check) to check the syntax of filter rules.
-    - C(change) to change a filter rule.
+    - C(change) to change filter rules.
     - C(import) to import filter rules from an export file.
     - C(export) to export filter rules to an export file.
     type: str
@@ -37,14 +39,14 @@ options:
     default: add
   directory:
     description:
-    - When I(action=import) or I(action=export), specifies the directory where
-      the text files are to be read.
+    - When I(action=import) or I(action=export), specifies the directory where the text files are to
+      be read.
     - When I(action=export), directory will be created if it does not exist.
     type: str
   rawexport:
     description:
-    - When I(action=export), specifies to export filter rules as is and to not
-      reverse direction on rules.
+    - When I(action=export), specifies to export filter rules as is and to not reverse direction on
+      rules.
     type: bool
     default: no
   ipv4:
@@ -96,8 +98,8 @@ options:
           s_addr:
             description:
             - Specifies the source address. It can be an IP address or a host name.
-            - If a host name is specified, the first IP address returned by the name server
-              for that host will be used.
+            - If a host name is specified, the first IP address returned by the name server for that
+              host will be used.
             type: str
           s_mask:
             description:
@@ -105,10 +107,10 @@ options:
             type: str
           s_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the source port
-              of the packet and the source port I(s_port) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the source port of
+              the packet and the source port I(s_port) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: &operations [ lt, le, gt, ge, eq, neq ]
           s_port:
             description:
             - Specifies the source port.
@@ -116,8 +118,8 @@ options:
           d_addr:
             description:
             - Specifies the destination address. It can be an IP address or a host name.
-            - If a host name is specified, the first IP address returned by the name server
-              for that host will be used.
+            - If a host name is specified, the first IP address returned by the name server for that
+              host will be used.
             type: str
           d_mask:
             description:
@@ -125,30 +127,30 @@ options:
             type: str
           d_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the destination port
-              of the packet and the destination port I(d_port) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the destination
+              port of the packet and the destination port I(d_port) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           d_port:
             description:
             - Specifies the destination port.
             type: str
           icmp_type_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the ICMP type
-              of the packet and the ICMP type I(icmp_type) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the ICMP type of
+              the packet and the ICMP type I(icmp_type) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           icmp_type:
             description:
             - Specifies the ICMP type.
             type: str
           icmp_code_opr:
             description:
-            - Specifies the operation that will be used in the comparison between the ICMP code
-              of the packet and the ICMP code I(icmp_code) specified in this filter rule.
+            - Specifies the operation that will be used in the comparison between the ICMP code of
+              the packet and the ICMP code I(icmp_code) specified in this filter rule.
             type: str
-            choices: [ lt, le, gt, ge, eq, neq ]
+            choices: *operations
           icmp_code:
             description:
             - Specifies the ICMP code.
@@ -161,8 +163,8 @@ options:
             type: str
           log:
             description:
-            - Specifies the log control. Packets that match this filter rule will be
-              included in the filter log.
+            - Specifies the log control. Packets that match this filter rule will be included in the
+              filter log.
             type: bool
             default: no
           interface:
@@ -180,8 +182,8 @@ options:
             type: str
           timeout:
             description:
-            - Specifies the expiration time. The expiration time is the amount
-              of time the rule should remain active in seconds.
+            - Specifies the expiration time. The expiration time is the amount of time the rule
+              should remain active in seconds.
             type: str
           description:
             description:
@@ -190,7 +192,8 @@ options:
           protocol:
             description:
             - Specifies the protocol to which the filter rule applies.
-            - The valid values are C(udp), C(icmp), C(icmpv6), C(tcp), C(tcp/ack), C(ospf), C(ipip), C(esp), C(ah), and C(all).
+            - The valid values are C(udp), C(icmp), C(icmpv6), C(tcp), C(tcp/ack), C(ospf), C(ipip),
+              C(esp), C(ah), and C(all).
             - The protocol can also be specified numerically (between 1 and 252).
             type: str
           source_routing:
@@ -200,8 +203,8 @@ options:
             default: no
           routing:
             description:
-            - Specifies whether the rule will apply to forwarded packets, packets
-              destined or originated from the local host, or both.
+            - Specifies whether the rule will apply to forwarded packets, packets destined or
+              originated from the local host, or both.
             type: str
             choices: [ route, local, both ]
           antivirus:
@@ -225,6 +228,9 @@ options:
     - Specifies the IPv6 filter module state and rules.
     type: dict
     suboptions: *ipcommon
+notes:
+  - You can refer to the IBM documentation for additional information on the command used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkfilt.html).
 '''
 
 EXAMPLES = r'''
@@ -255,6 +261,12 @@ EXAMPLES = r'''
       rules:
       - action: remove
         id: all
+
+- name: Export filter rules as is into export text files
+  mkfilt:
+    action: export
+    directory: /root/export
+    rawexport: yes
 '''
 
 RETURN = r'''
@@ -298,13 +310,13 @@ def list_rules(module, version):
     cmd = ['lsfilt', vopt, '-O']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        results['stdout'] = stdout
-        results['stderr'] = stderr
+        results['stdout'] += stdout
+        results['stderr'] += stderr
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         return None
 
     rules = []
-    for line in stdout.split('\n'):
+    for line in stdout.splitlines():
         fields = line.split('|', 22)
         if len(fields) < 22:
             continue
@@ -421,9 +433,9 @@ def add_change_rules(module, params, version):
             if params[version]['force']:
                 cmd += ['-f']
             ret, stdout, stderr = module.run_command(cmd)
+            results['stdout'] += stdout
+            results['stderr'] += stderr
             if ret != 0:
-                results['stdout'] = stdout
-                results['stderr'] = stderr
                 results['msg'] = 'Could not remove rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
@@ -434,9 +446,9 @@ def add_change_rules(module, params, version):
                 module.fail_json(**results)
             cmd = ['mvfilt', vopt, '-p', rule['id'], '-n', rule['new_id']]
             ret, stdout, stderr = module.run_command(cmd)
+            results['stdout'] += stdout
+            results['stderr'] += stderr
             if ret != 0:
-                results['stdout'] = stdout
-                results['stderr'] = stderr
                 results['msg'] = 'Could not move rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
@@ -581,12 +593,7 @@ def import_rules(module, params):
     global results
 
     cmd = ['impfilt', '-f', params['directory']]
-    ret, stdout, stderr = module.run_command(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
+    module.run_command(cmd, check_rc=True)
     results['changed'] = True
 
 
@@ -594,17 +601,10 @@ def export_rules(module, params):
     """
     Exports filter rules to an export file.
     """
-    global results
-
     cmd = ['expfilt', '-f', params['directory']]
     if params['rawexport']:
         cmd += ['-r']
-    ret, stdout, stderr = module.run_command(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
+    module.run_command(cmd, check_rc=True)
 
 
 def check_rules(module):
@@ -614,28 +614,18 @@ def check_rules(module):
     global results
 
     cmd = ['ckfilt']
-    ret, stdout, stderr = module.run_command(cmd)
+    ret, stdout, stderr = module.run_command(cmd, check_rc=True)
     results['stdout'] = stdout
     results['stderr'] = stderr
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
 
 
 def make_devices(module):
     """
     Make sure ipsec_v4 and ipsec_v6 devices are Available.
     """
-    global results
-
     for version in ['4', '6']:
         cmd = ['mkdev', '-l', 'ipsec', '-t', version]
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
+        module.run_command(cmd, check_rc=True)
 
 
 def main():

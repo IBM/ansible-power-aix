@@ -16,12 +16,16 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim_updateios
-short_description: Use NIM to update a single or a pair of Virtual I/O Servers to latest maintenance level.
+short_description: Use NIM to update a single or a pair of Virtual I/O Servers.
 description:
-- Uses the NIM to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
-- Checks status of previous operation if provided before running its operations.
-- VIOSes of a tuple must be on the same cluster and the node states must be OK.
-- When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and restart it after installation.
+- Uses the Network Installation Management (NIM) to perform updates and customization to Virtual I/O
+  Server (VIOS) targets tuple.
+- A tuple can be one VIOS or a pair of VIOSes to update together.
+- Checks status of previous operation if provided before running operation on the tuple.
+- When a cluster is configured, the VIOSes of a tuple must be on the same cluster and the node
+  states must be OK.
+- When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and
+  restart it after installation. Then, it starts updating the second VIOS.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -29,7 +33,7 @@ requirements:
 options:
   action:
     description:
-    - Specifies the operation telling updateios what operation to perform on the VIOS.
+    - Specifies the action to perform.
     - C(install) installs new and supported filesets.
     - C(commit) commits all uncommitted updates.
     - C(cleanup) removes all incomplete pieces of the previous installation.
@@ -39,8 +43,8 @@ options:
     required: true
   targets:
     description:
-    - Specifies the list of VIOSes NIM targets to update.
-    - You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple. There are called tuple.
+    - Specifies the list of VIOSes NIM targets tuple to update.
+    - You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple.
     type: list
     elements: str
     required: true
@@ -56,39 +60,49 @@ options:
     type: str
   lpp_source:
     description:
-    - Identifies the NIM lpp_source resource that will provide the installation images for the operation.
+    - Specifies the NIM I(lpp_source) resource that will provide the installation images for the
+      operation.
     type: str
   accept_licenses:
     description:
-    - Specifies whether the software licenses should be automatically accepted during the installation.
+    - Specifies whether the software licenses should be automatically accepted during the
+      installation.
     type: bool
     default: True
   manage_cluster:
     description:
-    - Specifies whether the cluster should be check and stop before updating the vios and restarted after.
+    - Specifies whether the cluster should be check and stop before updating the vios and restarted
+      after the update.
     type: bool
     default: False
   preview:
-    description: Specifies a preview operation. No action is actually performed.
+    description:
+    - Specifies to run the operations in preview operation. No action is actually performed.
     type: bool
     default: True
   time_limit:
     description:
-    - Before starting the action on a VIOS tuple, the actual date is compared to this parameter value; if it is greater then the task is stopped.
+    - Before starting the action on a VIOS tuple, the actual date is compared to this parameter
+      value; if it is greater then the task is stopped.
     - The format is C(mm/dd/yyyy hh:mm).
     - The resulting status for tuples in this case will be I(SKIPPED-TIMEOUT).
     type: str
   vios_status:
     description:
     - Specifies the result of a previous operation.
-    - If set then the I(vios_status) of a target tuple must contain I(SUCCESS) to attempt update.
-    - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set to I(SKIPPED-NO-PREV-STATUS).
+    - If set then the I(vios_status) of a target tuple must contain C(SUCCESS) to attempt update.
+    - If no I(vios_status) value is found for a tuple, then returned I(status) for this tuple is set
+      to C(SKIPPED-NO-PREV-STATUS).
     type: dict
   nim_node:
     description:
-    - Allows to pass along NIM node info from a task to another so that it
-      discovers NIM info only one time for all tasks.
+    - Allows to pass along NIM node info from a task to another so that it discovers NIM info only
+      one time for all tasks.
     type: dict
+notes:
+  - You can refer to the IBM documentation for additional information on the NIM concept and command
+    at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
+    U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_updateios.html).
 '''
 
 EXAMPLES = r'''
@@ -125,7 +139,8 @@ msg:
 targets:
     description: List of VIOSes actually targeted for the operation.
     returned: always
-    type: str
+    type: list
+    elements: str
     sample: [vios1, 'vios2, vios3', ...]
 stdout:
     description: The standard output.
@@ -234,7 +249,7 @@ meta:
                     type: dict
                     contains:
                         cmd:
-                            description: Command exectued.
+                            description: Command executed.
                             returned: If the command was run.
                             type: str
                         stdout:
@@ -944,6 +959,10 @@ def main():
         # }
         nim_node={},
         status={},
+        # status structure will be updated as follow:
+        # status={
+        #   target_name: 'SUCCESS' or 'FAILURE'
+        # }
     )
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')

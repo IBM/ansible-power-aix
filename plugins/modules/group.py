@@ -16,60 +16,71 @@ DOCUMENTATION = """
 author:
 - AIX development Team (@pbfinley1911)
 module: group
-short_description: Create new group or change/remove attributes of group on AIX
+short_description: Manage presence, attributes and member of AIX groups.
 description:
-    - This module facilitates the creation of a new group with provided attributes, the
-      modification of attributes of existing group and the deletion of group.
+- It allows to create new group, to change/remove attributes and administrators or members of a
+  group, and to delete an existing group.
 version_added: "2.9"
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - Root user is required.
 options:
-    group_attributes:
-        description:
-        - Provides the attributes to be changed or created for the group.
-        type: dict
-    user_list_action:
-        description:
-        - Provides the action choices of adding or removing the members or admins.
-        - C(add) to add members or amdins of the group with provided I(users_list) in group I(name)
-        - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
-        type: str
-        choices: [ add, remove ]
-    user_list_type:
-        description:
-        - Provides the action to be taken for the group members or admins.
-        - C(members) for Provided I(user_list_action) choice will be performed on members of the group
-        - C(admins) for Provided I(user_list_action) choice will be performed on admins of the group
-        type: str
-        choices: [ members, admins ]
-    state:
-        description:
-        - Specifies the action to be performed for the group.
-        - C(present) to create group with provided I(name) and I(group_attributes) in the system.
-        - C(absent) to delete group with provided I(name). If group is not present then message will be displayed for the same.
-        - C(modify) to change the specified attributes with provided value of the given group.
-        type: str
-        choices: [ present, absent, modify ]
-        required: true
-    name:
-        description:
-        - Group name should be specified for which the action is to taken
-        type: str
-        aliases: [ group ]
-        required: true
-    users_list:
-        description:
-        - Name of the users separated by commas to be added/removed as members/admins of the group.
-        - Should be used along with I(user_list_action) and I(user_list_type parameters).
-        type: str
-    remove_keystore:
-        description:
-        - Specifies if the group's keystore information should be deleted from the system while performing
-          the delete operation on group.
-        type: bool
-        default: true
+  name:
+    description: Specifies the name of the group to manage.
+    type: str
+    aliases: [ group ]
+    required: true
+  state:
+    description:
+    - Specifies the action to be performed.
+    - C(present) creates a new group. When the group already exists, use I(sate=modify) to change
+      its attributes.
+    - C(absent) deletes an existing group. Users who are group members are not removed.
+    - C(modify) changes specified value of attributes of an existing group. When the group does not
+      exist, use I(sate=present).
+    type: str
+    choices: [ present, absent, modify ]
+    required: true
+  group_attributes:
+    description:
+    - Specifies the attributes for the group to be created or modified.
+    - Can be used when I(state=present) or I(state=modify).
+    type: dict
+  user_list_action:
+    description:
+    - Specifies to add or remove members/admins from the group.
+    - C(add) to add members or admins of the group with provided I(users_list) in group I(name)
+    - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
+    - Can be used when I(state=present) or I(state=modify).
+    type: str
+    choices: [ add, remove ]
+  user_list_type:
+    description:
+    - Specifies the type of user to add/remove.
+    - C(members) specifies the I(user_list_action) is performed on members of the group
+    - C(admins) specifies the I(user_list_action) is performed on admins of the group
+    - Can be used when I(state=present) or I(state=modify).
+    type: str
+    choices: [ members, admins ]
+  users_list:
+    description:
+    - Specifies a list of user to be added/removed as members/admins of the group.
+    - Should be used along with I(user_list_action) and I(user_list_type) parameters.
+    - Can be used when I(state=present) or I(state=modify).
+    type: list
+    elements: str
+  remove_keystore:
+    description:
+    - Specifies to remove the group's keystore information while removing the goup.
+    - Can be used when I(state=absent).
+    type: bool
+    default: yes
+notes:
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkgroup.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chgrpmem.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmgroup.html).
 """
 
 EXAMPLES = r'''
@@ -87,9 +98,14 @@ msg:
     description: The execution message.
     returned: always
     type: str
-rc':
-    description: The return code.
-    returned: If the command failed.
+    sample: 'Group: foo SUCCESSFULLY created.'
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+rc:
+    description: The command return code.
+    returned: When the command is executed.
     type: int
 stdout':
     description: The standard output.
@@ -104,6 +120,8 @@ stderr':
 
 from ansible.module_utils.basic import AnsibleModule
 
+result = None
+
 
 def modify_group(module):
     """
@@ -113,17 +131,16 @@ def modify_group(module):
     note:
         Exits with fail_json in case of error
     return:
-        msg      (srt): success or error message.
+        msg      (str): success or error message.
     """
-
-    group_attributes = module.params['group_attributes']
-    user_list_action = module.params['user_list_action']
-    opts = ""
-    load_module_opts = None
+    global result
     msg = ""
 
-    if group_attributes is not None:
-        for attr, val in group_attributes.items():
+    opts = ""
+    load_module_opts = None
+
+    if module.params['group_attributes']:
+        for attr, val in module.params['group_attributes'].items():
             if attr == 'load_module':
                 load_module_opts = "-R %s " % val
             else:
@@ -133,22 +150,26 @@ def modify_group(module):
         cmd = "chgroup %s %s" % (opts, module.params['name'])
         rc, stdout, stderr = module.run_command(cmd)
 
+        result['cmd'] = ' '.join(cmd)
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
         if rc != 0:
-            msg = "\nFailed to modify attributes for the group: %s" % module.params['name']
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            result['msg'] += "\nFailed to modify attributes for group: %s." % module.params['name']
+            module.fail_json(**result)
         else:
-            msg = "\nAll provided attributes for the group: %s is set SUCCESSFULLY" % module.params['name']
+            msg = "\nGroup: %s attributes SUCCESSFULLY set." % module.params['name']
 
-    if user_list_action is not None:
+    if module.params['user_list_action']:
         cmd = "chgrpmem "
 
-        if module.params['user_list_type'] is None:
-            msg += "\nPlease provide the choice of members or admins type."
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        if not module.params['user_list_type']:
+            result['msg'] += "\nuser_list_type is '%s' but 'user_list_type' is missing." % module.params['user_list_type']
+            module.fail_json(**result)
 
-        if module.params['users_list'] is None:
-            msg += "\nPlease provide the list of users to %s" % module.params['user_list_action']
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        if not module.params['users_list']:
+            result['msg'] += "\nuser_list_type is '%s' but 'users_list' is missing." % module.params['user_list_type']
+            module.fail_json(**result)
 
         if module.params['user_list_type'] == 'members':
             cmd += "-m "
@@ -162,85 +183,94 @@ def modify_group(module):
         if module.params['user_list_action'] == 'remove':
             cmd += "- "
 
-        cmd += module.params['users_list']
+        cmd += ",".join(module.params['users_list'])
         cmd = cmd + " " + module.params['name']
 
         rc, stdout, stderr = module.run_command(cmd)
 
+        result['cmd'] = cmd
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
         if rc != 0:
-            msg += "\nFailed to modify member/admin list for the group: %s" % module.params['name']
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            result['msg'] += "\nFailed to modify %s list for group: %s." % (module.params['user_list_type'], module.params['name'])
+            module.fail_json(**result)
         else:
-            msg += "\nMember/Admin list modified for the group %s SUCCESSFULLY" % module.params['name']
+            msg += "\n%s list for group: %s SUCCESSFULLY modified." % (module.params['user_list_type'], module.params['name'])
 
     return msg
 
 
 def create_group(module):
     """
-    Creates the group with the attributes provided in the
-    attribiutes field.
+    Creates the group with the attributes provided in the attributes field.
     arguments:
         module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     return:
-        msg      (srt): success or error message.
+        msg      (str): success or error message.
     """
-
-    group_attributes = module.params['group_attributes']
-    user_list_action = module.params['user_list_action']
+    global result
     msg = ""
 
     cmd = ['mkgroup']
-
-    cmd.append(module.params['name'])
+    cmd += [module.params['name']]
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    result['cmd'] = ' '.join(cmd)
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        msg += "\nFailed to create group: %s" % module.params['name']
-        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        result['msg'] = "Failed to create group: %s." % module.params['name']
+        module.fail_json(**result)
     else:
-        msg += "\nGroup is created SUCCESSFULLY: %s" % module.params['name']
+        msg = "Group: %s SUCCESSFULLY created." % module.params['name']
 
-    if group_attributes is not None or user_list_action is not None:
-        msg_attr = modify_group(module)
-        msg += msg_attr
+    if module.params['group_attributes'] or module.params['user_list_action']:
+        result['msg'] += modify_group(module)
 
     return msg
 
 
 def remove_group(module):
     """
-    Remove the user from the group.
+    Remove the group.
     arguments:
         module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     return:
-        msg      (srt): success or error message.
+        msg      (str): success or error message.
     """
+    global result
+    msg = ""
     cmd = ['rmgroup']
 
     if module.params['remove_keystore']:
-        cmd.append('-p')
-    cmd.append(module.params['name'])
+        cmd += ['-p']
+    cmd += [module.params['name']]
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    result['cmd'] = ' '.join(cmd)
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
     if rc != 0:
-        msg = "Unable to remove the group: %s" % module.params['name']
-        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        result['msg'] = "Unable to remove the group: %s." % module.params['name']
+        module.fail_json(**result)
     else:
-        msg = "Group is REMOVED SUCCESSFULLY: %s" % module.params['name']
+        msg = "Group: %s SUCCESSFULLY removed" % module.params['name']
 
     return msg
 
 
 def group_exists(module):
     """
-    Checks if the specified user exists in the system or not.
+    Checks if the specified group exists in the system or not.
     arguments:
         module      (dict): The Ansible module
     return:
@@ -248,11 +278,11 @@ def group_exists(module):
         false otherwise
     """
     cmd = ["lsgroup"]
-    cmd.append(module.params['name'])
+    cmd += [module.params['name']]
 
     rc, out, err = module.run_command(cmd)
 
-    if (rc == 0):
+    if rc == 0:
         return True
     else:
         return False
@@ -262,6 +292,8 @@ def main():
     """
     Main function
     """
+    global result
+
     module = AnsibleModule(
         argument_spec=dict(
             state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
@@ -269,42 +301,50 @@ def main():
             group_attributes=dict(type='dict'),
             user_list_action=dict(type='str', choices=['add', 'remove']),
             user_list_type=dict(type='str', choices=['members', 'admins']),
-            users_list=dict(type='str'),
+            users_list=dict(type='list', elements='str'),
             remove_keystore=dict(type='bool', default=True),
         ),
         supports_check_mode=False
     )
 
-    msg = ""
-    group_attributes = module.params['group_attributes']
-    user_list_action = module.params['user_list_action']
-    changed = False
+    result = dict(
+        changed=False,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
+    )
 
     if module.params['state'] == 'absent':
         if group_exists(module):
-            msg = remove_group(module)
-            changed = True
+            result['msg'] = remove_group(module)
+            result['changed'] = True
         else:
-            msg = "Group name is NOT FOUND : %s" % module.params['name']
+            result['msg'] = "Group name is NOT FOUND : %s" % module.params['name']
+
     elif module.params['state'] == 'present':
         if not group_exists(module):
-            msg = create_group(module)
-            changed = True
+            result['msg'] = create_group(module)
+            result['changed'] = True
         else:
-            msg = "Group %s already exists." % module.params['name']
+            result['msg'] = "Group %s already exists." % module.params['name']
+
     elif module.params['state'] == 'modify':
-        if group_attributes is None and user_list_action is None:
-            msg = "Please provide the attributes to be set or action to be taken for the group."
+        if not module.params['group_attributes'] and not module.params['user_list_action']:
+            result['msg'] = "State is '%s'. Please provide attributes to set or action to be taken for the group." % module.params['state']
         else:
             if group_exists(module):
-                msg = modify_group(module)
-                changed = True
+                result['msg'] = modify_group(module)
+                result['changed'] = True
             else:
-                msg = "No group found in the system to modify the attributes: %s" % module.params['name']
+                result['msg'] = "No group found in the system to modify the attributes: %s" % module.params['name']
+                module.fail_json(**result)
     else:
-        msg = "Invalid state. The state provided is not supported: %s" % module.params['state']
+        # should not happen
+        result['msg'] = "Invalid state. The state provided is not supported: %s" % module.params['state']
+        module.fail_json(**result)
 
-    module.exit_json(changed=changed, msg=msg)
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':

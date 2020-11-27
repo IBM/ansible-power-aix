@@ -40,7 +40,7 @@ options:
     default: present
   rm_mount_point:
     description:
-    - When state is I(state=absent), specifies to remove the mount directory along with the entry in
+    - When I(state=absent), specifies to remove the mount directory along with the entry in
       the filesystem.
     type: bool
     default: false
@@ -92,6 +92,14 @@ options:
     description:
     - Specifies a Network File System (NFS) server for NFS filesystem.
     type: str
+notes:
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chfsmnt.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chnfsmnt.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/crfs.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mknfsmnt.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmfs.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmnfsmnt.html).
 '''
 
 EXAMPLES = r'''

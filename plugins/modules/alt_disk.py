@@ -36,8 +36,8 @@ options:
     description:
     - Specifies the target disks.
     - Either I(targets) or I(disk_size_policy) must be specified.
-    - If no I(targets) disk is specified, it will look for a valid candidate disk based on
-      the provided I(disk_size_policy) policy.
+    - If no I(targets) disk is specified, it will look for a valid candidate disk based on the
+      provided I(disk_size_policy) policy.
     type: list
     elements: str
   disk_size_policy:
@@ -62,31 +62,34 @@ options:
     default: no
   remain_nim_client:
     description:
-    - When I(action=copy), specifies to copy the C(/.rhosts) and C(/etc/niminfo) files
-      to the alternate rootvg.
+    - When I(action=copy), specifies to copy the C(/.rhosts) and C(/etc/niminfo) files to the
+      alternate rootvg.
     type: bool
     default: no
   device_reset:
     description:
-    - When I(action=copy), specifies to reset any user-defined device configurations
-      on the target C(altinst_rootvg).
+    - When I(action=copy), specifies to reset any user-defined device configurations on the target
+      C(altinst_rootvg).
     type: bool
     default: no
   first_boot_script:
     description:
-    - When I(action=copy), specifies an optional customization script to run during
-      the initial boot of the alternate rootvg, after all file systems are mounted.
+    - When I(action=copy), specifies an optional customization script to run during the initial boot
+      of the alternate rootvg, after all file systems are mounted.
     type: str
   resolvconf:
     description:
-    - When I(action=copy), specifies the C(resolv.conf) file to replace the existing
-      one after the rootvg has been cloned.
+    - When I(action=copy), specifies the C(resolv.conf) file to replace the existing one after the
+      rootvg has been cloned.
     type: str
 notes:
   - M(alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
   - When no target is specified, copy is performed to only one alternate
     disk even if the rootvg contains multiple disks.
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_copy.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_rootvg_op.html).
 '''
 
 EXAMPLES = r'''

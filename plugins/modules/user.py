@@ -19,7 +19,7 @@ module: user
 short_description: Create new users or change/remove attributes of users on AIX.
 description:
 - This module facilitates the creation of a new user with provided attributes, the
-  modification of attributes of existing user and the deletion of user.
+  modification of attributes or deletion of an existing user.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -29,35 +29,55 @@ options:
   state:
     description:
     - Specifies the action to be performed for the user.
-    - C(present) to create user with provided I(name) and I(attributes) in the system.
-    - C(absent) to delete user with provided I(name). If username is not present then message will be displayed.
-    - C(modify) to change the specified attributes with provided value of the given username.
+    - C(present) creates a user with provided I(name) and I(attributes) in the system.
+    - C(absent) deletes the user with provided I(name).
+    - C(modify) changes the specified attributes of an exiting user.
     type: str
     choices: [ present, absent, modify ]
     required: true
   name:
-    description: Specifies the user name for which the action is to be taken.
+    description:
+    - Specifies the user name.
+    - It must be unique, you cannot use the ALL or default keywords in the user name.
     type: str
     aliases: [ user ]
     required: true
   attributes:
-    description: Specifies the attributes to be changed or created for the user.
+    description:
+    - Specifies the attributes to be changed or created for the user.
+    - For details on valid user attributes, please refers to IBM documentation at
+      U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html).
+    - If you have the proper authority, you can set the following usual user attributes
+      account_locked, admin, admgroups, capabilities, cpu, daemon, data, default_roles, dictionlist,
+      domains, expires, fsize, fsize_hard, gecos, groups, histexpire, home, id, login, loginretries,
+      logintimes, maxages, maxexpired, maxrepeats, maxulogs, minage, minalpha, mindiff, minlen,
+      minother, nofiles, nproc, pgrp, projects, pwdchecks, pwdwarntime, rcmds, rlogin, roles, rss,
+      shell, stack, su, sugroups, sysenv, threads, tpath, ttys, umask, usrenv, etc.
     type: dict
   remove_password:
     description:
-    - Specifies if the password information should be deleted from the system's password
-      file while performing the delete operation on username.
+    - Specifies if the password information should be deleted from the system's password file while
+      removing a user.
+    - Can be used when I(state=absent).
     type: bool
     default: True
   change_passwd_on_login:
     description:
-    - Specifies if the user is required to change the password when logging in the first time
-      after the password change operation is performed.
+    - Specifies if the user is required to change the password when logging in the first time after
+      the password change operation is performed.
+    - Can be used when I(state=present).
     type: bool
     default: False
   password:
-    description: Specifies the encrypted string for the password to create or change the password.
+    description:
+    - Specifies the encrypted string for the password to create or change the password.
+    - Can be used when I(state=present).
     type: str
+notes:
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkuser.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmuser.html).
 '''
 
 EXAMPLES = r'''

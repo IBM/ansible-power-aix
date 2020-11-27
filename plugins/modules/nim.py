@@ -16,57 +16,54 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: nim
-short_description: Server setup, install packages, update SP or TL.
+short_description: Performs NIM operations - server setup, install packages, update SP or TL.
 description:
-- Server setup, install packages, update SP or TL.
+- Performs operations on Network Installation Management (NIM) objects.
+- It allows to configure the NIM master server, manage NIM objects, perform various operations on
+  NIM clients such as software or Base Operating System (BOS) installation, SP or TL updates using
+  existing NIM resources, reboot, etc.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- User with root authority to run the nim command.
 options:
   action:
     description:
     - Specifies the action to perform.
     - C(update) to update NIM clients with a specified C(lpp_source).
     - C(master_setup) to setup a NIM master.
-    - C(check) to retrieve the C(Cstate) of each NIM client.
+    - C(check) to retrieve the B(Cstate) and B(oslevel) of each NIM client.
     - C(compare) to compare installation inventories of the NIM clients.
     - C(script) to apply a script to customize NIM clients.
     - C(allocate) to allocate a resource to specified NIM clients.
     - C(deallocate) to deallocate a resource for specified NIM clients.
-    - C(bos_inst) to install a given list of NIM clients.
+    - C(bos_inst) to install BOS image to a given list of NIM clients.
     - C(define_script) to define a script NIM resource.
     - C(remove) to remove a specified NIM resource.
-    - C(reset) to reset the C(Cstate) of a NIM client.
+    - C(reset) to reset the B(Cstate) of a NIM client.
     - C(reboot) to reboot the given NIM clients if they are running.
     - C(maintenance) to perform a maintenance operation on NIM clients.
     type: str
     choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance ]
     required: true
-  lpp_source:
-    description:
-    - Indicates the lpp_source to apply to the targets.
-    - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified;
-      based on the NIM server resources, nim will determine
-      the actual oslevel necessary to update the targets.
-    type: str
   targets:
     description:
     - Specifies the NIM clients to perform the action on.
-    - C(foo*) designates all the NIM clients with name starting by C(foo).
-    - C(foo[2:4]) designates the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(ALL) designates all the NIM clients.
+    - C(foo*) specifies all the NIM clients with name starting by 'foo'.
+    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
+    - C(*) or C(ALL) specifies all the NIM clients.
     type: list
     elements: str
-  asynchronous:
+  lpp_source:
     description:
-    - If set to C(no), NIM client will be completely installed before starting
-      the installation of another NIM client.
-    type: bool
-    default: no
+    - Indicates the name of the B(lpp_source) NIM resource to apply to the targets.
+    - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified; based on the NIM
+      server resources, nim will determine the actual oslevel necessary to update the targets.
+    type: str
   device:
     description:
-    - The device (or directory) where to find the lpp source to install.
+    - The device or directory where to find the lpp source to install.
     type: str
   script:
     description:
@@ -84,19 +81,26 @@ options:
     description:
     - NIM group resource.
     type: str
+  asynchronous:
+    description:
+    - If set to C(no), NIM client will be completely installed before starting the installation of
+      another NIM client.
+    type: bool
+    default: no
   force:
     description:
     - Forces action.
     type: bool
     default: no
-  operation:
-    description:
-    - NIM maintenance operation.
-    type: str
   description:
     description:
     - Describes the NIM operation (informational only).
     type: str
+notes:
+  - You can refer to the IBM documentation for additional information on the NIM concept and command
+    at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim_master_setup.html).
 '''
 
 EXAMPLES = r'''
@@ -130,7 +134,23 @@ msg:
     returned: always
     type: str
 nim_output:
-    description: Output from nim commands.
+    description: Detail information on NIM commands.
+    returned: always
+    type: str
+cmd:
+    description: Command executed.
+    returned: If the command was run.
+    type: str
+rc:
+    description: The return code.
+    returned: If the command was run.
+    type: int
+stdout:
+    description: The standard output.
+    returned: always
+    type: str
+stderr:
+    description: The standard error.
     returned: always
     type: str
 nim_node:
@@ -160,22 +180,43 @@ nim_node:
                 "723lpp_res": "/export/nim/lpp_source/723lpp_res"
             },
             "master": {
-                "cstate": "ready for a NIM operation",
+                "Cstate": "ready for a NIM operation",
                 "type": "master"
             },
             "standalone": {
                 "nimclient01": {
-                    "cstate": "ready for a NIM operation",
-                    "ip": "nimclient01.mydomain.com",
-                    "type": "standalone"
-                },
-                "nimclient02": {
-                    "cstate": "ready for a NIM operation",
-                    "ip": "nimclient02.mydomain.com",
-                    "type": "standalone"
+                    "Cstate": "ready for a NIM operation",
+                    "Cstate_result": "success",
+                    "Mstate": "currently running",
+                    "cable_type1": "N/A",
+                    "class": "machines",
+                    "comments": "object defined using nimquery -d",
+                    "connect": "nimsh",
+                    "cpuid": "00F600004C00",
+                    "if1": "master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0",
+                    "installed_image": "ansible_img",
+                    "mgmt_profile1": "p8-hmc 2 nimclient-cec nimclient-vios1",
+                    "netboot_kernel": "64",
+                    "platform": "chrp",
+                    "prev_state": "customization is being performed",
                 }
             },
-            "vios": {}
+            "vios": {
+                "vios1": {
+                    "Cstate": "ready for a NIM operation",
+                    "Cstate_result": "success",
+                    "Mstate": "currently running",
+                    "cable_type1": "N/A",
+                    "class": "management",
+                    "connect": "nimsh",
+                    "cpuid": "00F600004C00",
+                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "mgmt_profile1": "p8-hmc 1 vios-cec",
+                    "netboot_kernel": "64",
+                    "platform": "chrp",
+                    "prev_state": "alt_disk_install operation is being performed",
+                }
+            }
         }
 '''
 
@@ -184,6 +225,7 @@ import threading
 # pylint: disable=wildcard-import,unused-wildcard-import,redefined-builtin
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
 nim_node = {}
 
 
@@ -224,69 +266,85 @@ def run_oslevel_cmd(module, machine, result):
         module.log('Failed to get oslevel for {0}: {1}'.format(machine, msg))
 
 
-def get_nim_clients_info(module, lpar_type):
+def get_nim_type_info(module, lpar_type):
     """
-    Return the list of nim lpar_type objects defined on the
-           nim master and their associated Cstate value.
+    Build the hash of nim client of type=lpar_type defined on the
+    nim master and their associated key = value information.
+
+    arguments:
+        module      (dict): The Ansible module
+        lpar_type    (str): type of the nim object to get information
+    note:
+        Exits with fail_json in case of error
+    return:
+        info_hash   (dict): information from the nim clients
     """
     global results
 
     cmd = ['lsnim', '-t', lpar_type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = rc
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        msg = 'Cannot get NIM Client information. Command \'{0}\' failed with return code {1}.'.format(results['cmd'], rc)
+        module.log(msg)
+        module.log("[STDOUT] {0}".format(stdout))
+        module.log("[STDERR] {0}".format(stderr))
         module.fail_json(**results)
 
-    # client name and associated Cstate
-    info_hash = {}
-    for line in stdout.rstrip().split('\n'):
+    info_hash = build_dict(module, stdout)
+
+    return info_hash
+
+
+def build_dict(module, stdout):
+    """
+    Build dictionary with the stdout info
+
+    arguments:
+        module  (dict): The Ansible module
+        stdout   (str): stdout of the command to parse
+    returns:
+        info    (dict): NIM info dictionary
+    """
+    info = {}
+
+    for line in stdout.rstrip().splitlines():
+        line = line.rstrip()
         match_key = re.match(r"^(\S+):", line)
         if match_key:
             obj_key = match_key.group(1)
-            info_hash[obj_key] = {}
-            info_hash[obj_key]['type'] = lpar_type
+            info[obj_key] = {}
             continue
-
-        match_cstate = re.match(r"^\s+Cstate\s+=\s+(.*)$", line)
-        if match_cstate:
-            cstate = match_cstate.group(1)
-            info_hash[obj_key]['cstate'] = cstate
+        rmatch_attr = re.match(r"^\s+(\S+)\s+=\s+(.*)$", line)
+        if rmatch_attr:
+            info[obj_key][rmatch_attr.group(1)] = rmatch_attr.group(2)
             continue
-
-        match_mgmtprof = re.match(r"^\s+mgmt_profile1\s+=\s+(.*)$", line)
-        if match_mgmtprof:
-            mgmt_elts = match_mgmtprof.group(1).split()
-            if len(mgmt_elts) >= 3:
-                info_hash[obj_key]['mgmt_hmc_id'] = mgmt_elts[0]
-                info_hash[obj_key]['mgmt_id'] = mgmt_elts[1]
-                info_hash[obj_key]['mgmt_cec_serial'] = mgmt_elts[2]
-            else:
-                module.log('[WARNING] {0} management profile does not have 3 elements: {1}'
-                           .format(obj_key, match_mgmtprof.group(1)))
-            continue
-
-        match_if = re.match(r"^\s+if1\s+=\s+\S+\s+(\S+)\s+.*$", line)
-        if match_if:
-            info_hash[obj_key]['ip'] = match_if.group(1)
-            continue
-
-    return info_hash
+    return info
 
 
 def get_nim_master_info(module):
     """
     Get the Cstate of the nim master.
+
+    arguments:
+        module      (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
     """
     global results
 
     cmd = ['lsnim', '-l', 'master']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = rc
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        results['msg'] = 'Cannot get NIM master information. Command \'{0}\' failed with return code {1}.'.format(results['cmd'], rc)
+        module.log(results['msg'])
         module.fail_json(**results)
 
     # Retrieve associated Cstate
@@ -303,12 +361,13 @@ def get_oslevels(module, targets):
     """
     Get the oslevel of the specified targets.
 
+    arguments:
+        module      (dict): The Ansible module
+
     return a dictionary of the oslevels
     """
 
-    # =========================================================================
     # Launch threads to collect information on targets
-    # =========================================================================
     threads = []
     oslevels = {}
 
@@ -329,18 +388,24 @@ def get_oslevels(module, targets):
 def get_nim_lpp_source(module):
     """
     Get the list of lpp_source defined on the nim master.
-    """
 
+    arguments:
+        module      (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     cmd = ['lsnim', '-t', 'lpp_source', '-l']
     ret, stdout, stderr = module.run_command(cmd)
     if ret != 0:
-        module.log('NIM - Error getting the lpp_source list - rc:{0}, error:{1}'
-                   .format(ret, stderr))
+        msg = 'Cannot list lpp_source resource. Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        module.log(msg)
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = ret
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        results['msg'] = msg
         module.fail_json(**results)
 
     # lpp_source list
@@ -361,36 +426,30 @@ def get_nim_lpp_source(module):
 def build_nim_node(module):
     """
     Build nim_node dictionary containing nim clients info and lpp sources info.
-    """
 
+    arguments:
+        module      (dict): The Ansible module
+    """
     global nim_node
 
-    # =========================================================================
     # Build nim lpp_source list
-    # =========================================================================
     nim_lpp_sources = get_nim_lpp_source(module)
     nim_node['lpp_source'] = nim_lpp_sources
-    module.debug('lpp source list: {0}'.format(nim_lpp_sources))
+    module.debug('NIM lpp source list: {0}'.format(nim_lpp_sources))
 
-    # =========================================================================
     # Build nim clients info
-    # =========================================================================
-    standalones = get_nim_clients_info(module, 'standalone')
-    nim_node['standalone'] = standalones
-    module.debug('NIM Clients: {0}'.format(standalones))
+    nim_node['standalone'] = get_nim_type_info(module, 'standalone')
+    module.debug('NIM standalone clients: {0}'.format(nim_node['standalone']))
 
-    vioses = get_nim_clients_info(module, 'vios')
-    nim_node['vios'] = vioses
-    module.debug('NIM VIOS Clients: {0}'.format(vioses))
+    nim_node['vios'] = get_nim_type_info(module, 'vios')
+    module.debug('NIM VIOS clients: {0}'.format(nim_node['vios']))
 
-    # =========================================================================
     # Build master info
-    # =========================================================================
     cstate = get_nim_master_info(module)
     nim_node['master'] = {}
     nim_node['master']['type'] = 'master'
-    nim_node['master']['cstate'] = cstate
-    module.debug('NIM master: Cstate = {0}'.format(cstate))
+    nim_node['master']['Cstate'] = cstate
+    module.debug('NIM master: {0}'.format(nim_node['master']))
 
 
 def expand_targets(targets):
@@ -406,21 +465,17 @@ def expand_targets(targets):
         master        the nim master
 
     arguments:
-        targets (list): The list of target patterns
-
-    return: the list of existing machines matching the target patterns
+        targets (list): The list of target patterns.
+    return:
+        the list of existing machines matching the target patterns
     """
     global nim_node
 
-    # ===========================================
     # Build clients list
-    # ===========================================
     clients = []
     for target in targets:
 
-        # -----------------------------------------------------------
         # Build target(s) from: range i.e. quimby[7:12]
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
             name = rmatch.group(1)
@@ -432,12 +487,9 @@ def expand_targets(targets):
                 curr_name = name + str(i)
                 if curr_name in nim_node['standalone']:
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: val*. i.e. quimby*
-        # -----------------------------------------------------------
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
 
@@ -446,19 +498,14 @@ def expand_targets(targets):
             for curr_name in nim_node['standalone']:
                 if re.match(r"^%s\.*" % name, curr_name):
                     clients.append(curr_name)
-
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: all or *
-        # -----------------------------------------------------------
         if target.upper() == 'ALL' or target == '*':
             clients = list(nim_node['standalone'])
             continue
 
-        # -----------------------------------------------------------
         # Build target(s) from: quimby05 quimby08 quimby12
-        # -----------------------------------------------------------
         if (target in nim_node['standalone']) or (target == 'master'):
             clients.append(target)
 
@@ -470,9 +517,13 @@ def perform_async_customization(module, lpp_source, targets):
     Perform an asynchronous customization of the given target clients,
     applying the given lpp_source.
 
-    return: the return code of the command.
+    arguments:
+        module     (dict): The Ansible module.
+        lpp_source  (str): The lpp_source NIM resource name.
+        targets    (list): The list of NIM clients.
+    return:
+        the return code of the command.
     """
-
     global results
 
     module.debug('NIM - perform_async_customization - lpp_spource: {0}, targets: {1} '
@@ -493,7 +544,10 @@ def perform_async_customization(module, lpp_source, targets):
     do_not_error = False
 
     ret, stdout, stderr = module.run_command(cmd)
-
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
@@ -524,9 +578,13 @@ def perform_sync_customization(module, lpp_source, target):
     Perform a synchronous customization of the given target client,
     applying the given lpp_source.
 
-    return: the return code of the command.
+    arguments:
+        module     (dict): The Ansible module.
+        lpp_source  (str): The lpp_source NIM resource name.
+        target      (str): The target name, can be 'master'.
+    return:
+        the return code of the command.
     """
-
     global results
 
     module.debug(
@@ -549,6 +607,10 @@ def perform_sync_customization(module, lpp_source, target):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
@@ -584,14 +646,17 @@ def perform_sync_customization(module, lpp_source, target):
     return ret
 
 
-def list_fixes(target, module):
+def list_fixes(module, target):
     """
     Get the list of interim fixes for a specified nim client.
 
-    return: a return code (0 if OK)
-            the list of fixes
+    arguments:
+        module  (dict): The Ansible module.
+        target   (str): The target name, can be 'master'.
+    return:
+        a return code (0 if OK)
+        the list of fixes
     """
-
     global results
 
     fixes = []
@@ -637,13 +702,17 @@ def list_fixes(target, module):
     return(ret, fixes)
 
 
-def remove_fix(target, fix, module):
+def remove_fix(module, target, fix):
     """
     Remove an interim fix for a specified nim client.
 
-    return: the return code of the command.
+    arguments:
+        module  (dict): The Ansible module.
+        target   (str): The target name, can be 'master'.
+        fix      (str): The ifix to remove.
+    return:
+        the return code of the command.
     """
-
     global results
 
     if target == 'master':
@@ -683,10 +752,13 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
     """
     Retrieve the good SP or TL resource to associate to the nim client oslevel.
 
-    parameters: lpp_type   SP or TL
-                lpp_time   next or latest
-
-    return: the lpp_source found or the current oslevel if not found
+    arguments:
+        module          (dict): The Ansible module.
+        lpp_type         (str): Type of the resource, can be sp or tl.
+        lpp_time         (str): next or latest
+        oslevel_elts    (list): List of oslevels to compare to.
+    return:
+        the lpp_source found or the current oslevel if not found
     """
     global nim_node
 
@@ -736,6 +808,12 @@ def nim_update(module, params):
 
     In case of updating to the latest TL or SP, the synchronous mode is forced.
     Interim fixes that could block the install are removed.
+
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
     """
 
     global results
@@ -770,11 +848,11 @@ def nim_update(module, params):
     # force interim fixes automatic removal
     if params['force']:
         for target in target_list:
-            (ret, fixes) = list_fixes(target, module)
+            (ret, fixes) = list_fixes(module, target)
             if ret != 0:
                 module.log("Continue to remove as many interim fixes we can")
             for fix in fixes:
-                remove_fix(target, fix, module)
+                remove_fix(module, target, fix)
                 module.log("[WARNING] Interim fix {0} has been automatically removed from {1}"
                            .format(fix, target))
 
@@ -791,7 +869,6 @@ def nim_update(module, params):
             perform_async_customization(module, lpp_source, target_list)
 
     else:    # synchronous update
-
         # Get the oslevels of the specified targets only
         oslevels = get_oslevels(module, target_list)
         for (k, val) in oslevels.items():
@@ -867,13 +944,16 @@ def nim_update(module, params):
 def nim_maintenance(module, params):
     """
     Apply a maintenance operation (commit) on nim clients (targets).
+
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
     """
 
     global results
     global nim_node
 
-    module.log('NIM - {0} maintenance operation on {1}'
-               .format(params['operation'], params['targets']))
+    module.log('NIM - maintenance operation on {0}'.format(params['targets']))
 
     target_list = expand_targets(params['targets'])
     module.debug('NIM - Target list: {0}'.format(target_list))
@@ -899,6 +979,10 @@ def nim_maintenance(module, params):
 
         ret, stdout, stderr = module.run_command(cmd)
 
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = ret
+        results['stdout'] = stdout
+        results['stderr'] = stderr
         module.log("[RC] {0}".format(ret))
         module.log("[STDOUT] {0}".format(stdout))
         module.log("[STDERR] {0}".format(stderr))
@@ -926,9 +1010,14 @@ def nim_maintenance(module, params):
 
 def nim_master_setup(module, params):
     """
-    Setup a nim master.
+    Initializes the NIM master fileset, install the installation
+    image in user specified device and configures the NIM master.
 
-    parameter: the device (directory) where to find the lpp source to install
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
     """
 
     global results
@@ -944,11 +1033,13 @@ def nim_master_setup(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -962,16 +1053,17 @@ def nim_master_setup(module, params):
 def nim_check(module, params):
     """
     Retrieve the oslevel and the Cstate of each nim client
-    """
 
-    global results
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    """
     global nim_node
 
     module.log('NIM - check operation')
 
     if params['targets'] is None:
         # Get the oslevel of all NIM clients and master
-
         oslevels = get_oslevels(module, nim_node['standalone'])
         for (k, val) in oslevels.items():
             nim_node['standalone'][k]['oslevel'] = val
@@ -984,7 +1076,6 @@ def nim_check(module, params):
         nim_node['master']['oslevel'] = oslevels['master']
     else:
         # Get the oslevel for specified targets only
-
         target_list = expand_targets(params['targets'])
         oslevels = get_oslevels(module, target_list)
         for (k, val) in oslevels.items():
@@ -997,6 +1088,12 @@ def nim_check(module, params):
 def nim_compare(module, params):
     """
     Compare installation inventory of the nim clients.
+
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
     """
 
     global results
@@ -1019,11 +1116,13 @@ def nim_compare(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1035,8 +1134,13 @@ def nim_compare(module, params):
 def nim_script(module, params):
     """
     Apply a script to customize nim client targets.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     async_script = ''
@@ -1066,11 +1170,13 @@ def nim_script(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1084,8 +1190,13 @@ def nim_script(module, params):
 def nim_allocate(module, params):
     """
     Allocate a resource to specified nim clients.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log('NIM - allocate operation on {0} for {1} lpp source'
@@ -1106,11 +1217,13 @@ def nim_allocate(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1124,8 +1237,13 @@ def nim_allocate(module, params):
 def nim_deallocate(module, params):
     """
     Deallocate a resource for specified nim clients.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log('NIM - deallocate operation on {0} for {1} lpp source'
@@ -1146,11 +1264,13 @@ def nim_deallocate(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1166,8 +1286,13 @@ def nim_bos_inst(module, params):
     Install a given list of nim clients.
     A specified group resource is used to install the nim clients.
     If specified, a script is applied to customize the installation.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log('NIM - bos_inst operation on {0} using {1} resource group'
@@ -1191,11 +1316,13 @@ def nim_bos_inst(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1210,8 +1337,13 @@ def nim_define_script(module, params):
     """
     Define a script nim resource.
     A script resource is defined using the specified script location.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log(
@@ -1227,11 +1359,13 @@ def nim_define_script(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1246,8 +1380,13 @@ def nim_remove(module, params):
     """
     Remove a nim resource from the nim database.
     The location of the resource is not destroyed.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log('NIM - remove operation on {0} resource'
@@ -1259,11 +1398,13 @@ def nim_remove(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1279,8 +1420,13 @@ def nim_reset(module, params):
     Reset the Cstate of a nim client.
     If the Cstate of the nim client is already in ready state, a warning is
         issued and no operation is made for this client.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
     global nim_node
 
@@ -1297,7 +1443,7 @@ def nim_reset(module, params):
     targets_to_reset = []
     targets_discarded = []
     for target in target_list:
-        if nim_node['standalone'][target]['cstate'] != 'ready for a NIM operation':
+        if nim_node['standalone'][target]['Cstate'] != 'ready for a NIM operation':
             targets_to_reset.append(target)
         else:
             targets_discarded.append(target)
@@ -1306,38 +1452,46 @@ def nim_reset(module, params):
         module.log('[WARNING] The following targets are already in a correct state: {0}'
                    .format(','.join(targets_discarded)))
 
-    if targets_to_reset:
-        cmd = ['nim']
-        if params['force']:
-            cmd += ['-F']
-        cmd += ['-o', 'reset']
-        cmd += targets_to_reset
+    if not targets_to_reset:
+        return
 
-        module.debug('NIM - Command:{0}'.format(cmd))
-        results['nim_output'].append('NIM - Command:{0}'.format(' '.join(cmd)))
+    cmd = ['nim']
+    if params['force']:
+        cmd += ['-F']
+    cmd += ['-o', 'reset']
+    cmd += targets_to_reset
 
-        ret, stdout, stderr = module.run_command(cmd)
+    module.log('Command: {0}'.format(cmd))
 
-        module.log("[RC] {0}".format(ret))
-        module.log("[STDOUT] {0}".format(stdout))
-        module.log("[STDERR] {0}".format(stderr))
-        results['stdout'] = stdout
-        results['stderr'] = stderr
+    ret, stdout, stderr = module.run_command(cmd)
 
-        if ret != 0:
-            module.log("Error: NIM Command: {0} failed with return code {1}"
-                       .format(cmd, ret))
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    module.log("[RC] {0}".format(ret))
+    module.log("[STDOUT] {0}".format(stdout))
+    module.log("[STDERR] {0}".format(stderr))
 
-        results['changed'] = True
+    if ret != 0:
+        msg = "Command: \'{0}\' failed with return code {1}".format(results['cmd'], ret)
+        module.log("Error: " + msg)
+        results['msg'] = msg
+        module.fail_json(**results)
+
+    results['changed'] = True
 
 
 def nim_reboot(module, params):
     """
     Reboot the given nim clients if they are running.
-    """
 
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
     global results
 
     module.log('NIM - reboot operation on {0}'.format(params['targets']))
@@ -1362,11 +1516,13 @@ def nim_reboot(module, params):
 
     ret, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = ret
+    results['stdout'] = stdout
+    results['stderr'] = stderr
     module.log("[RC] {0}".format(ret))
     module.log("[STDOUT] {0}".format(stdout))
     module.log("[STDERR] {0}".format(stderr))
-    results['stdout'] = stdout
-    results['stderr'] = stderr
 
     if ret != 0:
         module.log("Error: NIM Command: {0} failed with return code {1}"
@@ -1374,7 +1530,6 @@ def nim_reboot(module, params):
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
-    results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
     results['changed'] = True
 
 
@@ -1399,7 +1554,6 @@ def main():
             location=dict(type='str'),
             group=dict(type='str'),
             force=dict(type='bool', default=False),
-            operation=dict(type='str'),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1425,11 +1579,7 @@ def main():
         nim_output=[],
     )
 
-    module.debug('*** START ***')
-
-    # =========================================================================
     # Get module params
-    # =========================================================================
     lpp_source = module.params['lpp_source']
     targets = module.params['targets']
     asynchronous = module.params['asynchronous']
@@ -1440,7 +1590,6 @@ def main():
     group = module.params['group']
     force = module.params['force']
     action = module.params['action']
-    operation = module.params['operation']
 
     params = {}
 
@@ -1448,10 +1597,9 @@ def main():
     if description is None:
         description = "NIM operation: {0} request".format(action)
     params['description'] = description
+    module.debug('*** START {0} ***'.format(description))
 
-    # =========================================================================
     # Build nim node info
-    # =========================================================================
     build_nim_node(module)
 
     if action == 'update':
@@ -1463,7 +1611,6 @@ def main():
 
     elif action == 'maintenance':
         params['targets'] = targets
-        params['operation'] = operation
         nim_maintenance(module, params)
 
     elif action == 'master_setup':
@@ -1518,12 +1665,9 @@ def main():
         params['targets'] = targets
         nim_reboot(module, params)
 
-    else:
-        results['msg'] = 'NIM - Error: Unknown action {0}'.format(action)
-        module.fail_json(**results)
-
     results['nim_node'] = nim_node
     results['msg'] = 'NIM {0} completed successfully'.format(action)
+    module.log(results['msg'])
     module.exit_json(**results)
 
 

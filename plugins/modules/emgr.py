@@ -173,6 +173,8 @@ notes:
   - System administrators or users with the aix.system.install authorization can run the emgr
     command on a multi-level secure (MLS) system.
   - Ifix data, saved files, and temporary files are accessible only by the root user.
+  - You can refer to the IBM documentation for additional information on the emgr command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/e_commands/emgr.html).
 '''
 
 EXAMPLES = r'''

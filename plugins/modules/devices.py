@@ -82,6 +82,11 @@ options:
     type: str
     choices: [ unconfigure, stop ]
     default: unconfigure
+notes:
+  - You can refer to the IBM documentation for additional information on the commands used at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/cfgmgr.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chdev.html),
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmdev.html),
 '''
 
 EXAMPLES = r'''

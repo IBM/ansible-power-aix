@@ -16,11 +16,13 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: suma
-short_description: Download/Install fixes, SP or TL on an AIX server.
+short_description: Download/Install fixes, SP or TL from IBM Fix Central website.
 description:
-- Creates a task to automate the download and installation of technology level (TL)
-  and service packs (SP) from a fix server using the Service Update Management
-  Assistant (SUMA).
+- Service Update Management Assistant (SUMA) sets up an automated interface to download fixes from
+  the IBM Fix Central website to your systems.
+- SUMA provides flexible, task-based options to periodically check the availability of specific new
+  fixes, technology levels (TL) and service packs (SP). Therefore, system administrators do not have
+  to manually retrieve maintenance updates.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -28,82 +30,111 @@ requirements:
 options:
   action:
     description:
-    - Controls the action to be performed.
-    - C(download) to download and install all fixes.
-    - C(preview) to execute all the checks without downloading the fixes.
-    - C(list) to list all SUMA tasks.
-    - C(edit) to edit an exiting SUMA task.
-    - C(run) to run an exiting SUMA task.
-    - C(unschedule) to remove any scheduling information for the specified SUMA task.
-    - C(delete) to delete a SUMA task and remove any schedules for this task.
-    - C(config) to list global SUMA configuration settings.
-    - C(default) to list default SUMA tasks.
+    - Controls the SUMA action to be performed.
+    - C(download) specifies to download and install the fixes.
+    - C(preview) specifies to execute all the checks without downloading the fixes.
+    - C(list) specifies to list all SUMA tasks.
+    - C(edit) specifies to edit an exiting SUMA task.
+    - C(run) specifies to run an exiting SUMA task.
+    - C(unschedule) specifies to remove any scheduling information for the specified SUMA task.
+    - C(delete) specifies to delete a SUMA task and remove any schedules for the specified SUMA task.
+    - C(config) specifies to list global SUMA configuration settings.
+    - C(default) specifies to list default SUMA tasks.
     type: str
     choices: [ download, preview, list, edit, run, unschedule, delete, config, default ]
     default: preview
   oslevel:
     description:
     - Specifies the Operating System level to update to;
-    - C(Latest) indicates the latest SP suma can update the target to (for the current TL).
-    - C(xxxx-xx(-00-0000)) sepcifies a TL.
-    - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies a SP.
+    - C(Latest) specifies to update the target to the latest SP suma can update for the current TL.
+    - C(xxxx-xx(-00-0000)) specifies to update the target to a specific TL.
+    - C(xxxx-xx-xx-xxxx) or C(xxxx-xx-xx) specifies to update the target to a specific SP.
     - Required when I(action=download) or I(action=preview).
     type: str
     default: Latest
   download_dir:
     description:
-    - Directory where updates are downloaded.
+    - Specifies the directory to download updates files into.
     - Can be used if I(action=download) or I(action=preview).
     type: path
     default: /usr/sys/inst.images
   download_only:
     description:
-    - Download only. Do not perform installation of updates.
+    - Specifies to perform the preview and download operation only. Do not install the updates.
     - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: no
   last_sp:
     description:
-    - Specifies to download the last SP of the TL specified in I(oslevel). If no is specified only the TL is downloaded.
+    - Specifies to download the last SP of the TL specified in I(oslevel).
+    - When I(last_sp=no), only the TL is downloaded and/or installed.
     - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: no
   extend_fs:
     description:
-    - Specifies to automatically extends the filesystem if needed. If no is specified and additional space is required for the download, no download occurs.
+    - Specifies to automatically extends the filesystem if extra space is needed.
+    - When I(extend_fs=no) and additional space is required for the download, no download occurs.
+    - When set, a filesystem could have increased while the task returns I(changed=False).
     - Can be used if I(action=download) or I(action=preview).
     type: bool
     default: yes
   task_id:
     description:
-    - SUMA task identification number.
-    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=run) or I(action=unschedule).
+    - Specifies the SUMA task identification number.
+    - Can be used if I(action=list) or I(action=edit) or I(action=delete) or I(action=run) or
+      I(action=unschedule).
     - Required when I(action=edit) or I(action=delete) or I(action=run) or I(action=unschedule).
     type: str
   sched_time:
     description:
-    - Schedule time. Specifying an empty or space filled string results in unscheduling the task. If not set, it saves the task.
+    - Specifies the schedule time for the task.
+    - When an empty or space filled string is specified, it unschedules the task.
+    - When not set, it saves the task for later scheduling.
     - Can be used if I(action=edit).
     type: str
   save_task:
     description:
-    - Saves the SUMA task. The task is saved, allowing scheduling information to be added later.
+    - Specifies to save the SUMA task allowing scheduling information to be added later.
     - Can be used if I(action=download) or I(action=preview).
-    - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the saving time.
+    - If I(oslevel) is a TL and I(last_sp=yes) the task is saved with the last SP available at the
+      time the task is saved.
     type: bool
     default: no
   description:
     description:
-    - Display name for SUMA task.
-    - If not set the will be labelled 'I(action) request for oslevel I(oslevel)'
+    - Specifies the display name for SUMA task. This is used when viewing existing SUMA tasks in
+      SMIT for example.
+    - If not set they will be labelled as 'I(action) request for oslevel I(oslevel)'.
     - Can be used for I(action=download) or I(action=preview).
     type: str
   metadata_dir:
     description:
-    - Directory where metadata files are downloaded.
-    - Can be used if I(action=download) or I(action=preview) when I(last_sp=yes) or I(oslevel) is not exact, for example I(oslevel=Latest).
+    - Specifies the directory where metadata files are downloaded.
+    - Can be used if I(action=download) or I(action=preview) when I(last_sp=yes) or I(oslevel) is
+      not exact, for example I(oslevel=Latest).
     type: path
     default: /var/adm/ansible/metadata
+notes:
+  - The B(/var/adm/ras/suma.log) file on your system contains detailed results from running the SUMA
+    command.
+  - The B(/var/adm/ras/suma_dl.log) file on your system contains a list of files that have been
+    downloaded.
+  - When you configure SUMA in an AIX logical partition (LPAR) or as the NIM master, it establishes
+    a connection to the fix distribution website and downloads the available service update. The fix
+    distribution website is an IBM server with the domain name of esupport.ibm.com. If your
+    configuration contains a firewall that blocks the connection to the fix distribution website,
+    you must customize the firewall rules to allow SUMA to connect to the following IP addresses
+    129.42.56.189, 129.42.60.189, 129.42.54.189. SUMA connects to one of these IP addresses based on
+    your geography.
+  - You can refer to the IBM documentation for additional information on the SUMA command and
+    configuration settings at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/suma.html).
+  - If you hit the known bug that prevents suma from running successfully, contact IBM AIX support
+    and request and ifix for this problem (APAR IJ06197 SUMA MAY CAUSE A NULLPOINTEREXCEPTION) at
+    U(http://www-01.ibm.com/support/docview.wss?uid=isg1IJ06197).
+  - To get assistance for SUMA errors through AIX Support refer to
+    U(https://www-01.ibm.com/support/docview.wss?uid=ibm10719985).
 '''
 
 EXAMPLES = r'''
@@ -140,12 +171,16 @@ msg:
     returned: always
     type: str
     sample: 'Suma preview completed successfully'
+cmd:
+    description: The command executed.
+    returned: if a command was run.
+    type: str
 stdout:
-    description: The standard output.
+    description: The standard output of the command.
     returned: always
     type: str
 stderr:
-    description: The standard error.
+    description: The standard error of the command.
     returned: always
     type: str
 meta:
@@ -154,7 +189,7 @@ meta:
     type: dict
     contains:
         messages:
-            description: Details on errors/warnings/inforamtion
+            description: Details on errors/warnings/information
             returned: always
             type: list
             elements: str
@@ -299,6 +334,7 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         if rc != 0:
             msg = "Suma metadata command '{0}' failed with return code {1}".format(' '.join(cmd), rc)
             module.log(msg + ", stderr: {0}, stdout:{1}".format(stderr, stdout))
+            results['cmd'] = ' '.join(cmd)
             results['stdout'] = stdout
             results['stderr'] = stderr
             results['msg'] = msg
@@ -379,6 +415,7 @@ def suma_command(action):
     results['meta']['messages'].append("SUMA - Command: {0}".format(' '.join(cmd)))
 
     rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
     if rc != 0:
@@ -407,6 +444,7 @@ def suma_list():
 
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -475,6 +513,7 @@ def suma_edit():
     cmd += ' {0}'.format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -497,6 +536,7 @@ def suma_unschedule():
     cmd = "/usr/sbin/suma -u {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -519,6 +559,7 @@ def suma_delete():
     cmd = "/usr/sbin/suma -d {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -541,6 +582,7 @@ def suma_run():
     cmd = "/usr/sbin/suma -x {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -563,6 +605,7 @@ def suma_config():
     cmd = '/usr/sbin/suma -c'
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -585,6 +628,7 @@ def suma_default():
     cmd = '/usr/sbin/suma -D'
     rc, stdout, stderr = module.run_command(cmd)
 
+    results['cmd'] = cmd
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -753,6 +797,7 @@ def suma_download():
 
         rc, stdout, stderr = module.run_command(cmd)
 
+        results['cmd'] = cmd
         results['stdout'] = stdout
         results['stderr'] = stderr
         results['changed'] = True

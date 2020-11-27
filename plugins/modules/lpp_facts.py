@@ -16,9 +16,9 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: lpp_facts
-short_description: Returns installed software products as facts
+short_description: Returns installed software products as facts.
 description:
-- Returns information about installed filesets or fileset updates.
+- Lists and returns information about installed filesets or fileset updates in Ansible facts.
 version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
@@ -52,6 +52,9 @@ options:
     - Mutually exclusive with I(all_updates).
     type: bool
     default: no
+notes:
+  - You can refer to the IBM documentation for additional information on the lslpp command at
+    U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lslpp.html).
 '''
 
 EXAMPLES = r'''
@@ -108,38 +111,37 @@ ansible_facts:
           contains:
             vrmf:
               description:
-              - Fileset vrmf
+              - Fileset Version Release Modification Fix (vrmf).
               returned: always
               type: dict
               sample: '"vrmf": { "fix": 0, "mod": 3, "rel": 2, "ver": 7 }'
             state:
               description:
-              - State of the fileset on the system
+              - State of the fileset on the system.
               - C(applied) specifies that the fileset is installed on the system.
-              - C(applying) specifies that an attempt was made to apply the specified
-                fileset, but it did not complete successfully, and cleanup was not performed.
+              - C(applying) specifies that an attempt was made to apply the specified fileset, but
+                it did not complete successfully, and cleanup was not performed.
               - C(broken) specifies that the fileset or fileset update is broken and should be
                 reinstalled before being used.
               - C(committed) specifies that the fileset is installed on the system.
-              - C(efixlocked) specifies that the fileset is installed on the system and is
-                locked by the interim fix manager.
-              - C(obsolete) specifies that the fileset was installed with an earlier version
-                of the operating system but has been replaced by a repackaged (renamed)
-                newer version.
-              - C(committing) specifies that an attempt was made to commit the specified
-                fileset, but it did not complete successfully, and cleanup was not performed.
-              - C(rejecting) specifies that an attempt was made to reject the specified
-                fileset, but it did not complete successfully, and cleanup was not performed.
+              - C(efixlocked) specifies that the fileset is installed on the system and is locked by
+                the interim fix manager.
+              - C(obsolete) specifies that the fileset was installed with an earlier version of the
+                operating system but has been replaced by a repackaged (renamed) newer version.
+              - C(committing) specifies that an attempt was made to commit the specified fileset,
+                but it did not complete successfully, and cleanup was not performed.
+              - C(rejecting) specifies that an attempt was made to reject the specified fileset, but
+                it did not complete successfully, and cleanup was not performed.
               returned: always
               type: str
             ptf:
               description:
-              - Program temporary fix
+              - Program temporary fix.
               returned: when available
               type: str
             type:
               description:
-              - Fileset type
+              - Fileset type.
               - C(install) specifies install image (base level).
               - C(maintenance) specifies maintenance level update.
               - C(enhancement).
@@ -148,17 +150,17 @@ ansible_facts:
               type: str
             description:
               description:
-              - Fileset description
+              - Fileset description.
               returned: always
               type: str
             emgr_locked:
               description:
-              - Specifies whether fileset is locked by the interim fix manager
+              - Specifies whether fileset is locked by the interim fix manager.
               returned: always
               type: bool
             sources:
               description:
-              - Source paths
+              - Source paths.
               returned: always
               type: list
               elements: str
