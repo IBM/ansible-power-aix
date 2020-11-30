@@ -5,6 +5,33 @@
 Releases
 ========
 
+Version 1.1.2
+-------------
+Notes
+  * Beta: preview of the lpar_facts module
+  * Beta: preview of the lvm_facts module
+  * Beta: preview of the bootlist module
+  * mkfilt: use run_command with check_rc=True when appropriate
+  * nim_upgradeios: module has been deprecated (use nim_viosupgrade)
+  * nim_viosupgrade: fixes for altdisk and bosinst operations
+  * new playbook to demo nim_viosupgrade
+  * new roles for inetd and bootptab
+  * documentation revisions for several modules
+
+Availability
+  * `Automation Hub v1.1.2`_
+  * `Galaxy v1.1.2`_
+  * `GitHub v1.1.2`_
+
+.. _Automation Hub v1.1.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.1.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.1.2.tar.gz
+
+.. _GitHub v1.1.2:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.1.2/ibm-power_aix-1.1.2.tar.gz
+
 Version 1.1.1
 -------------
 Notes
@@ -118,23 +145,6 @@ Availability
 
 .. _GitHub v1.0.0:
    https://github.com/IBM/ansible-power-aix/releases/download/v1.0.0/ibm-power_aix-1.0.0.tar.gz
-
-Version 1.0.0-beta1
--------------------
-Notes
-  * Update recommended
-  * Improved test and security coverage
-  * Documentation updates
-
-Availability
-  * `Galaxy v1.0.0-beta`_
-  * `GitHub v1.0.0-beta`_
-
-.. _Galaxy v1.0.0-beta:
-   https://galaxy.ansible.com/download/ibm-power_aix-1.0.0-beta1.tar.gz
-
-.. _GitHub v1.0.0-beta:
-   https://github.com/IBM/ansible-power-aix/releases/download/v1.0.0/ibm-power_aix-1.0.0-beta1.tar.gz
 
 Version 0.4.2
 -------------
