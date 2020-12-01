@@ -1280,7 +1280,7 @@ def main():
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.log('Warning: Empty target list: "{0}"'.format(targets))
         module.exit_json(**results)
-    results['targets'] = targets.copy()
+    results['targets'] = list(targets)
 
     for target in targets:
         results['status'][target] = ''  # first time init
