@@ -1537,7 +1537,7 @@ def main():
         msg = 'Empty target list'
         results['meta']['messages'].append(msg)
         module.log(msg)
-    results['targets'] = targets.copy()
+    results['targets'] = list(targets)
 
     # ===========================================
     # Install flrtvc script
