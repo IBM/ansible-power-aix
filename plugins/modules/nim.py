@@ -274,7 +274,7 @@ def run_oslevel_cmd(module, machine, result):
 
     result[machine] = 'timedout'
 
-    cmd = ['oslevel', '-s']
+    cmd = ['/usr/bin/oslevel', '-s']
     if machine == 'master':
         rc, stdout, stderr = module.run_command(cmd)
     else:
@@ -686,7 +686,7 @@ def list_fixes(module, target):
     global results
 
     fixes = []
-    cmd = ['emgr', '-l']
+    cmd = ['/usr/sbin/emgr', '-l']
     module.debug('EMGR list - Command:{0}'.format(cmd))
 
     if target == 'master':
@@ -730,7 +730,7 @@ def remove_fix(module, target, fix):
     """
     global results
 
-    cmd = ['emgr', '-r', '-L', fix]
+    cmd = ['/usr/sbin/emgr', '-r', '-L', fix]
     module.debug('EMGR remove - Command:{0}'.format(cmd))
 
     if target == 'master':
