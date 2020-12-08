@@ -10,6 +10,5 @@
     - name: "AIX NIM"
       nim:
         action: 'check'
-        description: 'NIM check'
-      register: nim_output
-    - debug: var=nim_output
+      register: result
+    - debug: var=result

@@ -14,6 +14,5 @@
         action: 'bos_inst'
         targets: "{{ vm_targets }}"
         group: "{{ res_group }}"
-        description: 'NIM -o bos_inst -a source=mksysb'
-      register: nim_output
-    - debug: var=nim_output
+      register: result
+    - debug: var=result
