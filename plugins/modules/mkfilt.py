@@ -64,7 +64,6 @@ options:
         description:
         - Enable the log functionality of the filter rule module.
         type: bool
-        default: no
       force:
         description:
         - Force removal of auto-generated filter rules.
@@ -638,7 +637,7 @@ def main():
         type='dict',
         options=dict(
             default=dict(type='str', choices=['permit', 'deny']),
-            log=dict(type='bool', default=False),
+            log=dict(type='bool'),
             force=dict(type='bool', default=False),
             rules=dict(
                 type='list', elements='dict',
