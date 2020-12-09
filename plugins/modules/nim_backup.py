@@ -614,7 +614,6 @@ def expand_targets(targets):
         vios          all the nim clients type=vios
         standalone    all the nim clients type=standalone
         client_name   the nim client named 'client_name'
-        master        the nim master
 
     arguments:
         targets (list): The list of target patterns
@@ -629,7 +628,7 @@ def expand_targets(targets):
         if target.upper() == 'ALL' or target == '*':
             clients = list(results['nim_node']['standalone'])
             clients.extend(list(results['nim_node']['vios']))
-            break
+            break   # no need to continue because 'master' cannot be specified
 
         # Build target(s) from keywords: standalone or vios
         if target.lower() == 'standalone' or target.lower() == 'vios':
@@ -1277,7 +1276,7 @@ def main():
     if module.params['targets']:
         targets = expand_targets(module.params['targets'])
     if not targets and action != 'list' and action != 'view':
-        results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
+        results['msg'] = 'No matching target found for targets \'{0}\'.'.format(module.params['targets'])
         module.log('Warning: Empty target list: "{0}"'.format(targets))
         module.exit_json(**results)
     results['targets'] = targets.copy()
