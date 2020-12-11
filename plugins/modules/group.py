@@ -24,7 +24,9 @@ version_added: "2.9"
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- Root user is required.
+- 'Privileged user with authorizations:
+  B(aix.security.group.remove.admin,aix.security.group.remove.normal,
+  aix.security.group.create.admin,aix.security.group.create.normal,aix.security.group.list)'
 options:
   name:
     description: Specifies the name of the group to manage.

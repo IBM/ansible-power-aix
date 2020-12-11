@@ -24,7 +24,8 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- User with priviledged authorizations.
+- 'Privileged user with authorizations:
+  B(aix.security.network.filt,aix.security.network.stat,aix.device.manage.create)'
 options:
   action:
     description:
@@ -63,7 +64,6 @@ options:
         description:
         - Enable the log functionality of the filter rule module.
         type: bool
-        default: no
       force:
         description:
         - Force removal of auto-generated filter rules.
@@ -638,7 +638,7 @@ def main():
         options=dict(
             default=dict(type='str', choices=['permit', 'deny']),
             log=dict(type='bool'),
-            force=dict(type='bool'),
+            force=dict(type='bool', default=False),
             rules=dict(
                 type='list', elements='dict',
                 options=dict(
@@ -659,13 +659,13 @@ def main():
                     icmp_code_opr=dict(type='str', choices=operations),
                     icmp_code=dict(type='str'),
                     tunnel=dict(type='str'),
-                    log=dict(type='bool'),
+                    log=dict(type='bool', default=False),
                     interface=dict(type='str'),
                     fragment=dict(type='str', choices=['Y', 'N', 'O', 'H']),
                     timeout=dict(type='str'),
                     description=dict(type='str'),
                     protocol=dict(type='str'),
-                    source_routing=dict(type='bool'),
+                    source_routing=dict(type='bool', default=False),
                     routing=dict(type='str', choices=['route', 'local', 'both']),
                     antivirus=dict(type='str'),
                     pattern=dict(type='str'),

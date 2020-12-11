@@ -30,6 +30,8 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorizations:
+  B(aix.fs.manage.change,aix.system.install,aix.system.nim.config.server)'
 options:
   targets:
     description:
@@ -380,6 +382,36 @@ def compute_c_rsh_rc(machine, rc, stdout):
                 rc = int(s.group(1))
             stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
     return rc, stdout
+
+
+def nim_exec(module, node, command):
+    """
+    Execute the specified command on the specified nim client using c_rsh.
+
+    return
+        - rc      return code of the command
+        - stdout  stdout of the command
+        - stderr  stderr of the command
+    """
+
+    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
+    cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    module.debug('exec command:{0}'.format(cmd))
+
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        return (rc, stdout, stderr)
+
+    s = re.search(r'rc=([-\d]+)$', stdout)
+    if s:
+        rc = int(s.group(1))
+        # remove the rc of c_rsh with echo $?
+        stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('exec command rc:{0}, output:{1}, stderr:{2}'.format(rc, stdout, stderr))
+
+    return (rc, stdout, stderr)
 
 
 def increase_fs(module, output, dest):
@@ -813,18 +845,17 @@ def run_lslpp(module, output, machine, filename):
         machine  (str): The remote machine name
         filename (str): The filename to store output
     """
-    if 'master' in machine:
-        cmd = ['/bin/lslpp', '-Lcq']
+    cmd = ['/bin/lslpp', '-Lcq']
+
+    if machine == 'master':
+        rc, stdout, stderr = module.run_command(cmd)
     else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
-               '"/bin/lslpp -Lcq; echo rc=$?"']
-    rc, stdout, stderr = module.run_command(cmd)
+        rc, stdout, stderr = nim_exec(module, machine, cmd)
+
     if rc == 0:
-        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
-        if rc == 0:
-            with open(filename, 'w') as myfile:
-                myfile.write(stdout)
-            return rc
+        with open(filename, 'w') as myfile:
+            myfile.write(stdout)
+        return rc
 
     msg = 'Failed to list fileset'
     module.log(msg)
@@ -910,18 +941,17 @@ def run_emgr(module, output, machine, f_efix):
         False otherwise
     """
     # list efix information
-    if 'master' in machine:
-        cmd = ['/usr/sbin/emgr', '-lv3']
+    cmd = ['/usr/sbin/emgr', '-lv3']
+
+    if machine == 'master':
+        rc, stdout, stderr = module.run_command(cmd)
     else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
-               '"/usr/sbin/emgr -lv3; echo rc=$?"']
-    rc, stdout, stderr = module.run_command(cmd)
+        rc, stdout, stderr = nim_exec(module, machine, cmd)
+
     if rc == 0:
-        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
-        if rc == 0:
-            with open(f_efix, 'w') as myfile:
-                myfile.write(stdout)
-            return True
+        with open(f_efix, 'w') as myfile:
+            myfile.write(stdout)
+        return True
 
     msg = 'Failed to list interim fix information'
     module.log(msg)
@@ -1418,16 +1448,9 @@ def check_targets(module, output, targets, nim_clients):
             module.log('[WARNING] {0} is not ready for NIM operation'.format(machine))
             continue
 
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', machine,
-               '"/usr/bin/ls /dev/null; echo rc=$?"']
-
-        rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
-        if rc != 0:
-            msg = 'Cannot check {0} connectivity with c_rsh: command \'{1}\' returned rc: {2}'.format(machine, ' '.join(cmd), rc)
-            module.log('[WARNING] ' + msg)
-            output['messages'].append(msg)
-
-        rc, stdout = compute_c_rsh_rc(machine, rc, stdout)
+        # check vios connectivity
+        cmd = ['true']
+        rc, stdout, stderr = nim_exec(module, machine, cmd)
         if rc != 0:
             msg = 'Cannot reach {0} with c_rsh, rc:{1}, stderr:{2}'.format(machine, rc, stderr)
             module.log('[WARNING] ' + msg)

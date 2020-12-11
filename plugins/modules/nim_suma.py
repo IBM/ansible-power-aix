@@ -27,6 +27,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorizations: B(aix.system.install,aix.system.nim.config.server)'
 options:
   action:
     description:
@@ -226,6 +227,36 @@ def max_oslevel(dic):
     return oslevel_max
 
 
+def nim_exec(module, node, command):
+    """
+    Execute the specified command on the specified nim client using c_rsh.
+
+    return
+        - rc      return code of the command
+        - stdout  stdout of the command
+        - stderr  stderr of the command
+    """
+
+    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
+    cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
+
+    module.debug('exec command:{0}'.format(cmd))
+
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        return (rc, stdout, stderr)
+
+    s = re.search(r'rc=([-\d]+)$', stdout)
+    if s:
+        rc = int(s.group(1))
+        # remove the rc of c_rsh with echo $?
+        stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
+
+    module.debug('exec command rc:{0}, output:{1}, stderr:{2}'.format(rc, stdout, stderr))
+
+    return (rc, stdout, stderr)
+
+
 def run_oslevel_cmd(module, machine, oslevels):
     """
     Run the oslevel command on target machine.
@@ -239,22 +270,17 @@ def run_oslevel_cmd(module, machine, oslevels):
     """
     oslevels[machine] = 'timedout'
 
-    if machine == 'master':
-        cmd = ['/usr/bin/oslevel', '-s']
-    else:
-        cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
-               machine,
-               '"/usr/bin/oslevel -s; echo rc=$?"']
+    cmd = ['/usr/bin/oslevel', '-s']
 
-    rc, stdout, stderr = module.run_command(cmd)
+    if machine == 'master':
+        rc, stdout, stderr = module.run_command(cmd)
+    else:
+        rc, stdout, stderr = nim_exec(module, machine, cmd)
+
     if rc == 0:
         module.debug('{0} oslevel stdout: "{1}"'.format(machine, stdout))
         if stderr.rstrip():
             module.log('[WARNING] "{0}" command stderr: {1}'.format(' '.join(cmd), stderr))
-
-        # remove the rc of c_rsh with echo $?
-        if machine != 'master':
-            stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
 
         # return stdout only ... stripped!
         oslevels[machine] = stdout.rstrip()

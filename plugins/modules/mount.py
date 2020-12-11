@@ -23,7 +23,8 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- User with priviledged authorizations.
+- 'Privileged user with authorizations:
+  B(aix.fs.manage.list,aix.fs.manage.create,aix.fs.manage.change,aix.fs.manage.remove,aix.fs.manage.mount,aix.fs.manage.unmount)'
 options:
   state:
     description:
@@ -342,8 +343,8 @@ def main():
             mount_all=dict(type='str', choices=['all', 'remote']),
             force=dict(type='bool', default=False),
             alternate_fs=dict(type='str'),
-            removable_fs=dict(type='bool'),
-            read_only=dict(type='bool'),
+            removable_fs=dict(type='bool', default=False),
+            read_only=dict(type='bool', default=False),
             fs_type=dict(type='str'),
             vfsname=dict(type='str'),
             options=dict(type='str'),

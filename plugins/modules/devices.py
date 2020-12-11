@@ -26,6 +26,8 @@ version_added: '2.9'
 requirements:
 - AIX
 - Python >= 2.7
+- 'Privileged user with authorizations:
+  B(aix.device.manage.change,aix.device.manage.remove,aix.device.config)'
 options:
   attributes:
     description:

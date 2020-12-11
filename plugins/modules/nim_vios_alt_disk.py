@@ -24,6 +24,7 @@ version_added: '2.9'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- 'Privileged user with authorizations: B(aix.system.install,aix.system.nim.config.server)'
 options:
   action:
     description:
@@ -278,16 +279,12 @@ def build_nim_node(module):
 
     global NIM_NODE
 
-    # =========================================================================
     # Build hmc info list
-    # =========================================================================
     nim_hmc = get_hmc_info(module)
     NIM_NODE['nim_hmc'] = nim_hmc
     module.debug('NIM HMC: {0}'.format(nim_hmc))
 
-    # =========================================================================
     # Build vios info list
-    # =========================================================================
     nim_vios = get_nim_clients_info(module, 'vios')
     NIM_NODE['nim_vios'] = nim_vios
     module.debug('NIM VIOS: {0}'.format(nim_vios))
@@ -312,9 +309,7 @@ def check_vios_targets(module, targets):
     """
     global NIM_NODE
 
-    # ===========================================
     # Check targets
-    # ===========================================
     for vios_dict in targets:
         if len(vios_dict) > 2:
             OUTPUT.append('Malformed VIOS targets {0}. Dictionary should contain 1 or 2 elements.'

@@ -25,7 +25,7 @@ version_added: '2.9'
 requirements:
 - AIX
 - Python >= 2.7
-- Should be run as 'root' user
+- 'Privileged user with authorization: B(aix.security.aixpert)'
 options:
   mode:
     description:
