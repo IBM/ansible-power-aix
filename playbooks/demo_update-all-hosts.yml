@@ -39,8 +39,6 @@
 
 
   - name: Restart with newest kernel
-    shell: "sleep 5 && reboot"
-    async: 1
-    poll: 0
+    reboot:
     register: output
   - debug: var=output
