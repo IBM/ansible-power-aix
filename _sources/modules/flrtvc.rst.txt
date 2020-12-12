@@ -28,6 +28,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- Privileged user with authorizations: **aix.fs.manage.change,aix.system.install**
 
 
 
@@ -107,6 +108,7 @@ Notes
    - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file. It is downloaded from https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip.
    - The script requires ksh93 to use.
    - **v0.8.1** is the current version of the script, depending on changes, this module might need to be updated.
+   - When the FLRTVC ksh script cannot execute the emgr command, it tries with **sudo**, so you can try installing **sudo** on the managed system.
 
 
 

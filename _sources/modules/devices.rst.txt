@@ -24,6 +24,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX
 - Python >= 2.7
+- Privileged user with authorizations: **aix.device.manage.change,aix.device.manage.remove,aix.device.config**
 
 
 

@@ -22,7 +22,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- Root user is required.
+- Privileged user with authorizations: **aix.security.group.remove.admin,aix.security.group.remove.normal, aix.security.group.create.admin,aix.security.group.create.normal,aix.security.group.list**
 
 
 

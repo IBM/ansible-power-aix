@@ -28,6 +28,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
+- Privileged user with authorizations: **aix.fs.manage.change,aix.system.install,aix.system.nim.config.server**
 
 
 

@@ -24,7 +24,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX
 - Python >= 2.7
-- Should be run as 'root' user
+- Privileged user with authorization: **aix.security.aixpert**
 
 
 

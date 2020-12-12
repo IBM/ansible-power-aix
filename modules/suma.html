@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="user – Create new users or change/remove attributes of users on AIX." href="user.html" />
-    <link rel="prev" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." href="nim_viosupgrade.html" /> 
+    <link rel="prev" title="reboot – Reboot AIX machines." href="reboot.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -114,6 +114,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
@@ -122,6 +123,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reboot.html">reboot – Reboot AIX machines.</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -245,6 +247,7 @@
 <ul class="simple">
 <li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
+<li><p>Privileged user with authorizations: <strong>aix.system.install</strong></p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
@@ -395,7 +398,7 @@
         <a href="user.html" class="btn btn-neutral float-right" title="user – Create new users or change/remove attributes of users on AIX." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_viosupgrade.html" class="btn btn-neutral float-left" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="reboot.html" class="btn btn-neutral float-left" title="reboot – Reboot AIX machines." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

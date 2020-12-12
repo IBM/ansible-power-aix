@@ -25,6 +25,7 @@ The below requirements are needed on the host that executes this module.
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - User with root authority to run the nim command.
+- Privileged user with authorization: **aix.system.install,aix.system.nim.config.server,aix.system.nim.stat**
 
 
 
@@ -34,11 +35,11 @@ Parameters
   action (True, str, None)
     Specifies the action to perform.
 
-    ``update`` to update NIM clients with a specified ``lpp_source``.
+    ``update`` to update NIM standalone clients with a specified ``lpp_source``.
 
     ``master_setup`` to setup a NIM master.
 
-    ``check`` to retrieve the **Cstate** and **oslevel** of each NIM client.
+    ``check`` to retrieve the **Cstate** and **oslevel** of each NIM client; results in *nim_node*.
 
     ``compare`` to compare installation inventories of the NIM clients.
 
@@ -58,7 +59,7 @@ Parameters
 
     ``reboot`` to reboot the given NIM clients if they are running.
 
-    ``maintenance`` to perform a maintenance operation on NIM clients.
+    ``maintenance`` to perform a maintenance operation that commits filesets on NIM standalone clients.
 
 
   targets (optional, list, None)
@@ -70,11 +71,13 @@ Parameters
 
     ``*`` or ``ALL`` specifies all the NIM clients.
 
+    ``vios`` or ``standalone`` specifies all the NIM clients of this type.
+
 
   lpp_source (optional, str, None)
     Indicates the name of the **lpp_source** NIM resource to apply to the targets.
 
-    ``latest_tl``, ``latest_sp``, ``next_tl`` and ``next_sp`` can be specified; based on the NIM server resources, nim will determine the actual oslevel necessary to update the targets.
+    ``latest_tl``, ``latest_sp``, ``next_tl`` and ``next_sp`` can be specified; based on the NIM server resources, nim will determine the actual oslevel necessary to update the targets; the update operation will be synchronous independently from ``asynchronous`` value.
 
 
   device (optional, str, None)
@@ -103,10 +106,6 @@ Parameters
 
   force (optional, bool, False)
     Forces action.
-
-
-  description (optional, str, None)
-    Describes the NIM operation (informational only).
 
 
 
@@ -159,8 +158,17 @@ msg (always, str, )
   Status information.
 
 
-nim_output (always, str, )
-  Detail information on NIM commands.
+targets (if the operation requires a target list, list, ['nimclient01', 'nimclient02', '...'])
+  List of NIM client actually targeted for the operation.
+
+
+status (if the operation requires a target list, dict, { nimclient01: 'SUCCESS', nimclient02: 'FAILURE' })
+  Status of the operation for each ``target``. It can be empty, SUCCESS or FAILURE.
+
+
+  <target> (when target is actually a NIM client, str, SUCCESS)
+    Status of the execution on the <target>.
+
 
 
 cmd (If the command was run., str, )
@@ -177,6 +185,40 @@ stdout (always, str, )
 
 stderr (always, str, )
   The standard error.
+
+
+meta (always, dict, )
+  Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific target.
+
+
+  <target> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the ``target``.
+
+
+    messages (always, list, )
+      Details on errors/warnings
+
+
+    cmd (If the command was run., str, )
+      Last command.
+
+
+    rc (If the command was run., str, )
+      The return codeof the last comman.
+
+
+    stdout (If the command was run., str, )
+      Standard output of the last command.
+
+
+    stderr (If the command was run., str, )
+      Standard error of the last command.
+
+
 
 
 nim_node (always, dict, {'nim_node': {'lpp_source': {'723lpp_res': '/export/nim/lpp_source/723lpp_res'}, 'master': {'Cstate': 'ready for a NIM operation', 'type': 'master'}, 'standalone': {'nimclient01': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'machines', 'comments': 'object defined using nimquery -d', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0', 'installed_image': 'ansible_img', 'mgmt_profile1': 'p8-hmc 2 nimclient-cec nimclient-vios1', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'customization is being performed'}}, 'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed'}}}})

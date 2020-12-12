@@ -89,6 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ibm-power-aix">ibm.power_aix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ansible-user">ansible user</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ansible-doc">ansible-doc</a></li>
 </ul>
 </li>
@@ -208,6 +209,40 @@ to refer to the collection repeatedly. For example, you can use the
       <span class="nt">oslevel</span><span class="p">:</span> <span class="s">&#39;latest&#39;</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="ansible-user">
+<h2>ansible user<a class="headerlink" href="#ansible-user" title="Permalink to this headline">¶</a></h2>
+<p>Some modules included in this collection perform privileged operations. Only
+authorized users can run privileged operations.
+It is recommended to create an <code class="docutils literal notranslate"><span class="pre">ansible</span></code> user with a the proper roles on the
+system.</p>
+<p>For example the <code class="docutils literal notranslate"><span class="pre">alt_disk</span></code> module runs <code class="docutils literal notranslate"><span class="pre">alt_disk_copy</span></code> and
+<code class="docutils literal notranslate"><span class="pre">alt_rootvg_op</span></code> commands that require <code class="docutils literal notranslate"><span class="pre">aix.system.install</span></code> authorization,
+and <code class="docutils literal notranslate"><span class="pre">chpv</span></code> command that requires <code class="docutils literal notranslate"><span class="pre">aix.lvm.manage.change</span></code> authorization.</p>
+<p>You can get the list of commands run as part of the <code class="docutils literal notranslate"><span class="pre">alt_disk</span></code> module with:</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> awk -F<span class="se">\&#39;</span> <span class="s1">&#39;/cmd =/ {print $2}&#39;</span> .ansible/collections/ansible_collections/ibm/power_aix/plugins/modules/alt_disk.py <span class="p">|</span> sort -u
+</pre></div>
+</div>
+<p>Then on your managed node running AIX, you can use the following to define an
+<code class="docutils literal notranslate"><span class="pre">ansible_backup</span></code> role with the proper authorizations and create an
+<code class="docutils literal notranslate"><span class="pre">ansible</span></code> user owning this role:</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">#</span> <span class="nv">cmds</span><span class="o">=</span><span class="s2">&quot;alt_disk_copy getconf lquerypv lspv lsvg /usr/sbin/alt_rootvg_op /usr/sbin/chpv&quot;</span>
+<span class="gp">#</span> <span class="k">for</span> cmd in <span class="nv">$cmds</span><span class="p">;</span> <span class="k">do</span> lssecattr -c <span class="sb">`</span>which <span class="nv">$cmd</span><span class="sb">`</span><span class="p">;</span> <span class="k">done</span>
+<span class="gp">#</span> mkrole <span class="nv">authorizations</span><span class="o">=</span>aix.system.install,aix.lvm.manage.change <span class="nv">dfltmsg</span><span class="o">=</span><span class="s2">&quot;Ansible Role for bakcup&quot;</span> ansible_backup
+<span class="gp">#</span> mkuser <span class="nv">roles</span><span class="o">=</span>ansible_backup <span class="nv">default_roles</span><span class="o">=</span>ansible_backup ansible
+<span class="gp">#</span> setkst
+</pre></div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">mkrole</span></code> command is itself a privileged command. Hence you
+must assume a role that has the <code class="docutils literal notranslate"><span class="pre">aix.security.role.create</span></code> authorization to
+run the command successfully.</p>
+<p>To connect to the endpoint using this <code class="docutils literal notranslate"><span class="pre">ansible</span></code> user, specify
+<code class="docutils literal notranslate"><span class="pre">user:</span> <span class="pre">ansible</span></code> in the playbook or <code class="docutils literal notranslate"><span class="pre">ansible_user=ansible</span></code> in the
+inventory.</p>
+<p>For more information on using authorizations and privileges, refer to the
+<a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/security/rbac.html">IBM RBAC documentation</a>.</p>
+<p>When a user is not authorized to run a privileged operations, it will get a
+error message such as: <code class="docutils literal notranslate"><span class="pre">alt_disk_copy:</span> <span class="pre">cannot</span> <span class="pre">execute</span></code>.</p>
 </div>
 <div class="section" id="ansible-doc">
 <h2>ansible-doc<a class="headerlink" href="#ansible-doc" title="Permalink to this headline">¶</a></h2>

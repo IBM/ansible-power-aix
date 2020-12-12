@@ -39,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="nim_backup – Uses NIM to manage backup of LPAR or VIOS clients." href="nim_backup.html" />
-    <link rel="prev" title="mount – Mounts/unmounts a filesystem or device on AIX." href="mount.html" /> 
+    <link rel="prev" title="mpio – Returns information about MultiPath I/O capable devices." href="mpio.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -114,6 +114,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
@@ -131,6 +132,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reboot.html">reboot – Reboot AIX machines.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
@@ -246,6 +248,7 @@
 <li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
 <li><p>User with root authority to run the nim command.</p></li>
+<li><p>Privileged user with authorization: <strong>aix.system.install,aix.system.nim.config.server,aix.system.nim.stat</strong></p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
@@ -253,9 +256,9 @@
 <blockquote>
 <div><dl>
 <dt>action (True, str, None)</dt><dd><p>Specifies the action to perform.</p>
-<p><code class="docutils literal notranslate"><span class="pre">update</span></code> to update NIM clients with a specified <code class="docutils literal notranslate"><span class="pre">lpp_source</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">update</span></code> to update NIM standalone clients with a specified <code class="docutils literal notranslate"><span class="pre">lpp_source</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">master_setup</span></code> to setup a NIM master.</p>
-<p><code class="docutils literal notranslate"><span class="pre">check</span></code> to retrieve the <strong>Cstate</strong> and <strong>oslevel</strong> of each NIM client.</p>
+<p><code class="docutils literal notranslate"><span class="pre">check</span></code> to retrieve the <strong>Cstate</strong> and <strong>oslevel</strong> of each NIM client; results in <em>nim_node</em>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">compare</span></code> to compare installation inventories of the NIM clients.</p>
 <p><code class="docutils literal notranslate"><span class="pre">script</span></code> to apply a script to customize NIM clients.</p>
 <p><code class="docutils literal notranslate"><span class="pre">allocate</span></code> to allocate a resource to specified NIM clients.</p>
@@ -265,15 +268,16 @@
 <p><code class="docutils literal notranslate"><span class="pre">remove</span></code> to remove a specified NIM resource.</p>
 <p><code class="docutils literal notranslate"><span class="pre">reset</span></code> to reset the <strong>Cstate</strong> of a NIM client.</p>
 <p><code class="docutils literal notranslate"><span class="pre">reboot</span></code> to reboot the given NIM clients if they are running.</p>
-<p><code class="docutils literal notranslate"><span class="pre">maintenance</span></code> to perform a maintenance operation on NIM clients.</p>
+<p><code class="docutils literal notranslate"><span class="pre">maintenance</span></code> to perform a maintenance operation that commits filesets on NIM standalone clients.</p>
 </dd>
 <dt>targets (optional, list, None)</dt><dd><p>Specifies the NIM clients to perform the action on.</p>
 <p><code class="docutils literal notranslate"><span class="pre">foo*</span></code> specifies all the NIM clients with name starting by ‘foo’.</p>
 <p><code class="docutils literal notranslate"><span class="pre">foo[2:4]</span></code> specifies the NIM clients among foo2, foo3 and foo4.</p>
 <p><code class="docutils literal notranslate"><span class="pre">*</span></code> or <code class="docutils literal notranslate"><span class="pre">ALL</span></code> specifies all the NIM clients.</p>
+<p><code class="docutils literal notranslate"><span class="pre">vios</span></code> or <code class="docutils literal notranslate"><span class="pre">standalone</span></code> specifies all the NIM clients of this type.</p>
 </dd>
 <dt>lpp_source (optional, str, None)</dt><dd><p>Indicates the name of the <strong>lpp_source</strong> NIM resource to apply to the targets.</p>
-<p><code class="docutils literal notranslate"><span class="pre">latest_tl</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_sp</span></code>, <code class="docutils literal notranslate"><span class="pre">next_tl</span></code> and <code class="docutils literal notranslate"><span class="pre">next_sp</span></code> can be specified; based on the NIM server resources, nim will determine the actual oslevel necessary to update the targets.</p>
+<p><code class="docutils literal notranslate"><span class="pre">latest_tl</span></code>, <code class="docutils literal notranslate"><span class="pre">latest_sp</span></code>, <code class="docutils literal notranslate"><span class="pre">next_tl</span></code> and <code class="docutils literal notranslate"><span class="pre">next_sp</span></code> can be specified; based on the NIM server resources, nim will determine the actual oslevel necessary to update the targets; the update operation will be synchronous independently from <code class="docutils literal notranslate"><span class="pre">asynchronous</span></code> value.</p>
 </dd>
 <dt>device (optional, str, None)</dt><dd><p>The device or directory where to find the lpp source to install.</p>
 </dd>
@@ -288,8 +292,6 @@
 <dt>asynchronous (optional, bool, False)</dt><dd><p>If set to <code class="docutils literal notranslate"><span class="pre">no</span></code>, NIM client will be completely installed before starting the installation of another NIM client.</p>
 </dd>
 <dt>force (optional, bool, False)</dt><dd><p>Forces action.</p>
-</dd>
-<dt>description (optional, str, None)</dt><dd><p>Describes the NIM operation (informational only).</p>
 </dd>
 </dl>
 </div></blockquote>
@@ -335,7 +337,13 @@
 <dl>
 <dt>msg (always, str, )</dt><dd><p>Status information.</p>
 </dd>
-<dt>nim_output (always, str, )</dt><dd><p>Detail information on NIM commands.</p>
+<dt>targets (if the operation requires a target list, list, [‘nimclient01’, ‘nimclient02’, ‘…’])</dt><dd><p>List of NIM client actually targeted for the operation.</p>
+</dd>
+<dt>status (if the operation requires a target list, dict, { nimclient01: ‘SUCCESS’, nimclient02: ‘FAILURE’ })</dt><dd><p>Status of the operation for each <code class="docutils literal notranslate"><span class="pre">target</span></code>. It can be empty, SUCCESS or FAILURE.</p>
+<dl class="simple">
+<dt>&lt;target&gt; (when target is actually a NIM client, str, SUCCESS)</dt><dd><p>Status of the execution on the &lt;target&gt;.</p>
+</dd>
+</dl>
 </dd>
 <dt>cmd (If the command was run., str, )</dt><dd><p>Command executed.</p>
 </dd>
@@ -344,6 +352,26 @@
 <dt>stdout (always, str, )</dt><dd><p>The standard output.</p>
 </dd>
 <dt>stderr (always, str, )</dt><dd><p>The standard error.</p>
+</dd>
+<dt>meta (always, dict, )</dt><dd><p>Detailed information on the module execution.</p>
+<dl>
+<dt>messages (always, list, see below)</dt><dd><p>Details on errors/warnings not related to a specific target.</p>
+</dd>
+<dt>&lt;target&gt; (when target is actually a NIM client, dict, )</dt><dd><p>Detailed information on the execution on the <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p>
+<dl class="simple">
+<dt>messages (always, list, )</dt><dd><p>Details on errors/warnings</p>
+</dd>
+<dt>cmd (If the command was run., str, )</dt><dd><p>Last command.</p>
+</dd>
+<dt>rc (If the command was run., str, )</dt><dd><p>The return codeof the last comman.</p>
+</dd>
+<dt>stdout (If the command was run., str, )</dt><dd><p>Standard output of the last command.</p>
+</dd>
+<dt>stderr (If the command was run., str, )</dt><dd><p>Standard error of the last command.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 <dt>nim_node (always, dict, {‘nim_node’: {‘lpp_source’: {‘723lpp_res’: ‘/export/nim/lpp_source/723lpp_res’}, ‘master’: {‘Cstate’: ‘ready for a NIM operation’, ‘type’: ‘master’}, ‘standalone’: {‘nimclient01’: {‘Cstate’: ‘ready for a NIM operation’, ‘Cstate_result’: ‘success’, ‘Mstate’: ‘currently running’, ‘cable_type1’: ‘N/A’, ‘class’: ‘machines’, ‘comments’: ‘object defined using nimquery -d’, ‘connect’: ‘nimsh’, ‘cpuid’: ‘00F600004C00’, ‘if1’: ‘master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0’, ‘installed_image’: ‘ansible_img’, ‘mgmt_profile1’: ‘p8-hmc 2 nimclient-cec nimclient-vios1’, ‘netboot_kernel’: ‘64’, ‘platform’: ‘chrp’, ‘prev_state’: ‘customization is being performed’}}, ‘vios’: {‘vios1’: {‘Cstate’: ‘ready for a NIM operation’, ‘Cstate_result’: ‘success’, ‘Mstate’: ‘currently running’, ‘cable_type1’: ‘N/A’, ‘class’: ‘management’, ‘connect’: ‘nimsh’, ‘cpuid’: ‘00F600004C00’, ‘if1’: ‘master_net vios1.aus.stglabs.ibm.com 0’, ‘mgmt_profile1’: ‘p8-hmc 1 vios-cec’, ‘netboot_kernel’: ‘64’, ‘platform’: ‘chrp’, ‘prev_state’: ‘alt_disk_install operation is being performed’}}}})</dt><dd><p>NIM node info.</p>
 <dl class="simple">
@@ -385,7 +413,7 @@
         <a href="nim_backup.html" class="btn btn-neutral float-right" title="nim_backup – Uses NIM to manage backup of LPAR or VIOS clients." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mount.html" class="btn btn-neutral float-left" title="mount – Mounts/unmounts a filesystem or device on AIX." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mpio.html" class="btn btn-neutral float-left" title="mpio – Returns information about MultiPath I/O capable devices." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

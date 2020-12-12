@@ -24,7 +24,7 @@ The below requirements are needed on the host that executes this module.
 
 - AIX >= 7.1 TL3
 - Python >= 2.7
-- User with priviledged authorizations.
+- Privileged user with authorizations: **aix.security.network.filt,aix.security.network.stat,aix.device.manage.create**
 
 
 
@@ -63,7 +63,7 @@ Parameters
       Sets the action of the default filter rule.
 
 
-    log (optional, bool, False)
+    log (optional, bool, None)
       Enable the log functionality of the filter rule module.
 
 
@@ -227,7 +227,7 @@ Parameters
       Sets the action of the default filter rule.
 
 
-    log (optional, bool, False)
+    log (optional, bool, None)
       Enable the log functionality of the filter rule module.
 
 

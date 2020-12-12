@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>nim_vios_hc – Check if a pair of VIOSes can be updated. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+  <title>reboot – Reboot AIX machines. &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
   
 
   
@@ -38,8 +38,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." href="nim_viosupgrade.html" />
-    <link rel="prev" title="nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients." href="nim_vios_alt_disk.html" /> 
+    <link rel="next" title="suma – Download/Install fixes, SP or TL from IBM Fix Central website." href="suma.html" />
+    <link rel="prev" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." href="nim_viosupgrade.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -121,18 +121,17 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">nim_vios_hc – Check if a pair of VIOSes can be updated.</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">reboot – Reboot AIX machines.</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#synopsis">Synopsis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#parameters">Parameters</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#return-values">Return Values</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#status">Status</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
-<li class="toctree-l3"><a class="reference internal" href="reboot.html">reboot – Reboot AIX machines.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
@@ -202,14 +201,14 @@
         
           <li><a href="../modules.html">Modules</a> &raquo;</li>
         
-      <li>nim_vios_hc – Check if a pair of VIOSes can be updated.</li>
+      <li>reboot – Reboot AIX machines.</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
             
-              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/nim_vios_hc.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules/reboot.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -223,84 +222,72 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated">
-<span id="nim-vios-hc-module"></span><h1>nim_vios_hc – Check if a pair of VIOSes can be updated.<a class="headerlink" href="#nim-vios-hc-check-if-a-pair-of-vioses-can-be-updated" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="reboot-reboot-aix-machines">
+<span id="reboot-module"></span><h1>reboot – Reboot AIX machines.<a class="headerlink" href="#reboot-reboot-aix-machines" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#synopsis" id="id1">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#requirements" id="id2">Requirements</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
-<li><p><a class="reference internal" href="#notes" id="id4">Notes</a></p></li>
-<li><p><a class="reference internal" href="#examples" id="id5">Examples</a></p></li>
-<li><p><a class="reference internal" href="#return-values" id="id6">Return Values</a></p></li>
-<li><p><a class="reference internal" href="#status" id="id7">Status</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
+<li><p><a class="reference internal" href="#return-values" id="id5">Return Values</a></p></li>
+<li><p><a class="reference internal" href="#status" id="id6">Status</a></p></li>
 </ul>
 </div>
 <div class="section" id="synopsis">
 <h2><a class="toc-backref" href="#id1">Synopsis</a><a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p>Uses the Network Installation Management (NIM) and the VIOS health check tool to check several settings required to update a pair of Virtual I/O Servers (VIOS).</p>
-<p>In the current version, it validates the vSCSI, NPIv, SEA mappings configurations and vNIC configurations (when set) so the update of the VIOS pair can be attempted. The SSP configuration is not checked yet, that is not required so far.</p>
+<p>Reboot a machine and validate by runnning a test command once the system comes back up.</p>
 </div>
 <div class="section" id="requirements">
 <h2><a class="toc-backref" href="#id2">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>The below requirements are needed on the host that executes this module.</p>
 <ul class="simple">
-<li><p>AIX &gt;= 7.1 TL3</p></li>
 <li><p>Python &gt;= 2.7</p></li>
-<li><p>The <strong>vioshc.py</strong> script must be installed on the NIM master.</p></li>
-<li><p>Privileged user with authorizations: <strong>aix.system.install,aix.system.nim.config.server</strong></p></li>
+<li><p>Privileged user with authorization: <strong>aix.system.boot.shutdown</strong></p></li>
+<li><p>In ansible.cfg file, ensure that ssh_args are properly set, so that ssh connection does not end up in a hang. For example, ssh_args = -o ForwardAgent=yes -o ControlPersist=30m -o ServerAliveInterval=45 -o ServerAliveCountMax=10</p></li>
 </ul>
 </div>
 <div class="section" id="parameters">
 <h2><a class="toc-backref" href="#id3">Parameters</a><a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl>
-<dt>action (True, str, None)</dt><dd><p>Specifies the operation to perform.</p>
-<p><code class="docutils literal notranslate"><span class="pre">health_check</span></code> to perform a health check.</p>
+<div><dl class="simple">
+<dt>pre_reboot_delay (optional, int, 0)</dt><dd><p>Seconds to wait before reboot. Passed as a parameter to the reboot command.</p>
 </dd>
-<dt>targets (True, list, None)</dt><dd><p>Specifies the NIM clients to perform the action on.</p>
-<p>To perform a health check on dual VIOSes specify a tuple with the following format <em>“vios1,vios2”</em>.</p>
+<dt>post_reboot_delay (optional, int, 0)</dt><dd><p>Seconds to wait for validation after reboot command was successful</p>
+</dd>
+<dt>reboot_timeout (optional, int, 300)</dt><dd><p>Maximum seconds to wait for machine to reboot and respond to a test command.</p>
+</dd>
+<dt>test_command (optional, str, whoami)</dt><dd><p>Command to run on the rebooted host to validate system running status.</p>
 </dd>
 </dl>
 </div></blockquote>
 </div>
-<div class="section" id="notes">
-<h2><a class="toc-backref" href="#id4">Notes</a><a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<ul class="simple">
-<li><p>Use the <strong>power_aix_vioshc</strong> role to install the required <strong>vioshc.py</strong> script on the NIM master.</p></li>
-<li><p>The default log directory for the <strong>vioshc.py</strong> script is <strong>/tmp/vios_maint</strong>.</p></li>
-<li><p>The <strong>vioshc.py</strong> script uses Curl to get information through the REST API of the VIOSes’ HMC.</p></li>
-</ul>
-</div>
-</div>
 <div class="section" id="examples">
-<h2><a class="toc-backref" href="#id5">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Perform a health check on dual VIOSes vios1,vios2 and on VIOS vios3</span>
-  <span class="nt">nim_vios_hc</span><span class="p">:</span>
-    <span class="nt">targets</span><span class="p">:</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios1,vios2</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">vios3</span>
-    <span class="nt">action</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">health_check</span>
+<h2><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="s">&quot;Reboot</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">machine&quot;</span>
+  <span class="nt">reboot</span><span class="p">:</span>
+    <span class="nt">pre_reboot_delay</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
+    <span class="nt">post_reboot_delay</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
+    <span class="nt">connect_timeout</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+    <span class="nt">reboot_timeout</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">300</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="return-values">
-<h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
-<dt>msg (always, str, )</dt><dd><p>Status information.</p>
+<dt>msg (always, str, System has been rebooted SUCCESSFULLY)</dt><dd><p>The execution message.</p>
 </dd>
-<dt>targets (always, list, )</dt><dd><p>List of VIOS tuples.</p>
+<dt>rc (If the command failed., int, )</dt><dd><p>The return code.</p>
 </dd>
-<dt>nim_node (always, dict, )</dt><dd><p>NIM node info.</p>
+<dt>stdout (If the command failed., str, )</dt><dd><p>The standard output.</p>
 </dd>
-<dt>status (always, dict, )</dt><dd><p>Status for each VIOS (dictionary key).</p>
+<dt>stderr (If the command failed., str, )</dt><dd><p>The standard error.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="status">
-<h2><a class="toc-backref" href="#id7">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Status</a><a class="headerlink" href="#status" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>This module is not guaranteed to have a backwards compatible interface. <em>[preview]</em></p></li>
 <li><p>This module is maintained by community.</p></li>
@@ -322,10 +309,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="nim_viosupgrade.html" class="btn btn-neutral float-right" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="suma.html" class="btn btn-neutral float-right" title="suma – Download/Install fixes, SP or TL from IBM Fix Central website." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="nim_vios_alt_disk.html" class="btn btn-neutral float-left" title="nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="nim_viosupgrade.html" class="btn btn-neutral float-left" title="nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

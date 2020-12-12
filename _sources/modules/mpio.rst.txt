@@ -1,0 +1,110 @@
+.. _mpio_module:
+
+
+mpio -- Returns information about MultiPath I/O capable devices.
+================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Returns information about MultiPath I/O capable devices.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  device (optional, str, None)
+    Specifies the logical device name of the target device whose path information is to be returned.
+
+
+  parent (optional, str, None)
+    Indicates the logical device name of the parent device whose paths are to be returned.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Gather paths to all MultiPath I/O capable devices
+      mpio:
+    - name: Print the paths
+      debug:
+        var: ansible_facts.mpio.paths
+
+
+
+Return Values
+-------------
+
+ansible_facts (always, complex, )
+  Facts to add to ansible_facts about paths to MultiPath I/O capable devices.
+
+
+  mpio (, dict, )
+    Contains information about drivers and paths.
+
+
+    drivers (always, dict, {'drivers': {'IBMFlash': {'option': 'NO_OVERRIDE', 'options': ['NO_OVERRIDE', 'AIX_AAPCM', 'AIX_non_MPIO']}}})
+      Maps driver name to driver supported and selected options.
+
+
+      option (always, str, )
+        Option currently selected.
+
+
+      options (always, list, )
+        Supported driver options.
+
+
+
+    paths (always, dict, {'paths': {'hdisk0': {'fscsi1': {'500507680b215660,0': {'path_id': 0, 'path_status': 'Available', 'status': 'Enabled'}, '500507680b215661,0': {'path_id': 1, 'path_status': 'Available', 'status': 'Enabled'}}}}})
+      Maps device name to parent devices and connections.
+
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+
