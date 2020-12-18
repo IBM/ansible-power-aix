@@ -481,7 +481,7 @@ def main():
             tunnel_only=dict(type='bool', default=False),
             key_lifetime=dict(type='int'),
             newheader=dict(type='bool'),
-            replay=dict(type='bool'),
+            replay=dict(type='bool', default=False),
             tunnel_mode=dict(type='bool', default=True),
             fw_address=dict(type='str'),
             dst_mask=dict(type='str'),
