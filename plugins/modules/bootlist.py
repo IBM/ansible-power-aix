@@ -246,7 +246,8 @@ def main():
     for mode in ['normal', 'service', 'both']:
         if not module.params[mode]:
             continue
-        cmd = [bootlist_path, '-m', mode]
+        # Run bootlist in verbose mode
+        cmd = [bootlist_path, '-v', '-m', mode]
         if module.params['force']:
             cmd += ['-F']
         for entry in module.params[mode]:
@@ -256,7 +257,8 @@ def main():
                     continue
                 cmd += [attr + '=' + str(val)]
 
-        module.run_command(cmd, check_rc=True)
+        ret, stdout, stderr = module.run_command(cmd, check_rc=True)
+        results['stdout'] += stdout  # Save verbose output
         results['changed'] = True
 
     # Retrieve boot lists

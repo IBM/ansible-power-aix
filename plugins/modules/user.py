@@ -56,10 +56,9 @@ options:
       minother, nofiles, nproc, pgrp, projects, pwdchecks, pwdwarntime, rcmds, rlogin, roles, rss,
       shell, stack, su, sugroups, sysenv, threads, tpath, ttys, umask, usrenv, etc.
     type: dict
-  remove_password:
+  remove_homedir:
     description:
-    - Specifies if the password information should be deleted from the system's password file while
-      removing a user.
+    - Specifies if the home directory should be deleted from the system while removing a user.
     - Can be used when I(state=absent).
     type: bool
     default: True
@@ -176,9 +175,20 @@ def create_user(module):
         Message for successfull command
     '''
     attributes = module.params['attributes']
+    opts = ""
+    load_module_opts = None
+    msg = None
 
-    cmd = ['mkuser']
-    cmd.append(module.params['name'])
+    if attributes is not None:
+        for attr, val in attributes.items():
+            if attr == 'load_module':
+                load_module_opts = "-R %s " % val
+            else:
+                opts += "%s=%s " % (attr, val)
+        if load_module_opts is not None:
+            opts = load_module_opts + opts
+
+    cmd = "mkuser %s %s" % (opts, module.params['name'])
 
     rc, stdout, stderr = module.run_command(cmd)
 
@@ -188,9 +198,9 @@ def create_user(module):
     else:
         msg = "Username is created SUCCESSFULLY: %s" % module.params['name']
 
-    if attributes is not None or module.params['password'] is not None:
-        msg_attr = modify_user(module)
-        msg += msg_attr
+    if module.params['password'] is not None:
+        msg_pass = modify_user(module)
+        msg += msg_pass
 
     return msg
 
@@ -207,10 +217,10 @@ def remove_user(module):
     return:
         Message for successfull command
     '''
-    cmd = ['rmuser']
+    cmd = ['userdel']
 
-    if module.params['remove_password']:
-        cmd.append('-p')
+    if module.params['remove_homedir']:
+        cmd.append('-r')
 
     cmd.append(module.params['name'])
 
@@ -282,7 +292,7 @@ def main():
             state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
             name=dict(type='str', required=True, aliases=['user']),
             attributes=dict(type='dict'),
-            remove_password=dict(type='bool', default=True, no_log=False),
+            remove_homedir=dict(type='bool', default=True, no_log=False),
             change_passwd_on_login=dict(type='bool', default=False, no_log=False),
             password=dict(type='str', no_log=True),
         ),

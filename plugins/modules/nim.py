@@ -262,6 +262,7 @@ nim_node:
                     "connect": "nimsh",
                     "cpuid": "00F600004C00",
                     "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "ip": "vios1.aus.stglabs.ibm.com",
                     "mgmt_profile1": "p8-hmc 1 vios-cec",
                     "netboot_kernel": "64",
                     "platform": "chrp",
