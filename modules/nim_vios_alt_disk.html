@@ -113,6 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktun.html">mktun – Creates, activates, deactivates and removes tunnels.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
@@ -321,14 +322,32 @@
 </div>
 <div class="section" id="return-values">
 <h2><a class="toc-backref" href="#id6">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h2>
-<dl class="simple">
+<dl>
 <dt>msg (always, str, )</dt><dd><p>Status information.</p>
 </dd>
-<dt>nim_node (always, dict, )</dt><dd><p>NIM node info.</p>
+<dt>status (always, dict, { vios1: ‘SUCCESS-ALTDC’, vios2: ‘FAILURE-ALTDC wrong rootvg state on vios2’ })</dt><dd><p>Status for each VIOS tuples (dictionary key).</p>
+<dl class="simple">
+<dt>&lt;vios&gt; (when vios is actually a NIM client, str, SUCCESS-ALTDC)</dt><dd><p>Status of the execution on the &lt;vios&gt;.</p>
 </dd>
-<dt>status (always, dict, )</dt><dd><p>Status for each VIOS tuples (dictionary key).</p>
+</dl>
 </dd>
-<dt>output (always, dict, )</dt><dd><p>Detailed information on the module execution.</p>
+<dt>nim_node (always, dict, {‘nim_node’: {‘vios’: {‘vios1’: {‘Cstate’: ‘ready for a NIM operation’, ‘Cstate_result’: ‘success’, ‘Mstate’: ‘currently running’, ‘cable_type1’: ‘N/A’, ‘class’: ‘management’, ‘connect’: ‘nimsh’, ‘cpuid’: ‘00F600004C00’, ‘if1’: ‘master_net vios1.aus.stglabs.ibm.com 0’, ‘ip’: ‘vios1.aus.stglabs.ibm.com’, ‘mgmt_profile1’: ‘p8-hmc 1 vios-cec’, ‘netboot_kernel’: ‘64’, ‘platform’: ‘chrp’, ‘prev_state’: ‘alt_disk_install operation is being performed’}}}})</dt><dd><p>NIM node info.</p>
+<dl class="simple">
+<dt>vios (always, dict, )</dt><dd><p>List of VIOS NIM resources.</p>
+</dd>
+</dl>
+</dd>
+<dt>meta (always, dict, )</dt><dd><p>Detailed information on the module execution.</p>
+<dl>
+<dt>messages (always, list, see below)</dt><dd><p>Details on errors/warnings not related to a specific target.</p>
+</dd>
+<dt>&lt;target&gt; (when target is actually a NIM client, dict, )</dt><dd><p>Detailed information on the execution on the <code class="docutils literal notranslate"><span class="pre">target</span></code>.</p>
+<dl class="simple">
+<dt>messages (always, list, )</dt><dd><p>Details on errors/warnings</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>

@@ -54,8 +54,8 @@ Parameters
     If you have the proper authority, you can set the following usual user attributes account_locked, admin, admgroups, capabilities, cpu, daemon, data, default_roles, dictionlist, domains, expires, fsize, fsize_hard, gecos, groups, histexpire, home, id, login, loginretries, logintimes, maxages, maxexpired, maxrepeats, maxulogs, minage, minalpha, mindiff, minlen, minother, nofiles, nproc, pgrp, projects, pwdchecks, pwdwarntime, rcmds, rlogin, roles, rss, shell, stack, su, sugroups, sysenv, threads, tpath, ttys, umask, usrenv, etc.
 
 
-  remove_password (optional, bool, True)
-    Specifies if the password information should be deleted from the system's password file while removing a user.
+  remove_homedir (optional, bool, True)
+    Specifies if the home directory should be deleted from the system while removing a user.
 
     Can be used when *state=absent*.
 

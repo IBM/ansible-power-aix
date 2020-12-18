@@ -113,6 +113,7 @@
 <li class="toctree-l3"><a class="reference internal" href="lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mktun.html">mktun – Creates, activates, deactivates and removes tunnels.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
@@ -266,7 +267,7 @@
 <p>For details on valid user attributes, please refers to IBM documentation at <a class="reference external" href="https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html">https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html</a>.</p>
 <p>If you have the proper authority, you can set the following usual user attributes account_locked, admin, admgroups, capabilities, cpu, daemon, data, default_roles, dictionlist, domains, expires, fsize, fsize_hard, gecos, groups, histexpire, home, id, login, loginretries, logintimes, maxages, maxexpired, maxrepeats, maxulogs, minage, minalpha, mindiff, minlen, minother, nofiles, nproc, pgrp, projects, pwdchecks, pwdwarntime, rcmds, rlogin, roles, rss, shell, stack, su, sugroups, sysenv, threads, tpath, ttys, umask, usrenv, etc.</p>
 </dd>
-<dt>remove_password (optional, bool, True)</dt><dd><p>Specifies if the password information should be deleted from the system’s password file while removing a user.</p>
+<dt>remove_homedir (optional, bool, True)</dt><dd><p>Specifies if the home directory should be deleted from the system while removing a user.</p>
 <p>Can be used when <em>state=absent</em>.</p>
 </dd>
 <dt>change_passwd_on_login (optional, bool, False)</dt><dd><p>Specifies if the user is required to change the password when logging in the first time after the password change operation is performed.</p>

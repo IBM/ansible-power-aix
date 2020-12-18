@@ -133,16 +133,40 @@ msg (always, str, )
   Status information.
 
 
-nim_node (always, dict, )
-  NIM node info.
-
-
-status (always, dict, )
+status (always, dict, { vios1: 'SUCCESS-ALTDC', vios2: 'FAILURE-ALTDC wrong rootvg state on vios2' })
   Status for each VIOS tuples (dictionary key).
 
 
-output (always, dict, )
+  <vios> (when vios is actually a NIM client, str, SUCCESS-ALTDC)
+    Status of the execution on the <vios>.
+
+
+
+nim_node (always, dict, {'nim_node': {'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'ip': 'vios1.aus.stglabs.ibm.com', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed'}}}})
+  NIM node info.
+
+
+  vios (always, dict, )
+    List of VIOS NIM resources.
+
+
+
+meta (always, dict, )
   Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific target.
+
+
+  <target> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the ``target``.
+
+
+    messages (always, list, )
+      Details on errors/warnings
+
+
 
 
 
