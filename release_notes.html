@@ -106,6 +106,7 @@
 <p class="caption"><span class="caption-text">Appendices</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Releases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-2-0">Version 1.2.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-1-2">Version 1.1.2</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-1-1">Version 1.1.1</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-1-0">Version 1.1.0</a></li>
@@ -185,6 +186,45 @@
             
   <div class="section" id="releases">
 <h1>Releases<a class="headerlink" href="#releases" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="version-1-2-0">
+<h2>Version 1.2.0<a class="headerlink" href="#version-1-2-0" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Notes</dt><dd><ul class="simple">
+<li><p>Refresh of patch management capability (Update recommended)</p></li>
+<li><p>Fixes in nim_flrtvc and nim_backup modules for Python2 compatibility</p></li>
+<li><p>Documenting RBAC authorizations per module</p></li>
+<li><p>Quickstart documentation: user creation with RBAC authorization</p></li>
+<li><p>use nim_exec() instead of calling c_rsh command directly in nim, nim_flrtvc, nim_suma</p></li>
+<li><p>new playbook examples / improvements</p></li>
+<li><p>aixpert: new module for AIXPert</p></li>
+<li><p>alt_disk: new options for alt_disk_copy</p></li>
+<li><p>backup: add restore and view operation for mksysb + playbook</p></li>
+<li><p>bootlist: new module</p></li>
+<li><p>inittab: new module</p></li>
+<li><p>lpar_facts: new module</p></li>
+<li><p>lvm_facts: new module</p></li>
+<li><p>lvol: new module for logical volume management</p></li>
+<li><p>mkfilt: new module</p></li>
+<li><p>mktun: new module to manage IPsec manual tunnels</p></li>
+<li><p>mpio: new module</p></li>
+<li><p>nim: uniformize logging and message, add ‘meta’ and command returns</p></li>
+<li><p>nim_backup: fix multithreading for simultaneous mksysb creation with NIM</p></li>
+<li><p>nim_updateios: major fixes and improvements for cluster management</p></li>
+<li><p>nim_updateios: fix cluster -list that returns 7 fields if not verbose not 21 fields</p></li>
+<li><p>nim_vios_alt_disk: rework logging and result reporting</p></li>
+<li><p>reboot: new module</p></li>
+<li><p>suma: fix issue #40 (unpack return value calling suma_command())</p></li>
+<li><p>user: improvement (issues #56 and #57 )</p></li>
+</ul>
+</dd>
+<dt>Availability</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix">Automation Hub v1.2.0</a></p></li>
+<li><p><a class="reference external" href="https://galaxy.ansible.com/download/ibm-power_aix-1.2.0.tar.gz">Galaxy v1.2.0</a></p></li>
+<li><p><a class="reference external" href="https://github.com/IBM/ansible-power-aix/releases/download/v1.2.0/ibm-power_aix-1.2.0.tar.gz">GitHub v1.2.0</a></p></li>
+</ul>
+</dd>
+</dl>
+</div>
 <div class="section" id="version-1-1-2">
 <h2>Version 1.1.2<a class="headerlink" href="#version-1-1-2" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">

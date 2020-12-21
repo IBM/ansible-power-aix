@@ -5,6 +5,49 @@
 Releases
 ========
 
+Version 1.2.0
+-------------
+Notes
+  * Refresh of patch management capability (Update recommended)
+  * Fixes in nim_flrtvc and nim_backup modules for Python2 compatibility
+  * Documenting RBAC authorizations per module
+  * Quickstart documentation: user creation with RBAC authorization
+  * use nim_exec() instead of calling c_rsh command directly in nim, nim_flrtvc, nim_suma
+  * new playbook examples / improvements
+  * aixpert: new module for AIXPert
+  * alt_disk: new options for alt_disk_copy
+  * backup: add restore and view operation for mksysb + playbook
+  * bootlist: new module
+  * inittab: new module
+  * lpar_facts: new module
+  * lvm_facts: new module
+  * lvol: new module for logical volume management
+  * mkfilt: new module
+  * mktun: new module to manage IPsec manual tunnels
+  * mpio: new module
+  * nim: uniformize logging and message, add 'meta' and command returns
+  * nim_backup: fix multithreading for simultaneous mksysb creation with NIM
+  * nim_updateios: major fixes and improvements for cluster management
+  * nim_updateios: fix cluster -list that returns 7 fields if not verbose not 21 fields
+  * nim_vios_alt_disk: rework logging and result reporting
+  * reboot: new module
+  * suma: fix issue #40 (unpack return value calling suma_command())
+  * user: improvement (issues #56 and #57 )
+
+Availability
+  * `Automation Hub v1.2.0`_
+  * `Galaxy v1.2.0`_
+  * `GitHub v1.2.0`_
+
+.. _Automation Hub v1.2.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.2.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.2.0.tar.gz
+
+.. _GitHub v1.2.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.2.0/ibm-power_aix-1.2.0.tar.gz
+
 Version 1.1.2
 -------------
 Notes
