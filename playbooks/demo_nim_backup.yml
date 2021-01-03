@@ -53,7 +53,7 @@
       action: list
       targets: "ALL"
       oslevel: "{{ oslevel_v }}"
-      name: "{{ sysb_name_v }}
+      name: "{{ sysb_name_v }}"
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
     register: result

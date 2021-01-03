@@ -51,7 +51,7 @@
 #    register: result
 #  - debug: var=result
 
-#  - name: increase filesystem to move mksysb image 
+#  - name: increase filesystem to move mksysb image
 #    filesystem:
 #      filesystem: "{{ restore_fs_v }}"
 #      state: present
@@ -68,7 +68,7 @@
 #      state: absent
 #      filesystem: "{{ restore_fs_v }}"
 #      rm_mount_point: yes
- 
+
 #  - name: remove volume group prior to install mksysb
   # reducevg -d vg00 hdisk1
 
@@ -90,4 +90,3 @@
 #      flags: "{{ alt_disk_mksysb_flags_v }}"
 #    register: result
 #  - debug: var=result
-

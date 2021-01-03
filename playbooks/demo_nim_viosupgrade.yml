@@ -63,4 +63,3 @@
      retries: 30
      delay: 120
    - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
-
