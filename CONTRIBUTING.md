@@ -70,5 +70,3 @@ local git repository using the following command:
 git commit -s
 ```
 
-## Communication
-**FIXME** Please feel free to connect with us on our [Slack channel](link).
