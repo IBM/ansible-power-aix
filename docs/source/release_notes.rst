@@ -5,6 +5,27 @@
 Releases
 ========
 
+Version 1.2.1
+-------------
+Notes
+  * Minor fixes for playbook demo_nim_viosupgrade.yml
+  * Minor fixes for plugin reboot.py
+
+Availability
+  * `Automation Hub v1.2.1`_
+  * `Galaxy v1.2.1`_
+  * `GitHub v1.2.1`_
+
+.. _Automation Hub v1.2.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.2.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.2.1.tar.gz
+
+.. _GitHub v1.2.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.2.1/ibm-power_aix-1.2.1.tar.gz
+
+
 Version 1.2.0
 -------------
 Notes
