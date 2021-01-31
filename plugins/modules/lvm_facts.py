@@ -394,7 +394,7 @@ def load_lvs(module, name, LVM):
                         'lv_state': lv_state,
                         'PPs': pps,
                         'LPs': lps,
-                        'mount point': mnt_pt
+                        'mount_point': mnt_pt
                     }
                     LVM['LVs'][lv] = data
     return msg, LVM
