@@ -40,7 +40,7 @@ This repository contains some example best practices for open source repositorie
 
 ### Ansible
 
-- Requires Ansible 2.0 or newer
+- Requires Ansible 2.9 or newer
 - For help installing Ansible, refer to the [Installing Ansible] section of the Ansible Documentation
 - For help installing the ibm.power\_aix collection, refer to the [install](docs/source/installation.rst) page of this project
 
