@@ -29,37 +29,37 @@
 
   tasks:
 
-   - name: Check vios is ready for viosupgrade
-     nim_viosupgrade:
-       action: get_status
-       targets: "{{ target_v }}"
-     register: result
-     until: result.meta["{{ target_v }}"].stdout.find("ready for a NIM operation") != -1
-     retries: 1
-     delay: 5
+    - name: Check vios is ready for viosupgrade
+      nim_viosupgrade:
+        action: get_status
+        targets: "{{ target_v }}"
+      register: result
+      until: result.meta["{{ target_v }}"].stdout.find("ready for a NIM operation") != -1
+      retries: 1
+      delay: 5
 
-   - name: viosupgrade altdisk operation
-     nim_viosupgrade:
-       action: altdisk
-       targets: "{{ target_v }}"
-       viosupgrade_params: "{{ params_altdisk_v }}"
-     register: result
-   - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+    - name: viosupgrade altdisk operation
+      nim_viosupgrade:
+        action: altdisk
+        targets: "{{ target_v }}"
+        viosupgrade_params: "{{ params_altdisk_v }}"
+      register: result
+    - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
 
-   # - name: viosupgrade bosinst operation
-   #   nim_viosupgrade:
-   #     action: bosinst
-   #     targets: "{{ target_v }}"
-   #     viosupgrade_params: "{{ params_bosinst_v }}"
-   #   register: result
-   # - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+  # - name: viosupgrade bosinst operation
+  #   nim_viosupgrade:
+  #     action: bosinst
+  #     targets: "{{ target_v }}"
+  #     viosupgrade_params: "{{ params_bosinst_v }}"
+  #   register: result
+  # - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
 
-   - name: Wait for viosupgrade to complete
-     nim_viosupgrade:
-       action: get_status
-       targets: "{{ target_v }}"
-     register: result
-     until: result.status["{{ target_v }}"] != 'ONGOING'
-     retries: 30
-     delay: 120
-   - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
+    - name: Wait for viosupgrade to complete
+      nim_viosupgrade:
+        action: get_status
+        targets: "{{ target_v }}"
+      register: result
+      until: result.status["{{ target_v }}"] != 'ONGOING'
+      retries: 30
+      delay: 120
+    - debug: var=result.meta["{{ target_v }}"].stdout.split('\n')
