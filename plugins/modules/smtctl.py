@@ -115,7 +115,7 @@ def get_smt_state(module):
             line_out = line.strip().split()
             try:
                 if "proc" in line_out[0] and int(line_out[2]) > 1:
-                    #Value greater than 1 is SMT Enabled
+                    # Value greater than 1 is SMT Enabled
                     present_value = int(line_out[2])
                     break
             except IndexError as ex:
@@ -138,10 +138,10 @@ def smt_set(module):
     opts = ""
 
     if smt_value and chtype and not smt_limit:
-        opts += "-t %s -w %s" % (smt_value,chtype)
+        opts += "-t %s -w %s" % (smt_value, chtype)
 
     elif smt_value and smt_limit:
-        opts +=  "-m %s -t %s" % (smt_limit, smt_value)
+        opts += "-m %s -t %s" % (smt_limit, smt_value)
 
     elif smt_value:
         opts += "-t %s" % (smt_value)
@@ -168,7 +168,6 @@ def smt_set(module):
     else:
         msg = "Command Executed Successfully cmd: %s" % cmd
         return True, msg
-
       
 def run_bosboot(module):
     """ Running bosboot the changes to take effect on subsequent reboots """
@@ -197,12 +196,12 @@ def run_bosboot(module):
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        smt_value = dict(type='int', required=False, choices=[1, 2, 4, 8]),
-        smt_extra = dict(type='str', required=False, choices=['recommended', 'suspend']),
-        smt_limit = dict(type='str', required=False),
-        bos_boot = dict(type='bool', required=False),
-        chtype = dict(type='str', required=False, choices=['boot', 'now']),
-        smt_state = dict(type='str', required=False, choices = ['enabled', 'disabled'])
+        smt_value=dict(type='int', required=False, choices=[1, 2, 4, 8]),
+        smt_extra=dict(type='str', required=False, choices=['recommended', 'suspend']),
+        smt_limit=dict(type='str', required=False),
+        bos_boot=dict(type='bool', required=False),
+        chtype=dict(type='str', required=False, choices=['boot', 'now']),
+        smt_state=dict(type='str', required=False, choices = ['enabled', 'disabled'])
     )
 
     result = dict(
@@ -215,9 +214,9 @@ def run_module():
     # Instantiation of common attributes from module_Arg
 
     module = AnsibleModule(
-        argument_spec = module_args,
-        supports_check_mode = False,
-        mutually_exclusive = [['smt_extra', 'smt_value', 'smt_state']]
+        argument_spec=module_args,
+        supports_check_mode=False,
+        mutually_exclusive=[['smt_extra', 'smt_value', 'smt_state']]
     )
 
     current_state = get_smt_state(module)
