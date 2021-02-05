@@ -17,9 +17,9 @@ version_added: "1.0.0"
 
 description:
 - This command is provided for privileged users and applications to control utilization of processors with simultaneous multithreading support.
-  The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
-  This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system. 
-  This command controls the simultaneous multithreading options.
+- The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
+- This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system.
+- This command controls the simultaneous multithreading options.
 
 requirements:
 - AIX  7.2
@@ -60,8 +60,6 @@ notes:
 - Please refer to the IBM documentation for additional information on the commands used in the module.
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
 
-author:
-- Madhu Pillai
 '''
 
 EXAMPLES = r'''
