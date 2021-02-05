@@ -60,6 +60,8 @@ notes:
 - Please refer to the IBM documentation for additional information on the commands used in the module.
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
 
+author:
+- Madhu Pillai (@resvrin)
 '''
 
 EXAMPLES = r'''
