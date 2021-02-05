@@ -22,7 +22,7 @@ description:
 
 Requirements:
 - AIX - 7.2
-- IBM Power - Power9 Power8
+- IBM Power - Power9_Power8
 - Python > 2.7
 
 options:
@@ -30,10 +30,12 @@ options:
     description:
     - This value takes appropriate SMT value
     type: int
+    choices: [1, 2, 4, 8]
   smt_extra:
     description:
     - C("recommended or suspend") This values is mutually exclusive with smt_value and smt_state.
     type: str
+    choices: [recommended, suspend]
   smt_limit:
     description:
     - This values set the limit for the multithreading.
@@ -46,17 +48,19 @@ options:
     description:
     - C(boot or now) This take either boot or now value.
     type: str
+    choices: [boot, now, none]
   smt_state:
    description:
    - This enable or disable  the SMT in the lpar.
    type: str
+   choices: [enabled, disabled, none]
 
 notes:
 - Please refer to the IBM documentation for additional information on the commands used in the module.
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
 
 author:
-    - Madhu Pillai (madhupillai80@gmail.com)
+    - Madhu Pillai (madhupillai)
 '''
 
 EXAMPLES = r'''
@@ -86,13 +90,11 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-description: "Output On Debug"
 msg:
-    "bos_changed": true,
-    "bos_message": "Command Executed Successfully output- '\nbosboot: Boot image is 61468 512 byte blocks.\n'",
-    "changed": true,
-    "failed": false,
-    "msg": "Command Executed Successfully cmd: smtctl -t 8"
+    description: Output on Debug
+    returned: always
+    type: str
+    sample: Command Executed Successfully
 
 '''
 
@@ -145,7 +147,7 @@ def smt_set(module):
         opts += "-t %s" % (smt_value)
 
     elif smt_extra:
-        opts += "-m %s" % smt_extra
+        opts += "-m %s" % (smt_extra)
 
     elif smt_state == "enabled":
         opts += "-m on"
@@ -155,7 +157,6 @@ def smt_set(module):
 
     else:
         opts = ""
-
 
     cmd = "smtctl %s" % opts
     rc, stdout, stderr = module.run_command(cmd)
@@ -168,14 +169,11 @@ def smt_set(module):
         msg = "Command Executed Successfully cmd: %s" % cmd
         return True, msg
 
-
-
-
-
+      
 def run_bosboot(module):
     """ Running bosboot the changes to take effect on subsequent reboots """
 
-    opts =""
+    opts = ""
 
     bos_boot = module.params["bos_boot"]
 
@@ -219,7 +217,7 @@ def run_module():
     module = AnsibleModule(
         argument_spec = module_args,
         supports_check_mode = False,
-        mutually_exclusive = [[ 'smt_extra', 'smt_value', 'smt_state' ]]
+        mutually_exclusive = [['smt_extra', 'smt_value', 'smt_state']]
     )
 
     current_state = get_smt_state(module)
@@ -229,7 +227,7 @@ def run_module():
     smt_limit = module.params["smt_limit"]
     smt_state = module.params["smt_state"]
 
-    #Adding the condition to execute the bosboot if it is set
+    # Adding the condition to execute the bosboot if it is set
 
     if smt_value and not smt_limit:
         if smt_value != current_state:
@@ -252,8 +250,6 @@ def run_module():
         if result["changed"] and bos_boot:
             result["bos_changed"], result["bos_message"] = run_bosboot(module)
 
-
-
     module.exit_json(**result)
 
 
@@ -263,4 +259,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
