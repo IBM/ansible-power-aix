@@ -17,10 +17,11 @@ version_added: "1.0.0"
 
 description:
 - This command is provided for privileged users and applications to control utilization of processors with simultaneous multithreading support.
-- The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
-- This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system. This command controls the simultaneous multithreading options.
+  The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
+  This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system. 
+  This command controls the simultaneous multithreading options.
 
-Requirements:
+requirements:
 - AIX  7.2
 - IBM Power9_Power8
 - Python >= 2.7
@@ -60,7 +61,7 @@ notes:
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
 
 author:
-    - Madhu Pillai
+- Madhu Pillai
 '''
 
 EXAMPLES = r'''
@@ -153,7 +154,7 @@ def smt_set(module):
         opts += "-m on"
 
     elif smt_state == "disabled":
-        opts +=  "-m off"
+        opts += "-m off"
 
     else:
         opts = ""
@@ -193,7 +194,6 @@ def run_bosboot(module):
     return None
 
 
-
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
@@ -202,7 +202,7 @@ def run_module():
         smt_limit=dict(type='str', required=False),
         bos_boot=dict(type='bool', required=False),
         chtype=dict(type='str', required=False, choices=['boot', 'now']),
-        smt_state=dict(type='str', required=False, choices = ['enabled', 'disabled'])
+        smt_state=dict(type='str', required=False, choices=['enabled', 'disabled'])
     )
 
     result = dict(
