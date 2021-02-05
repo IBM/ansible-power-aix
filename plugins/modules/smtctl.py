@@ -21,9 +21,9 @@ description:
 - This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system. This command controls the simultaneous multithreading options.
 
 Requirements:
-- AIX - 7.2
-- IBM Power - Power9_Power8
-- Python > 2.7
+- AIX  7.2
+- IBM Power9_Power8
+- Python >= 2.7
 
 options:
   smt_value:
@@ -48,19 +48,19 @@ options:
     description:
     - C(boot or now) This take either boot or now value.
     type: str
-    choices: [boot, now, none]
+    choices: [boot, now]
   smt_state:
    description:
    - This enable or disable  the SMT in the lpar.
    type: str
-   choices: [enabled, disabled, none]
+   choices: [enabled, disabled]
 
 notes:
 - Please refer to the IBM documentation for additional information on the commands used in the module.
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
 
 author:
-    - Madhu Pillai (madhupillai)
+    - Madhu Pillai
 '''
 
 EXAMPLES = r'''
@@ -94,7 +94,7 @@ msg:
     description: Output on Debug
     returned: always
     type: str
-    sample: Command Executed Successfully
+    sample: Command Executed Successfully smtctl -t 8
 
 '''
 
@@ -168,7 +168,8 @@ def smt_set(module):
     else:
         msg = "Command Executed Successfully cmd: %s" % cmd
         return True, msg
-      
+
+
 def run_bosboot(module):
     """ Running bosboot the changes to take effect on subsequent reboots """
 
