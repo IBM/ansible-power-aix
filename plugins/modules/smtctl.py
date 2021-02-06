@@ -119,7 +119,7 @@ def get_smt_state(module):
                     # Value greater than 1 is SMT Enabled
                     present_value = int(line_out[2])
                     break
-            except IndexError as ex:
+            except IndexError:
                 pass
         return present_value
     return None
