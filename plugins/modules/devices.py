@@ -57,8 +57,9 @@ options:
       attributes.
     - C(defined) unconfigures/stops the device when its state is 'available', otherwise it changes
       the device attributes.
+    - C (removed) removes the device definition of unconfigured device in Customized Devices object class
     type: str
-    choices: [ available, defined ]
+    choices: [ available, defined, removed ]
     default: available
   chtype:
     description:
@@ -232,18 +233,35 @@ def cfgdev(module, device):
     return True, msg
 
 
-def rmdev(module, device):
+def rmdev(module, device, state):
     """
-    Unconfigure/stop the device.
+    Unconfigure/stop the device when state is 'defined'
+    Removes the device definition in Customized Devices object class when state is 'removed'
     param module: Ansible module argument spec.
     param device: device name.
-    return: changed - True/False(device state modified or not),
+    param state: state of the device
+    return: changed - True/False(device state modified or not or device definition is removed or not),
             msg - message
     """
     parent_device = module.params["parent_device"]
     force = module.params["force"]
     recursive = module.params["recursive"]
     rmtype = module.params["rmtype"]
+
+    if state == 'removed':
+        if device == 'all' or device == 'none':
+            msg = "Please provide the name of the device."
+            module.fail_json(msg=msg)
+        else:
+            opts = "-d -l %s" % device
+            cmd = "rmdev %s" % opts
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc != 0:
+                msg = "Operation to remove definition for device %s failed. cmd - '%s'" % (device, cmd)
+                module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+
+            msg = "Successfully removed definition in Customized Devices object class for device %s" % device
+            return True, msg
 
     if device == 'all':
         device = None
@@ -292,7 +310,7 @@ def main():
             device=dict(type='str', default='all'),
             force=dict(type='bool', default=False),
             recursive=dict(type='bool', default=False),
-            state=dict(type='str', default='available', choices=['available', 'defined']),
+            state=dict(type='str', default='available', choices=['available', 'defined', 'removed']),
             chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both']),
             parent_device=dict(type='str'),
             rmtype=dict(type='str', default='unconfigure', choices=['unconfigure', 'stop']),
@@ -332,7 +350,11 @@ def main():
                 msg = "Device %s is already in defined state." % device
                 module.fail_json(msg=msg)
 
-        changed, msg = rmdev(module, device)
+        changed, msg = rmdev(module, device, state)
+
+    elif state == 'removed':
+        # removes the device definition in Customized Devices object class
+        changed, msg = rmdev(module, device, state)
 
     else:
         changed = False
