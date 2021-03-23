@@ -1,31 +1,33 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
+# Copyright: (c) 2021- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
 DOCUMENTATION = r'''
 ---
+
+author:
+- Madhu Pillai (@resvrin)
 module: smtctl
-
 short_description: Enable and Disable Simultaneous MultiThreading Mode
-
-version_added: "1.0.0"
-
 description:
 - This command is provided for privileged users and applications to control utilization of processors with simultaneous multithreading support.
 - The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
 - This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system.
 - This command controls the simultaneous multithreading options.
-
+version_added: '2.9'
 requirements:
 - AIX  7.2
 - IBM Power9_Power8
 - Python >= 2.7
-
 options:
   smt_value:
     description:
@@ -59,9 +61,6 @@ options:
 notes:
 - Please refer to the IBM documentation for additional information on the commands used in the module.
   U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html)
-
-author:
-- Madhu Pillai (@resvrin)
 '''
 
 EXAMPLES = r'''
