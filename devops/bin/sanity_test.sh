@@ -22,7 +22,7 @@ cd
 git clone https://github.com/ansible/ansible.git
 cd ansible
 ANSIBLE_DIR="$(pwd)"
-SANITY_IGNORE="$ANSIBLE_DIR/test/sanity/ignore.txt"
+SANITY_IGNORE="$ANSIBLE_DIR/tests/sanity/ignore.txt"
 
 python3 -m venv venv
 . venv/bin/activate
