@@ -136,17 +136,17 @@
 #  - debug: var=result
 
 
-   - name: Create a savevg backup of a LPAR VG
-     nim_backup:
-       action: create
-       type: "{{ svg_type_v }}"
-       targets: "{{ lpar_targets_v }}"
-       volume_group: "{{ svg_volume_group_v }}"
-       location: "{{ svg_location_v }}"
-       shrink_fs: "{{ svg_shrink_fs_v }}"
-     #check_mode: "{{ preview_v }}"
-     register: result
-   - debug: var=result
+  - name: Create a savevg backup of a LPAR VG
+    nim_backup:
+      action: create
+      type: "{{ svg_type_v }}"
+      targets: "{{ lpar_targets_v }}"
+      volume_group: "{{ svg_volume_group_v }}"
+      location: "{{ svg_location_v }}"
+      shrink_fs: "{{ svg_shrink_fs_v }}"
+    #check_mode: "{{ preview_v }}"
+    register: result
+  - debug: var=result
 
 #   - name: Restore a savevg backup of a LPAR VG
 #     nim_backup:
@@ -159,18 +159,18 @@
 #   - debug: var=result
 
 
-   - name: Create a savevg backup of a VIOS VG
-     nim_backup:
-       action: create
-       type: "{{ svg_type_v }}"
-       targets: "{{ vios_targets_v }}"
-       volume_group: "{{ svg_volume_group_v }}"
-       location: "{{ svg_location_v }}"
-       other_attributes: "{{ svg_other_attributes_v }}"
-       shrink_fs: "{{ svg_shrink_fs_v }}"
-     check_mode: "{{ preview_v }}"
-     register: result
-   - debug: var=result
+  - name: Create a savevg backup of a VIOS VG
+    nim_backup:
+      action: create
+      type: "{{ svg_type_v }}"
+      targets: "{{ vios_targets_v }}"
+      volume_group: "{{ svg_volume_group_v }}"
+      location: "{{ svg_location_v }}"
+      other_attributes: "{{ svg_other_attributes_v }}"
+      shrink_fs: "{{ svg_shrink_fs_v }}"
+    check_mode: "{{ preview_v }}"
+    register: result
+  - debug: var=result
 
 #   - name: Restore a savevg backup of a VIOS VG
 #     nim_backup:

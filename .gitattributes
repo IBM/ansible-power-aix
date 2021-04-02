@@ -6,9 +6,10 @@
 # *.c text
 # *.h text
 
-# Declare files that will always have CRLF line endings on checkout.
+# Declare files that will always have LF line endings on checkout.
 *.py text eol=lf
 *.yml text eol=lf
+*.sh text eol=lf
 
 # Declare files that will always have CRLF line endings on checkout.
 # *.sln text eol=crlf

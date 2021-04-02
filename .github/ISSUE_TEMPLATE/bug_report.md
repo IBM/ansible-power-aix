@@ -25,8 +25,10 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - OS: [e.g. AIX 7.2.4.0]
- - Python Version [e.g. 2.7.5, 3.6]
- - OpenSSH Version [e.g. 1.0.2]
+ - Python Version: [e.g. 2.7.5, 3.6]
+ - OpenSSH Version: [e.g. 1.0.2]
+ - Ansible Version: [e.g. 2.10.7]
+ - AIX Collection Version: [e.g. 1.2.1]
 
 **Additional context**
 Add any other context about the problem here.
