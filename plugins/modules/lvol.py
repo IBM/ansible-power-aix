@@ -59,9 +59,9 @@ options:
     - Can be used to create a logical volume, hence when I(state=present).
     type: str
     default: jfs2
-  size:
+  strip_size:
     description:
-    - Specifies the size of the logical volume to create.
+    - Specifies the strip size of the striped logical volume to create.
     - Can be used to create a logical volume, hence when I(state=present).
     type: str
   extra_opts:
@@ -117,24 +117,24 @@ EXAMPLES = r'''
   ibm.power_aix.lvol:
     vg: test1vg
     lv: test1lv
-    size: 64M
+    strip_size: 64M
 - name: Create a logical volume of 32M with disks testdisk1 and testdisk2
   ibm.power_aix.lvol:
     vg: test2vg
     lv: test2lv
-    size: 32M
+    strip_size: 32M
     pvs: [ testdisk1, testdisk2 ]
 - name: Create a logical volume of 32M with a minimum placement policy
   ibm.power_aix.lvol:
     vg: rootvg
     lv: test4lv
-    size: 32M
+    strip_size: 32M
     policy: minimum
 - name: Create a logical volume with extra options like mirror pool
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
-    size: 128M
+    strip_size: 128M
     extra_opts: -p copy1=poolA -p copy2=poolB
 - name: Remove the logical volume
   ibm.power_aix.lvol:
@@ -189,7 +189,7 @@ def create_modify_lv(module):
     new_name = module.params['lv_new_name']
     vg = module.params['vg']
     lv_type = module.params['lv_type']
-    size = module.params['size']
+    strip_size = module.params['strip_size']
     extra_opts = module.params['extra_opts']
     num_log_part = module.params['num_of_logical_partitions']
     copies = module.params['copies']
@@ -199,11 +199,14 @@ def create_modify_lv(module):
     else:
         pv_list = ''
 
-    if size is not None:
+    if strip_size is not None:
         isValid, reason = isSizeValid(module)
         if not isValid:
-            result['msg'] = "Invalid logical volume %s size: '%s'. %s" % (name, size, reason)
+            result['msg'] = "Invalid logical volume %s strip_size: '%s'. %s" % (name, strip_size, reason)
             module.fail_json(**result)
+        strip_size = "-S " + strip_size 
+    else:
+        strip_size = ""
 
     if policy == 'maximum':
         lv_policy = 'x'
@@ -212,7 +215,7 @@ def create_modify_lv(module):
 
     exists = lv_exists(module)
     if not exists:
-        cmd = "mklv -t %s -y %s -c %s  -e %s %s -S %s %s %s %s" % (lv_type, name, copies, lv_policy, extra_opts, size, vg, num_log_part, pv_list)
+        cmd = "mklv -t %s -y %s -c %s -e %s %s %s %s %s %s" % (lv_type, name, copies, lv_policy, extra_opts, strip_size, vg, num_log_part, pv_list)
     else:
         cmd = "chlv -e %s %s %s" % (lv_policy, extra_opts, name)
 
@@ -285,37 +288,37 @@ def remove_lv(module):
 
 def isSizeValid(module):
     """
-    Checks if the specified size for the logical volume is valid or not.
+    Checks if the specified strip size for the logical volume is valid or not.
 
     arguments:
-        size     (str): size of the logical volume
+        strip_size     (str): strip size of the logical volume
     return:
         valid  (bool): true if valid, false if not valid
-        reason  (str): message for the size invalidity
+        reason  (str): message for the strip size invalidity
     """
     global result
     reason = ""
     valid = True
 
-    size = module.params['size']
-    num_size = int(size[:-1])
+    strip_size = module.params['strip_size']
+    num_strip_size = int(strip_size[:-1])
 
-    isPowerof2 = (num_size and (not(num_size & (num_size - 1))))
+    isPowerof2 = (num_strip_size and (not(num_strip_size & (num_strip_size - 1))))
     if not isPowerof2:
         valid = False
         reason = "Must be a power of 2. "
 
-    unit = size[-1].upper()
+    unit = strip_size[-1].upper()
     units = ['K', 'M']
     try:
         mult = 1024 ** units.index(unit)
     except ValueError:
         valid = False
-        reason = "Valid size unit are K and M."
-        return valid, reason    # existing as we cannot compute the size without valid unit
+        reason = "Valid strip size unit are K and M."
+        return valid, reason    # existing as we cannot compute the strip size without valid unit
 
-    actual_size = num_size * mult
-    if not 4 <= actual_size <= (128 * 1024):
+    actual_strip_size = num_strip_size * mult
+    if not 4 <= actual_strip_size <= (128 * 1024):
         valid = False
         reason += "Must be between 4K and 128M."
 
@@ -352,7 +355,7 @@ def main():
             lv=dict(type='str', required=True, aliases=['logical_volume']),
             vg=dict(type='str'),
             lv_type=dict(type='str', default='jfs2'),
-            size=dict(type='str'),
+            strip_size=dict(type='str'),
             extra_opts=dict(type='str', default=''),
             copies=dict(type='int', default=1),
             num_of_logical_partitions=dict(type='int', default=1),
