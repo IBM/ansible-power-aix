@@ -204,7 +204,7 @@ def create_modify_lv(module):
         if not isValid:
             result['msg'] = "Invalid logical volume %s strip_size: '%s'. %s" % (name, strip_size, reason)
             module.fail_json(**result)
-        strip_size = "-S " + strip_size 
+        strip_size = "-S " + strip_size
     else:
         strip_size = ""
 
