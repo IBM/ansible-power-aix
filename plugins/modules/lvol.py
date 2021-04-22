@@ -61,7 +61,7 @@ options:
     default: jfs2
   size:
     description:
-    - Specifies the size of the logical volume to create.
+    - Specifies the strip size of the striped logical volume to create.
     - Can be used to create a logical volume, hence when I(state=present).
     type: str
   extra_opts:
