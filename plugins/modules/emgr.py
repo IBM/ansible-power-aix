@@ -31,12 +31,12 @@ options:
   action:
     description:
     - Controls what action is performed.
-    - C(install) performs an interim fix package installation.
+    - C(install) performs an interim fix package installation (idempotent).
     - C(commit) performs a commit operation on specified interim fix.
     - C(check) performs a check operation on installed interim fix.
     - C(mount) mounts specified interim fix that have been mount-installed.
     - C(unmount) unmounts specified interim fix that have been mount-installed.
-    - C(remove) performs an uninstall of the specified interim fix.
+    - C(remove) performs an uninstall of the specified interim fix (idempotent).
     - C(view_package) displays all packages that are locked, their installer, and the locking
       label or labels.
     - C(display_ifix) displays the contents and topology of specified interim fix. This option is
@@ -262,6 +262,7 @@ stderr:
 '''
 
 import os
+import re
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -526,8 +527,13 @@ def main():
         results['stdout'] = stdout
         results['stderr'] = stderr
         if rc != 0:
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
-            module.fail_json(**results)
+            if re.search('0645-065|0645-066', stderr):
+                # Ifix was already installed(0645-065) or Ifix to remove is not there (0645-066) just return OK (Idempotent)
+                results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
+                module.exit_json(**results)
+            else:
+                results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+                module.fail_json(**results)
 
         results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode:
