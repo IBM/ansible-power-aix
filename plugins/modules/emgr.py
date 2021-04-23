@@ -527,16 +527,18 @@ def main():
         results['stdout'] = stdout
         results['stderr'] = stderr
         if rc != 0:
-            if re.search('0645-065|0645-066', stderr):
-                # Ifix was already installed(0645-065) or Ifix to remove is not there (0645-066) just return OK (Idempotent)
-                results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
-                module.exit_json(**results)
+            if re.search('0645-065|0645-066|0645-081|0645-082|There is no efix data on this system', stderr):
+                # Ifix was already installed(0645-065).
+                # Ifix with label to remove is not there (0645-066).
+                # Ifix with VUUID to remove is not there (0645-082).
+                # Ifix with ID number to remove is not there (0645-081).
+                results['changed'] = False
             else:
                 results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
                 module.fail_json(**results)
 
         results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
-        if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode:
+        if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and not rc:
             results['changed'] = True
     else:
         results['msg'] = 'Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
