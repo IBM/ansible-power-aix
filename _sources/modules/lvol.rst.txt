@@ -59,8 +59,8 @@ Parameters
     Can be used to create a logical volume, hence when *state=present*.
 
 
-  size (optional, str, None)
-    Specifies the size of the logical volume to create.
+  strip_size (optional, str, None)
+    Specifies the strip size of the striped logical volume to create.
 
     Can be used to create a logical volume, hence when *state=present*.
 
@@ -128,24 +128,24 @@ Examples
       ibm.power_aix.lvol:
         vg: test1vg
         lv: test1lv
-        size: 64M
+        strip_size: 64M
     - name: Create a logical volume of 32M with disks testdisk1 and testdisk2
       ibm.power_aix.lvol:
         vg: test2vg
         lv: test2lv
-        size: 32M
+        strip_size: 32M
         pvs: [ testdisk1, testdisk2 ]
     - name: Create a logical volume of 32M with a minimum placement policy
       ibm.power_aix.lvol:
         vg: rootvg
         lv: test4lv
-        size: 32M
+        strip_size: 32M
         policy: minimum
     - name: Create a logical volume with extra options like mirror pool
       ibm.power_aix.lvol:
         vg: testvg
         lv: testlv
-        size: 128M
+        strip_size: 128M
         extra_opts: -p copy1=poolA -p copy2=poolB
     - name: Remove the logical volume
       ibm.power_aix.lvol:

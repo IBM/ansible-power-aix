@@ -137,6 +137,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reboot.html">reboot – Reboot AIX machines.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="smtctl.html">smtctl – Enable and Disable Simultaneous MultiThreading Mode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
@@ -274,7 +275,7 @@
 <p>You <strong>cannot</strong> create a striped logical volume of type <code class="docutils literal notranslate"><span class="pre">boot</span></code>.</p>
 <p>Can be used to create a logical volume, hence when <em>state=present</em>.</p>
 </dd>
-<dt>size (optional, str, None)</dt><dd><p>Specifies the size of the logical volume to create.</p>
+<dt>strip_size (optional, str, None)</dt><dd><p>Specifies the strip size of the striped logical volume to create.</p>
 <p>Can be used to create a logical volume, hence when <em>state=present</em>.</p>
 </dd>
 <dt>extra_opts (optional, str, None)</dt><dd><p>Any other options to be passed by the user to mklv or chlv command</p>
@@ -316,24 +317,24 @@
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1lv</span>
-    <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64M</span>
+    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64M</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with disks testdisk1 and testdisk2</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2lv</span>
-    <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
+    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
     <span class="nt">pvs</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">testdisk1</span><span class="p p-Indicator">,</span> <span class="nv">testdisk2</span> <span class="p p-Indicator">]</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with a minimum placement policy</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rootvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test4lv</span>
-    <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
+    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
     <span class="nt">policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimum</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume with extra options like mirror pool</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testlv</span>
-    <span class="nt">size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128M</span>
+    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128M</span>
     <span class="nt">extra_opts</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-p copy1=poolA -p copy2=poolB</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove the logical volume</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>

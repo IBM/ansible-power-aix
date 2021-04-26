@@ -137,6 +137,7 @@
 <li class="toctree-l3"><a class="reference internal" href="nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reboot.html">reboot – Reboot AIX machines.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="smtctl.html">smtctl – Enable and Disable Simultaneous MultiThreading Mode</a></li>
 <li class="toctree-l3"><a class="reference internal" href="suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
 </ul>
@@ -272,6 +273,7 @@
 <dt>state (optional, str, available)</dt><dd><p>Specifies the desired state of the device.</p>
 <p><code class="docutils literal notranslate"><span class="pre">available</span></code> configures device when its state is ‘defined’, otherwise it changes the device attributes.</p>
 <p><code class="docutils literal notranslate"><span class="pre">defined</span></code> unconfigures/stops the device when its state is ‘available’, otherwise it changes the device attributes.</p>
+<p>C (removed) removes the device definition of unconfigured device in Customized Devices object class</p>
 </dd>
 <dt>chtype (optional, str, both)</dt><dd><p>Specifies the change type that is when the change should take place.</p>
 <p><code class="docutils literal notranslate"><span class="pre">reboot</span></code> changes the device at system reboot.</p>

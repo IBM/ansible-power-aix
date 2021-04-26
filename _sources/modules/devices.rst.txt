@@ -56,6 +56,8 @@ Parameters
 
     ``defined`` unconfigures/stops the device when its state is 'available', otherwise it changes the device attributes.
 
+    C (removed) removes the device definition of unconfigured device in Customized Devices object class
+
 
   chtype (optional, str, both)
     Specifies the change type that is when the change should take place.
