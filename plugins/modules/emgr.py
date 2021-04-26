@@ -31,12 +31,12 @@ options:
   action:
     description:
     - Controls what action is performed.
-    - C(install) performs an interim fix package installation (idempotent).
+    - C(install) performs an interim fix package installation.
     - C(commit) performs a commit operation on specified interim fix.
     - C(check) performs a check operation on installed interim fix.
     - C(mount) mounts specified interim fix that have been mount-installed.
     - C(unmount) unmounts specified interim fix that have been mount-installed.
-    - C(remove) performs an uninstall of the specified interim fix (idempotent).
+    - C(remove) performs an uninstall of the specified interim fix.
     - C(view_package) displays all packages that are locked, their installer, and the locking
       label or labels.
     - C(display_ifix) displays the contents and topology of specified interim fix. This option is
