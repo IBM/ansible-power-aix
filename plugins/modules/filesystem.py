@@ -6,6 +6,8 @@
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
+import re
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -332,6 +334,12 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
+    # check initial attributes
+    changed = check_attr_change(module, filesystem)
+    if not changed:
+        msg = "No changes needed in %s" % filesystem
+        return False, msg
+
     attrs = module.params["attributes"]
     acct_sub_sys = module.params["account_subsystem"]
     amount = module.params["auto_mount"]
