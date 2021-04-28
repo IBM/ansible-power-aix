@@ -6,7 +6,6 @@
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
-import re
 
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -214,7 +213,6 @@ def check_attr_change(module, filesystem):
     all_attr = stdout.splitlines()
     old_attr = all_attr[1].split(":")
 
-
     old_ext_attr = dict()
     attrs = re.sub(r"[()]", "", all_attr[2]).strip()
     attrs = attrs.split(":")
@@ -230,7 +228,6 @@ def check_attr_change(module, filesystem):
             attr = attr.strip()
             attr = attr.split("=")
             new_attr[attr[0]] = attr[1]
-
 
     # check if permissions changed
     old_perms = old_attr[6]
@@ -251,7 +248,7 @@ def check_attr_change(module, filesystem):
     old_acct_sub_sys = old_attr[8]
     new_acct_sub_sys = module.params["account_subsystem"]
     if new_acct_sub_sys:
-        new_acct_sub_sys = "yes" if new_acct_sub_sys else "no" 
+        new_acct_sub_sys = "yes" if new_acct_sub_sys else "no"
         if new_acct_sub_sys != old_acct_sub_sys:
             return True
 
