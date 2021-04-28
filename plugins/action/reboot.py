@@ -30,15 +30,32 @@ class ActionModule(ActionBase):
 
     boot_time_command = 'who -b'
     reboot_command = 'shutdown -r'
+    DEFAULT_PRE_REBOOT_DELAY = 0
+    DEFAULT_POST_REBOOT_DELAY = 0
 
     def __init__(self, *args, **kwargs):
         super(ActionModule, self).__init__(*args, **kwargs)
 
-    def perform_reboot(self, pre_reboot_delay=None):
+    @property
+    def pre_reboot_delay(self):
+        return self._check_delay('pre_reboot_delay', self.DEFAULT_PRE_REBOOT_DELAY)
+
+    @property
+    def post_reboot_delay(self):
+        return self._check_delay('post_reboot_delay', self.DEFAULT_POST_REBOOT_DELAY)
+
+    def _check_delay(self, key, default):
+        """Ensure that the value is positive or zero"""
+        value = int(self._task.args.get(key, self._task.args.get(key + '_sec', default)))
+        if value < 0:
+            value = 0
+        return value
+
+    def perform_reboot(self, pre_reboot_delay):
         reboot_result = {}
         reboot_command = 'shutdown -r'
 
-        if pre_reboot_delay is not None:
+        if pre_reboot_delay != 0:
             self._display.vvv("Waiting for pre reboot delay")
             time.sleep(pre_reboot_delay)
 
@@ -101,8 +118,6 @@ class ActionModule(ActionBase):
     def run(self, tmp=None, task_vars=None):
         self._supports_async = True
 
-        post_reboot_delay = self._task.args.get('post_reboot_delay', None)
-        pre_reboot_delay = self._task.args.get('pre_reboot_delay', None)
         test_command = self._task.args.get('test_command', None)
         reboot_timeout = self._task.args.get('reboot_timeout', None)
 
@@ -120,7 +135,7 @@ class ActionModule(ActionBase):
         if result.get('skipped', False) or result.get('failed', False):
             return result
 
-        reboot_result = self.perform_reboot(pre_reboot_delay)
+        reboot_result = self.perform_reboot(self.pre_reboot_delay)
 
         if reboot_result['rc'] != 0:
             self._display.vvv("Reboot command has failed. System still running")
@@ -131,9 +146,9 @@ class ActionModule(ActionBase):
             result['elapsed'] = str(elapsed.seconds) + ' sec'
             return result
 
-        if post_reboot_delay is not None:
-            self._display.vvv("waiting an additional time of {delay} seconds".format(delay=post_reboot_delay))
-            time.sleep(post_reboot_delay)
+        if self.post_reboot_delay != 0:
+            self._display.vvv("waiting for post reboot delay of {delay} seconds".format(delay=self.post_reboot_delay))
+            time.sleep(self.post_reboot_delay)
 
         result = self.validate_reboot(test_command, reboot_timeout, action_kwargs=None)
 
