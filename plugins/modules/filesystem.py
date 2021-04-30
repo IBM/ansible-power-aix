@@ -263,6 +263,7 @@ def check_attr_change(module, filesystem):
         if new_amount != old_amount:
             return True
 
+
     # check in account subsystem changed
     new_acct_sub_sys = module.params["account_subsystem"]
     if new_acct_sub_sys is not None:
@@ -333,12 +334,7 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    # check initial attributes
-    changed = check_attr_change(module, filesystem)
-    if not changed:
-        msg = "No changes needed in %s" % filesystem
-        return False, msg
-
+    
     attrs = module.params["attributes"]
     acct_sub_sys = module.params["account_subsystem"]
     amount = module.params["auto_mount"]
@@ -371,6 +367,7 @@ def chfs(module, filesystem):
         cmd = "chnfsmnt %s -f %s -d %s -h %s" % (opts, filesystem, device, nfs_server)
 
     else:
+        
         # Modify Local Filesystem
         if amount is True:
             opts += "-A yes "
