@@ -7,7 +7,6 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -252,7 +251,6 @@ def check_attr_change(module, filesystem):
         if new_amount != old_amount:
             return True
 
-
     # check in account subsystem changed
     old_acct_sub_sys = old_attr[8]
     new_acct_sub_sys = module.params["account_subsystem"]
@@ -323,7 +321,6 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    
     attrs = module.params["attributes"]
     acct_sub_sys = module.params["account_subsystem"]
     amount = module.params["auto_mount"]
@@ -356,7 +353,6 @@ def chfs(module, filesystem):
         cmd = "chnfsmnt %s -f %s -d %s -h %s" % (opts, filesystem, device, nfs_server)
 
     else:
-        
         # Modify Local Filesystem
         if amount is True:
             opts += "-A yes "
