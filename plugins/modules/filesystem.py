@@ -208,18 +208,19 @@ def check_attr_change(module, filesystem):
     """
 
     cmd = "lsfs -cq %s" % filesystem
-    print("I am here")
     rc, stdout, stderr = module.run_command(cmd)
     all_attr = stdout.splitlines()
     old_attr = all_attr[1].split(":")
 
+    # check for extended attributes
     old_ext_attr = dict()
-    attrs = re.sub(r"[()]", "", all_attr[2]).strip()
-    attrs = attrs.split(":")
-    for attr in attrs:
-        attr = attr.rsplit(" ", 1)
-        key = re.sub(" ", "_", attr[0]).lower()
-        old_ext_attr[key] = attr[1]
+    if len(all_attr) == 3:
+        attrs = re.sub(r"[()]", "", all_attr[2]).strip()
+        attrs = attrs.split(":")
+        for attr in attrs:
+            attr = attr.rsplit(" ", 1)
+            key = re.sub(" ", "_", attr[0]).lower()
+            old_ext_attr[key] = attr[1]
 
     new_attr = dict()
     attrs = module.params["attributes"]
@@ -229,8 +230,15 @@ def check_attr_change(module, filesystem):
             attr = attr.split("=")
             new_attr[attr[0]] = attr[1]
 
+    # check if mount group changed
+    old_mnt_grp = old_attr[4]
+    new_mnt_grp = module.params["mount_group"]
+    if new_mnt_grp:
+        if new_mnt_grp != old_mnt_grp:
+            return True
+
     # check if permissions changed
-    old_perms = old_attr[6]
+    old_perms = old_attr[6].split(",")[0]
     new_perms = module.params["permissions"]
     if new_perms:
         if new_perms != old_perms:
@@ -239,15 +247,16 @@ def check_attr_change(module, filesystem):
     # check if automount changed
     old_amount = old_attr[7]
     new_amount = module.params["auto_mount"]
-    if new_amount:
+    if new_amount is not None:
         new_amount = "yes" if new_amount else "no"
         if new_amount != old_amount:
             return True
 
+
     # check in account subsystem changed
     old_acct_sub_sys = old_attr[8]
     new_acct_sub_sys = module.params["account_subsystem"]
-    if new_acct_sub_sys:
+    if new_acct_sub_sys is not None:
         new_acct_sub_sys = "yes" if new_acct_sub_sys else "no"
         if new_acct_sub_sys != old_acct_sub_sys:
             return True
@@ -314,12 +323,7 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    # check initial attributes
-    changed = check_attr_change(module, filesystem)
-    if not changed:
-        msg = "No changes needed in %s" % filesystem
-        return False, msg
-
+    
     attrs = module.params["attributes"]
     acct_sub_sys = module.params["account_subsystem"]
     amount = module.params["auto_mount"]
@@ -330,6 +334,12 @@ def chfs(module, filesystem):
 
     opts = ""
 
+    # check initial attributes
+    changed = check_attr_change(module, filesystem)
+    if not changed:
+        msg = "No changes needed in %s" % filesystem
+        return False, msg
+
     if is_nfs(module, filesystem):
         # Modify NFS filesystem
         if amount is True:
@@ -337,21 +347,16 @@ def chfs(module, filesystem):
         elif amount is False:
             opts += "-a "
 
-        if device:
-            opts += "-d %s " % device
-
         if perms:
             opts += "-t %s " % perms
-
-        if nfs_server:
-            opts += "-h %s " % nfs_server
 
         if mgroup:
             opts += "-m %s " % mgroup
 
-        cmd = "chnfsmnt %s -f %s" % (opts, filesystem)
+        cmd = "chnfsmnt %s -f %s -d %s -h %s" % (opts, filesystem, device, nfs_server)
 
     else:
+        
         # Modify Local Filesystem
         if amount is True:
             opts += "-A yes "
