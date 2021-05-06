@@ -208,6 +208,10 @@ def check_attr_change(module, filesystem):
 
     cmd = "lsfs -cq %s" % filesystem
     rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        msg = "Failed to fetch current attributes of '%s'. cmd - '%s'" % (filesystem, cmd)
+        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+
     all_attr = stdout.splitlines()
     old_attr = all_attr[1].split(":")
 
@@ -230,31 +234,31 @@ def check_attr_change(module, filesystem):
             new_attr[attr[0]] = attr[1]
 
     # check if mount group changed
-    old_mnt_grp = old_attr[4]
     new_mnt_grp = module.params["mount_group"]
     if new_mnt_grp:
+        old_mnt_grp = old_attr[4]
         if new_mnt_grp != old_mnt_grp:
             return True
 
     # check if permissions changed
-    old_perms = old_attr[6].split(",")[0]
     new_perms = module.params["permissions"]
     if new_perms:
+        old_perms = old_attr[6].split(",")[0]
         if new_perms != old_perms:
             return True
 
     # check if automount changed
-    old_amount = old_attr[7]
     new_amount = module.params["auto_mount"]
     if new_amount is not None:
+        old_amount = old_attr[7]
         new_amount = "yes" if new_amount else "no"
         if new_amount != old_amount:
             return True
 
     # check in account subsystem changed
-    old_acct_sub_sys = old_attr[8]
     new_acct_sub_sys = module.params["account_subsystem"]
     if new_acct_sub_sys is not None:
+        old_acct_sub_sys = old_attr[8]
         new_acct_sub_sys = "yes" if new_acct_sub_sys else "no"
         if new_acct_sub_sys != old_acct_sub_sys:
             return True
