@@ -461,15 +461,15 @@ def main():
         options=dict(
             address=dict(required=True, type='str'),
             ah_algo=dict(type='str'),
-            ah_key=dict(type='str'),
+            ah_key=dict(type='str', no_log=False),
             ah_spi=dict(type='int'),
             esp_algo=dict(type='str'),
-            esp_key=dict(type='str'),
+            esp_key=dict(type='str', no_log=False),
             esp_spi=dict(type='int'),
             enc_mac_algo=dict(type='str'),
-            enc_mac_key=dict(type='str'),
+            enc_mac_key=dict(type='str', no_log=False),
             policy=dict(type='str', choices=['encr/auth', 'auth/encr', 'encr', 'auth'])
-        )
+        ),
     )
 
     ipcommon = dict(
@@ -479,7 +479,7 @@ def main():
             src=tuncommon,
             dst=tuncommon,
             tunnel_only=dict(type='bool', default=False),
-            key_lifetime=dict(type='int'),
+            key_lifetime=dict(type='int', no_log=False),
             newheader=dict(type='bool'),
             replay=dict(type='bool', default=False),
             tunnel_mode=dict(type='bool', default=True),
@@ -499,7 +499,7 @@ def main():
                     ipv6=ipcommon,
                     import_ipv4=dict(type='str'),
                     import_ipv6=dict(type='str')
-                )
+                ),
             )
         ),
     )
