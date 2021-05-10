@@ -213,6 +213,13 @@ def check_attr_change(module, filesystem):
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     all_attr = stdout.splitlines()
+
+	# list of items used in old_attr
+	# old_attr[4] - mount group
+	# old_attr[5] - size
+	# old_attr[6] - permissions
+	# old_attr[7] - automount
+	# old_attr[8] - accounting subsystem
     old_attr = all_attr[1].split(":")
 
     # check for extended attributes
