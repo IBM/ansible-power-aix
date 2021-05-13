@@ -3,3 +3,6 @@ devops
 .travis.yml
 .DS_Store
 .vscode
+venv
+tests/output
+hosts
