@@ -188,7 +188,7 @@ def get_free_pvs(module):
         # Only match disks that have no volume groups
         if match_key and match_key.group(3) == 'None':
             hdisk = match_key.group(1)
-            # Check if the disk has VG info in ODM using getlvodm 
+            # Check if the disk has VG info in ODM using getlvodm
             cmd = ['getlvodm', '-j', hdisk]
             ret, stdout, stderr = module.run_command(cmd)
             if ret != 3:
