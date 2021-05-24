@@ -188,13 +188,11 @@ def get_free_pvs(module):
         # Only match disks that have no volume groups
         if match_key and match_key.group(3) == 'None':
             hdisk = match_key.group(1)
-            # Check if the disk has an _LVM signature using lquerypv
-            cmd = ['lquerypv', '-V', hdisk]
+            # Check if the disk has VG info in ODM using getlvodm
+            cmd = ['getlvodm', '-j', hdisk]
             ret, stdout, stderr = module.run_command(cmd)
-            if ret != 0:
+            if ret != 3:
                 module.log('[WARN] could not query pv {0}'.format(hdisk))
-                continue
-            if stdout.strip() != "1":
                 continue
 
             # Retrieve disk size using getconf (bootinfo -s is deprecated)

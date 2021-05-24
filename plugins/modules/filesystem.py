@@ -145,6 +145,7 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def is_nfs(module, filesystem):
@@ -197,6 +198,132 @@ def fs_state(module, filesystem):
     return False
 
 
+def check_attr_change(module, filesystem):
+    """
+    Determines if changes will be made on the filesystem.
+    param module: Ansible module argument spec.
+    param filesystem: filesystem name.
+    return: True - changes will be made on the filesystem / False = filesystem will remain unchanged
+    """
+
+    cmd = "lsfs -cq %s" % filesystem
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        msg = "Failed to fetch current attributes of '%s'. cmd - '%s'" % (filesystem, cmd)
+        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+
+    all_attr = stdout.splitlines()
+
+    # list of items used in old_attr
+    # old_attr[4] - mount group
+    # old_attr[5] - size
+    # old_attr[6] - permissions
+    # old_attr[7] - automount
+    # old_attr[8] - accounting subsystem
+    old_attr = all_attr[1].split(":")
+
+    # check for extended attributes
+    old_ext_attr = dict()
+    if len(all_attr) == 3:
+        attrs = re.sub(r"[()]", "", all_attr[2]).strip()
+        attrs = attrs.split(":")
+        for attr in attrs:
+            attr = attr.rsplit(" ", 1)
+            key = re.sub(" ", "_", attr[0]).lower()
+            old_ext_attr[key] = attr[1]
+
+    new_attr = dict()
+    attrs = module.params["attributes"]
+    if attrs:
+        for attr in attrs:
+            attr = attr.strip()
+            attr = attr.split("=")
+            new_attr[attr[0]] = attr[1]
+
+    # check if mount group changed
+    new_mnt_grp = module.params["mount_group"]
+    if new_mnt_grp:
+        old_mnt_grp = old_attr[4]
+        if new_mnt_grp != old_mnt_grp:
+            return True
+
+    # check if permissions changed
+    new_perms = module.params["permissions"]
+    if new_perms:
+        old_perms = old_attr[6].split(",")[0]
+        if new_perms != old_perms:
+            return True
+
+    # check if automount changed
+    new_amount = module.params["auto_mount"]
+    if new_amount is not None:
+        old_amount = old_attr[7]
+        new_amount = "yes" if new_amount else "no"
+        if new_amount != old_amount:
+            return True
+
+    # check in account subsystem changed
+    new_acct_sub_sys = module.params["account_subsystem"]
+    if new_acct_sub_sys is not None:
+        old_acct_sub_sys = old_attr[8]
+        new_acct_sub_sys = "yes" if new_acct_sub_sys else "no"
+        if new_acct_sub_sys != old_acct_sub_sys:
+            return True
+
+    # check filesystem size changes
+    if "size" in new_attr:
+        old_size = int(old_attr[5]) * 512
+        new_size = new_attr["size"]
+        if new_size[0] == "+" or new_size[0] == "-":
+            return True
+        if new_size[-1] == "M":
+            pass
+        elif new_size[-1] == "G":
+            new_size = int(new_size[:-1])
+            new_size *= 1073741824
+        if new_size != old_size:
+            return True
+
+    # check if ea format changes
+    if "ea" in new_attr and "eaformat" in old_ext_attr:
+        old_ea = old_ext_attr["eaformat"]
+        new_ea = new_attr["ea"]
+        if new_ea != old_ea:
+            return True
+
+    if "efs" in new_attr and "efs" in old_ext_attr:
+        old_efs = old_ext_attr["efs"]
+        new_efs = new_attr["efs"]
+        if new_efs != old_efs:
+            return True
+
+    if "managed" in new_attr and "dmapi" in old_ext_attr:
+        old_managed = old_ext_attr["dmapi"]
+        new_managed = new_attr["managed"]
+        if new_managed != old_managed:
+            return True
+
+    if "maxext" in new_attr and "maxext" in old_ext_attr:
+        old_maxext = old_ext_attr["maxext"]
+        new_maxext = new_attr["maxext"]
+        if new_maxext != old_maxext:
+            return True
+
+    if "mountguard" in new_attr and "mountguard" in old_ext_attr:
+        old_mountguard = old_ext_attr["mountguard"]
+        new_mountguard = new_attr["mountguard"]
+        if new_mountguard != old_mountguard:
+            return True
+
+    if "vix" in new_attr and "vix" in old_ext_attr:
+        old_vix = old_ext_attr["vix"]
+        new_vix = new_attr["vix"]
+        if new_vix != old_vix:
+            return True
+
+    return False
+
+
 def chfs(module, filesystem):
     """
     Changes the attributes of the filesystem.
@@ -215,6 +342,12 @@ def chfs(module, filesystem):
 
     opts = ""
 
+    # check initial attributes
+    changed = check_attr_change(module, filesystem)
+    if not changed:
+        msg = "No changes needed in %s" % filesystem
+        return False, msg
+
     if is_nfs(module, filesystem):
         # Modify NFS filesystem
         if amount is True:
@@ -222,19 +355,13 @@ def chfs(module, filesystem):
         elif amount is False:
             opts += "-a "
 
-        if device:
-            opts += "-d %s " % device
-
         if perms:
             opts += "-t %s " % perms
-
-        if nfs_server:
-            opts += "-h %s " % nfs_server
 
         if mgroup:
             opts += "-m %s " % mgroup
 
-        cmd = "chnfsmnt %s -f %s" % (opts, filesystem)
+        cmd = "chnfsmnt %s -f %s -d %s -h %s" % (opts, filesystem, device, nfs_server)
 
     else:
         # Modify Local Filesystem
