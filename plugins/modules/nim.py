@@ -97,6 +97,11 @@ options:
     - Forces action.
     type: bool
     default: no
+  boot_client:
+    description:
+    - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
+    type: bool
+    default: yes
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
@@ -1414,6 +1419,7 @@ def nim_bos_inst(module, params):
            '-a', 'group=' + params['group']]
     if params['script'] and params['script'].strip():
         cmd += ['-a', 'script=' + params['script']]
+    cmd += ['-a', 'boot_client=' + ('yes' if params['boot_client'] else 'no') ]
     cmd += results['targets']
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -1672,6 +1678,7 @@ def main():
             location=dict(type='str'),
             group=dict(type='str'),
             force=dict(type='bool', default=False),
+            boot_client=dict(type='bool', default=True),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1720,6 +1727,7 @@ def main():
     group = module.params['group']
     force = module.params['force']
     action = module.params['action']
+    boot_client = module.params['boot_client']
 
     params = {}
 
@@ -1773,6 +1781,7 @@ def main():
         params['targets'] = targets
         params['group'] = group
         params['script'] = script
+        params['boot_client'] = boot_client
         nim_bos_inst(module, params)
 
     elif action == 'define_script':
