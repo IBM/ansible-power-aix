@@ -1419,7 +1419,7 @@ def nim_bos_inst(module, params):
            '-a', 'group=' + params['group']]
     if params['script'] and params['script'].strip():
         cmd += ['-a', 'script=' + params['script']]
-    cmd += ['-a', 'boot_client=' + ('yes' if params['boot_client'] else 'no') ]
+    cmd += ['-a', 'boot_client=' + ('yes' if params['boot_client'] else 'no')]
     cmd += results['targets']
 
     rc, stdout, stderr = module.run_command(cmd)
