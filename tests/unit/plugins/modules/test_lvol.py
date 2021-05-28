@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
@@ -29,6 +28,7 @@ params = {
     "pv_list": None
 }
 
+
 class TestCreateModifyLV(unittest.TestCase):
     def setUp(self):
         global params
@@ -38,7 +38,6 @@ class TestCreateModifyLV(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
         self.module.fail_json = fail_json
         self.lv_exist_path = rootdir + "lvol.lv_exists"
-
 
     def _prepare_create_lv(self, fail=False):
         # initialize global variable in lvol module
@@ -52,23 +51,22 @@ class TestCreateModifyLV(unittest.TestCase):
 
         # compose the command that is ran in lvol module
         self.cmd = "mklv -t %s -y %s -c %s -e %s %s %s %s %s %s" % (
-            self.module.params["lv_type"], 
+            self.module.params["lv_type"],
             self.module.params["lv"],
-            self.module.params["copies"], 
-            "x" if self.module.params["policy"] == "maximum" else "m", 
-            self.module.params["extra_opts"], 
-            "" if self.module.params["strip_size"] is None else \
-                "-S " + self.module.params["strip_size"], 
-            self.module.params["vg"], 
+            self.module.params["copies"],
+            "x" if self.module.params["policy"] == "maximum" else "m",
+            self.module.params["extra_opts"],
+            "" if self.module.params["strip_size"] is None else
+            "-S " + self.module.params["strip_size"],
+            self.module.params["vg"],
             self.module.params["num_of_logical_partitions"],
-            "" if self.module.params["pv_list"] is None else \
-                " ".join(self.module.params["pv_list"])
+            "" if self.module.params["pv_list"] is None else
+            " ".join(self.module.params["pv_list"])
         )
 
         if fail:
             rc, stdout, stderr = 1, "sample stdout", "sample stderr"
             self.module.run_command.return_value = (rc, stdout, stderr)
-
 
     def _assert_result(self, result, fail=False):
         self.module.run_command.assert_called_once_with(self.cmd)
@@ -85,7 +83,6 @@ class TestCreateModifyLV(unittest.TestCase):
             self.assertEqual(result["rc"], 1)
             pattern = r"Failed to create"
         self.assertRegexpMatches(result["msg"], pattern)
-
 
     def test_success_create_striped_lv(self):
         self.module.params["strip_size"] = "4K"
@@ -106,7 +103,6 @@ class TestCreateModifyLV(unittest.TestCase):
 
         self._assert_result(result)
 
-
     def test_fail_create_striped_lv(self):
         self.module.params["strip_size"] = "4K"
         self._prepare_create_lv(fail=True)
@@ -117,7 +113,6 @@ class TestCreateModifyLV(unittest.TestCase):
 
         result = result.exception.args[0]
         self._assert_result(result, fail=True)
-
 
     def test_fail_create_non_striped_lv(self):
         self._prepare_create_lv(fail=True)
