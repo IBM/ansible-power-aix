@@ -117,24 +117,24 @@ EXAMPLES = r'''
   ibm.power_aix.lvol:
     vg: test1vg
     lv: test1lv
-    strip_size: 64M
-- name: Create a logical volume of 32M with disks testdisk1 and testdisk2
+    num_of_logical_parititions: 64M
+- name: Create a logical volume of 10 partitions with disks testdisk1 and testdisk2
   ibm.power_aix.lvol:
     vg: test2vg
     lv: test2lv
-    strip_size: 32M
-    pvs: [ testdisk1, testdisk2 ]
+    num_of_logical_parititions: 10
+    pv_list: [ testdisk1, testdisk2 ]
 - name: Create a logical volume of 32M with a minimum placement policy
   ibm.power_aix.lvol:
     vg: rootvg
     lv: test4lv
-    strip_size: 32M
+    num_of_logical_parititions: 32M
     policy: minimum
 - name: Create a logical volume with extra options like mirror pool
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
-    strip_size: 128M
+    num_of_logical_parititions: 128M
     extra_opts: -p copy1=poolA -p copy2=poolB
 - name: Remove the logical volume
   ibm.power_aix.lvol:
@@ -168,16 +168,20 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 result = None
 
+####################################################################################
+# Action Handler Functions
+####################################################################################
 
-def create_modify_lv(module):
+def create_lv(module, name):
     """
-    Creates/Modify a logical volume with the attributes provided in the
+    Creates a logical volume with the attributes provided in the
     lv_attributes field.
     arguments:
-        module  (dict): The Ansible module
+        module (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     return:
@@ -185,77 +189,114 @@ def create_modify_lv(module):
     """
     global result
 
-    name = module.params['lv']
-    new_name = module.params['lv_new_name']
-    vg = module.params['vg']
+    opts = ''
     lv_type = module.params['lv_type']
     strip_size = module.params['strip_size']
-    extra_opts = module.params['extra_opts']
-    num_log_part = module.params['num_of_logical_partitions']
     copies = module.params['copies']
     policy = module.params['policy']
+    vg = module.params['vg']
+    num_log_part = module.params['num_of_logical_partitions']
+    # -a position, -b badblocks, -C stripewidth, -d schedule
+    # -R preferredRead, -L label, -m mapfile, -o y/n, -r relocate
+    # -s strict, -T O, -u upperbound, -v verify, -w mirrorwriteconsistency
+    # -x maxumum, -Y prefix, -U userid, -G groupid, -P modes
+    # -p copyn=mirrorpool, -O y/n, -k y/n
+    extra_opts = module.params['extra_opts']
+   
+    if strip_size is not None:
+        isValid, reason = isSizeValid(module)
+        if not isValid:
+            result['msg'] = "Invalid logical volume %s strip_size: '%s'. %s" % \
+                (name, strip_size, reason)
+            module.fail_json(**result)
+        else:
+            opts += "-S %s " % strip_size
+
+    opts += "-t %s " % lv_type
+    opts += "-y %s " % name
+    opts += "-c %s " % copies
+
+    if policy == 'maximum':
+        lv_policy = 'x'
+    else:
+        lv_policy = 'm'
+    opts += "-e %s" % lv_policy
+
     if module.params['pv_list']:
         pv_list = ' '.join(module.params['pv_list'])
     else:
         pv_list = ''
+   
+    cmd = "mklv %s %s %s %s %s" % \
+        (opts, extra_opts, vg, num_log_part, pv_list)
+    success_msg = "Logical volume %s created." % name
+    fail_msg = "Failed to create logical volume %s in volume group %s. \
+        Command '%s' failed." % (name, vg, cmd)
+    lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
-    if strip_size is not None:
-        isValid, reason = isSizeValid(module)
-        if not isValid:
-            result['msg'] = "Invalid logical volume %s strip_size: '%s'. %s" % (name, strip_size, reason)
-            module.fail_json(**result)
-        strip_size = "-S " + strip_size
-    else:
-        strip_size = ""
+
+def modify_lv(module, name):
+    """
+    Modify a logical volume with the attributes provided in the
+    lv_attributes field.
+    arguments:
+        module (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    return:
+        none
+    """
+    global result
+
+    new_name = module.params['lv_new_name']
+    copies = module.params['copies']
+    policy = module.params['policy']
+    lv_type = module.params['lv_type']
+    # -a position, -b badblocks, -d schedule, -R preferredRead, 
+    # -L label, -o y/n, -p permission, -r relocate, -s strict, 
+    # -u upperbound, -v verify, -w mirrorwriteconsistency, -x maxumum
+    # -T O/F, -U userid, -G groupid, -P modes, -m copyn=mirrorpool
+    # -M copyn, -O y/n
+    extra_opts = module.params['extra_opts']
 
     if policy == 'maximum':
         lv_policy = 'x'
     else:
         lv_policy = 'm'
 
-    exists = lv_exists(module)
-    if not exists:
-        cmd = "mklv -t %s -y %s -c %s -e %s %s %s %s %s %s" % (lv_type, name, copies, lv_policy, extra_opts, strip_size, vg, num_log_part, pv_list)
-    else:
-        cmd = "chlv -e %s %s %s" % (lv_policy, extra_opts, name)
+    # get initial properties of the logical volume before
+    # attempting to modfiy
+    init_props = get_lv_props(module)
 
-    rc, stdout, stderr = module.run_command(cmd)
-    result['cmd'] = cmd
-    result['rc'] = rc
-    result['stdout'] = stdout
-    result['stderr'] = stderr
+    opts = ''
+    opts += "-e %s " % lv_policy
+    opts += "-t %s " % lv_type
+    cmd = "chlv %s %s %s" % (opts, extra_opts, name)
+    success_msg = "Logical volume %s modified." % name
+    fail_msg = "Failed to modify logical volume %s. Command '%s' failed." % (name, cmd)
+    lv_run_cmd(module, cmd, success_msg, fail_msg, init_props)
 
-    if rc != 0:
-        if exists:
-            result['msg'] = "Failed to modify logical volume %s. Command '%s' failed." % (name, cmd)
-        else:
-            result['msg'] += "Failed to create logical volume %s in volume group %s. Command '%s' failed." % (name, vg, cmd)
-        module.fail_json(**result)
-    else:
-        if exists:
-            result['msg'] += "Logical volume %s modified." % name
-        else:
-            result['msg'] += "Logical volume %s created." % name
-        result['changed'] = True
+    old_num_copies = re.search("^COPIES:\s*(?P<num_copy>\d)", init_props, re.MULTILINE)
+    old_num_copies = int(old_num_copies.group('num_copy').strip())
+    if copies != old_num_copies:
+        if copies < old_num_copies:
+            cmd = "rmlvcopy %s %s" % (name, copies)
+        elif copies > old_num_copies:
+            cmd = "mklvcopy -e %s %s %s" % (lv_policy, name, copies)
+        success_msg = "\nLogical volume %s's number of copies is modified." % name
+        fail_msg = "\nFailed to modify logical volume %s. Command '%s' failed." % (name, cmd)
+        lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
     if new_name:
         cmd = 'chlv -n %s %s' % (new_name, name)
+        success_msg = "\nLogical volume %s renamed into %s." % (name, new_name)
+        fail_msg = "\nFailed to rename %s into %s. Command '%s' failed." % \
+            (name, new_name, cmd)
+        lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
-        rc, stdout, stderr = module.run_command(cmd)
-        result['cmd'] = cmd
-        result['rc'] = rc
-        result['stdout'] = stdout
-        result['stderr'] = stderr
-
-        if rc != 0:
-            result['msg'] += "\nFailed to rename %s into %s. Command '%s' failed." % (name, new_name, cmd)
-            result['msg'] += "\nCommand given: %s" % cmd
-            module.fail_json(**result)
-        else:
-            result['msg'] += "\nLogical volume %s renamed into %s." % (name, new_name)
-            result['changed'] = True
-    return
-
+    if result['msg'] == '':
+        result['msg'] = "No changes were needed on logical volume %s." % name
+        
 
 def remove_lv(module):
     """
@@ -271,21 +312,14 @@ def remove_lv(module):
     name = module.params['lv']
 
     cmd = 'rmlv -f %s' % name
-
-    rc, stdout, stderr = module.run_command(cmd)
-    result['cmd'] = cmd
-    result['rc'] = rc
-    result['stdout'] = stdout
-    result['stderr'] = stderr
-
-    if rc != 0:
-        result['msg'] = "Failed to remove the logical volume: %s" % name
-        module.fail_json(**result)
-    else:
-        result['msg'] = "Logical volume %s removed." % name
-    return
+    success_msg = "Logical volume %s removed." % name
+    fail_msg = "Failed to remove the logical volume: %s" % name
+    lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
 
+####################################################################################
+# Helper Functions
+####################################################################################
 def isSizeValid(module):
     """
     Checks if the specified strip size for the logical volume is valid or not.
@@ -325,6 +359,52 @@ def isSizeValid(module):
     return valid, reason
 
 
+def get_lv_props(module):
+    """
+    Fetches the current properties of the logical volume.
+    param name: logical volume name.
+    return: standard output of lslv
+    """
+    global result
+
+    name = module.params['lv']
+    cmd = "lslv %s" % name
+    rc, stdout, stderr = module.run_command(cmd)
+    result['cmd'] = cmd
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
+    if rc != 0:
+        result['msg'] = "Failed to fetch the properties of logical volume %s. \
+                        Command '%s' failed." % (name, cmd)
+        module.fail_json(**result)
+
+    return stdout
+
+
+def lv_run_cmd(module, cmd, success_msg, fail_msg, init_props):
+    """
+    Helper function for running commands to create/modify a
+    logical volume.
+    return: True - if any of the logical volume properties are modified
+            False - if nothing changed
+    """
+    global result
+
+    rc, stdout, stderr = module.run_command(cmd)
+    result['cmd'] = cmd
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
+    if rc != 0:
+        result['msg'] += fail_msg
+        module.fail_json(**result)
+    else:
+        if (init_props is None) or (init_props != get_lv_props(module)):
+            result['msg'] += success_msg
+            result['changed'] = True
+   
+
 def lv_exists(module):
     """
     Checks if the specified logical volume exists or not.
@@ -358,7 +438,7 @@ def main():
             strip_size=dict(type='str'),
             extra_opts=dict(type='str', default=''),
             copies=dict(type='int', default=1),
-            num_of_logical_partitions=dict(type='int', default=1),
+            num_of_logical_partitions=dict(type='str', default='1'),
             pv_list=dict(type='list', elements='str'),
             policy=dict(type='str', default='maximum', choices=['maximum', 'minimum']),
             lv_new_name=dict(type='str'),
@@ -380,14 +460,17 @@ def main():
     name = module.params['lv']
     state = module.params['state']
 
-    if state == 'absent':
-        if not lv_exists(module):
-            result['msg'] = "Logical volume %s does not exist. State is '%s'." % (name, state)
-            module.fail_json(**result)
-        remove_lv(module)
-
+    if state == 'present':
+        if lv_exists(module):
+            modify_lv(module, name)
+        else:
+            create_lv(module, name)
     else:
-        create_modify_lv(module)
+        if lv_exists(module):
+            remove_lv(module)
+        else:
+            result['msg'] = "Logical volume %s does not exist, there is no need \
+                remove the logical volume." % (name)
 
     module.exit_json(**result)
 
