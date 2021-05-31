@@ -172,10 +172,10 @@ import re
 
 result = None
 
+
 ####################################################################################
 # Action Handler Functions
 ####################################################################################
-
 def create_lv(module, name):
     """
     Creates a logical volume with the attributes provided in the
@@ -202,7 +202,7 @@ def create_lv(module, name):
     # -x maxumum, -Y prefix, -U userid, -G groupid, -P modes
     # -p copyn=mirrorpool, -O y/n, -k y/n
     extra_opts = module.params['extra_opts']
-   
+
     if strip_size is not None:
         isValid, reason = isSizeValid(module)
         if not isValid:
@@ -226,7 +226,7 @@ def create_lv(module, name):
         pv_list = ' '.join(module.params['pv_list'])
     else:
         pv_list = ''
-   
+
     cmd = "mklv %s %s %s %s %s" % \
         (opts, extra_opts, vg, num_log_part, pv_list)
     success_msg = "Logical volume %s created." % name
@@ -252,8 +252,8 @@ def modify_lv(module, name):
     copies = module.params['copies']
     policy = module.params['policy']
     lv_type = module.params['lv_type']
-    # -a position, -b badblocks, -d schedule, -R preferredRead, 
-    # -L label, -o y/n, -p permission, -r relocate, -s strict, 
+    # -a position, -b badblocks, -d schedule, -R preferredRead,
+    # -L label, -o y/n, -p permission, -r relocate, -s strict,
     # -u upperbound, -v verify, -w mirrorwriteconsistency, -x maxumum
     # -T O/F, -U userid, -G groupid, -P modes, -m copyn=mirrorpool
     # -M copyn, -O y/n
@@ -276,7 +276,7 @@ def modify_lv(module, name):
     fail_msg = "Failed to modify logical volume %s. Command '%s' failed." % (name, cmd)
     lv_run_cmd(module, cmd, success_msg, fail_msg, init_props)
 
-    old_num_copies = re.search("^COPIES:\s*(?P<num_copy>\d)", init_props, re.MULTILINE)
+    old_num_copies = re.search(r"^COPIES:\s*(?P<num_copy>\d)", init_props, re.MULTILINE)
     old_num_copies = int(old_num_copies.group('num_copy').strip())
     if copies != old_num_copies:
         if copies < old_num_copies:
@@ -296,7 +296,7 @@ def modify_lv(module, name):
 
     if result['msg'] == '':
         result['msg'] = "No changes were needed on logical volume %s." % name
-        
+
 
 def remove_lv(module):
     """
@@ -403,7 +403,7 @@ def lv_run_cmd(module, cmd, success_msg, fail_msg, init_props):
         if (init_props is None) or (init_props != get_lv_props(module)):
             result['msg'] += success_msg
             result['changed'] = True
-   
+
 
 def lv_exists(module):
     """
