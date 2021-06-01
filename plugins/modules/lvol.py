@@ -77,7 +77,8 @@ options:
     default: 1
   num_of_logical_partitions:
     description:
-    - Specifies the number of logical partitions
+    - Specifies the number of logical partitions or the size of the
+      the logical volume in terms of K, M, or G.
     - Can be used to create a logical volume, hence when I(state=present).
     type: int
     default: 1
@@ -284,7 +285,7 @@ def modify_lv(module, name):
         elif copies > old_num_copies:
             cmd = "mklvcopy -e %s %s %s" % (lv_policy, name, copies)
         success_msg = "\nLogical volume %s's number of copies is modified." % name
-        fail_msg = "\nFailed to modify logical volume %s. Command '%s' failed." % (name, cmd)
+        fail_msg = "\nFailed to modify the number of copies of logical volume %s." % (name)
         lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
     if new_name:
@@ -298,7 +299,7 @@ def modify_lv(module, name):
         result['msg'] = "No changes were needed on logical volume %s." % name
 
 
-def remove_lv(module):
+def remove_lv(module, name):
     """
     Remove the logical volume without confirmation.
     arguments:
@@ -309,7 +310,6 @@ def remove_lv(module):
         none
     """
     global result
-    name = module.params['lv']
 
     cmd = 'rmlv -f %s' % name
     success_msg = "Logical volume %s removed." % name
@@ -467,10 +467,10 @@ def main():
             create_lv(module, name)
     else:
         if lv_exists(module):
-            remove_lv(module)
+            remove_lv(module, name)
         else:
-            result['msg'] = "Logical volume %s does not exist, there is no need \
-                remove the logical volume." % (name)
+            result['msg'] = \
+                "Logical volume %s does not exist, there is no need to remove the logical volume." % (name)
 
     module.exit_json(**result)
 

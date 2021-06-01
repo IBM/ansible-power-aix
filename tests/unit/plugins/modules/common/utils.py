@@ -41,3 +41,5 @@ def fail_json(*args, **kwargs):
 #########################################################################################
 rootdir = "ansible_collections.ibm.power_aix.plugins.modules."
 lsfs_output_path = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsfs_output"
+lslv_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lslv_output1"
+lslv_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lslv_output2"
