@@ -1,0 +1,22 @@
+LOGICAL VOLUME:     testlv                 VOLUME GROUP:   testvg
+LV IDENTIFIER:      00f6f42a00004c0000000179c407a0bb.1 PERMISSION:     read/write
+VG STATE:           active/complete        LV STATE:       closed/syncd
+TYPE:               jfs2                   WRITE VERIFY:   off
+MAX LPs:            512                    PP SIZE:        32 megabyte(s)
+COPIES:             1                      SCHED POLICY:   parallel
+LPs:                10                     PPs:            10
+STALE PPs:          0                      BB POLICY:      relocatable
+INTER-POLICY:       maximum                RELOCATABLE:    yes
+INTRA-POLICY:       middle                 UPPER BOUND:    1024
+MOUNT POINT:        N/A                    LABEL:          None
+DEVICE UID:         0                      DEVICE GID:     0
+DEVICE PERMISSIONS: 432                                    
+MIRROR WRITE CONSISTENCY: on/ACTIVE                              
+EACH LP COPY ON A SEPARATE PV ?: yes                                    
+Serialize IO ?:     NO                                     
+INFINITE RETRY:     no                     PREFERRED READ: 0
+DEVICESUBTYPE:      DS_LVZ                                        
+COPY 1 MIRROR POOL: None                                   
+COPY 2 MIRROR POOL: None                                   
+COPY 3 MIRROR POOL: None                                   
+ENCRYPTION:         no
