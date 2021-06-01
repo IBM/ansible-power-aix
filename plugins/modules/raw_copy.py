@@ -18,8 +18,11 @@ author:
 module: raw_copy
 short_description: Copy a file to a target without Python installed.
 description:
-- Uses Ansible internal hooks to copy a file to the remote host without requiring that Python be installed on the target. Useful during the bootstrapping of Python.
-- Because it uses Ansible's internals, it honors Ansible configuration and host variables like C(ansible_password) and C(ansible_host).
+- Uses Ansible internal hooks to copy a file to the remote host
+  without requiring that Python be installed on the target.  Useful
+  during the bootstrapping of Python.
+- Because it uses Ansible's internals, it honors Ansible configuration
+  and host variables like C(ansible_password) and C(ansible_host).
 - Always use ansible.builtin.copy instead of this plugin!
 version_added: '2.9'
 requirements:
