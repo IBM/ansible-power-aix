@@ -48,7 +48,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.params["attributes"] = {"home" : "/test/home/test123", "data" : "1272"}
         msg = user.create_user(self.module)
         testMsg = 'Username is created SUCCESSFULLY: %s' %self.module.params["name"]
-        attrMsg = '\nAll provided attributes for the user: %s is set SUCCESSFULLY' %self.module.params["name"]
+        attrMsg = '\nAll provided attributes for the user: %s are set SUCCESSFULLY' %self.module.params["name"]
         testMsg += attrMsg
         passMsg = "\nPassword is set successfully for the user: %s" % self.module.params['name']
         testMsg += passMsg
@@ -66,13 +66,13 @@ class TestCreateUser(unittest.TestCase):
         self.module.params["password"] = None
         self.module.params["attributes"] = {"home" : "/test/home/test123", "data" : "1272"}
         msg = user.modify_user(self.module)
-        testMsg = '\nAll provided attributes for the user: %s is set SUCCESSFULLY' %self.module.params["name"]
+        testMsg = '\nAll provided attributes for the user: %s are set SUCCESSFULLY' %self.module.params["name"]
         self.assertEqual(msg, testMsg)
 
     def test_success_user_modify_with_password_with_attribute(self):
         self.module.params["attributes"] = {"home" : "/test/home/test123", "data" : "1272"}
         msg = user.modify_user(self.module)
-        testMsg = '\nAll provided attributes for the user: %s is set SUCCESSFULLY' % self.module.params['name']
+        testMsg = '\nAll provided attributes for the user: %s are set SUCCESSFULLY' % self.module.params['name']
         passMsg = "\nPassword is set successfully for the user: %s" % self.module.params['name']
         testMsg += passMsg
         self.assertEqual(msg, testMsg)
