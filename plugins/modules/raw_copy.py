@@ -47,6 +47,3 @@ EXAMPLES = r'''
     src: "{{ download_dir }}/{{ yum_src }}"
     dest: "{{ target_dir }}/{{ yum_src }}"
 '''
-
-RETURN = r'''
-'''
