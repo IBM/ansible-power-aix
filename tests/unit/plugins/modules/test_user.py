@@ -21,7 +21,6 @@ class TestCreateUser(unittest.TestCase):
     def setUp(self):
         self.module = mock.Mock()
         self.module.fail_json = fail_json
-        self.module.run_command.return_value = (0, None, None)
         params = dict()
         params["name"] = "test123"
         params["attributes"] = None
