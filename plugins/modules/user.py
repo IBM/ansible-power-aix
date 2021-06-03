@@ -149,7 +149,7 @@ def modify_user(module):
             msg = "\nFailed to modify attributes for the user: %s" % module.params['name']
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            msg = "\nAll provided attributes for the user: %s is set SUCCESSFULLY" % module.params['name']
+            msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
 
     if module.params['password'] is not None:
         pass_msg = change_password(module)
