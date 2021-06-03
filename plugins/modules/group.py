@@ -122,7 +122,7 @@ stderr':
 
 from ansible.module_utils.basic import AnsibleModule
 
-result = None
+result = {}
 
 
 def modify_group(module):
@@ -157,7 +157,7 @@ def modify_group(module):
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            result['msg'] += "\nFailed to modify attributes for group: %s." % module.params['name']
+            result['msg'] = "\nFailed to modify attributes for group: %s." % module.params['name']
             module.fail_json(**result)
         else:
             msg = "\nGroup: %s attributes SUCCESSFULLY set." % module.params['name']
@@ -166,11 +166,11 @@ def modify_group(module):
         cmd = "chgrpmem "
 
         if not module.params['user_list_type']:
-            result['msg'] += "\nuser_list_type is '%s' but 'user_list_type' is missing." % module.params['user_list_type']
+            result['msg'] = "\nuser_list_type is '%s' but 'user_list_type' is missing." % module.params['user_list_type']
             module.fail_json(**result)
 
         if not module.params['users_list']:
-            result['msg'] += "\nuser_list_type is '%s' but 'users_list' is missing." % module.params['user_list_type']
+            result['msg'] = "\nuser_list_type is '%s' but 'users_list' is missing." % module.params['user_list_type']
             module.fail_json(**result)
 
         if module.params['user_list_type'] == 'members':
@@ -229,10 +229,10 @@ def create_group(module):
         result['msg'] = "Failed to create group: %s." % module.params['name']
         module.fail_json(**result)
     else:
-        msg = "Group: %s SUCCESSFULLY created." % module.params['name']
+        msg += "Group: %s SUCCESSFULLY created." % module.params['name']
 
     if module.params['group_attributes'] or module.params['user_list_action']:
-        result['msg'] += modify_group(module)
+        msg += modify_group(module)
 
     return msg
 
@@ -265,7 +265,7 @@ def remove_group(module):
         result['msg'] = "Unable to remove the group: %s." % module.params['name']
         module.fail_json(**result)
     else:
-        msg = "Group: %s SUCCESSFULLY removed" % module.params['name']
+        msg = "Group: %s SUCCESSFULLY removed." % module.params['name']
 
     return msg
 
