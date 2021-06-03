@@ -284,7 +284,7 @@
 <p>Maximum value allowed is 3</p>
 <p>Can be used to create a logical volume, hence when <em>state=present</em>.</p>
 </dd>
-<dt>num_of_logical_partitions (optional, int, 1)</dt><dd><p>Specifies the number of logical partitions</p>
+<dt>num_of_logical_partitions (optional, int, 1)</dt><dd><p>Specifies the number of logical partitions or the size of the the logical volume in terms of K, M, or G.</p>
 <p>Can be used to create a logical volume, hence when <em>state=present</em>.</p>
 </dd>
 <dt>pv_list (optional, list, None)</dt><dd><p>List of pysical volumes.</p>
@@ -317,24 +317,24 @@
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test1lv</span>
-    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64M</span>
-<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with disks testdisk1 and testdisk2</span>
+    <span class="nt">num_of_logical_parititions</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">64M</span>
+<span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 10 partitions with disks testdisk1 and testdisk2</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2vg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test2lv</span>
-    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
-    <span class="nt">pvs</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">testdisk1</span><span class="p p-Indicator">,</span> <span class="nv">testdisk2</span> <span class="p p-Indicator">]</span>
+    <span class="nt">num_of_logical_parititions</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+    <span class="nt">pv_list</span><span class="p">:</span> <span class="p p-Indicator">[</span> <span class="nv">testdisk1</span><span class="p p-Indicator">,</span> <span class="nv">testdisk2</span> <span class="p p-Indicator">]</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume of 32M with a minimum placement policy</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">rootvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">test4lv</span>
-    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
+    <span class="nt">num_of_logical_parititions</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32M</span>
     <span class="nt">policy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">minimum</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Create a logical volume with extra options like mirror pool</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
     <span class="nt">vg</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testvg</span>
     <span class="nt">lv</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">testlv</span>
-    <span class="nt">strip_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128M</span>
+    <span class="nt">num_of_logical_parititions</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">128M</span>
     <span class="nt">extra_opts</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">-p copy1=poolA -p copy2=poolB</span>
 <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Remove the logical volume</span>
   <span class="nt">ibm.power_aix.lvol</span><span class="p">:</span>
