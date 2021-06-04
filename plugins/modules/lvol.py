@@ -80,7 +80,7 @@ options:
     - Specifies the number of logical partitions or the size of the
       the logical volume in terms of K, M, or G.
     - Can be used to create a logical volume, hence when I(state=present).
-    type: int
+    type: str
     default: 1
   pv_list:
     description:
