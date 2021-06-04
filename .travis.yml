@@ -27,13 +27,17 @@ script:
   # With flake ignore
   #  E402: <module> level import not at top of file (as per Ansible module developement)
   #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
-  - flake8 plugins/modules/* --max-line-length=160 --ignore=E402,W503
+  # - flake8 plugins/modules/* --max-line-length=160 --ignore=E402,W503
 
   # checking yaml syntax is not relevant since there are just examples.
   #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
   #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
 
-  - bash devops/bin/sanity_test.sh
+  # devops/bin/sanity_test.sh is the old script that runs the ansible sanity tests,
+  # it is no longer needed as the sanity tests is now run with github actions
+  # workflow
+  # - bash devops/bin/sanity_test.sh
+
   - bash devops/bin/gen_doc.sh
 
 # push the generated documentation using GitHub Pages

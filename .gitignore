@@ -3,7 +3,7 @@ devops
 .travis.yml
 .DS_Store
 .vscode
-venv
+venv*
 tests/output
 hosts
 *.swp
