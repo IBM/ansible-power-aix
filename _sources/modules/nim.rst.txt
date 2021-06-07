@@ -108,6 +108,10 @@ Parameters
     Forces action.
 
 
+  boot_client (optional, bool, True)
+    If set to ``no``, the NIM server will not attempt to reboot the client when the action is ``bos_inst``.
+
+
 
 
 
