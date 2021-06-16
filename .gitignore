@@ -1,4 +1,4 @@
-
+playbooks/*issue*
 devops
 .travis.yml
 .DS_Store
@@ -6,3 +6,4 @@ devops
 venv
 tests/output
 hosts
+*.swp
