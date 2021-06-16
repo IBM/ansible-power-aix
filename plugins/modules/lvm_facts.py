@@ -256,6 +256,7 @@ ansible_facts:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def load_pvs(module, name, LVM):
@@ -329,6 +330,16 @@ def load_vgs(module, name, LVM):
             rc, out, err = module.run_command(cmd)
             if rc != 0:
                 msg += "Command '%s' failed." % cmd
+                # make sure that varied off volume groups
+                # are returned.
+                # 0516-010: Volume group must be varied on; use varyonvg command.
+                pattern = r"0516-010"
+                found = re.search(pattern, err)
+                if found:
+                    data = {
+                        'vg_state': "deactivated"
+                    }
+                    LVM['VGs'][vg] = data
             else:
                 vg_state = out.splitlines()[1].split()[2].strip()
                 num_lvs = out.splitlines()[4].split()[1].strip()
