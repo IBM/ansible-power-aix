@@ -99,6 +99,12 @@ options:
     - When set, a filesystem could have increased while the task returns I(changed=False).
     type: bool
     default: yes
+  protocol:
+    description:
+    - Optional setting which specifies preferred protocol to use for downloading files.
+    - When set, downloads will be attempted using set protocol.
+    type: str
+    choices: [ https, http, ftp ]
 notes:
   - Refer to the FLRTVC page for detail on the sctipt
     U(https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html)
@@ -947,14 +953,20 @@ def run_parser(report):
     note:
         Create and build results['meta']['1.parse']
     """
+    global module
+    protocol = module.params['protocol']
     dict_rows = csv.DictReader(report, delimiter='|')
     pattern = re.compile(r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
                          r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$')
+
     rows = []
     for row in dict_rows:
-        rows.append(row['Download URL'])
-    selected_rows = [row for row in rows if pattern.match(row) is not None]
+        row = row['Download URL']
+        if protocol:
+            row = re.sub(r'^(https|http|ftp)', protocol, row, count=1)
 
+        rows.append(row)
+    selected_rows = [row for row in rows if pattern.match(row) is not None]
     rows = list(set(selected_rows))  # remove duplicates
     module.debug('extracted {0} urls in the report'.format(len(rows)))
     results['meta'].update({'1.parse': rows})
@@ -1159,6 +1171,7 @@ def main():
             check_only=dict(required=False, type='bool', default=False),
             download_only=dict(required=False, type='bool', default=False),
             extend_fs=dict(required=False, type='bool', default=True),
+            protocol=dict(required=False, type='str', choices=['https', 'http', 'ftp']),
         ),
         supports_check_mode=True
     )
