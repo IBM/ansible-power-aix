@@ -149,6 +149,7 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 result = None
 
@@ -204,8 +205,10 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
         if stdout:
             for ln in stdout.splitlines()[1:]:
                 fdirs.append(ln.split()[0])
-        if fs_name in fdirs:
-            return True
+        for fdir in fdirs:
+            found = re.search(fs_name, fdir)
+            if found:
+                return True
 
         return False
 
@@ -296,9 +299,9 @@ def umount(module):
     if mount_dir or mount_over_dir:
         if is_fspath_mounted(module, mount_dir, mount_over_dir) is False:
             if mount_dir:
-                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
+                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
             else:
-                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_over_dir
+                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
             return
 
     cmd = "umount "
