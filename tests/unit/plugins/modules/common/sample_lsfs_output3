@@ -1,0 +1,2 @@
+Name            Nodename   Mount Pt               VFS   Size    Options    Auto Accounting
+/tmp/lp4nfs     carribean-lp4 /tmp/clientnfs         nfs   --      intr       no   no

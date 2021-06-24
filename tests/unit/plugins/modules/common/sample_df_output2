@@ -1,0 +1,13 @@
+Filesystem    512-blocks      Free %Used    Iused %Iused Mounted on
+/dev/hd4         1966080    559552   72%     4107     7% /
+/dev/hd2        27394048  13732104   50%    49625     4% /usr
+/dev/hd9var      3145728   2580072   18%     1340     1% /var
+/dev/hd3          655360    557760   15%      675     2% /tmp
+/dev/hd1          131072    130312    1%        9     1% /home
+/dev/hd11admin     262144    261416    1%        5     1% /admin
+/proc                  -         -    -        -      - /proc
+/dev/hd10opt     2621440   1050416   60%    10048     8% /opt
+/dev/livedump     524288    523552    1%        4     1% /var/adm/ras/livedump
+/ahafs                 -         -    -       35     1% /aha
+carribean-lp4:/tmp/lp4nfs      163840    163152    1%        4     1% /tmp/clientnfs
+
