@@ -1,0 +1,5 @@
+testvg:
+PV_NAME           PV STATE          TOTAL PPs   FREE PPs    FREE DISTRIBUTION
+hdisk2            active            1275        1275        255..255..255..255..255
+hdisk3            active            1275        1275        255..255..255..255..255
+hdisk4            active            1275        1275        255..255..255..255..255
