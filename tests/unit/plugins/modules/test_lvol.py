@@ -24,7 +24,7 @@ params = {
     "lv_type": "jfs2",
     "strip_size": None,
     "extra_opts": None,
-    "num_of_logical_partitions": 5,
+    "size": 5,
     "copies": 1,
     "policy": "maximum",
     "pv_list": None
