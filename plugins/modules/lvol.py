@@ -75,7 +75,7 @@ options:
     - Can be used to create a logical volume, hence when I(state=present).
     type: int
     default: 1
-  num_of_logical_partitions:
+  size:
     description:
     - Specifies the number of logical partitions or the size of the
       the logical volume in terms of K, M, or G.
@@ -118,24 +118,24 @@ EXAMPLES = r'''
   ibm.power_aix.lvol:
     vg: test1vg
     lv: test1lv
-    num_of_logical_parititions: 64M
+    size: 64M
 - name: Create a logical volume of 10 partitions with disks testdisk1 and testdisk2
   ibm.power_aix.lvol:
     vg: test2vg
     lv: test2lv
-    num_of_logical_parititions: 10
+    size: 10
     pv_list: [ testdisk1, testdisk2 ]
 - name: Create a logical volume of 32M with a minimum placement policy
   ibm.power_aix.lvol:
     vg: rootvg
     lv: test4lv
-    num_of_logical_parititions: 32M
+    size: 32M
     policy: minimum
 - name: Create a logical volume with extra options like mirror pool
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
-    num_of_logical_parititions: 128M
+    size: 128M
     extra_opts: -p copy1=poolA -p copy2=poolB
 - name: Remove the logical volume
   ibm.power_aix.lvol:
@@ -196,7 +196,7 @@ def create_lv(module, name):
     copies = module.params['copies']
     policy = module.params['policy']
     vg = module.params['vg']
-    num_log_part = module.params['num_of_logical_partitions']
+    num_log_part = module.params['size']
     # -a position, -b badblocks, -C stripewidth, -d schedule
     # -R preferredRead, -L label, -m mapfile, -o y/n, -r relocate
     # -s strict, -T O, -u upperbound, -v verify, -w mirrorwriteconsistency
@@ -438,7 +438,7 @@ def main():
             strip_size=dict(type='str'),
             extra_opts=dict(type='str', default=''),
             copies=dict(type='int', default=1),
-            num_of_logical_partitions=dict(type='str', default='1'),
+            size=dict(type='str', default='1'),
             pv_list=dict(type='list', elements='str'),
             policy=dict(type='str', default='maximum', choices=['maximum', 'minimum']),
             lv_new_name=dict(type='str'),
