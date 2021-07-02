@@ -12,7 +12,8 @@ from ansible_collections.ibm.power_aix.plugins.modules import lvol
 
 from .common.utils import (
     AnsibleExitJson, AnsibleFailJson, exit_json, fail_json,
-    rootdir, lslv_output_path1, lslv_output_path2
+    rootdir, lslv_output_path1, lslv_output_path2,
+    lquerylv_output_path1
 )
 
 
@@ -116,6 +117,107 @@ class TestCreateLV(unittest.TestCase):
         self.assertRegexpMatches(result['msg'], pattern)
 
 
+class TestExtendLV(unittest.TestCase):
+    def setUp(self):
+        global params, init_result
+        lvol.result = init_result
+        self.name = params['lv']
+        self.module = mock.Mock()
+        self.module.params = params
+        self.module.fail_json = fail_json
+        rc, stdout, stderr = (0, "sample stdout", "sample stderr")
+        self.module.run_command.return_value = (rc, stdout, stderr)
+        # mocked functions path
+        self.get_lv_props_path = rootdir + "lvol.get_lv_props"
+        # load sample output
+        with open(lslv_output_path1, "r") as f:
+            self.lslv_output1 = f.read().strip()
+        with open(lquerylv_output_path1, "r") as f:
+            self.lquerylv_output1 = f.read().strip()
+
+    def test_fail_minus_sign_not_supported(self):
+        rc, stdout, stderr = (0, self.lquerylv_output1, "sample stderr")
+        self.module.run_command.return_value = (rc, stdout, stderr)
+        self.module.params['size'] = "-32M"
+        with self.assertRaises(AnsibleFailJson) as result:
+            lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = result.exception.args[0]
+        self.assertTrue(result['failed'])
+        pattern = r"Minus sign.*is not a supported"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_fail_reducing_size_not_supported(self):
+        rc, stdout, stderr = (0, self.lquerylv_output1, "sample stderr")
+        self.module.run_command.return_value = (rc, stdout, stderr)
+        self.module.params['size'] = "5"
+        with self.assertRaises(AnsibleFailJson) as result:
+            lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = result.exception.args[0]
+        self.assertTrue(result['failed'])
+        pattern = r"Reducing the size of the logical volume is not supported"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_fail_extend_lv_with_plus_sign(self):
+        self.module.run_command.side_effect = [ 
+            (0, self.lquerylv_output1, "sample stderr"),
+            (1, "sample stdout", "sample stderr")
+        ]
+        self.module.params['size'] = "+5G"
+        with self.assertRaises(AnsibleFailJson) as result:
+            lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = result.exception.args[0]
+        self.assertTrue(result['failed'])
+        pattern = r"Failed to extend logical volume"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_success_extendlv_with_plus_sign(self):
+        self.module.run_command.side_effect = [ 
+            (0, self.lquerylv_output1, "sample stderr"),
+            (0, "sample stdout", "sample stderr")
+        ]
+        self.module.params['size'] = "+64M"
+        lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = copy.deepcopy(lvol.result)
+        self.assertTrue(result['changed'])
+        pattern = r"has been extended by"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_fail_extend_lv_without_plus_sign(self):
+        self.module.run_command.side_effect = [ 
+            (0, self.lquerylv_output1, "sample stderr"),
+            (1, "sample stdout", "sample stderr")
+        ]
+        self.module.params['size'] = "5G"
+        with self.assertRaises(AnsibleFailJson) as result:
+            lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = result.exception.args[0]
+        self.assertTrue(result['failed'])
+        pattern = r"Failed to extend logical volume"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_success_extendlv_without_plus_sign(self):
+        self.module.run_command.side_effect = [ 
+            (0, self.lquerylv_output1, "sample stderr"),
+            (0, "sample stdout", "sample stderr")
+        ]
+        self.module.params['size'] = "5G"
+        lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = copy.deepcopy(lvol.result)
+        self.assertTrue(result['changed'])
+        pattern = r"has been extended to"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+    def test_no_change_extendlv(self):
+        rc, stdout, stderr = (0, self.lquerylv_output1, "sample stderr")
+        self.module.run_command.return_value = (rc, stdout, stderr)
+        self.module.params['size'] = "10"
+        lvol.extend_lv(self.module, self.name, self.lslv_output1)
+        result = copy.deepcopy(lvol.result)
+        self.assertFalse(result['changed'])
+        pattern = r"There is no need to extend the logical volume"
+        self.assertRegexpMatches(result['msg'], pattern)
+
+
 class TestModifyLV(unittest.TestCase):
     def setUp(self):
         global params, init_result
@@ -137,7 +239,7 @@ class TestModifyLV(unittest.TestCase):
     def test_all_lv_props_no_change(self):
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
             mocked_get_lv_props.return_value = self.lslv_output1
-            lvol.modify_lv(self.module, self.name)
+            lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = copy.deepcopy(lvol.result)
         self.assertFalse(result['changed'])
         pattern = "No changes were needed"
@@ -146,14 +248,12 @@ class TestModifyLV(unittest.TestCase):
     def test_fail_modify_lv(self):
         rc, stdout, stderr = (1, "sample stdout", "sample stderr")
         self.module.run_command.return_value = (rc, stdout, stderr)
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.return_value = self.lslv_output1
-            with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name)
-            result = result.exception.args[0]
-            self.assertTrue(result['failed'])
-            pattern = "Failed to modify logical volume"
-            self.assertRegexpMatches(result['msg'], pattern)
+        with self.assertRaises(AnsibleFailJson) as result:
+            lvol.modify_lv(self.module, self.name, self.lslv_output1)
+        result = result.exception.args[0]
+        self.assertTrue(result['failed'])
+        pattern = "Failed to modify logical volume"
+        self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_modify_lv_fail_modify_copies(self):
         self.module.params['copies'] = 2
@@ -162,12 +262,9 @@ class TestModifyLV(unittest.TestCase):
             (1, "sample stdout", "sample stderr")
         ]
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
+            mocked_get_lv_props.return_value = self.lslv_output2
             with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name)
+                lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = result.exception.args[0]
             self.assertTrue(result['changed'])
             self.assertTrue(result['failed'])
@@ -177,13 +274,8 @@ class TestModifyLV(unittest.TestCase):
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_modify_lv_copies_no_change(self):
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
-            lvol.modify_lv(self.module, self.name)
-            result = copy.deepcopy(lvol.result)
+        lvol.modify_lv(self.module, self.name, self.lslv_output1)
+        result = copy.deepcopy(lvol.result)
         self.assertTrue(result['changed'])
         pattern = r"Logical volume \w*\d* modified."
         self.assertRegexpMatches(result['msg'], pattern)
@@ -191,16 +283,13 @@ class TestModifyLV(unittest.TestCase):
     def test_success_modify_lv_copies_no_change_fail_lv_rename(self):
         self.module.params['lv_new_name'] = "newtestlv"
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
+            mocked_get_lv_props.return_value = self.lslv_output2
             self.module.run_command.side_effect = [
                 (0, "sample stdout", "sample stderr"),
                 (1, "sample stdout", "sample stderr")
             ]
             with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name)
+                lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = result.exception.args[0]
             self.assertTrue(result['changed'])
             self.assertTrue(result['failed'])
@@ -212,11 +301,8 @@ class TestModifyLV(unittest.TestCase):
     def test_success_modify_lv_copies_no_change_lv_renamed(self):
         self.module.params['lv_new_name'] = "newtestlv"
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
-            lvol.modify_lv(self.module, self.name)
+            mocked_get_lv_props.return_value = self.lslv_output2
+            lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = copy.deepcopy(lvol.result)
         pattern = r"Logical volume \w*\d* modified."
         self.assertRegexpMatches(result['msg'], pattern)
@@ -226,11 +312,8 @@ class TestModifyLV(unittest.TestCase):
     def test_success_modify_lv_copies_changed(self):
         self.module.params['copies'] = 2
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
-            lvol.modify_lv(self.module, self.name)
+            mocked_get_lv_props.return_value = self.lslv_output2
+            lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = copy.deepcopy(lvol.result)
         self.assertTrue(result['changed'])
         pattern = r"Logical volume \w*\d* modified."
@@ -242,17 +325,14 @@ class TestModifyLV(unittest.TestCase):
         self.module.params['copies'] = 2
         self.module.params['lv_new_name'] = "newtestlv"
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
+            mocked_get_lv_props.return_value = self.lslv_output2
             self.module.run_command.side_effect = [
                 (0, "sample stdout", "sample stderr"),
                 (0, "sample stdout", "sample stderr"),
                 (1, "sample stdout", "sample stderr")
             ]
             with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name)
+                lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = result.exception.args[0]
             self.assertTrue(result['changed'])
             self.assertTrue(result['failed'])
@@ -267,11 +347,8 @@ class TestModifyLV(unittest.TestCase):
         self.module.params['copies'] = 2
         self.module.params['lv_new_name'] = "newtestlv"
         with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.side_effect = [
-                self.lslv_output1,
-                self.lslv_output2
-            ]
-            lvol.modify_lv(self.module, self.name)
+            mocked_get_lv_props.return_value = self.lslv_output2
+            lvol.modify_lv(self.module, self.name, self.lslv_output1)
             result = copy.deepcopy(lvol.result)
         self.assertTrue(result['changed'])
         pattern = r"Logical volume \w*\d* modified."
@@ -317,7 +394,7 @@ class TestRemoveLV(unittest.TestCase):
                 lvol.main()
             result = result.exception.args[0]
             self.assertFalse(result['changed'])
-            pattern = "there is no need to remove the logical volume"
+            pattern = "there is no need to remove"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_remove_lv(self):
