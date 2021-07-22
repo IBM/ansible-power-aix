@@ -114,6 +114,7 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def modify_user(module):
@@ -138,6 +139,9 @@ def modify_user(module):
             if attr == 'load_module':
                 load_module_opts = "-R %s " % val
             else:
+                pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
+                if val in [True, False] or re.match(pattern, val):
+                    val = str(val).lower()
                 opts += "%s=%s " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
