@@ -250,13 +250,12 @@ def mount(module):
     else:
         mount_dir = module.params['mount_dir']
         mount_over_dir = module.params['mount_over_dir']
-        if mount_dir or mount_over_dir:
-            if is_fspath_mounted(module, mount_dir, mount_over_dir):
-                if mount_dir:
-                    result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
-                else:
-                    result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_over_dir
-                return
+        if is_fspath_mounted(module, mount_dir, mount_over_dir):
+            if mount_dir:
+                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
+            else:
+                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_over_dir
+            return
         if mount_over_dir is None:
             mount_over_dir = ""
         if mount_dir is None:
@@ -296,13 +295,12 @@ def umount(module):
     node = module.params['node']
     force = module.params['force']
 
-    if mount_dir or mount_over_dir:
-        if is_fspath_mounted(module, mount_dir, mount_over_dir) is False:
-            if mount_dir:
-                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
-            else:
-                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
-            return
+    if is_fspath_mounted(module, mount_dir, mount_over_dir) is False:
+        if mount_dir:
+            result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
+        else:
+            result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
+        return
 
     cmd = "umount "
     if force:
