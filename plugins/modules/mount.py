@@ -328,6 +328,7 @@ def umount(module):
         module.fail_json(**result)
 
     result['msg'] = "Unmount successful."
+    result['changed'] = True
     return
 
 
