@@ -171,10 +171,12 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
     """
     global result
 
-    if mount_dir:
-        cmd = "lsfs -l %s" % mount_dir
-    elif mount_over_dir:
+    if mount_over_dir:
+        # when mounting NFS, make sure we check for the NFS
+        # client mount point
         cmd = "lsfs -l %s" % mount_over_dir
+    elif mount_dir:
+        cmd = "lsfs -l %s" % mount_dir
     else:
         # should not happen
         result['msg'] = "Unexpected module FAILURE: one of the following is missing: "
@@ -251,10 +253,12 @@ def mount(module):
         mount_dir = module.params['mount_dir']
         mount_over_dir = module.params['mount_over_dir']
         if is_fspath_mounted(module, mount_dir, mount_over_dir):
-            if mount_dir:
-                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
-            else:
+            # if both mount_dir and mount_over_dir is given then check for
+            # mount_over_dir
+            if mount_over_dir:
                 result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_over_dir
+            elif mount_dir:
+                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
             return
         if mount_over_dir is None:
             mount_over_dir = ""
@@ -296,10 +300,12 @@ def umount(module):
     force = module.params['force']
 
     if is_fspath_mounted(module, mount_dir, mount_over_dir) is False:
-        if mount_dir:
-            result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
-        else:
+        # if both mount_dir and mount_over_dir is given then check for
+        # mount_over_dir
+        if mount_over_dir:
             result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
+        elif mount_dir:
+            result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
         return
 
     cmd = "umount "
