@@ -33,9 +33,10 @@ options:
       addition, you can use it to build other file trees made up of directory and file mounts. If no
       parameter is specified, it gets information for the mounted file systems.
     - C(umount) unmounts a previously mounted device, directory, file, or file system
+    - C(show) list mounted filesytems
     type: str
     default: mount
-    choices: [mount, umount]
+    choices: [mount, umount, show]
   mount_dir:
     description:
     - Specifies the directory path to mount/unmount.
@@ -107,22 +108,45 @@ notes:
 EXAMPLES = r'''
 - name: List mounted filesystems
   ibm.power_aix.mount:
+    state: show
 
 - name: Mount filesystems
   ibm.power_aix.mount:
-    mount_dir: /dev/hd1
-    mount_over_dir: /home
+    state: mount
+    mount_dir: /mnt/tesfs
 
-- name: Mount filesystems provided by a node"
+- name: Mount filesystems provided by a node
   ibm.power_aix.mount:
-    node: aixbase.aus.stglabs.ibm.com
-    mount_dir: /mnt
+    state: mount
+    node: ansible-test1
+    mount_dir: /mnt/servnfs
+    mount_over_dir: /mnt/clientnfs
 
-- name: Unmount remote filesystems
+- name: Mount all filesystems from the 'local' mount group
   ibm.power_aix.mount:
-   state: umount
-   mount_all: remote
-   force: True
+    state: mount
+    fs_type: local
+
+- name: Unmount filesystem
+  ibm.power_aix.mount:
+    state: umount
+    mount_dir: /mnt/testfs
+
+- name: Unmount all remote filesystems
+  ibm.power_aix.mount:
+    state: umount
+    mount_all: remote
+    force: True
+
+- name: Unmount all remote fileystems from a node
+  ibm.power_aix.mount:
+    state: umount
+    node: ansible-test1
+
+- name: Unmount all filesytems from the 'local' mount group
+  ibm.power_aix.mount:
+    state: umount
+    fs_type: local
 '''
 
 RETURN = r'''
@@ -156,7 +180,7 @@ result = None
 
 def is_mount_group_mounted(module, mount_group):
     """
-    Determines which FS are already mounted in a monut group
+    Determines which FS are already mounted in a mount group
     arguments:
         module         (dict): Ansible module argument spec.
         mount_group    (str): Name of the mount group/type.
@@ -267,6 +291,31 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
                 return True
 
         return False
+
+
+def fs_list(module):
+    """
+    List mounted filesystems
+    arguments:
+        module  (dict): Ansible module argument spec.
+    note:
+        Exits with fail_json in case of error
+    return:
+        none
+    """
+    global result
+    cmd = "mount"
+    rc, stdout, stderr = module.run_command(cmd)
+    result['cmd'] = cmd
+    result['rc'] = rc
+    result['stdout'] = stdout
+    result['stderr'] = stderr
+    if rc != 0:
+        result['msg'] = "Failed to list mounted filesystems."
+        module.fail_json(**result)
+
+    result['msg'] = "Mounted filesystems listed in stdout."
+    return
 
 
 def mount(module):
@@ -431,7 +480,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            state=dict(type='str', default='mount', choices=['mount', 'umount']),
+            state=dict(type='str', default='mount', choices=['mount', 'umount', 'show']),
             mount_dir=dict(type='str'),
             mount_over_dir=dict(type='str'),
             node=dict(type='str'),
@@ -456,7 +505,9 @@ def main():
         stderr='',
     )
 
-    if module.params['state'] == 'mount':
+    if module.params['state'] == 'show':
+        fs_list(module)
+    elif module.params['state'] == 'mount':
         mount(module)
     else:
         umount(module)
