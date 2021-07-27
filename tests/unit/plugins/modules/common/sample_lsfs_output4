@@ -1,0 +1,3 @@
+Name            Nodename   Mount Pt               VFS   Size    Options    Auto Accounting
+/dev/testlv     --         /tmp/testfs            jfs2  655360  rw         no   no 
+/dev/testnfslv  --         /tmp/servnfs           jfs2  655360  rw         no   no 

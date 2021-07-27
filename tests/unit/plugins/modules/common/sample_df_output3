@@ -1,0 +1,14 @@
+Filesystem    512-blocks      Free %Used    Iused %Iused Mounted on
+/dev/hd4         1966080   1858368    6%     4251     3% /
+/dev/hd2        27525120  13813648   50%    51286     4% /usr
+/dev/hd9var      3145728   3041760    4%      709     1% /var
+/dev/hd3          524288    505432    4%      143     1% /tmp
+/dev/hd1          131072    130320    1%        7     1% /home
+/dev/hd11admin     262144    261416    1%        5     1% /admin
+/proc                  -         -    -        -      - /proc
+/dev/hd10opt      524288    106960   80%     9593    44% /opt
+/dev/livedump     524288    523552    1%        4     1% /var/adm/ras/livedump
+nimitz.aus.stglabs.ibm.com:/nim/build_net    65011712  21760832   67%    61015     3% /test
+/ahafs                 -         -    -       35     1% /aha
+/dev/testlv       163840    163152    1%        4     1% /tmp/testfs
+/dev/testnfslv     655360    654600    1%        4     1% /tmp/servnfs
