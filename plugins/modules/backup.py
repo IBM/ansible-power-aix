@@ -186,7 +186,7 @@ options:
     default: no
   extend_fs:
     description:
-    - Specifies to extend the filesystem if needed.
+    - Specifies to extend the '/tmp' filesystem if needed.
     - Can be used if I(action=create).
     type: bool
     default: no
@@ -238,12 +238,12 @@ EXAMPLES = r'''
     disk: /dev/hdisk1
     flags: '-K'
 
-- name: savevg of rootvg to /dev/hdisk1
+- name: savevg of rootvg to /dev/rmt1
   backup:
     action: create
     type: savevg
     name: rootvg
-    location: /dav/rmt1
+    location: /dev/rmt1
     exclude_data: no
     exclude_files: no
     exclude_fs: /tmp/exclude_fs_list
@@ -251,7 +251,7 @@ EXAMPLES = r'''
     extend_fs: yes
     verbose: yes
 
-- name: savevg of datavg structure to /dev/hdisk2
+- name: savevg of datavg structure to /dev/backup_datavg
   backup:
     action: create
     type: savevg
@@ -333,6 +333,7 @@ rc:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def check_vg(module, vg):
@@ -558,13 +559,21 @@ def savevg(module, params, vg):
     if not params['force']:
         rc = restvg_view(module, params)
         if rc == 0:
-            vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
-            if vg_name == vg:
-                results['msg'] = 'Backup images for {0} already exists.'.format(vg)
-                return 0
+            # check if there is an existing backup specified by 'location' parameter
+            # if there is not existing backup at 'location' then proceed to creation of backup
+            # 0512-054 listvgbackup: File /tmp/testvg_backup does not exist or is empty.
+            pattern = r"0512-054"
+            found = re.search(pattern, results['stdout'])
+            if found:
+                module.log('Backup file "{0}" does not exist or empty proceed to savevg.'.format(params['location']))
             else:
-                results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
-                return 1
+                vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
+                if vg_name == vg:
+                    results['msg'] = 'Backup images for {0} already exists.'.format(vg)
+                    return 0
+                else:
+                    results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
+                    return 1
         else:
             results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)
             return rc
@@ -825,7 +834,7 @@ def main():
 
     if rc == 0:
         if not results['msg']:
-            msg = 'AIX {0} backup operation successfull.'.format(action)
+            msg = 'AIX {0} backup operation successful.'.format(action)
             results['msg'] = msg
         module.log(results['msg'])
         module.exit_json(**results)
