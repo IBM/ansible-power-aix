@@ -1067,12 +1067,12 @@ def nim_maintenance(module, params):
 
     for target in results['targets']:
         module.log('NIM - perform maintenance operation for client {0}'.format(target))
-        results['meta'][target] = {'messages': []}  # first time init
+        results['meta']['messages'] = {'messages': []}  # first time init
         results['status'][target] = ''  # first time init
 
         if target in results['nim_node']['vios']:
             msg = 'maintenance operation is not supported on VIOS.'
-            results['meta'][target]['messages'].append(msg)
+            results['meta']['messages'].append(msg)
             module.log('NIM - Error: ' + msg)
             results['status'][target] = 'FAILURE'
             continue
@@ -1087,10 +1087,10 @@ def nim_maintenance(module, params):
             cmd = ['/usr/sbin/installp', '-c', 'all']
             rc, stdout, stderr = nim_exec(module, target, cmd)
 
-        results['meta'][target]['cmd'] = ' '.join(cmd)
-        results['meta'][target]['rc'] = rc
-        results['meta'][target]['stdout'] = stdout
-        results['meta'][target]['stderr'] = stderr
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = rc
+        results['stdout'] = stdout
+        results['stderr'] = stderr
 
         if rc != 0:
             msg = 'maintenance operation failed on {0}.'.format(target)
@@ -1735,8 +1735,10 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    # Build nim node info
-    build_nim_node(module)
+    # skip build nim node when master_setup is called
+    if action != 'master_setup':
+        # Build nim node info
+        build_nim_node(module)
 
     if action == 'update':
         params['targets'] = targets
