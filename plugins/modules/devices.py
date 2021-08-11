@@ -53,11 +53,11 @@ options:
   state:
     description:
     - Specifies the desired state of the device.
-    - C(available) configures device when its state is 'defined', otherwise it changes the device
+    - C(available) (alias C(present)) configures device when its state is 'defined', otherwise it changes the device
       attributes.
     - C(defined) unconfigures/stops the device when its state is 'available', otherwise it changes
       the device attributes.
-    - C (removed) removes the device definition of unconfigured device in Customized Devices object class
+    - C(removed) (alias C(absent)) removes the device definition of unconfigured device in Customized Devices object class
     type: str
     choices: [ available, defined, removed ]
     default: available
@@ -66,10 +66,13 @@ options:
     - Specifies the change type that is when the change should take place.
     - C(reboot) changes the device at system reboot.
     - C(current) changes the current state of the device temporarily. Not persistent after a reboot.
+      The device will not be reset. (Not all devices supports this feature)
     - C(both) changes both the current state of the device and the device database. Persistent after
-      a reboot.
+      a reboot. The device will not be reset. (Not all devices support this feature)
+    - C(reset) changes both the current state of the device and the device database. Persistent after
+      a reboot. The device will be reset.
     type: str
-    choices: [ reboot, current, both ]
+    choices: [ reboot, current, both, reset ]
     default: both
   parent_device:
     description:
@@ -98,18 +101,62 @@ EXAMPLES = r'''
     device: proc0
     state: available
 
-- name: Modify an attribute of a device
-  devices:
-    device: en1
-    state: available
-    attributes:
-      mtu: 900
-      arp: off
-
 - name: Unconfigure a device
   devices:
     device: proc0
     state: defined
+
+- name: Remove (delete) fcs0 device and children
+  devices:
+    device: fcs0
+    state: removed
+    recursive: 'true'
+
+- name: Put fcs0 device and children in defined state
+  devices:
+    device: fcs0
+    state: defined
+    recursive: 'true'
+
+- name: Put the children of device fcs0 in defined state
+  devices:
+    parent_device: fcs0
+    state: defined
+
+- name: Remove (delete) ent0 device
+  devices:
+    device: ent0
+    state: absent
+    recursive: 'true'
+
+- name: Change en0 MTU speed and disable arp
+  devices:
+    device: en0
+    state: available
+    attributes:
+      mtu: 900
+      arp: 'off'
+
+- name: Configure the IP address, netmask and bring en0 up
+  devices:
+    device: en0
+    state: available
+    attributes:
+      netaddr: 192.168.0.1
+      netmask: 255.255.255.0
+      state: 'up'
+
+- name: Modify Crypt0 device max_requests (Crypt0 does not support changes while available)
+  devices:
+    device: Crypt0
+    attributes:
+      max_requests:32
+    chtype: 'reset'
+
+- name: Discover new devices (configure all devices)
+  devices:
+    device: "all"
+    state: available
 '''
 
 RETURN = r'''
@@ -133,6 +180,7 @@ stderr:
 
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
 
 def get_device_state(module, device):
     """
@@ -162,6 +210,34 @@ def get_device_state(module, device):
     return None
 
 
+def get_device_attributes(module, device):
+    """
+    Fetches the current attributes from a device.
+    param name: device name
+    return: standard output of lsatter -El <device> command.
+    """
+    global results
+
+    results = dict(
+        changed=False,
+        msg='',
+        stdout='',
+        stderr='',
+    )
+
+    cmd = "lsattr -El  %s" % device
+    rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = cmd
+    results['rc'] = rc
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        results['msg'] = "Failed to fetch attributes from device %s. \
+                        Command '%s' failed." % (device, cmd)
+        module.fail_json(**results)
+    return stdout
+
+
 def chdev(module, device):
     """
     Changes the attributes of the device.
@@ -174,6 +250,10 @@ def chdev(module, device):
     force = module.params["force"]
     chtype = module.params["chtype"]
     parent_device = module.params["parent_device"]
+
+    ''' get initial properties of the device before
+    attempting to modfiy it. '''
+    init_props = get_device_attributes(module, device)
 
     opts = ""
 
@@ -197,6 +277,7 @@ def chdev(module, device):
             "both": '-U ',
             "current": '-T ',
             "reboot": '-P ',
+            "reset": '',
         }
 
         opts += chtype_opt[chtype]
@@ -207,20 +288,37 @@ def chdev(module, device):
             msg = "Modification of Device attributes failed for device '%s'. cmd - '%s'" % (device, cmd)
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
-    msg = "Modification of Device attributes completed for device '%s'" % device
-    return True, msg
+
+    if init_props != get_device_attributes(module, device):
+        msg = "Modification of Device attributes completed for device '%s'" % device
+        rc = True
+    else:
+        msg = "Nothing was modified for device '%s'" % device
+        rc = False
+
+    return rc, msg
 
 
 def cfgdev(module, device):
     """
-    Configure the device.
+    Configure the device or discover all devices (device=all)
     param module: Ansible module argument spec.
     param device: device name.
     return: changed - True/False(device state modified or not),
             msg - message
     """
+    current_state = 'None'
     cmd = "cfgmgr "
     if device != 'all':
+        current_state = get_device_state(module, device)
+        if current_state is True:
+            msg = "Device %s is already in Available state." % device
+            return False, msg
+
+        if current_state is None:
+              msg = "Device %s does not exist." % device
+              module.fail_json(msg=msg)
+
         cmd += "-l %s " % device
 
     rc, out, err = module.run_command(cmd)
@@ -247,13 +345,27 @@ def rmdev(module, device, state):
     force = module.params["force"]
     recursive = module.params["recursive"]
     rmtype = module.params["rmtype"]
+    current_state = None
+    opts = ""
+
+    if device != 'all':
+        current_state = get_device_state(module, device)
+        if current_state is None:
+            msg = "Device %s does not exist." % device
+            return False, msg
+
+    if force:
+        opts += "-g "
+    if recursive:
+        opts += "-R "
 
     if state == 'removed':
         if device == 'all' or device == 'none':
             msg = "Please provide the name of the device."
             module.fail_json(msg=msg)
         else:
-            opts = "-d -l %s" % device
+
+            opts += "-d -l %s" % device
             cmd = "rmdev %s" % opts
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
@@ -266,12 +378,13 @@ def rmdev(module, device, state):
     if device == 'all':
         device = None
 
-    opts = ""
+    # If the device is already defined, do nothing.
+    if device is not None:
+      if ( state == 'defined' ) and ( current_state == False):
+          msg = "Device %s is already in defined state." % device
+          return False, msg
 
-    if force:
-        opts += "-g "
-    if recursive:
-        opts += "-R "
+
 
     rmtype_opt = {
         "unconfigure": '',
@@ -310,50 +423,36 @@ def main():
             device=dict(type='str', default='all'),
             force=dict(type='bool', default=False),
             recursive=dict(type='bool', default=False),
-            state=dict(type='str', default='available', choices=['available', 'defined', 'removed']),
-            chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both']),
+            state=dict(type='str', default='available', choices=['available', 'defined', 'removed', 'present', 'absent']),
+            chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both', 'reset']),
             parent_device=dict(type='str'),
             rmtype=dict(type='str', default='unconfigure', choices=['unconfigure', 'stop']),
         ),
     )
 
-    current_state = None
+    changed = False
     device = module.params["device"]
     state = module.params["state"]
+    if state == 'present':
+       state = 'available'
+    if state == 'absent':
+      state = 'removed'
 
-    if device != 'all':
-        current_state = get_device_state(module, device)
-        if current_state is None:
-            msg = "Device %s does not exist." % device
-            module.fail_json(msg=msg)
+    attributes = module.params["attributes"]
+    msg = ""
 
-    if (state == 'available' and current_state) or (state == 'defined' and current_state is False):
-        # Modify Device
+
+    if attributes:
+        # Modify Device attributes.
         changed, msg = chdev(module, device)
 
     elif state == 'available':
         # Configure Device
         changed, msg = cfgdev(module, device)
 
-    elif state == 'defined':
-        # Move the device from 'available' to 'defined' state
-        if module.params["parent_device"] is None:
-            if device == 'all':
-                msg = "Device to be removed is not specified."
-                module.fail_json(msg=msg)
 
-            if current_state is None:
-                msg = "Device %s does not exist." % device
-                module.fail_json(msg=msg)
-
-            if current_state is False:
-                msg = "Device %s is already in defined state." % device
-                module.fail_json(msg=msg)
-
-        changed, msg = rmdev(module, device, state)
-
-    elif state == 'removed':
-        # removes the device definition in Customized Devices object class
+    elif ( state == 'defined' ) or ( state == 'removed' ):
+        # Move the device from 'available' to 'defined' state or delete the device
         changed, msg = rmdev(module, device, state)
 
     else:
