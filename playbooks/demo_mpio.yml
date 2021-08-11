@@ -1,0 +1,22 @@
+---
+- name: "Print the mpio related information"
+  hosts: quimby05
+  gather_facts: yes
+  vars:
+    log_file: "/tmp/ansible_mpio_debug.log"
+
+  tasks:
+    - name: "Gather the mpio info"
+      mpio:
+
+    - name: "Gather specific device  mpio info"
+      mpio:
+        device: "IBMSVC"
+
+    - name: "Gather specific absent device  mpio info"
+      mpio:
+        device: "ansibleNegativeTest"
+
+    - name: Print the paths
+      debug:
+        var: ansible_facts.mpio.paths
