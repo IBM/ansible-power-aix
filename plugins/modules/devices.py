@@ -59,7 +59,7 @@ options:
       the device attributes.
     - C(removed) (alias C(absent)) removes the device definition of unconfigured device in Customized Devices object class
     type: str
-    choices: [ available, defined, removed ]
+    choices: [ available, defined, removed, present, absent ]
     default: available
   chtype:
     description:
@@ -182,6 +182,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 results = None
 
+
 def get_device_state(module, device):
     """
     Determines the current state of device.
@@ -288,7 +289,6 @@ def chdev(module, device):
             msg = "Modification of Device attributes failed for device '%s'. cmd - '%s'" % (device, cmd)
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
-
     if init_props != get_device_attributes(module, device):
         msg = "Modification of Device attributes completed for device '%s'" % device
         rc = True
@@ -316,8 +316,8 @@ def cfgdev(module, device):
             return False, msg
 
         if current_state is None:
-              msg = "Device %s does not exist." % device
-              module.fail_json(msg=msg)
+            msg = "Device %s does not exist." % device
+            module.fail_json(msg=msg)
 
         cmd += "-l %s " % device
 
@@ -380,11 +380,9 @@ def rmdev(module, device, state):
 
     # If the device is already defined, do nothing.
     if device is not None:
-      if ( state == 'defined' ) and ( current_state == False):
-          msg = "Device %s is already in defined state." % device
-          return False, msg
-
-
+        if (state == 'defined') and (current_state is False):
+            msg = "Device %s is already in defined state." % device
+            return False, msg
 
     rmtype_opt = {
         "unconfigure": '',
@@ -434,13 +432,12 @@ def main():
     device = module.params["device"]
     state = module.params["state"]
     if state == 'present':
-       state = 'available'
+        state = 'available'
     if state == 'absent':
-      state = 'removed'
+        state = 'removed'
 
     attributes = module.params["attributes"]
     msg = ""
-
 
     if attributes:
         # Modify Device attributes.
@@ -450,14 +447,13 @@ def main():
         # Configure Device
         changed, msg = cfgdev(module, device)
 
-
-    elif ( state == 'defined' ) or ( state == 'removed' ):
+    elif (state == 'defined') or (state == 'removed'):
         # Move the device from 'available' to 'defined' state or delete the device
         changed, msg = rmdev(module, device, state)
 
     else:
         changed = False
-        msg = "Invalid state '%s'" % current_state
+        msg = "Invalid state '%s'" % state
 
     module.exit_json(changed=changed, msg=msg)
 
