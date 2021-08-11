@@ -8,4 +8,6 @@
   tasks:
     - name: "LPAR information"
       lpar_facts:
-
+    - name: Print the LPAR related information
+      debug:
+        var: ansible_facts.lpar
