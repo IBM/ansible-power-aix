@@ -393,14 +393,15 @@ def mksysb(module, params):
         pattern = r"0512-054"
         found = re.search(pattern, results['stdout'])
         if found:
-            module.log('Backup file "{0}" does not exist or empty proceed to savevg.'.format(params['location']))
+            module.log('Backup file "{0}" does not exist or empty proceed to mksysb.'.format(params['location']))
         elif rc == 0:
             vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
-                results['msg'] = 'Backup images for {0} already exists.'.format(vg)
+                results['msg'] = 'Backup images for {0} already exists. User force to overwrite'.format(vg)
                 return 0
             else:
-                results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
+                results['msg'] = 'Backup images already exists for {0} volume group '.format(vg_name)
+                results['msg'] += 'on the specified location, {0}. Use force to overwrite.'.format(params['location'])
                 return 1
         else:
             results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)
@@ -591,10 +592,11 @@ def savevg(module, params, vg):
         elif rc == 0:
             vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
-                results['msg'] = 'Backup images for {0} already exists.'.format(vg)
+                results['msg'] = 'Backup images for {0} already exists. Use force to overwrite'.format(vg)
                 return 0
             else:
-                results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
+                results['msg'] = 'Backup images already exists for {0} volume group '.format(vg_name)
+                results['msg'] += 'on the specified location, {0}. Use force to overwrite.'.format(params['location'])
                 return 1
         else:
             results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)

@@ -1,10 +1,16 @@
 ---
 - name: "Backup operations on datavg using savevg and restvg for AIX"
-  hosts: all
+  hosts: ansible-test1
+  remote_user: root
   gather_facts: no
   vars:
     type_v:                 "savevg"
     vg_name_v:              "datavg"
+    lv_name_v:              "testlv"
+    lv_size_v:              5
+    lv_type_v:              "jfs2"
+    mnt_pt_v:               "/tmp/testfs"
+    fs_type_v:              "jfs2"
     disk_name_v:            "hdisk1"
     location_v:             "/tmp/datavg_backup"
     exclude_data_v:         False
@@ -19,6 +25,40 @@
     restvg_flags_v:         "-n"                    # ignore existing MAP files
 
   tasks:
+  - name: create volume group
+    lvg:
+      state: present
+      vg_name: "{{ vg_name_v }}"
+      pvs: "{{ disk_name_v }}"
+
+  - name: create logical volume
+    lvol:
+      state: present
+      lv: "{{ lv_name_v }}"
+      lv_type: "{{ lv_type_v }}"
+      vg: "{{ vg_name_v }}"
+      size: "{{ lv_size_v }}"
+
+
+  - name: create filesystem
+    filesystem:
+      state: present
+      filesystem: "{{ mnt_pt_v }}"
+      fs_type: "{{ lv_type_v }}"
+      device: "{{ lv_name_v }}"
+      
+  - name: mount filesystem
+    mount:
+      state: mount
+      mount_dir: "{{ mnt_pt_v }}"
+
+  - name: check if file exists
+    shell: ls "{{ mnt_pt_v }}"/newfile || echo "create file"
+    register: output
+
+  - name: create files in filesystem
+    shell: touch "{{ mnt_pt_v }}"/newfile
+    when: "'create file' in output.stdout"
 
   - name: savevg to create a vg backup image
     backup:
@@ -31,9 +71,19 @@
       extend_fs: "{{ extend_fs_v }}"
       force: "{{ force_v }}"
       verbose: "{{ verbose_v }}"
+    register: results
+  - debug: var=results
+
+  - name: unmount filesystem
+    mount:
+      state: umount
+      mount_dir: "{{ mnt_pt_v }}"
 
   - name: remove the volume group
-    command: reducevg -d -f "{{ vg_name_v }}" "{{ disk_name_v }}"
+    lvg:
+      state: absent
+      vg_name: "{{ vg_name_v }}"
+      delete_lvs: yes
 
   - name: restvg to view the backup image information
     backup:
@@ -46,7 +96,7 @@
   - name: mv original vgname.data file
     command: mv "{{ data_file_orig_v }}" "{{ data_file_v }}"
 
-  - name: restvg to retore the backup image
+  - name: restvg to restore the backup image
     backup:
       action: restore
       type: "{{ type_v }}"
@@ -56,4 +106,3 @@
       exclude_data: "{{ exclude_data_v }}"
       minimize_lv_size: "{{ minimize_lv_size_v }}"
       flags: "{{ restvg_flags_v }}"
- 
