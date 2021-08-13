@@ -96,10 +96,12 @@ notes:
 EXAMPLES = r'''
 - name: Perform an alternate disk copy of the rootvg to hdisk1
   alt_disk:
+    action: copy
     targets: hdisk1
 
 - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
   alt_disk:
+    action: copy
     disk_size_policy: minimize
 
 - name: Perform a cleanup of any existing alternate disk copy
@@ -465,6 +467,8 @@ def alt_disk_copy(module, params, hdisks):
         cmd += ['-R', params['resolvconf']]
 
     ret, stdout, stderr = module.run_command(cmd)
+    results['rc'] = ret
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
 
@@ -503,6 +507,7 @@ def alt_disk_clean(module, hdisks):
                 hdisks.append(pv)
         if not hdisks:
             # Do not fail if there is no altinst_rootvg to preserve idempotency
+            results['msg'] += "There is no alternate install rootvg. "
             return
 
     # First remove the alternate VG
@@ -510,9 +515,11 @@ def alt_disk_clean(module, hdisks):
 
     cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'altinst_rootvg']
     ret, stdout, stderr = module.run_command(cmd)
-
+    results['rc'] = ret
+    results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
     results['stderr'] = stderr
+
     if ret != 0:
         results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
@@ -576,7 +583,7 @@ def main():
     else:
         alt_disk_clean(module, targets)
 
-    results['msg'] = 'alt_disk {0} operation completed successfully'.format(action)
+    results['msg'] += 'alt_disk {0} operation completed successfully'.format(action)
     module.exit_json(**results)
 
 
