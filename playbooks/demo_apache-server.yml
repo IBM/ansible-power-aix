@@ -1,9 +1,11 @@
 ---
-- name: "Bootstrap Yum on AIX"
+- name: Bootstrap Yum on AIX, Install the Apache HTTP server using yum
   hosts: apache
   gather_facts: no
+
   collections:
   - ibm.power_aix
+
   tasks:
 
 # CHECK for Yum on inventory host
@@ -14,16 +16,9 @@
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
 
-
-- name: "Install the Apache HTTP server using yum"
-  hosts: apache
-  gather_facts: no
-  collections:
-  - ibm.power_aix
-
   tasks:
   - name: "Create large enabled file system"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /RPMS
       attributes: size=4G
       state: present
@@ -34,13 +29,13 @@
       mount_dir: /RPMS
 
   - name: "Add space for /opt (+375M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /opt
       attributes: size=+375M
       state: present
 
   - name: "Add space for /var (+10M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /var
       attributes: size=+10M
       state: present
@@ -71,14 +66,14 @@
     register: httpd_exists
 
   - name: "Add space for /opt (+35M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /opt
       attributes: size=+35M
       state: present
     when: httpd_exists.stdout is search("false")
 
   - name: "Add space for /var (+15M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /var
       attributes: size=+15M
       state: present
