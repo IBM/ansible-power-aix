@@ -252,7 +252,7 @@ def get_nim_info(obj_name):
     Input: (str) NIM object name to look for
     Output:(str) hash with NIM info, the associated value can be a list
     """
-    info = {0}
+    info = {}
 
     cmd = ['/usr/sbin/lsnim', '-l', obj_name]
     (rc, output, errout) = exec_cmd(cmd)
