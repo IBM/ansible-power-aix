@@ -3,5 +3,19 @@ The [IBM Power Systems AIX](../../README.md) collection provides an [Ansible rol
 
 For guides and reference, see the [Docs Site](https://ibm.github.io/ansible-power-aix/roles.html).
 
+## Requirements
+
+None.
+## Dependencies
+
+None.
+
+## Example Playbook
+
+    - hosts: nimmaster
+      gather_facts: no
+      include_role:
+        name: power_aix_vioshc
+
 ## Copyright
 © Copyright IBM Corporation 2020
