@@ -1,0 +1,23 @@
+---
+- name: "VIOS health check information"
+  gather_facts: yes
+  hosts: nimserver
+  
+  vars:
+  #VIOSes to do health check.
+    targets_v: 
+      - "vios1"
+      - "vios2"
+     
+  tasks:  
+  
+  #gather the vios health check data    
+  - name: Gather the health check information
+    register: result
+    nim_vios_hc:
+       targets: "{{ targets_v }}"
+       action: health_check
+          
+  - name: Print the health check output
+    debug:
+         var=result
