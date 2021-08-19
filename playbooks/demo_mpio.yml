@@ -7,14 +7,14 @@
 
   tasks:
     - name: "Gather the mpio info"
-      mpio:
+      ibm.power_aix.mpio:
 
     - name: "Gather specific device  mpio info"
-      mpio:
+      ibm.power_aix.mpio:
         device: "IBMSVC"
 
     - name: "Gather specific absent device  mpio info"
-      mpio:
+      ibm.power_aix.mpio:
         device: "ansibleNegativeTest"
 
     - name: Print the paths
