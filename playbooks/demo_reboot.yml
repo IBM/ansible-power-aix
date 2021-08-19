@@ -7,10 +7,10 @@
 
   tasks:
     - name: "reboot the machine without any delay"
-      reboot:
+      ibm.power_aix.reboot:
       
     - name: "reboot the machine with delay"
-      reboot:
+      ibm.power_aix.reboot:
         pre_reboot_delay: 20
         post_reboot_delay: 20
       register: reboot_result
