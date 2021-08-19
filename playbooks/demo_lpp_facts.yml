@@ -7,7 +7,7 @@
 
   tasks:
     - name: "Gather the fileset facts"
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
 
     - name: Check whether a fileset called 'openssh.base.client' is installed
       debug:
@@ -20,16 +20,16 @@
       when: "'test.base.xyz' in ansible_facts.filesets"
 
     - name: "Gather the fileset facts"
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
         filesets: openssh.base.client
 
     - name: "Gather the fileset facts"
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
         filesets: test.base.xyz
 
     - name: Populate fileset facts with the installation state for the most recent
             level of installed filesets for all of the bos.rte filesets
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
         filesets: bos.rte.*
 
     - name: Print the fileset facts
@@ -38,7 +38,7 @@
 
     - name: Populate fileset facts with the installation state for all the filesets
             contained in the Server bundle
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
         bundle: Server
 
     - name: Print the fileset facts
