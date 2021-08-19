@@ -7,17 +7,17 @@
 
   tasks:
     - name: "Gather all lvm facts"
-      lvm_facts:
+      ibm.power_aix.lvm_facts:
     - name: "Gather VG facts"
-      lvm_facts:
+      ibm.power_aix.lvm_facts:
         name: all
         component: vg
     - name: "Gather LV facts"
-      lvm_facts:
+      ibm.power_aix.lvm_facts:
         name: all
         component: lv
     - name: "Update PV facts to existing LVM facts"
-      lvm_facts:
+      ibm.power_aix.lvm_facts:
         name: all
         component: pv
         lvm: "{{ ansible_facts.LVM }}"
