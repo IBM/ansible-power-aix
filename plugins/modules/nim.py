@@ -1104,7 +1104,7 @@ def nim_maintenance(module, params):
             results['changed'] = True
             results['status'][target] = 'SUCCESS'
 
-        module.log('cmd: {0}'.format(results['cmd']))
+        module.log('cmd: {0}'.format(' '.join(cmd)))
         module.log('rc: {0}'.format(rc))
         module.log('stdout: {0}'.format(stdout))
         module.log('stderr: {0}'.format(stderr))
@@ -1735,8 +1735,10 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    # Build nim node info
-    build_nim_node(module)
+    # skip build nim node when master_setup is called
+    if action != 'master_setup':
+        # Build nim node info
+        build_nim_node(module)
 
     if action == 'update':
         params['targets'] = targets

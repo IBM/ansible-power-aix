@@ -281,6 +281,7 @@ EXAMPLES = r'''
 - name: Restore a savevg image to a different disk on a LPAR
   nim_backup:
     action: restore
+    type: savevg
     targets: nimclient1
     name: nimclient1_savevg
     remove_backup: yes
