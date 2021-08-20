@@ -32,8 +32,8 @@
     nim_updateios:
       action: remove
       targets: "{{ targets_v }}"
-      filesets_v: "{{ rm_filesets_v }}"
-      #installp_bundle_v: "{{ rm_installp_bundle_v }}"
+      filesets: "{{ rm_filesets_v }}"
+      #installp_bundle: "{{ rm_installp_bundle_v }}"
       preview: "{{ preview_v }}"
     register: result
   - debug: var=result

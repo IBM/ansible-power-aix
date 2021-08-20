@@ -172,9 +172,8 @@ EXAMPLES = r'''
     lv_new_name: renamedlv
 - name: Remove the logical volume
   ibm.power_aix.lvol:
-    vg: test1vg
-    lv: test1lv
     state: absent
+    lv: test1lv
 '''
 
 RETURN = r'''
@@ -356,21 +355,21 @@ def extend_lv(module, name, init_props):
         module.fail_json(**result)
     elif plus_sign_used:
         cmd = "extendlv %s %s" % (name, size)
-        success_msg = "\nLogical volume '%s' has been extended by %s." % \
+        success_msg = "\nLogical volume '%s' has been extended by %s. " % \
             (name, module.params['size'])
         lv_run_cmd(module, cmd, success_msg, fail_msg, None)
     elif size != curr_lps_in_lv:
         # calculate how much to extend in order to satisfy 'size'
         size = size - curr_lps_in_lv
         cmd = "extendlv %s %s" % (name, size)
-        success_msg = "\nLogical volume '%s' has been extended to %s." % \
+        success_msg = "\nLogical volume '%s' has been extended to %s. " % \
             (name, module.params['size'])
         lv_run_cmd(module, cmd, success_msg, fail_msg, None)
     elif size == curr_lps_in_lv:
         result['cmd'] = ""
-        result['msg'] += "\nThere is no need to extend the logical volume."
+        result['msg'] += "\nThere is no need to extend the logical volume. "
     else:
-        result['msg'] += "\nIt should NEVER reach this path."
+        result['msg'] += "\nIt should NEVER reach this path. "
         module.fail_json(**result)
 
 
@@ -430,9 +429,6 @@ def modify_lv(module, name, init_props):
         fail_msg = "\nFailed to rename %s into %s. Command '%s' failed." % \
             (name, new_name, cmd)
         lv_run_cmd(module, cmd, success_msg, fail_msg, None)
-
-    if result['msg'] == '':
-        result['msg'] = "No changes were needed on logical volume %s." % name
 
 
 def remove_lv(module, name):
@@ -603,7 +599,13 @@ def main():
             # state to check if something has changed with the lv
             init_props = get_lv_props(module)
             extend_lv(module, name, init_props)
+            # make sure the the new init props is passed to modify_lv
+            # in the case where the logical volume is extended
+            if result['changed']:
+                init_props = get_lv_props(module)
             modify_lv(module, name, init_props)
+            if not result['changed']:
+                result['msg'] += "No changes were needed on logical volume %s." % name
         else:
             create_lv(module, name)
     else:

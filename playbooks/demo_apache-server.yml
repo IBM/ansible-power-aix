@@ -36,13 +36,13 @@
   - name: "Add space for /opt (+375M)"
     ibm.power_aix.filesystem:
       filesystem: /opt
-      attributes: size=+375M
+      attributes: size=+0M
       state: present
 
   - name: "Add space for /var (+10M)"
     ibm.power_aix.filesystem:
       filesystem: /var
-      attributes: size=+10M
+      attributes: size=+0M
       state: present
 
 

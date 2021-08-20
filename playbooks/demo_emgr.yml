@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: no
   vars:
-    install_v:      False
+    install_v:      True
     ifix_package_v: "/usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z"
     ifix_label_v:   "IJ22714s1a"
     ifix_number_v:  ""
@@ -39,7 +39,7 @@
       ifix_package: "{{ ifix_package_v }}"
       working_dir: "{{ work_dir_v }}"
       from_epkg: yes
-      expand_fs: yes
+      extend_fs: yes
       force: "{{ overwrite_v }}"
     register: output
     when: install_v
