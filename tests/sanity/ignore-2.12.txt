@@ -42,5 +42,3 @@ plugins/modules/nim_flrtvc.py pylint:consider-using-with
 plugins/modules/nim_suma.py pylint:consider-using-with
 plugins/modules/nim_viosupgrade.py pylint:consider-using-with
 plugins/modules/suma.py pylint:consider-using-with
-plugins/modules/lvm_facts.py validate-modules:invalid-ansiblemodule-schema
-plugins/modules/lpar_facts.py validate-modules:invalid-ansiblemodule-schema
