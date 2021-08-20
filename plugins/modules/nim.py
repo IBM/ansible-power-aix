@@ -1067,12 +1067,12 @@ def nim_maintenance(module, params):
 
     for target in results['targets']:
         module.log('NIM - perform maintenance operation for client {0}'.format(target))
-        results['meta']['messages'] = {'messages': []}  # first time init
+        results['meta'][target] = {'messages': []}  # first time init
         results['status'][target] = ''  # first time init
 
         if target in results['nim_node']['vios']:
             msg = 'maintenance operation is not supported on VIOS.'
-            results['meta']['messages'].append(msg)
+            results['meta'][target]['messages'].append(msg)
             module.log('NIM - Error: ' + msg)
             results['status'][target] = 'FAILURE'
             continue
@@ -1087,10 +1087,10 @@ def nim_maintenance(module, params):
             cmd = ['/usr/sbin/installp', '-c', 'all']
             rc, stdout, stderr = nim_exec(module, target, cmd)
 
-        results['cmd'] = ' '.join(cmd)
-        results['rc'] = rc
-        results['stdout'] = stdout
-        results['stderr'] = stderr
+        results['meta'][target]['cmd'] = ' '.join(cmd)
+        results['meta'][target]['rc'] = rc
+        results['meta'][target]['stdout'] = stdout
+        results['meta'][target]['stderr'] = stderr
 
         if rc != 0:
             msg = 'maintenance operation failed on {0}.'.format(target)
@@ -1104,7 +1104,7 @@ def nim_maintenance(module, params):
             results['changed'] = True
             results['status'][target] = 'SUCCESS'
 
-        module.log('cmd: {0}'.format(results['cmd']))
+        module.log('cmd: {0}'.format(' '.join(cmd)))
         module.log('rc: {0}'.format(rc))
         module.log('stdout: {0}'.format(stdout))
         module.log('stderr: {0}'.format(stderr))

@@ -456,7 +456,7 @@ def download(module, output, src, dst, resize_fs=True):
         False otherwise
     """
     res = True
-    wget = '/bin/wget'
+    wget = '/opt/freeware/bin/wget'
     if not os.path.isfile(dst):
         module.debug('downloading {0} to {1}...'.format(src, dst))
         if os.path.exists(wget):
