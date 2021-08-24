@@ -75,7 +75,7 @@ example:
 If you would like to see the detailed LICENSE click [here](LICENSE).
 
 ```text
-Copyright:: 2020- IBM, Inc
+Copyright:: 2021- IBM, Inc
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -100,6 +100,11 @@ Authors:
 - Nitish Mishra <nitismis@in.ibm.com>
 - Patrice Jacquin <pjacquin@us.ibm.com>
 - Pascal Oliva <poliva@us.ibm.com>
+- Julia Rebello <julia.rebello@ibm.com>
+- Joseph de Joya <joseph.de.joya@ibm.com>
+- Rae Yang <raeyang@us.ibm.com>
+- Gomathi Mohan <gommohan@in.ibm.com>
+- Pedro V. Torres <pvtorres@us.ibm.com>
 
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new

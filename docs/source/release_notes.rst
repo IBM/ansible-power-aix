@@ -1,9 +1,48 @@
 .. ...........................................................................
-.. © Copyright IBM Corporation 2020                                          .
+.. © Copyright IBM Corporation 2021                                          .
 .. ...........................................................................
 
 Releases
 ========
+
+Version 1.3.0
+-------------
+Notes
+  * Change Ansible support from 2.0 to 2.9.
+  * smtctl: new module to enables/disable simultaneous MultiThreading mode.
+  * backup: Fix idempotency issues. Add new force option to overwrite a backup. Better examples.
+  * alt_disk: fix failure with no free disk available. issue #61.
+  * devices: Fix idempotency issues. Other issues: #59, #98.
+  * emgr: Fix idempotency issues.
+  * filesystem: Fix idempotency issues. Other issues: #76. Other improvements.
+  * lvg: Fix idempotency issues.
+  * lvm_facts: Display volume groups that are deactivated or varied off.
+  * lvol: Fix idempotency issues.Fix the wrong interpretation for attribute size (issue #72). Issue #100.
+  *  - Add strip_size attribute.
+  *  - Allow users to re-size (increase) logical volumes by using +<size><suffix>,
+  *    where suffix can be B/M/K/G or a bigger size value.
+  * nim: Add new attribute boot_client option to prevent nim from rebooting the client.
+  * user: Fix issue #110: modify attributes was not working.
+  * flrtvc: Allows user to specify the protocol (ftp/http) to download fixes(issue #70).
+  * mount: Fix proper checking for remote fs (issue #111)
+  * group: Fix idempotency issues. (issue #69)
+  * reboot: Fix issue #78
+  * Readme: Requirement change to Ansible 2.9 or newer from Ansible 2.0
+
+Availability
+  * `Automation Hub v1.3.0`_
+  * `Galaxy v1.3.0`_
+  * `GitHub v1.3.0`_
+
+.. _Automation Hub v1.3.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.3.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.3.0.tar.gz
+
+.. _GitHub v1.3.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.3.0/ibm-power_aix-1.3.0.tar.gz
+
 
 Version 1.2.1
 -------------
