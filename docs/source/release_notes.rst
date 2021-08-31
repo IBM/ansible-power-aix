@@ -5,6 +5,28 @@
 Releases
 ========
 
+
+Version 1.3.1
+-------------
+Notes
+  * Fix issue #145: user module with non string attributes fails.
+  * Fixes to pass sanity checks on Ansible minimum required version.
+
+Availability
+  * `Automation Hub v1.3.1`_
+  * `Galaxy v1.3.1`_
+  * `GitHub v1.3.1`_
+
+.. _Automation Hub v1.3.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.3.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.3.1.tar.gz
+
+.. _GitHub v1.3.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.3.1/ibm-power_aix-1.3.1.tar.gz
+
+
 Version 1.3.0
 -------------
 Notes
@@ -21,7 +43,7 @@ Notes
   *  - Add strip_size attribute.
   *  - Allow users to re-size (increase) logical volumes by using +<size><suffix>,
   *    where suffix can be B/M/K/G or a bigger size value.
-  * nim: Add new attribute boot_client option to prevent nim from rebooting the client.
+  * nim: Add new attribute boot_client option to prevent nim from rebooting the client. Other fixes
   * user: Fix issue #110: modify attributes was not working.
   * flrtvc: Allows user to specify the protocol (ftp/http) to download fixes(issue #70).
   * mount: Fix proper checking for remote fs (issue #111)
