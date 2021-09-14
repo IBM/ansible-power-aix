@@ -189,9 +189,10 @@ def is_mount_group_mounted(module, mount_group):
         point of the FS and the values are boolean values.
         True if the mount point is mounted, else False.
     """
+    global result
 
     # Fetch all FS in the mount_group
-    cmd = "lsfs -u %s" % mount_group
+    cmd = "/usr/sbin/lsfs -u %s" % mount_group
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
@@ -213,7 +214,7 @@ def is_mount_group_mounted(module, mount_group):
         mnt_grp_mounted[mnt_pt] = False
 
     # fetch all mounted FS
-    cmd = "df"
+    cmd = "/usr/bin/df"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
@@ -245,52 +246,40 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
     return:
         True - if FS and mounted
         False - if FS and not mounted
-        None - if not FS
     """
     global result
 
     if mount_over_dir:
         # when mounting NFS, make sure we check for the NFS
-        # client mount point
-        cmd = "lsfs -l %s" % mount_over_dir
+        fs_name = mount_over_dir
     elif mount_dir:
-        cmd = "lsfs -l %s" % mount_dir
+        fs_name = mount_dir
     else:
         # should not happen
         result['msg'] = "Unexpected module FAILURE: one of the following is missing: "
         result['msg'] += ','.join(['mount_dir', 'mount_over_dir'])
         module.fail_json(**result)
 
+    cmd = "/usr/bin/df"
     rc, stdout, stderr = module.run_command(cmd)
-
     if rc != 0:
-        return None
+        result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
+        result['cmd'] = cmd
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
+        module.fail_json(**result)
 
-    if rc == 0:
-        # Get the fs_name of the Filesystem
-        # check if it is listed in the first column of df command
-        ln = stdout.splitlines()[1]
-        fs_name = ln.split()[0]
-        cmd = "df"
-        rc, stdout, stderr = module.run_command(cmd)
-        if rc != 0:
-            result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
-            result['cmd'] = cmd
-            result['rc'] = rc
-            result['stdout'] = stdout
-            result['stderr'] = stderr
-            module.fail_json(**result)
+    fdirs = []
+    if stdout:
+        for ln in stdout.splitlines()[1:]:
+            fdirs.append(ln.split()[-1])
+    for fdir in fdirs:
+        found = re.search(fs_name, fdir)
+        if found:
+            return True
 
-        fdirs = []
-        if stdout:
-            for ln in stdout.splitlines()[1:]:
-                fdirs.append(ln.split()[0])
-        for fdir in fdirs:
-            found = re.search(fs_name, fdir)
-            if found:
-                return True
-
-        return False
+    return False
 
 
 def fs_list(module):
@@ -304,7 +293,7 @@ def fs_list(module):
         none
     """
     global result
-    cmd = "mount"
+    cmd = "/usr/sbin/mount"
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
     result['rc'] = rc
@@ -330,7 +319,7 @@ def mount(module):
     """
     global result
 
-    cmd = "mount "
+    cmd = "/usr/sbin/mount "
     alternate_fs = module.params['alternate_fs']
     if alternate_fs:
         cmd += "-F %s " % alternate_fs
@@ -425,7 +414,7 @@ def umount(module):
     node = module.params['node']
     force = module.params['force']
 
-    cmd = "umount "
+    cmd = "/usr/sbin/umount "
     if force:
         cmd += "-f "
     if mount_all == 'remote':

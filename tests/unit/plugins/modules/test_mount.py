@@ -188,55 +188,11 @@ class TestIsFSPathMounted(unittest.TestCase):
         pattern = r"Unexpected module FAILURE: one of the following is missing"
         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_is_none_mount_dir(self):
-        self.module.params["mount_dir"] = "/tmp/testfs"
-        self.mount_dir = self.module.params["mount_dir"]
-        (rc, stdout, stderr) = (1, "sample stdout", "sample stderr")
-        self.module.run_command.return_value = (rc, stdout, stderr)
-        self.assertIsNone(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
-        )
-        
-    def test_is_none_mount_over_dir(self):
-        self.module.params["mount_over_dir"] = "/tmp/testfs"
-        self.mount_over_dir = self.module.params["mount_over_dir"]
-        (rc, stdout, stderr) = (1, "sample stdout", "sample stderr")
-        self.module.run_command.return_value = (rc, stdout, stderr)
-        self.assertIsNone(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
-        )
-
-    def test_fail_fetching_mounted_fs_list(self):
-        self.module.params["mount_dir"] = "/tmp/testfs"
-        self.mount_dir = self.module.params["mount_dir"]
-        self.module.run_command.side_effect = [
-            (0, self.lsfs_output2, "sample stderr"),
-            (1, "sample stdout", "sample stderr")
-        ]
-        with self.assertRaises(AnsibleFailJson) as result:
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
-        result = result.exception.args[0]
-        self.assertTrue(result['failed'])
-        pattern = r"Failed to get the filesystem name"
-        self.assertRegexpMatches(result['msg'], pattern)
-
     def test_true_fs_mounted(self):
         self.module.params["mount_dir"] = "/tmp/testfs"
         self.mount_dir = self.module.params["mount_dir"]
         self.module.run_command.side_effect = [
-            (0, self.lsfs_output2, "sample stderr"),
             (0, self.df_output1, "sample stderr")
-        ]
-        self.assertTrue(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
-        )
-
-    def test_true_nfs_mounted(self):
-        self.module.params["mount_dir"] = "/tmp/clientnfs"
-        self.mount_dir = self.module.params["mount_dir"]
-        self.module.run_command.side_effect = [
-            (0, self.lsfs_output3, "sample stderr"),
-            (0, self.df_output2, "sample stderr")
         ]
         self.assertTrue(
             mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
