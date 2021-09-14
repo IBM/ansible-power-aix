@@ -226,24 +226,45 @@ class TestModifyLV(unittest.TestCase):
         self.module = mock.Mock()
         self.module.params = params
         self.module.fail_json = fail_json
+        self.module.exit_json = exit_json
         rc, stdout, stderr = (0, "sample stdout", "sample stderr")
         self.module.run_command.return_value = (rc, stdout, stderr)
         # mocked functions path
         self.get_lv_props_path = rootdir + "lvol.get_lv_props"
+        self.ansible_module_path = rootdir + "lvol.AnsibleModule"
+        self.lv_exists_path = rootdir + "lvol.lv_exists"
         # load sample output
         with open(lslv_output_path1, "r") as f:
             self.lslv_output1 = f.read().strip()
         with open(lslv_output_path2, "r") as f:
             self.lslv_output2 = f.read().strip()
+        with open(lquerylv_output_path1, "r") as f:
+            self.lquerylv_output1 = f.read().strip()
 
     def test_all_lv_props_no_change(self):
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+        rc, stdout, stderr = (0, self.lquerylv_output1, "sample stderr")
+        self.module.run_command.return_value = (rc, stdout, stderr)
+        self.module.params['size'] = "10"
+        with mock.patch(self.ansible_module_path) as mocked_ansible_module, \
+                mock.patch(self.get_lv_props_path) as mocked_get_lv_props, \
+                mock.patch(self.lv_exists_path) as mocked_lv_exists:
             mocked_get_lv_props.return_value = self.lslv_output1
-            lvol.modify_lv(self.module, self.name, self.lslv_output1)
-            result = copy.deepcopy(lvol.result)
-        self.assertFalse(result['changed'])
-        pattern = "No changes were needed"
-        self.assertRegexpMatches(result['msg'], pattern)
+            mocked_ansible_module.return_value = self.module
+            mocked_lv_exists.return_value = True
+            with self.assertRaises(AnsibleExitJson) as result:
+                lvol.main()
+            result = result.exception.args[0]
+            self.assertFalse(result['changed'])
+            pattern = "No changes were needed"
+            self.assertRegexpMatches(result['msg'], pattern)
+
+        # with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+        #     mocked_get_lv_props.return_value = self.lslv_output1
+        #     lvol.modify_lv(self.module, self.name, self.lslv_output1)
+        #     result = copy.deepcopy(lvol.result)
+        # self.assertFalse(result['changed'])
+        # pattern = "No changes were needed"
+        # self.assertRegexpMatches(result['msg'], pattern)
 
     def test_fail_modify_lv(self):
         rc, stdout, stderr = (1, "sample stdout", "sample stderr")

@@ -1,4 +1,4 @@
-# Copyright (c) IBM Corporation 2020
+# Copyright (c) IBM Corporation 2021
 
 # IBM collection namespace
 namespace: ibm
@@ -7,7 +7,7 @@ namespace: ibm
 name: power_aix
 
 # The version of the collection.
-version: 1.2.1
+version: 1.3.1
 
 # Collection README file (relative to root path)
 readme: README.md

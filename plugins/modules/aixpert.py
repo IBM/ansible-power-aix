@@ -121,6 +121,7 @@ stderr:
 
 from ansible.module_utils.basic import AnsibleModule
 import os
+import re
 
 
 def check_settings(module):
@@ -207,6 +208,14 @@ def apply_settings(module, mode):
     if rc != 0:
         msg = "Unable to apply or save aixpert settings. Command in failure '%s' " % cmd
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+
+    # The aixpert can fail if file path is invalid  but still return 0"
+    # setFilePosition():fopen(/home/test123321/norm.xml)  failed, errno=2
+    pattern = "errno=2"
+    found = re.search(pattern, stderr)
+    if found:
+        msg = "Unable to access the file from command: '%s' " % cmd
+        module.fail_json(msg=msg, rc=1, stdout=stdout, stderr=stderr)
 
     changed = True
     msg = "aixpert settings applied/saved successfully."

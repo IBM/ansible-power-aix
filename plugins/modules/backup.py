@@ -186,7 +186,7 @@ options:
     default: no
   extend_fs:
     description:
-    - Specifies to extend the filesystem if needed.
+    - Specifies to extend the '/tmp' filesystem if needed.
     - Can be used if I(action=create).
     type: bool
     default: no
@@ -238,12 +238,12 @@ EXAMPLES = r'''
     disk: /dev/hdisk1
     flags: '-K'
 
-- name: savevg of rootvg to /dev/hdisk1
+- name: savevg of rootvg to /dev/rmt1
   backup:
     action: create
     type: savevg
     name: rootvg
-    location: /dav/rmt1
+    location: /dev/rmt1
     exclude_data: no
     exclude_files: no
     exclude_fs: /tmp/exclude_fs_list
@@ -251,7 +251,7 @@ EXAMPLES = r'''
     extend_fs: yes
     verbose: yes
 
-- name: savevg of datavg structure to /dev/hdisk2
+- name: savevg of datavg structure to /dev/backup_datavg
   backup:
     action: create
     type: savevg
@@ -333,6 +333,7 @@ rc:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def check_vg(module, vg):
@@ -381,6 +382,30 @@ def mksysb(module, params):
     """
     global results
     module.log('Creating OS backup with mksysb.')
+
+    # Check if the backup image already exists
+    if not params['force']:
+        vg = "rootvg"
+        rc = lsmksysb(module, params)
+        # check if there is an existing backup specified by 'location' parameter
+        # if there is not existing backup at 'location' then proceed to creation of backup
+        # 0512-054 listvgbackup: File /tmp/testvg_backup does not exist or is empty.
+        pattern = r"0512-054"
+        found = re.search(pattern, results['stdout'])
+        if found:
+            module.log('Backup file "{0}" does not exist or empty proceed to mksysb.'.format(params['location']))
+        elif rc == 0:
+            vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
+            if vg_name == vg:
+                results['msg'] = 'Backup images for {0} already exists. User force to overwrite'.format(vg)
+                return 0
+            else:
+                results['msg'] = 'Backup images already exists for {0} volume group '.format(vg_name)
+                results['msg'] += 'on the specified location, {0}. Use force to overwrite.'.format(params['location'])
+                return 1
+        else:
+            results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)
+            return rc
 
     # mksysb  device | file
     # [ -e ]          Excludes files specified in the /etc/exclude.vgname file from being backed up.
@@ -476,7 +501,7 @@ def alt_disk_mksysb(module, params):
     if len(params['disk']) == 1:
         cmd += ['-d', params['disk'][0]]
     else:
-        cmd += ['-d', '"{0}"'.format(' '.join(params['disk']))]
+        cmd += ['-d', '{0}'.format(' '.join(params['disk']))]
     if params['script']:
         cmd += ['-s', params['script']]
     if params['resolv_conf']:
@@ -557,13 +582,21 @@ def savevg(module, params, vg):
     # Check if the backup image already exists
     if not params['force']:
         rc = restvg_view(module, params)
-        if rc == 0:
+        # check if there is an existing backup specified by 'location' parameter
+        # if there is not existing backup at 'location' then proceed to creation of backup
+        # 0512-054 listvgbackup: File /tmp/testvg_backup does not exist or is empty.
+        pattern = r"0512-054"
+        found = re.search(pattern, results['stdout'])
+        if found:
+            module.log('Backup file "{0}" does not exist or empty proceed to savevg.'.format(params['location']))
+        elif rc == 0:
             vg_name = [s for s in results['stdout'].splitlines() if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
-                results['msg'] = 'Backup images for {0} already exists.'.format(vg)
+                results['msg'] = 'Backup images for {0} already exists. Use force to overwrite'.format(vg)
                 return 0
             else:
-                results['msg'] = 'Backup images already exists for {0} volume group. Use force to overwrite.'.format(vg_name)
+                results['msg'] = 'Backup images already exists for {0} volume group '.format(vg_name)
+                results['msg'] += 'on the specified location, {0}. Use force to overwrite.'.format(params['location'])
                 return 1
         else:
             results['msg'] = 'Cannot check {0} backup image existence.'.format(vg)
@@ -634,6 +667,7 @@ def restvg(module, params, action, disk):
         rc       (int): the return code of the command
     """
     global results
+
     module.log('VG backup {0} on {1} with restvg.'.format(action, disk))
 
     # restvg [DiskName]
@@ -769,6 +803,7 @@ def main():
         params['exclude_fs'] = module.params['exclude_fs']
         params['exclude_files'] = module.params['exclude_files']
         params['extend_fs'] = module.params['extend_fs']
+        params['force'] = module.params['force']
 
         if params['objtype'] == 'mksysb':
             params['exclude_packing_files'] = module.params['exclude_packing_files']
@@ -778,7 +813,6 @@ def main():
         elif params['objtype'] == 'savevg':
             params['name'] = module.params['name']
             params['exclude_data'] = module.params['exclude_data']
-            params['force'] = module.params['force']
 
             if not params['name']:
                 results['msg'] = 'Missing parameter: action is {0} but argument \'name\' is missing.'.format(action)
@@ -819,13 +853,13 @@ def main():
     elif action == 'view':
         params['location'] = module.params['location']
         if params['objtype'] == 'mksysb':
-            rc = restvg_view(module, params)
-        elif params['objtype'] == 'savevg':
             rc = lsmksysb(module, params)
+        elif params['objtype'] == 'savevg':
+            rc = restvg_view(module, params)
 
     if rc == 0:
         if not results['msg']:
-            msg = 'AIX {0} backup operation successfull.'.format(action)
+            msg = 'AIX {0} backup operation successful.'.format(action)
             results['msg'] = msg
         module.log(results['msg'])
         module.exit_json(**results)

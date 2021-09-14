@@ -12,3 +12,11 @@ plugins/modules/nim_flrtvc.py pylint:consider-using-with
 plugins/modules/nim_suma.py pylint:consider-using-with
 plugins/modules/nim_viosupgrade.py pylint:consider-using-with
 plugins/modules/suma.py pylint:consider-using-with
+plugins/modules/flrtvc.py pylint:unspecified-encoding
+plugins/modules/suma.py pylint:unspecified-encoding
+plugins/modules/nim_flrtvc.py pylint:unspecified-encoding
+plugins/modules/nim_suma.py pylint:unspecified-encoding
+plugins/modules/nim_viosupgrade.py pylint:unspecified-encoding
+plugins/modules/lpar_facts.py pylint:use-dict-literal
+plugins/modules/mktun.py pylint:use-dict-literal
+plugins/modules/mount.py pylint:use-dict-literal

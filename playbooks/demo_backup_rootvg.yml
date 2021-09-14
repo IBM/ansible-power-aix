@@ -1,92 +1,128 @@
 ---
 - name: "Backup operations on rootvg using mksysb and alt_disk_mksysb for AIX"
-  hosts: all
-  gather_facts: no
+  hosts: ansible-test1
+  remote_user: root
+  gather_facts: True
   vars:
-    type_v:                     "mksysb"
-    volume_group_v:             "vg00"      # volume group where /ESSAI resides
-    disk_v:                     "hdisk1"    # hdisk1 is part of vg00
-    location_create_v:          "/ESSAI/rootvg_sysb"
-    restore_fs_v:               "/tmp"
-    restore_fs_size_v:          5G
-    location_restore_v:         "/tmp/rootvg_sysb"
-    verbose_v:                  True
-    #data_file_v:                "/tmp/image.data"
-    exclude_files_v:            False
-    exclude_fs_v:               ""
-    extend_fs_v:                True
-    mksysb_flags_v:             "-G"    # Excludes WPAR file systems
-    alt_disk_mksysb_flags_v:    ""
-    exclude_packing_files_v:    False
-    script_v:                   ""
-    resolv_conf_v:              ""
-    phase_v:                    "all"
-    remain_nim_client_v:        True
-    import_vg_v:                False
-    debug_v:                    False
-    bootlist_v:                 True
-
+    type:                     "mksysb"
+    location_create:          "/tmp/backupfs/rootvg_sysb"
+    exclude_fs:               ""
+    extend_fs:                True
+    exclude_files:            False
+    exclude_packing_files:    False
+    verbose:                  True
+    mksysb_flags:             "-G"    # Excludes WPAR file systems
+    force:                    True
+    #data_file:               "/tmp/image.data"
+    alt_disk_mksysb_flags:    ""
+    script:                   ""
+    resolv_conf:              ""
+    phase:                    "all"
+    remain_nim_client:        True
+    import_vg:                False
+    debug:                    False
+    bootlist:                 True
+    vg_name:                  "backupvg"
+    pv_list:                  hdisk1 hdisk2 hdisk3
+    lv_name:                  "backuplv"
+    lv_type:                  "jfs2"
+    lv_size:                  "5G"
+    fs_mnt:                   "/tmp/backupfs"
+    fs_type:                  "jfs2"
+    delete_lvs:               True
+    restore_fs:               "/tmp"
+    restore_fs_size:          "5G"
+    location_restore:         "/tmp/rootvg_sysb"
 
   tasks:
+  - name: "create volume group or backup image"
+    lvg:
+      state: present
+      vg_name: "{{ vg_name }}"
+      pvs: "{{ pv_list }}"
+
+  - name: "create logical volume for backup image"
+    lvol:
+      state: present
+      vg: "{{ vg_name }}"
+      lv: "{{ lv_name }}"
+      lv_type: "{{ lv_type }}"
+      size: "{{ lv_size }}"
+
+  - name: "create filesystem for backup image"
+    filesystem:
+      state: present
+      filesystem: "{{ fs_mnt }}"
+      fs_type: "{{ fs_type }}"
+      device: "{{ lv_name }}"
+
+  - name: "mount filesystem"
+    mount:
+      state: mount
+      mount_dir: "{{ fs_mnt }}"
 
   - name: create a mksysb image of rootvg
     backup:
       action: create
-      type: "{{ type_v }}"
-      location: "{{ location_create_v }}"
-      exclude_fs: "{{ exclude_fs_v }}"
-      exclude_files: "{{ exclude_files_v }}"
-      extend_fs: "{{ extend_fs_v }}"
-      exclude_packing_files: "{{ exclude_packing_files_v }}"
-      verbose: "{{ verbose_v }}"
-      flags: "{{ mksysb_flags_v }}"
-#    register: result
-#  - debug: var=result
+      type: "{{ type }}"
+      location: "{{ location_create }}"
+      # exclude_fs: "{{ exclude_fs }}"
+      exclude_files: "{{ exclude_files }}"
+      extend_fs: "{{ extend_fs }}"
+      exclude_packing_files: "{{ exclude_packing_files }}"
+      # verbose: "{{ verbose }}"
+      flags: "{{ mksysb_flags }}"
+      force: "{{ force }}"
+    register: result
+  - debug: var=result
 
   - name: view the mksysb image
     backup:
       action: view
-      type: "{{ type_v }}"
-      location: "{{ location_create_v }}"
-#    register: result
-#  - debug: var=result
+      type: "{{ type }}"
+      location: "{{ location_create }}"
+    register: result
+  - debug: var=result
 
-#  - name: increase filesystem to move mksysb image
-#    filesystem:
-#      filesystem: "{{ restore_fs_v }}"
-#      state: present
-#      attributes: size="{{ restore_fs_size_v }}"
+  - name: increase filesystem to move mksysb image
+    filesystem:
+      state: present
+      filesystem: "{{ restore_fs }}"
+      attributes: size="{{ restore_fs_size }}"
 
-#  - name: move mksysb image to /tmp
-#    copy:
-#      remote_src: yes
-#      src: "{{ location_create_v }}"
-#      dest: "{{ location_restore_v }}"
+  # ulimit for fsize and data must be unlimited
+  - name: move mksysb image to /tmp
+    copy:
+      remote_src: yes
+      src: "{{ location_create }}"
+      dest: "{{ location_restore }}"
 
-#  - name: unmount the filesystem
-#    filesystem:
-#      state: absent
-#      filesystem: "{{ restore_fs_v }}"
-#      rm_mount_point: yes
+  - name: "unmount the filesystem"
+    mount:
+      state: umount
+      mount_dir: "{{ fs_mnt }}"
 
-#  - name: remove volume group prior to install mksysb
-  # reducevg -d vg00 hdisk1
+  - name: "delete volume group"
+    lvg:
+      state: absent
+      vg_name: "{{ vg_name }}"
+      delete_lvs: "{{ delete_lvs }}"
 
-#  - name: install the mksysb image to disk
-#    backup:
-#      action: restore
-#      type: "{{ type_v }}"
-#      location: "{{ location_restore_v }}"
-#      data_file: "{{ data_file_v }}"
-#      disk: "{{ disk_v }}"
-#      script: "{{ script_v }}"
-#      resolv_conf: "{{ resolv_conf_v }}"
-#      phase: "{{ phase_v }}"
-#      remain_nim_client: "{{ remain_nim_client_v }}"
-#      import_vg: "{{ import_vg_v }}"
-#      debug: "{{ debug_v }}"
-#      bootlist: "{{ bootlist_v }}"
-#      verbose: "{{ verbose_v }}"
-#      flags: "{{ alt_disk_mksysb_flags_v }}"
-#    register: result
-#  - debug: var=result
+  - name: install the mksysb image to disk
+    backup:
+      action: restore
+      type: "{{ type }}"
+      location: "{{ location_restore }}"
+      # data_file: "{{ data_file }}"
+      disk: "{{ pv_list }}"
+      # script: "{{ script }}"
+      # resolv_conf: "{{ resolv_conf }}"
+      phase: "{{ phase }}"
+      remain_nim_client: "{{ remain_nim_client }}"
+      import_vg: "{{ import_vg }}"
+      debug: "{{ debug }}"
+      bootlist: "{{ bootlist }}"
+      # verbose: "{{ verbose }}"
+      # flags: "{{ alt_disk_mksysb_flags }}"
+    register: result
+  - debug: var=result
