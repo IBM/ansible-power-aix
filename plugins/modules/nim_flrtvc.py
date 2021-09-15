@@ -456,10 +456,10 @@ def download(module, output, src, dst, resize_fs=True):
         False otherwise
     """
     res = True
-    wget = '/opt/freeware/bin/wget'
+    wget = module.get_bin_path("wget", required=False, opt_dirs=['/opt/freeware/bin'])
     if not os.path.isfile(dst):
         module.debug('downloading {0} to {1}...'.format(src, dst))
-        if os.path.exists(wget):
+        if wget is not None:
             cmd = [wget, '--no-check-certificate', src, '-P', os.path.dirname(dst)]
             rc, stdout, stderr = module.run_command(cmd)
             if rc == 3:
@@ -474,7 +474,7 @@ def download(module, output, src, dst, resize_fs=True):
                 output['messages'].append(msg)
                 res = False
         else:
-            msg = 'Cannot locate {0}, please install related package.'.format(wget)
+            msg = 'Cannot locate {0}, please install related package.'.format("wget")
             module.log(msg)
             output['messages'].append(msg)
             res = False

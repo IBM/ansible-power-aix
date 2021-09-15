@@ -282,7 +282,7 @@ def get_nim_name(hostname):
     """
     name = ""
 
-    cmd = ['lsnim', '-a', 'if1']
+    cmd = ['/usr/sbin/lsnim', '-a', 'if1']
     (rc, output, errout) = exec_cmd(cmd)
     if rc != 0:
         write('ERROR: Failed to get NIM name for {0}: {1} {2}'
