@@ -1158,7 +1158,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
-            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read())
+            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', str(response))
 
             epkgs = list(set(epkgs))
 
@@ -1207,7 +1207,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
 
     if not epkgs:
         msg = 'Nothing to install'
-        results['satus'][machine] = 'SUCCESS'
+        results['status'][machine] = 'SUCCESS'
         output['messages'].append(msg)
         return True
 
@@ -1243,7 +1243,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
     if not epkgs_base:
         msg = 'Nothing to install, see syslog for details'
         output['messages'].append(msg)
-        results['satus'][machine] = 'FAILURE'
+        results['status'][machine] = 'FAILURE'
         return False
 
     efixes = ' '.join(epkgs_base)
@@ -1261,7 +1261,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
             msg = 'Cannot define NIM lpp_source resource {0} for location \'{1}\''.format(lpp_source, destpath)
             module.log('[WARNING] {0}: {1}'.format(machine, msg))
             output['messages'].append(msg)
-            results['satus'][machine] = 'FAILURE'
+            results['status'][machine] = 'FAILURE'
             return False
 
     # perform customization
@@ -1283,7 +1283,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
             install_ok = True
 
         output.update({'5.install': stdout.splitlines()})
-        results['satus'][machine] = 'SUCCESS'
+        results['status'][machine] = 'SUCCESS'
         results['changed'] = True
     else:
         msg = 'Cannot list NIM resource for \'{0}\''.format(machine)
@@ -1291,7 +1291,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         module.log('[WARNING] cmd:{0} failed rc={1} stdout:{2} stderr:{3}'
                    .format(cmd, rc, stdout, stderr))
         output['messages'].append(msg)
-        results['satus'][machine] = 'FAILURE'
+        results['status'][machine] = 'FAILURE'
 
     # remove lpp source
     cmd = ['/usr/sbin/lsnim', '-l', lpp_source]
