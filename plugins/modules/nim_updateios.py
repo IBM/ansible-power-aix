@@ -541,7 +541,7 @@ def check_vios_targets(module, targets):
             if rc != 0:
                 msg = 'skipping {0}: cannot reach {1} with c_rsh, rc:{2}, stderr:{3}, stdout:{4}'.format(elems, elem, rc, stderr, stdout)
                 module.log('[WARNING] ' + msg)
-                results['meta']['message'].append(msg)
+                results['meta']['messages'].append(msg)
                 error = True
                 continue
 
