@@ -182,7 +182,6 @@ meta:
 
 import re
 import time
-import string
 import socket
 
 from ansible.module_utils.basic import AnsibleModule
