@@ -278,7 +278,7 @@ def change_password(module):
     if change_passwd_on_login:
         cmd = "echo \'{user}:{password}\' | chpasswd -e".format(user=name, password=passwd)
     else:
-        cmd = "echo \'{user}:{password}\' | chpasswd -ec".format(user=name, password=passwd)
+        cmd = "echo \'{user}:{password}\' | chpasswd -e -c".format(user=name, password=passwd)
 
     pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
     if pass_rc != 0:
