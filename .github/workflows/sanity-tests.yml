@@ -74,8 +74,7 @@ jobs:
     - name: install linting test requirements
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8
-        python -m pip install pycodestyle
+        make install-sanity-test-requirements
 
     - name: run pep8 coding style linter
       run: |
