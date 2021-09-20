@@ -79,6 +79,8 @@ install-unit-test-requirements:
 
 .PHONY: lint
 lint:
+	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
+ 	--exclude $(DEPRECATED) --test pylint $(MODULE)
 	flake8 --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) $(MODULE)
 	python -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
 		$(MODULE)
