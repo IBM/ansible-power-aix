@@ -17,6 +17,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
+        ansible-version: ['2.9']
         python-version: ['3.7']
         
     name: running unit tests with python ${{ matrix.python-version }}
@@ -31,9 +32,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
   
-    - name: install ansible base (devel branch)
+    - name: install ansible ${{ matrix.ansible-version }}
       run: |
-        make install-ansible-devel-branch
+        make install-ansible ANSIBLE_VERSION=2.9
         
     - name: install python modules needed for unit testing
       run: |

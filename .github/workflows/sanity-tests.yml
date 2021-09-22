@@ -21,8 +21,10 @@ jobs:
       run:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['2.7', '3.6', '3.7', '3.8']
+        ansible-version: ['2.9']
 
     name: running compile tests with python ${{ matrix.python-version }}
     steps:
@@ -36,9 +38,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         
-    - name: install ansible base (devel branch)
+    - name: install ansible ${{ matrix.ansible-version }}
       run: |
-        make install-ansible-devel-branch
+        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
         
     - name: run compile test on python ${{ matrix.python-version }}
       run: |
@@ -90,6 +92,7 @@ jobs:
       run:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
+      fail-fast: false
       matrix:
         ansible-version: ['2.9', '3', '4', 'devel']
         python-version: ['3.8']
