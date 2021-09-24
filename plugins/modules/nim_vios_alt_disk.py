@@ -182,7 +182,6 @@ meta:
 
 import re
 import time
-import string
 import socket
 
 from ansible.module_utils.basic import AnsibleModule
@@ -1010,12 +1009,12 @@ def wait_altdisk_install(module, vios, hdisks, vios_key, altdisk_op_tab, err_lab
         #                 a volume group assigned to it.:failure:
         nim_status = stdout.split('\n')[1].rstrip().split(':')
         nim_Cstate = nim_status[1]
-        if len(nim_status) == 4 and (string.lower(nim_status[2]) == "success"
-                                     or string.lower(nim_status[2].lower()) == "failure"):
-            nim_result = string.lower(nim_status[2])
+        if len(nim_status) == 4 and ((nim_status[2].lower()) == "success"
+                                     or (nim_status[2].lower()) == "failure"):
+            nim_result = nim_status[2].lower()
         else:
             nim_info = nim_status[2]
-            nim_result = string.lower(nim_status[3])
+            nim_result = nim_status[3].lower()
 
         if nim_Cstate == "ready for a NIM operation":
             msg = 'alt_disk copy operation on {0} ended with nim_result: {1}, nim_info:{2}'.format(vios, nim_result, nim_info)
