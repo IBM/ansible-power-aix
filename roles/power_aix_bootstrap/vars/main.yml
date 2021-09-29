@@ -2,3 +2,4 @@
 pkgtype: "yum"
 download_dir: "~"
 target_dir: "/tmp/.ansible.cpdir.yum"
+aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
