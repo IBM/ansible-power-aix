@@ -2,6 +2,7 @@
 - name: "Bootstrap Yum on AIX"
   hosts: aix
   gather_facts: no
+#  user: root
   collections:
   - ibm.power_aix
   tasks:
@@ -18,6 +19,7 @@
 - name: "Bootstrap Python on AIX"
   hosts: aix
   gather_facts: no
+#  user: root
   collections:
   - ibm.power_aix
   tasks:

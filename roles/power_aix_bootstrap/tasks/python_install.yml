@@ -30,4 +30,4 @@
 
   - name: Print status
     debug:
-      msg: Bootstrap attempt of python on {{ inventory_hostname }} has completed
+      msg: Bootstrap attempt of python on {{ aix_host }} has completed
