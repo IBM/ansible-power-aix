@@ -16,6 +16,7 @@
 
 ###############################################################################
 
+from  __future__ import absolute_import, division
 from datetime import datetime
 import os
 import sys
@@ -26,7 +27,7 @@ import re
 import pycurl
 import xml.etree.cElementTree as ET
 import socket
-import cStringIO
+import cStringIO 
 import shutil
 
 # TODO: Use Standard logger instead of log routine

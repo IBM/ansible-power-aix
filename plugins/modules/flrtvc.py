@@ -672,9 +672,15 @@ def check_epkgs(epkg_list, lpps, efixes):
         epkgs_info[epkg['path']] = epkg.copy()
 
     # sort the epkg by packing date (sec from epoch)
-    sorted_epkgs = OrderedDict(sorted(epkgs_info.items(),
-                                      key=lambda t: t[1]['sec_from_epoch'],
-                                      reverse=True)).keys()
+    sorted_epkgs = list(
+        OrderedDict(
+            sorted(
+                epkgs_info.items(),
+                key=lambda t: t[1]['sec_from_epoch'],
+                reverse=True
+            )
+        ).keys()
+    )
 
     # exclude epkg that will be interlocked
     global_file_locks = []
