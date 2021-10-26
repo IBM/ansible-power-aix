@@ -27,7 +27,7 @@ import re
 import pycurl
 import xml.etree.cElementTree as ET
 import socket
-import cStringIO 
+import cStringIO # pylint: disable=bad-python3-import
 import shutil
 
 # TODO: Use Standard logger instead of log routine
