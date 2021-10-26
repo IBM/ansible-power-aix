@@ -763,9 +763,15 @@ def check_epkgs(module, output, machine, epkg_list, lpps, efixes):
         epkgs_info[epkg['path']] = epkg.copy()
 
     # sort the epkg by packing date (sec from epoch)
-    sorted_epkgs = OrderedDict(sorted(epkgs_info.items(),
-                                      key=lambda t: t[1]['sec_from_epoch'],
-                                      reverse=True)).keys()
+    sorted_epkgs = list(
+        OrderedDict(
+            sorted(
+                epkgs_info.items(),
+                key=lambda t: t[1]['sec_from_epoch'],
+                reverse=True
+            )
+        ).keys()
+    )
 
     # exclude epkg that will be interlocked
     global_file_locks = []
@@ -1544,7 +1550,7 @@ def main():
     module.debug('requested targets are: "{0}"'.format(targets))
     nim_clients = get_nim_clients_info(module)
     module.debug('Nim clients are: {0}'.format(nim_clients))
-    targets = expand_targets(module, targets, nim_clients.keys())
+    targets = expand_targets(module, targets, list(nim_clients.keys()))
     module.debug('Nim client targets are:{0}'.format(targets))
 
     # Init metadata dictionary

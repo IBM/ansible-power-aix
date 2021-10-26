@@ -6,6 +6,8 @@ ifndef MODULE
 	MODULE = plugins/modules/*.py
 endif
 
+VIOSHC_SCRIPT = roles/power_aix_vioshc/files/vioshc.py
+
 ifndef TEST
 	TEST = tests/unit/plugins/modules/*.py
 endif
@@ -29,9 +31,11 @@ help:
 	run sanity testing"
 	@echo "install-unit-test-requirements 			install python modules needed \
 	run unit testing"
-	@echo "lint [MODULE]					lint module"         
-	@echo "sanity-test [MODULE]				run sanity test on the collections"
-	@echo "unit-test [TEST]				run unit test suite for the collection"
+	@echo "lint 						lint ansible module and roles"         
+	@echo "module-lint MODULE=<module path> 		lint ansible module"         
+	@echo "porting MODULE=<module path>			check if module is python3 ported"
+	@echo "sanity-test MODULE=<module path>		run sanity test on the collections"
+	@echo "unit-test TEST=<test path>			run unit test suite for the collection"
 	@echo "clean						clean junk files"
 
 .PHONY: clean
@@ -78,12 +82,19 @@ install-unit-test-requirements:
 ######################################################################################
 
 .PHONY: lint
-lint:
+lint: module-lint
+
+.PHONY: module-lint
+module-lint:
 	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
  	--exclude $(DEPRECATED) --test pylint $(MODULE)
 	flake8 --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) $(MODULE)
 	python -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
 		$(MODULE)
+
+.PHONY: porting
+porting:
+	python -m pylint --py3k --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
 
 .PHONY: compile
 compile:
@@ -103,5 +114,3 @@ unit-test:
 	--coverage $(TEST)
 	
 	ansible-test coverage report --omit $(TEST_OMIT) --include "$(MODULE)" --show-missing
-
-
