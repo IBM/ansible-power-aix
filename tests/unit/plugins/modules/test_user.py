@@ -127,7 +127,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=true  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"true\"  test123")
 
     def test_change_account_locked_true_quotes(self):
         self.module.params["attributes"] = {"account_locked": "true"}
@@ -137,7 +137,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=true  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"true\"  test123")
 
     def test_change_account_locked_True_quotes(self):
         self.module.params["attributes"] = {"account_locked": "True"}
@@ -147,7 +147,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=true  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"true\"  test123")
 
     def test_change_account_locked_yes_quotes(self):
         self.module.params["attributes"] = {"account_locked": "yes"}
@@ -157,7 +157,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=yes  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"yes\"  test123")
 
     def test_change_account_locked_Yes_quotes(self):
         self.module.params["attributes"] = {"account_locked": "Yes"}
@@ -167,7 +167,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=yes  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"yes\"  test123")
 
     def test_change_account_locked_always(self):
         # both always and "always" get interpreted as strings
@@ -178,7 +178,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=always  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"always\"  test123")
 
     def test_change_account_locked_Always(self):
         # both Always and "Always" get interpreted as strings
@@ -189,7 +189,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=always  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"always\"  test123")
 
     def test_change_account_locked_false_bool(self):
         # Note: The following cases get interpreted as a boolean false:
@@ -204,7 +204,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=false  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"false\"  test123")
 
     def test_change_account_locked_false_quotes(self):
         self.module.params["attributes"] = {"account_locked": "false"}
@@ -214,7 +214,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=false  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"false\"  test123")
 
     def test_change_account_locked_False_quotes(self):
         self.module.params["attributes"] = {"account_locked": "False"}
@@ -224,7 +224,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=false  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"false\"  test123")
 
     def test_change_account_locked_no_quotes(self):
         self.module.params["attributes"] = {"account_locked": "no"}
@@ -234,7 +234,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=no  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"no\"  test123")
 
     def test_change_account_locked_No_quotes(self):
         self.module.params["attributes"] = {"account_locked": "No"}
@@ -244,7 +244,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=no  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"no\"  test123")
 
     def test_change_account_locked_never(self):
         # both never and "never" get interpreted as strings
@@ -255,7 +255,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=never  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"never\"  test123")
 
     def test_change_account_locked_Never(self):
         # both Never and "Never" get interpreted as strings
@@ -266,7 +266,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=never  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"never\"  test123")
 
     def test_modify_user_account_locked_capabilities(self):
         # test the modifying of two attributes: account_locked and capabilities
@@ -277,7 +277,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=yes capabilities=CAP_AACCT  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"yes\" capabilities=\"CAP_AACCT\"  test123")
 
     def test_modify_user_account_locked_mixed_case(self):
         # test modifying account_locked with mixed case
@@ -288,7 +288,7 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=true  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"true\"  test123")
 
     def test_modify_user_account_locked_mixed_case_capabilities(self):
         # test the modifying of two attributes: account_locked and capabilities
@@ -299,4 +299,4 @@ class TestCreateUser(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
 
         user.modify_user(self.module)
-        self.module.run_command.assert_called_once_with("chuser account_locked=false capabilities=CAP_AACCT  test123")
+        self.module.run_command.assert_called_once_with("chuser account_locked=\"false\" capabilities=\"CAP_AACCT\"  test123")

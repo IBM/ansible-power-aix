@@ -155,6 +155,7 @@ def modify_user(module):
                 # Confirm if setting is already set before adding to opts
                 if user_attrs[attr] != val:
                     opts += "%s=\"%s\" " % (attr, val)
+
         if load_module_opts is not None:
             opts = load_module_opts + opts
         if opts:

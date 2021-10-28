@@ -434,10 +434,10 @@ def umount(module):
             elif mount_dir:
                 result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
             return
-        if mount_dir:
-            cmd += mount_dir
-        elif mount_over_dir:
+        if mount_over_dir:
             cmd += mount_over_dir
+        elif mount_dir:
+            cmd += mount_dir
 
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
