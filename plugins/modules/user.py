@@ -154,7 +154,7 @@ def modify_user(module):
                     val = str(val).lower()
                 # Confirm if setting is already set before adding to opts
                 if user_attrs[attr] != val:
-                    opts += "%s=%s " % (attr, val)
+                    opts += "%s=\"%s\" " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
         if opts:
@@ -202,7 +202,7 @@ def create_user(module):
             if attr == 'load_module':
                 load_module_opts = "-R %s " % val
             else:
-                opts += "%s=%s " % (attr, val)
+                opts += "%s=\"%s\" " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
 
