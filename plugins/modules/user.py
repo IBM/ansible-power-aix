@@ -130,7 +130,7 @@ def modify_user(module):
         ( Message for command, changed status )
     '''
     attributes = module.params['attributes']
-    opts = None
+    opts = ""
     load_module_opts = None
     msg = None
     changed = False
@@ -157,7 +157,7 @@ def modify_user(module):
                     opts += "%s=%s " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
-        if opts is not None:
+        if opts:
             cmd = "chuser %s %s" % (opts, module.params['name'])
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
