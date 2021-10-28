@@ -127,14 +127,24 @@ def modify_user(module):
     note:
         Exits with fail_json in case of error
     return:
-        Message for successfull command
+        ( Message for command, changed status )
     '''
     attributes = module.params['attributes']
     opts = ""
     load_module_opts = None
     msg = None
+    changed = False
 
     if attributes is not None:
+        # Get all settings for user and store in dict user_attrs
+        cmd = "lsuser -C %s" % module.params['name']
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc != 0:
+            msg = "\nFailed to validate attributes for the user: %s" % module.params['name']
+            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        keys = stdout.splitlines()[0].split(':')
+        values = stdout.splitlines()[1].split(':')
+        user_attrs = dict(zip(keys, values))
         for attr, val in attributes.items():
             if attr == 'load_module':
                 load_module_opts = "-R %s " % val
@@ -142,18 +152,22 @@ def modify_user(module):
                 pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
                 if val in [True, False] or re.match(pattern, str(val)):
                     val = str(val).lower()
-                opts += "%s=%s " % (attr, val)
+                # Confirm if setting is already set before adding to opts
+                if user_attrs[attr] != val:
+                    opts += "%s=%s " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
-        cmd = "chuser %s %s" % (opts, module.params['name'])
-
-        rc, stdout, stderr = module.run_command(cmd)
-
-        if rc != 0:
-            msg = "\nFailed to modify attributes for the user: %s" % module.params['name']
-            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        if opts:
+            cmd = "chuser %s %s" % (opts, module.params['name'])
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc != 0:
+                msg = "\nFailed to modify attributes for the user: %s" % module.params['name']
+                module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            else:
+                msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
+            changed = True
         else:
-            msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
+            msg = "\nNo changes were made to user: %s" % module.params['name']
 
     if module.params['password'] is not None:
         pass_msg = change_password(module)
@@ -162,7 +176,7 @@ def modify_user(module):
         else:
             msg = pass_msg
 
-    return msg
+    return ( msg, changed )
 
 
 def create_user(module):
@@ -324,8 +338,7 @@ def main():
             msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
         else:
             if user_exists(module):
-                msg = modify_user(module)
-                changed = True
+                msg, changed = modify_user(module)
             else:
                 msg = "No user found in the system to modify the attributes: %s" % module.params['name']
     else:
