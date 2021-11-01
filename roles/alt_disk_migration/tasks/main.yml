@@ -1,0 +1,58 @@
+# Copyright (c) IBM Corporation 2020
+---
+- name: "Fail if a NIM client LPAR is not specified" 
+  fail:
+    msg: "NIM client LPAR to be migrated is not specified"
+  when: nim_client is not defined
+- debug: msg="{{ nim_client }} specified to be migrated"
+
+- name: "Fail if a physical volume is not specified
+         for alternate disk creation"
+  fail:
+    msg: "pv not specified"
+  when: pv is not defined
+- debug: msg="{{ pv }} of {{ nim_client }} will be used to
+              create an alternate disk copy"
+
+- name: "Fail if a NIM LPP resource is not specified"
+  fail:
+    msg: "NIM LPP resource not specified"
+  when: lpp_source is not defined
+- debug: msg="LPP resource {{ lpp_source }} specified for migration"
+
+- name: "Fail if a NIM client LPAR is not specified" 
+  fail:
+    msg: "NIM SPOT resource not specified"
+  when: spot is not defined
+- debug: msg="SPOT resource {{ spot }} specified for migration"
+
+# TODO: make sure to setup rsh (remote command exection) from
+# NIM master to specified NIM client
+# create an entry in each others hostname (NIM client/master) 
+# /.rhosts  file to make the rsh command useable.
+
+# TODO: create a plugin to support nimadm (NIM alternate disk migration)
+- name: "Migrate to alternate disk"
+  shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ pv }} -Y"
+  register: results
+# INVESTIGATE: successfully creates an altinst_rootvg on NIM client
+# however Ansible output give the following error:
+# TASK [ibm.power_aix.alt_disk_migration : Migrate to alternate disk] *********************************
+# fatal: [x.x.x.x]: UNREACHABLE! => 
+#     {
+#       "changed": false, 
+#       "msg": "Failed to connect to the host via ssh: Shared connection to x.x.x.x closed.", 
+#       "unreachable": true
+#     }
+# x.x.x.x is the NIM master
+# why would it be unreachable when the shell cmd nimadm it was reachable and the task was
+# running
+  ignore_errors: true 
+- debug: var=results
+
+# TODO: add reboot sequence, perhaps use nim module reboot action.
+# Even though the previous task says it failed, I don't think the nimadm
+# command actually failed, as it successfully created an altinst_rootvg
+# after manually rebooting the LPAR, it is now in migrated to 730.
+
+- debug: msg="MIGRATION COMPLETE!!!"

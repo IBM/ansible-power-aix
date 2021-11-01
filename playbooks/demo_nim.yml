@@ -1,11 +1,12 @@
 ---
 - name: "NIM operation on AIX/VIOS"
-  hosts: nimserver
+  hosts: nimserver2
+  remote_user: root
   gather_facts: no
   vars:
     check_targets_v:        standalone
-    install_targets_v:      quimby06
-    update_lpp_v:           latest_sp
+    install_targets_v:      carribean-lp4
+    update_lpp_v:           lpp_2124A_72X
     bos_inst_resgroup_v:    basic_res_grp
     bos_inst_script_v:      setup_root
     master_setup_device_v:  "/dev/cd0"
@@ -29,44 +30,44 @@
       register: result
     # - debug: var=result
 
-    - name: BOS installation using a group resource a customization script
-      nim:
-        action: bos_inst
-        targets: "{{ install_targets_v }}"
-        group: "{{ bos_inst_resgroup_v }}"
-        script: "{{ bos_inst_script_v }}"
-      register: result
+    # - name: BOS installation using a group resource a customization script
+    #   nim:
+    #     action: bos_inst
+    #     targets: "{{ install_targets_v }}"
+    #     group: "{{ bos_inst_resgroup_v }}"
+    #     script: "{{ bos_inst_script_v }}"
+    #   register: result
+    # # - debug: var=result
+
+    # - name: Configure the NIM master
+    #   nim:
+    #     action: master_setup
+    #     device: "{{ master_setup_device_v }}"
+    #   register: result
+    # # - debug: var=result
+
+    # - name: Get oslevels
+    #   nim:
+    #     action: check
+    #     targets: "{{ check_targets_v }}"
+    #   register: result
     # - debug: var=result
 
-    - name: Configure the NIM master
-      nim:
-        action: master_setup
-        device: "{{ master_setup_device_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Compare installation inventories
+    #   nim:
+    #     action: compare
+    #     targets: "{{ check_targets_v }}"
+    #   register: result
+    # # - debug: var=result
 
-    - name: Get oslevels
-      nim:
-        action: check
-        targets: "{{ check_targets_v }}"
-      register: result
-    # - debug: var=result
-
-    - name: Compare installation inventories
-      nim:
-        action: compare
-        targets: "{{ check_targets_v }}"
-      register: result
-    # - debug: var=result
-
-    - name: Define a customization script
-      nim:
-        action: define_script
-        targets: "{{ install_targets_v }}"
-        resource: "{{ define_resource_v }}"
-        location: "{{ define_location_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Define a customization script
+    #   nim:
+    #     action: define_script
+    #     targets: "{{ install_targets_v }}"
+    #     resource: "{{ define_resource_v }}"
+    #     location: "{{ define_location_v }}"
+    #   register: result
+    # # - debug: var=result
 
     - name: Apply a customization script
       nim:
@@ -77,28 +78,28 @@
       register: result
     # - debug: var=result
 
-    - name: Allocate a NIM resource
-      nim:
-        action: allocate
-        targets: "{{ install_targets_v }}"
-        lpp_source: "{{ alloc_resource_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Allocate a NIM resource
+    #   nim:
+    #     action: allocate
+    #     targets: "{{ install_targets_v }}"
+    #     lpp_source: "{{ alloc_resource_v }}"
+    #   register: result
+    # # - debug: var=result
 
-    - name: Deallocate a NIM resource
-      nim:
-        action: deallocate
-        targets: "{{ install_targets_v }}"
-        lpp_source: "{{ alloc_resource_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Deallocate a NIM resource
+    #   nim:
+    #     action: deallocate
+    #     targets: "{{ install_targets_v }}"
+    #     lpp_source: "{{ alloc_resource_v }}"
+    #   register: result
+    # # - debug: var=result
 
-    - name: Remove the resource from the NIM master
-      nim:
-        action: remove
-        resource: "{{ rm_resource_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Remove the resource from the NIM master
+    #   nim:
+    #     action: remove
+    #     resource: "{{ rm_resource_v }}"
+    #   register: result
+    # # - debug: var=result
 
     - name: Reset the current state of standalone partitions
       nim:
@@ -113,11 +114,11 @@
         action: reboot
         targets: "{{ install_targets_v }}"
       register: result
-    # - debug: var=result
+    - debug: var=result
 
-    - name: Perform a maintenance operation on standalone partition
-      nim:
-        action: maintenance
-        targets: "{{ install_targets_v }}"
-      register: result
-    # - debug: var=result
+    # - name: Perform a maintenance operation on standalone partition
+    #   nim:
+    #     action: maintenance
+    #     targets: "{{ install_targets_v }}"
+    #   register: result
+    # # - debug: var=result
