@@ -3,7 +3,7 @@
 # I tested this with a NIM client that has 72X OS
 # with a PV (hdisk1) that is of the same disk size
 # as it's original rootvg
-- name: "alt_disk_migration demo"
+- name: "nim_alt_disk_migration demo"
   hosts: nimserver2
   gather_facts: no
   remote_user: root
@@ -18,7 +18,7 @@
 
 # perform alt_disk_migration
   - import_role:
-      name: ibm.power_aix.alt_disk_migration
+      name: ibm.power_aix.nim_alt_disk_migration
     vars:
       # nim_client: p9zpa-ansible-test1
       nim_client: "{{ nim_client_v }}"
