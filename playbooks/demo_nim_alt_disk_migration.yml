@@ -5,7 +5,7 @@
 # as it's original rootvg
 - name: "nim_alt_disk_migration demo"
   hosts: nimserver2
-  gather_facts: no
+  gather_facts: false
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test1
@@ -13,15 +13,15 @@
     lpp_source_v: lpp_2134A_730
     spot_v: spot_2134A_730
   collections:
-  - ibm.power_aix
+    - ibm.power_aix
   tasks:
 
 # perform alt_disk_migration
-  - import_role:
-      name: ibm.power_aix.nim_alt_disk_migration
-    vars:
-      # nim_client: p9zpa-ansible-test1
-      nim_client: "{{ nim_client_v }}"
-      pv: "{{ alt_disk }}"
-      lpp_source: "{{ lpp_source_v }}"
-      spot: "{{ spot_v }}"
+    - import_role:
+        name: ibm.power_aix.nim_alt_disk_migration
+      vars:
+        # nim_client: p9zpa-ansible-test1
+        nim_client: "{{ nim_client_v }}"
+        pv: "{{ alt_disk }}"
+        lpp_source: "{{ lpp_source_v }}"
+        spot: "{{ spot_v }}"
