@@ -1,0 +1,102 @@
+---
+# TODO: add lsnim feature for nim module so
+# we have the ability to check the properties
+# of a NIM resource
+#
+# NOTE: the following commented tasks are used
+# to check for the existence of a SPOT resource
+# named 'dflt_spot' before creating the resource.
+# However, defining it in nim will already flag
+# if the SPOT resource of the same name already
+# exists, thus there is no need for this tasks.
+# 0042-053 lsnim: there is no NIM object named 'dflt_spot'"
+# - name: "Check if there is already a dflt_spot
+#         resource defined"
+#   shell: "lsnim -l {{ dflt_spot_name }}"
+#   register: output
+#   changed_when: false
+#   failed_when:
+#     - output is failed
+#     - output.stderr.find( "0042-053" ) == -1
+# - debug:
+#     msg: >
+#       There is no existing '{{ dflt_spot_name }}'. Proceed to
+#       automatically create a SPOT resource from '{{ lpp_source }}'
+#   when: output.stderr.find( "0042-053" ) != -1
+# - debug:
+#     msg: >
+#       SPOT resource '{{dflt_spot_name }}' already exists. Use
+#       'force' option to overwrite SPOT resource '{{ dflt_spot_name }}'
+#   when: output.stderr.find( "0042-053" ) == -1
+
+# - debug: var=force
+# - set_fact:
+#     create_spot: true
+#   when: force | bool == true or
+#         output.stderr.find( "0042-053" ) != -1
+
+# - set_fact:
+#     create_spot: false
+#   when:
+#     - force | bool == false
+#     - output.stderr.find( "0042-053" ) == -1
+
+# parsing sequence:
+# - /usr/bin/ksh93 set -o pipefail is used to at
+# the fail of any of the commands in the pipeline
+# will result in the immediate exit of the pipeline
+# - lsnim -l {{ lpp_source }} | grep 'location'
+# e.g. output 'location    = /nim1/lpp_2134A_730'
+# - awk -F '=' '{print $2}' | xargs
+# the above command will jus give me '/nim1/lpp_2134A_730'
+# xargs will also trim any leading or trailing whitespace
+# - rev | cut -d '/' -f '2-' | rev
+# this will give me just the path to the lpp_source
+# directory '/nim1'
+- name: "Fetch the location of the lpp_source"
+  shell: >
+    /usr/bin/ksh93 set -o pipefail &&
+    /usr/sbin/lsnim -l {{ lpp_source }} | /usr/bin/grep 'location' |
+    /usr/bin/awk -F '=' '{print $2}' | /usr/bin/xargs | /usr/bin/rev |
+    /usr/bin/cut -d '/' -f '2-' | /usr/bin/rev
+  changed_when: false
+  register: output
+  # when: create_spot | bool == true
+- set_fact:
+    location: "{{ output.stdout }}"
+  # when: create_spot | bool == true
+- debug: msg="SPOT resource created in '{{ location }}'"
+  # when: create_spot | bool == true
+
+# if SPOT is not specified then create a SPOT
+# resource from a specified LPP source
+# TODO: create define LPP and SPOIT resource for
+# nim module
+# e.g. stderr if SPOT resource of the same name
+# already exists
+# nim -o define -t spot -a location=/nim1 -a server=master -a source=lpp_2134A_730 dflt_spot
+# 0042-001 nim: processing error encountered on "master":
+# 0042-081 m_mkspot: a resource already exists on "master" at
+#   location "/nim1/dflt_spot/usr"; due to NFS export restrictions, the
+#   new location "/nim1/dflt_spot/usr" may not be used
+- name: "Create SPOT resource from LPP source"
+  shell: >
+    /usr/sbin/nim -o define -t spot -a location={{ location }}
+    -a server=master -a source={{ lpp_source }}
+    {{ dflt_spot_name }}
+  register: result
+  changed_when:
+    - result is not failed
+  failed_when:
+    - result is failed
+# error code for resource already existing
+    - result.stderr.find( "0042-081" ) == -1
+# when: create_spot | bool == true
+
+- debug:
+    msg: "SPOT resource '{{ dflt_spot_name }}' already exists."
+  when: result.stderr.find( "0042-081" ) != -1
+
+- name: "Set SPOT resource to be used"
+  set_fact:
+    spot: "{{ dflt_spot_name }}"
