@@ -3,6 +3,8 @@
 # TODO: add lsnim feature for nim module so
 # we have the ability to check the properties
 # of a NIM resource
+# - we can then use that new action instead of
+# running lsnim as a shell command in this ansible role
 ############################################################
 
 ############################################################
@@ -120,4 +122,3 @@
 - name: "Set SPOT resource to be used"
   set_fact:
     spot: "{{ dflt_spot_name }}"
-- debug: msg="SPOT resource {{ spot }} specified for migration"
