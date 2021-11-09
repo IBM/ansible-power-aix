@@ -18,7 +18,9 @@
 - debug: msg="{{ pv }} of {{ nim_client }} will be used to
               create an alternate disk copy"
 
-# TODO: PV size validation tasks
+- name: "Verify that the specfied physical volume availability"
+  include_tasks: "validate_pv.yml"
+  when: pv is defined
 
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
@@ -26,23 +28,25 @@
   when: lpp_source is not defined
 - debug: msg="LPP resource {{ lpp_source }} specified for migration"
 
+############################################################
 # NOTE: specifying SPOT resource is optional, if not given
 # then NIM master will generate corresponding SPOT resource
 # from the specified LPP resource.
+############################################################
 - name: "Create SPOT resource if not specified"
   include_tasks: "create_spot.yml"
   when: spot is not defined
 - debug: msg="SPOT resource {{ spot }} specified for migration"
 
+############################################################
 # TODO: make sure to setup rsh (remote command exection) from
 # NIM master to specified NIM client
 # create an entry in each others hostname (NIM client/master)
 # /.rhosts  file to make the rsh command useable.
+############################################################
 
+############################################################
 # TODO: create a plugin to support nimadm (NIM alternate disk migration)
-# - name: "Migrate to alternate disk"
-#   shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ pv }} -Y"
-#   register: results
 # INVESTIGATE: successfully creates an altinst_rootvg on NIM client
 # however Ansible output give the following error:
 # TASK [ibm.power_aix.alt_disk_migration : Migrate to alternate disk] *********************************
@@ -55,12 +59,17 @@
 # x.x.x.x is the NIM master
 # why would it be unreachable when the shell cmd nimadm it was reachable and the task was
 # running
-  # ignore_errors: true
+# - name: "Migrate to alternate disk"
+#   shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ pv }} -Y"
+#   register: results
+#   ignore_errors: true
 # - debug: var=results
 
+############################################################
 # TODO: add reboot sequence, perhaps use nim module reboot action.
 # Even though the previous task says it failed, I don't think the nimadm
 # command actually failed, as it successfully created an altinst_rootvg
 # after manually rebooting the LPAR, it is now in migrated to 730.
+############################################################
 
 - debug: msg="MIGRATION COMPLETE!!!"

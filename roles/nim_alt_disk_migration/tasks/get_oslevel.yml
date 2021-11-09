@@ -6,6 +6,7 @@
   register: nim_check
 - debug: var=nim_check
 
+############################################################
 # NOTE: steps on parsing
 # - [nim_client] | map('extract', nim_check...) will fetch
 # only the info related to 'nim_client' from the NIM check
@@ -17,6 +18,7 @@
 # string.
 # e.g. 'oslevel': '7200-05-03-2135', the regex above will
 # extract only '7200'
+############################################################
 - name: "Parse OS level"
   set_fact:
     full_client_oslevel: "{{ [nim_client] |
@@ -27,21 +29,25 @@
       map(attribute='oslevel') | list | join('\n') |
       regex_search('[0-9]+') }}"
 
+############################################################
 # NOTE: when receiving a value of 'timedout' for the oslevel
 # of the nim client, then the NIM master/client setup might
 # not be complete. Make sure to register the NIM client
 # properly to the NIM master
 # You can check the /etc/niminfo file on the NIM cient to
 # see which NIM master it is registered to.
+############################################################
 - name: "Determine if OS level was successfully fetched"
   fail:
     msg: "OS level not successfully fetched, make sure NIM
           master/client is properly setup"
   when: full_client_oslevel == "timedout"
 
-# The parsed OS level from the previous task will be
+############################################################
+# NOTE: The parsed OS level from the previous task will be
 # compared to 7100 to check if the client OS level
 # is lower than 7.1
+############################################################
 - name: "Determine if OS level is 7.1>"
   fail:
     msg: "Client LPAR must be AIX 7.1 or higher."
