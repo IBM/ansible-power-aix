@@ -1,8 +1,24 @@
 ---
+############################################################
 # TODO: add lsnim feature for nim module so
 # we have the ability to check the properties
 # of a NIM resource
-#
+############################################################
+
+############################################################
+# DISCUSSION:
+# 1. Add force option
+# - if 'true' then it will delete an existing 'dflt_spot'
+# and create a new one from the specified lpp_source
+# - if 'false then it will skip the automatic creation
+# of a SPOT resource from a lpp_source if 'dflt_spot'
+# already exists
+# 2. Add feature to specify an existin SPOT resource
+############################################################
+
+############################################################
+# ATTENTION: DELTE THIS BLOCK IF NOT NEEDED IN FOR SURE
+############################################################
 # NOTE: the following commented tasks are used
 # to check for the existence of a SPOT resource
 # named 'dflt_spot' before creating the resource.
@@ -40,8 +56,10 @@
 #   when:
 #     - force | bool == false
 #     - output.stderr.find( "0042-053" ) == -1
+############################################################
 
-# parsing sequence:
+############################################################
+# NOTE: parsing sequence
 # - /usr/bin/ksh93 set -o pipefail is used to at
 # the fail of any of the commands in the pipeline
 # will result in the immediate exit of the pipeline
@@ -53,6 +71,7 @@
 # - rev | cut -d '/' -f '2-' | rev
 # this will give me just the path to the lpp_source
 # directory '/nim1'
+############################################################
 - name: "Fetch the location of the lpp_source"
   shell: >
     /usr/bin/ksh93 set -o pipefail &&
@@ -61,14 +80,14 @@
     /usr/bin/cut -d '/' -f '2-' | /usr/bin/rev
   changed_when: false
   register: output
-  # when: create_spot | bool == true
+  # when: create_spot | bool == true # DELETE WITH BLOCK
 - set_fact:
     location: "{{ output.stdout }}"
-  # when: create_spot | bool == true
-- debug: msg="SPOT resource created in '{{ location }}'"
-  # when: create_spot | bool == true
+  # when: create_spot | bool == true # DELETE WITH BLOCK
+  # when: create_spot | bool == true # DELETE WITH BLOCK
 
-# if SPOT is not specified then create a SPOT
+############################################################
+# NOTE: if SPOT is not specified then create a SPOT
 # resource from a specified LPP source
 # TODO: create define LPP and SPOIT resource for
 # nim module
@@ -79,6 +98,7 @@
 # 0042-081 m_mkspot: a resource already exists on "master" at
 #   location "/nim1/dflt_spot/usr"; due to NFS export restrictions, the
 #   new location "/nim1/dflt_spot/usr" may not be used
+############################################################
 - name: "Create SPOT resource from LPP source"
   shell: >
     /usr/sbin/nim -o define -t spot -a location={{ location }}
@@ -91,7 +111,7 @@
     - result is failed
 # error code for resource already existing
     - result.stderr.find( "0042-081" ) == -1
-# when: create_spot | bool == true
+# when: create_spot | bool == true # DELETE WITH BLOCK
 
 - debug:
     msg: "SPOT resource '{{ dflt_spot_name }}' already exists."
@@ -100,3 +120,4 @@
 - name: "Set SPOT resource to be used"
   set_fact:
     spot: "{{ dflt_spot_name }}"
+- debug: msg="SPOT resource {{ spot }} specified for migration"
