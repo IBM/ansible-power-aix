@@ -1,0 +1,124 @@
+# Copyright (c) IBM Corporation 2021
+---
+# Install pycurl and dependencies
+
+
+# Do not continue if pycurl and wget are installed.
+  - name: Verify if pycurl package exists.
+    raw: "{{ interpreter_name }} -c 'import pycurl' && echo true || echo false"
+    register: pycurl_exists
+    changed_when: false
+
+  - debug:
+       msg: "End play for host {{ aix_host }} because pycurl is installed."
+    when: pycurl_exists.stdout is search("true")
+
+
+  - name: Install pycurl if it is not installed
+    block:
+       # Verify the AIX level is 7.3 or above
+       - name: Verify the host is at least aix 7.3, if not, exit host
+         raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+         register: output
+         changed_when: false
+
+       - fail:
+           msg: "End playbook for {{ aix_host }}. Bootstrap pycurl for \
+                AIX version {{ output.stdout_lines[0] }} is not supported"
+         when: (output.stdout_lines[0] | int) < 73
+
+       # Verify if dnf is installed
+       - name: Verify if dnf is installed.
+         raw: "rpm -q --quiet dnf && echo true || echo false"
+         register: dnf_tools_exists
+         changed_when: false
+
+       - fail:
+           msg: "End play for host {{ aix_host }}. The dnf package manager \
+                is required to install pycurl. Use power_aix_bootstrap with \
+                pkgtype dnf"
+         when: dnf_tools_exists.stdout is search("false")
+
+       # Ensure there is enough space to install the tools
+       - name: Increase /opt if it is required.
+         include_tasks: increase_filesystem.yml
+         with_items:
+          - { filesystem: "opt", size_needed: "{{ opt_size }}" }
+          - { filesystem: "var", size_needed: 50 }
+
+       # Prepare the system to use the /opt/freeware/bin/python3 
+       # and /opt/freeware/bin/dnf
+       - name: Set the AIX tool's box python interpreter
+         set_fact:
+            ansible_python_interpreter: "{{interpreter_name}}"
+
+       - name: Retrieve the PATH from the host.
+         shell: "echo $PATH"
+         register: target_path
+         changed_when: false
+
+       - name: Set PATH, PYCURL_CURL_CONFIG
+         set_fact:
+            install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
+            pycurl_curl_config: "/opt/freeware/bin/curl-config"
+
+       - debug:
+           msg: "Temporary host path - {{ install_path }}"
+
+       # Install pip 
+       - name: install pip
+         raw: "'{{ interpreter_name }}' -m ensurepip --upgrade && echo true || echo false"
+
+       - name: Create a filesystem to hold any cache from dnf.
+         filesystem:
+           filesystem: "{{ target_dir }}"
+           vg: rootvg
+           state: present
+           auto_mount: false
+           permissions: rw
+           attributes: size=250M
+
+       - name: Mount target filesystem
+         mount:
+            mount_dir: "{{ target_dir }}"
+
+       # Install dependencies
+       - name: Update AIX Toolsbox's python3. Install curl-devel, 
+               python3-devel and curl.
+         environment:
+           PATH: "{{ install_path }}"
+         dnf:
+           name:
+            - "python3"
+            - "curl-devel"
+            - "python3-devel"
+            - "curl"
+           state: latest
+           download_dir: "{{ target_dir }}"
+         register: dnf_output
+
+       # Install pycurl
+       - name: Install pycurl using pip
+         environment:
+           PATH: "{{ install_path }}"
+           PYCURL_CURL_CONFIG: "{{ pycurl_curl_config }}"
+         pip:
+           name: pycurl
+           executable: "/opt/freeware/bin/pip3"
+
+         # REMOVE temporary filesystem resource
+       - name: Unmount temporary storage space
+         mount:
+            state: umount
+            mount_dir: "{{ target_dir }}"
+
+       - name: Remove temporary storage space
+         filesystem:
+           filesystem: "{{ target_dir }}"
+           state: absent
+
+       - debug:
+           msg: "pycurl is installed"
+
+  # end of block to install pycurl if it is not installed
+    when: pycurl_exists.stdout is search("false")

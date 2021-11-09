@@ -1,0 +1,47 @@
+---
+- name: "Bootstrap dnf on AIX"
+  hosts: aix
+  remote_user: root
+  gather_facts: no
+  collections:
+  - ibm.power_aix
+  tasks:
+
+# CHECK for dnf on inventory host
+  - import_role:
+      name: power_aix_bootstrap
+    vars:
+      pkgtype: "dnf"
+      download_dir: "~"
+      target_dir: "/tmp/.ansible.cpdir"
+
+## INSTALL / UPDATE wget
+#- name: "Bootstrap wget"
+#  hosts: aix
+#  remote_user: root
+#  gather_facts: no
+#  collections:
+#  - ibm.power_aix
+#  tasks:
+
+#  - import_role:
+#      name: power_aix_bootstrap
+#    vars:
+#      pkgtype: "wget"
+##     opt_size: 500
+
+## INSTALL / UPDATE pycurl
+#- name: "Bootstrap pycurl"
+#  hosts: aix
+#  remote_user: root
+#  gather_facts: no
+#  collections:
+#  - ibm.power_aix
+
+#  tasks:
+#  - import_role:
+#      name: power_aix_bootstrap
+#    vars:
+#      pkgtype: "pycurl"
+##     opt_size: 500
+
