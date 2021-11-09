@@ -36,7 +36,7 @@ None.
     - hosts: aix
       gather_facts: no
       include_role:
-        name: alt_disk_migration
+        name: nim_alt_disk_migration
       vars:
 		nim_client: p9zpa-ansible-test1
 		pv: hdisk1

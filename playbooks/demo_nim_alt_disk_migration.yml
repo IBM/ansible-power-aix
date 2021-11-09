@@ -24,4 +24,5 @@
         nim_client: "{{ nim_client_v }}"
         pv: "{{ alt_disk }}"
         lpp_source: "{{ lpp_source_v }}"
-        spot: "{{ spot_v }}"
+        # force: true
+        # spot: "{{ spot_v }}"

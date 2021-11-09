@@ -11,12 +11,14 @@
   when: nim_client is defined
 
 - name: "Fail if a physical volume is not specified
-         for alternate disk creation"
+        for alternate disk creation"
   fail:
     msg: "pv not specified"
   when: pv is not defined
 - debug: msg="{{ pv }} of {{ nim_client }} will be used to
               create an alternate disk copy"
+
+# TODO: PV size validation tasks
 
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
@@ -27,11 +29,8 @@
 # NOTE: specifying SPOT resource is optional, if not given
 # then NIM master will generate corresponding SPOT resource
 # from the specified LPP resource.
-# TODO: SPOT resource creation task
-
-- name: "Fail if a NIM client LPAR is not specified"
-  fail:
-    msg: "NIM SPOT resource not specified"
+- name: "Create SPOT resource if not specified"
+  include_tasks: "create_spot.yml"
   when: spot is not defined
 - debug: msg="SPOT resource {{ spot }} specified for migration"
 
