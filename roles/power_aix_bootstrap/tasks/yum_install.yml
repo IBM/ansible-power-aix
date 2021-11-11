@@ -9,6 +9,17 @@
     meta: end_host
     when: yum_exists.stdout is search("true")
 
+#   Bootstraping yum is only supported in AIX 7.2 and 7.1
+  - name: Verify the host has AIX 7.2 or AIX 7.1, if not, exit host
+    raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+    register: output
+    changed_when: false
+
+  - fail:
+       msg: "End playbook for {{ aix_host }}. Bootstrap yum for AIX version \
+             {{ output.stdout_lines[0] }} is not supported."
+    when: (output.stdout_lines[0] | int) != 71 and (output.stdout_lines[0] | int) != 72
+
 # DOWNLOAD (local) install images
   - name: Check for rpm_src file on localhost
     stat:
