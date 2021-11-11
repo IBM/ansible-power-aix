@@ -111,6 +111,7 @@
            mount:
               state: umount
               mount_dir: "{{ target_dir }}"
+              force: true
 
          - name: Remove temporary storage space
            filesystem:

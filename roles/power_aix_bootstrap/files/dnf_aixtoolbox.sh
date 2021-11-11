@@ -8,7 +8,6 @@
 tmppath=${2:-$(pwd)}
 arg=$1
 
-
 if [[ -e /usr/opt/rpm/bin/rpm ]]
 then
     RPM_CMD="/usr/opt/rpm/bin/rpm"
@@ -22,26 +21,6 @@ then
     echo "This script must be run as root."
     exit 1
 fi
-
-#function install_wget {
-#  typeset -i total_opt=`echo "(200)" | bc`
-#  opt_free=`/usr/bin/df -m /opt | sed -e /Filesystem/d | head -1 | awk '{print $3}'`
-#  if [[ $opt_free -le $total_opt ]]
-#  then
-#      chfs -a size=+$(( total_opt - opt_free ))M /opt
-#      if [[ $? -ne 0 ]];
-#      then
-#        echo "Total free space required for /opt filesystem to install rpms"
-#        echo "  from dnf_bundle is around 100MB."
-#        echo "Please increase the size of /opt and retry."
-#        exit 1
-#      fi
-#  fi
-
-#  PATH=$PATH:/opt/freeware/bin
-#  dnf install -y wget
-#}
-
 
 # First check the AIX version.
 oslvl=`/usr/bin/oslevel`
@@ -75,61 +54,17 @@ fi
 prog=${0##*/}
 yum4=0
 
-
-# TODO: if we want to control the action from the role, we need to think
-# which input values are going to be accepted. 
-#usage() {
-#    print >&2 "Usage: $prog <-d> <-y> <-n> -?
-
-#      -d    Install and setup dnf if yum is not installed.
-#            yum command will not be available only dnf command can be used. 
-#      -y    Installs dnf, and updates yum3 to dnf yum4 if yum3 is installed.
-#            If no yum3 is installed then dnf and yum4 will be installed.
-#            yum command will also be available along with dnf.
-#      -n    Install dnf where both yum and dnf can coexist if yum is installed already.
-#            This is not a recommended option."
-#    exit 1
-#}
-
-#if [[ $# -ne 1 ]]
-#then
-#    usage
-#    exit 1
-#fi
-
-# TODO: This needs to be reworked if the role controls this information.
-#arg=`echo $1 | /usr/bin/cut -c1-3`
-#if [[ "$arg" = "-d" ]]
-#then
-#    yum4=1 # Install only dnf if no YUM is installed.
-#    if [[ $yum3_instd -eq 1 ]]
-#    then
-#        echo "YUM is already installed in the machine."
-#        echo "Please use the option -y to update to YUM4(dnf)."
-#        exit 1
-#    fi
-#elif [[ "$arg" = "-y" ]]
-#then
-#    yum4=2 # Update existing YUM3 to YUM4.
-#elif [[ "$arg" = "-n" ]]
-#then
-#    yum4=3 # Have both YUM and dnf at the same time.
-#else
-#    usage
-#fi
-
 if [ "$arg" == "-y" ]
 then
     echo "YUM is already installed in the machine."
-        echo "This is scrip will update to YUM4(dnf)"
-        yum4=2 # Update existing YUM3 to YUM4.TODO: Consider the decision in the role.
+        echo "This is script will update to YUM4(dnf)"
+        yum4=2 # Update existing YUM3 to YUM4
 elif [ "$arg" == "-d" ]
 then
     yum4=1 # Install only dnf if no YUM is installed
 else
     yum4=3 # Have both YUM and dnf at the same time.
 fi
-
 
 # Check openssl version.
 ssl_ver=$(lslpp -Lc openssl.base | /usr/bin/awk 'FNR==2' | /usr/bin/awk -F':' '{print $3}')
@@ -162,7 +97,6 @@ fi
 # 170M for bundle which includes rpm.rte (40M) and rpm packages (130M).
 # rpm packages extracted.
 
-# TODO: the dnf_install.yml sh will create a filesystem for the bundles. 
 echo "this is the tmppath: $tmppath"
 if [[ $aix_730_plus -eq 1 ]]
 then
@@ -210,77 +144,18 @@ then
     fi
 fi
 
-
-
-# TODO: Just a note: We don't create a temporary directoy as we have one already. 
-# Create a temporary directroy where all downloads should go.
-#curr_time=`date +%Y%m%d%H%M%S`
-#mkdir -p /tmp/dnf-$curr_time
-#tmppath=`echo /tmp/dnf-$curr_time`
-
-
 cd $tmppath
-
-
-# The role will ake care of the downloads.
-#Downloads will be done through the perl lwp-download.
-#if [[ $aix_730_plus -eq 1 ]]
-#then
-#    echo "Attempting download of dnf_bundle_aix_73.tar ..."
-#    /usr/opt/perl5/bin/lwp-download http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_73.tar
-#    if [[ $? -ne 0 ]]
-#    then
-#        echo "Failed to download dnf_bundle_aix_73.tar"
-#        cd - >/dev/null 2>&1
-#        #rm -rf $tmppath
-#        exit 1
-#    fi
-
-#    # Do this once rpm.rte for 730 is available on AIX Toolbox.
-#    #/usr/opt/perl5/bin/lwp-download http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/rpm.rte
-#    #if [[ $? -ne 0 ]]
-#    #then
-#    #    echo "Failed to download rpm.rte"
-#    #    exit 1
-#    #fi
-#else
-#    echo "Attempting download of dnf_bundle_aix_71_72.tar ..."
-#    /usr/opt/perl5/bin/lwp-download http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_71_72.tar
-#     if [[ $? -ne 0 ]]
-#     then
-#        echo "Failed to download dnf_bundle_aix_71_72.tar"
-#        cd - >/dev/null 2>&1
-#        #rm -rf $tmppath
-#        exit 1
-#     fi
-    #/usr/opt/perl5/bin/lwp-download http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/rpm.rte
-    # if [[ $? -ne 0 ]]
-    # then
-    #    echo "Failed to download  rpm.rte"
-    #    exit 1
-    # elif [[ -e rpm.rte.txt ]]
-    # then
-    #     /usr/bin/mv rpm.rte.txt rpm.rte
-    # fi
-
-#end of perl download
 
 if [[ $aix_730_plus -eq 1 ]]
 then
     echo "\nExtracting dnf_bundle_aix_73.tar ..."
     tar -xvf dnf_bundle_aix_73.tar
 else
-    # TODO: borrar. 
-    echo "this is the current folder we want $tmppath and the current"
-    pwd
-    echo end
-
     echo "\nExtracting dnf_bundle_aix_71_72.tar ..."
     tar -xvf dnf_bundle_aix_71_72.tar
 fi
 
 
-echo "This is what we will run at the end: /install_dnf.sh "$arg" $yum4 $yum3_instd 2"
 ./install_dnf.sh "$arg" $yum4 $yum3_instd 2
 if [[ $? -eq 0 ]]
 then
