@@ -20,7 +20,6 @@
     - import_role:
         name: ibm.power_aix.nim_alt_disk_migration
       vars:
-        # nim_client: p9zpa-ansible-test1
         nim_client: "{{ nim_client_v }}"
         pv: "{{ alt_disk }}"
         lpp_source: "{{ lpp_source_v }}"
