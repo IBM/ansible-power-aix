@@ -2,126 +2,126 @@
 ---
 # Install wget
 
-  # Do not continue if wget is installed.
-  - name: Verify wget package exists
-    raw: "rpm -q --quiet wget && echo true || echo false"
-    register: wget_exists
-    changed_when: false
+# Do not continue if wget is installed.
+- name: Verify wget package exists
+  raw: "rpm -q --quiet wget && echo true || echo false"
+  register: wget_exists
+  changed_when: false
 
-  - debug:
-      msg: "End play for host {{ aix_host }}. Package wget is installed"
-    when: wget_exists.stdout is search("true")
+- name: Inform that wget is installed and no action is needed.
+  debug:
+    msg: "End play for host {{ aix_host }}. Package wget is installed"
+  when: wget_exists.stdout is search("true")
 
-  # wget is not installed
-  - block:
+# wget is not installed
+- block:
 
-      # Verify if dnf is installed
-      - name: Verify if dnf is installed.
-        raw: "rpm -q --quiet dnf && echo true || echo false"
-        register: dnf_tools_exists
-        changed_when: false
+    # Verify if dnf is installed
+    - name: Verify if dnf is installed.
+      raw: "rpm -q --quiet dnf && echo true || echo false"
+      register: dnf_tools_exists
+      changed_when: false
 
-      # Verify if yum is installed
-      - name: Verify if yum is installed.
-        raw: "rpm -q --quiet yum && echo true || echo false"
-        register: yum_tools_exists
-        changed_when: false
+    # Verify if yum is installed
+    - name: Verify if yum is installed.
+      raw: "rpm -q --quiet yum && echo true || echo false"
+      register: yum_tools_exists
+      changed_when: false
 
-      # Verify the AIX level is 7.3 or above
-      - name: Retrieve the AIX release level.
-        raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
-        register: os_level
-        changed_when: false
+    # Verify the AIX level is 7.3 or above
+    - name: Retrieve the AIX release level.
+      raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+      register: os_level
+      changed_when: false
 
-      - name: Verify if the operating system is AIX 7.2 and bellow as
-              bootstrap wget with dnf is not supported.
-        fail:
-           msg: "End play for host {{ aix_host }}. Please use power_aix_bootstrap \
-                 with pkgtype yum for this release"
-        when: (os_level.stdout_lines[0] | int) < 73 and yum_tools_exists.stdout
-              is search("false")
+    - name: Verify if the operating system is AIX 7.2 and bellow as
+            bootstrap wget with dnf is not supported.
+      fail:
+        msg: "End play for host {{ aix_host }}. Please use power_aix_bootstrap \
+              with pkgtype yum for this release"
+      when: (os_level.stdout_lines[0] | int) < 73 and yum_tools_exists.stdout
+            is search("false")
 
-      - name: Verify if the operating system is AIX 7.3 or above as bootstrap
-              wget requires dnf.
-        fail:
-           msg: "End play for host {{ aix_host }}. dnf package manager is missing. Please use \
-                 power_aix_bootstrap with pkgtype dnf"
-        when: (os_level.stdout_lines[0] | int) >= 73 and dnf_tools_exists.stdout is search("false")
+    - name: Verify if the operating system is AIX 7.3 or above as bootstrap
+            wget requires dnf.
+      fail:
+        msg: "End play for host {{ aix_host }}. dnf package manager is missing. Please use \
+              power_aix_bootstrap with pkgtype dnf"
+      when: (os_level.stdout_lines[0] | int) >= 73 and dnf_tools_exists.stdout is search("false")
 
-      # Ensure there is enough space to install wget
-      - name: Increase /opt is required.
-        include_tasks: increase_filesystem.yml
-        with_items:
-         - { filesystem: "opt", size_needed: "{{ opt_size }}" }
+    # Ensure there is enough space to install wget
+    - name: Increase /opt is required.
+      include_tasks: increase_filesystem.yml
+      with_items:
+        - {filesystem: "opt", size_needed: "{{ opt_size }}"}
 
-      # Install wget using yum
-      - block:
-         - name: Install wget using yum
-           yum:
-             name:
+    # Install wget using yum
+    - block:
+        - name: Install wget using yum
+          yum:
+            name:
               - "wget"
-             state: latest
-        when: dnf_tools_exists is search("false")
+            state: latest
+      when: dnf_tools_exists is search("false")
 
-      # Install wget using dnf
-      - block:
+    # Install wget using dnf
+    - block:
 
-         - debug:
-             msg: "Install wget using dnf"
+        - debug:
+            msg: "Install wget using dnf"
 
-         # Prepare the system to use the /opt/freeware/bin/python3 and
-         # /opt/freeware/bin/dnf if dnf is installed.
-         - name: Retrieve the PATH from the host.
-           shell: "echo $PATH"
-           register: target_path
+        # Prepare the system to use the /opt/freeware/bin/python3 and
+        # /opt/freeware/bin/dnf if dnf is installed.
+        - name: Retrieve the PATH from the host.
+          shell: "echo $PATH"
+          register: target_path
 
-         - name: Set the AIX tool's box python3 interpreter and
-                 temporary add PATH /opt/freeware/bin/dnf
-           set_fact:
-              ansible_python_interpreter: "{{interpreter_name}}"
-              install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
+        - name: Set the AIX tool's box python3 interpreter and
+                temporary add PATH /opt/freeware/bin/dnf
+          set_fact:
+            ansible_python_interpreter: "{{interpreter_name}}"
+            install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
 
-         - name: Create a filesystem to hold any cache from dnf.
-           filesystem:
-             filesystem: "{{ target_dir }}"
-             vg: rootvg
-             state: present
-             auto_mount: false
-             permissions: rw
-             attributes: size=50M
+        - name: Create a filesystem to hold any cache from dnf.
+          filesystem:
+            filesystem: "{{ target_dir }}"
+            vg: rootvg
+            state: present
+            auto_mount: false
+            permissions: rw
+            attributes: size=50M
 
-         - name: Mount target filesystem
-           mount:
-              mount_dir: "{{ target_dir }}"
+        - name: Mount target filesystem
+          mount:
+            mount_dir: "{{ target_dir }}"
 
-         - name: Install wget using dnf
-           environment:
-             PATH: "{{ install_path }}"
-           dnf:
-             name:
+        - name: Install wget using dnf
+          environment:
+            PATH: "{{ install_path }}"
+          dnf:
+            name:
               - "wget"
-             state: latest
-             download_dir: "{{ target_dir }}"
+            state: latest
+            download_dir: "{{ target_dir }}"
 
-         - debug:
-             msg: "wget is installed"
+        - name: Print status
+        - debug:
+            msg: "wget is installed"
 
-         # REMOVE temporary filesystem resource
-         - name: Unmount temporary storage space
-           mount:
-              state: umount
-              mount_dir: "{{ target_dir }}"
-              force: true
+        # REMOVE temporary filesystem resource
+        - name: Unmount temporary storage space
+          mount:
+            state: umount
+            mount_dir: "{{ target_dir }}"
+            force: true
 
-         - name: Remove temporary storage space
-           filesystem:
-             filesystem: "{{ target_dir }}"
-             state: absent
-
-
-        when: dnf_tools_exists is search("true")
-
-  # wget is not installed
-    when: wget_exists.stdout is search("false")
+        - name: Remove temporary storage space
+          filesystem:
+            filesystem: "{{ target_dir }}"
+            state: absent
 
 
+      when: dnf_tools_exists is search("true")
+
+# wget is not installed
+  when: wget_exists.stdout is search("false")

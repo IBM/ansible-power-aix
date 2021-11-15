@@ -5,4 +5,3 @@ target_dir: "/tmp/.ansible.cpdir.yum"
 aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
 interpreter_name: /opt/freeware/bin/python3
 opt_size: 500
-

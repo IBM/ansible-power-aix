@@ -2,23 +2,24 @@
 ---
 # Increase a filesystem based on the needed size.
 
-  - set_fact:
-      aix_filesystem: "{{ item.filesystem }}"
-      total_req: "{{ item.size_needed }}"
+- name: Set the Filesystem and required size
+  set_fact:
+     aix_filesystem: "{{ item.filesystem }}"
+     total_req: "{{ item.size_needed }}"
 
-  - name: "Verify {{ aix_filesystem }} has at least {{ total_req }}Mb of space."
-    raw: "/usr/bin/df -m /{{ aix_filesystem }}"
-    register: output
-    changed_when: false
+- name: "Verify {{ aix_filesystem }} has at least {{ total_req }}Mb of space."
+  raw: "/usr/bin/df -m /{{ aix_filesystem }}"
+  register: output
+  changed_when: false
 
-  - name: "Get the free size of {{ aix_filesystem }}"
-    set_fact:
-      tmp_free: "{{ output.stdout_lines[1].split()[2] }}"
+- name: "Get the free size of {{ aix_filesystem }}"
+  set_fact:
+     tmp_free: "{{ output.stdout_lines[1].split()[2] }}"
 
-  - name: calculate the size needed to install the open source tools.
-    set_fact:
-      size_needed: "{{ (total_req | int) - (tmp_free | int) }}"
+- name: calculate the size needed to install the open source tools.
+  set_fact:
+     size_needed: "{{ (total_req | int) - (tmp_free | int) }}"
 
-  - name: "Increase /{{ aix_filesystem }} space if needed"
-    raw: "/usr/sbin/chfs -a size=+{{ size_needed }}M /{{ aix_filesystem }}"
-    when: (tmp_free | int) < (total_req | int)
+- name: "Increase /{{ aix_filesystem }} space if needed"
+  raw: "/usr/sbin/chfs -a size=+{{ size_needed }}M /{{ aix_filesystem }}"
+  when: (tmp_free | int) < (total_req | int)

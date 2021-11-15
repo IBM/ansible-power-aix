@@ -59,4 +59,3 @@
 - name: Bootstrap wget
   include_tasks: "wget_install.yml"
   when: pkgtype == "wget"
-
