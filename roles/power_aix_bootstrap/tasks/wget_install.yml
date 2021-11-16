@@ -105,7 +105,7 @@
             download_dir: "{{ target_dir }}"
 
         - name: Print status
-        - debug:
+          debug:
             msg: "wget is installed"
 
         # REMOVE temporary filesystem resource

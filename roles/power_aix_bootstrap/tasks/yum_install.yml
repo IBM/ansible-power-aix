@@ -1,109 +1,116 @@
 # Copyright (c) IBM Corporation 2020
 ---
 # CHECK for Yum on inventory host
-  - name: Check for existence of yum
-    raw: "rpm -q --quiet yum && echo true || echo false"
-    register: yum_exists
+- name: Check for existence of yum
+  raw: "rpm -q --quiet yum && echo true || echo false"
+  register: yum_exists
+  changed_when: false
 
-  - name: End play if inventory host has yum installed
-    meta: end_host
-    when: yum_exists.stdout is search("true")
+- name: End play if inventory host has yum installed
+  meta: end_host
+  when: yum_exists.stdout is search("true")
 
 #   Bootstraping yum is only supported in AIX 7.2 and 7.1
-  - name: Verify the host has AIX 7.2 or AIX 7.1, if not, exit host
-    raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
-    register: output
-    changed_when: false
+- name: Verify the host has AIX 7.2 or AIX 7.1, if not, exit host
+  raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+  register: output
+  changed_when: false
 
-  - fail:
-       msg: "End playbook for {{ aix_host }}. Bootstrap yum for AIX version \
-             {{ output.stdout_lines[0] }} is not supported."
-    when: (output.stdout_lines[0] | int) != 71 and (output.stdout_lines[0] | int) != 72
+- name: End playbook if AIX version is not 7.1 or 72.
+  fail:
+     msg: "End playbook for {{ aix_host }}. Bootstrap yum for AIX version \
+           {{ output.stdout_lines[0] }} is not supported."
+  when: (output.stdout_lines[0] | int) != 71 and (output.stdout_lines[0] | int) != 72
 
 # DOWNLOAD (local) install images
-  - name: Check for rpm_src file on localhost
-    stat:
-      path: "{{ download_dir }}/{{ rpm_src }}"
-    register: rpm_dest
-    delegate_to: localhost
+- name: Check for rpm_src file on localhost
+  stat:
+     path: "{{ download_dir }}/{{ rpm_src }}"
+  register: rpm_dest
+  delegate_to: localhost
 
-  - name: Download latest rpm (installp) fileset
-    get_url:
-      url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/{{ rpm_src }}"
-      url_username: anonymous
-      url_password: anonymous
-      dest: "{{ download_dir }}/{{ rpm_src }}"
-      mode: '0644'
-    when: not rpm_dest.stat.exists
-    delegate_to: localhost
+- name: Download latest rpm (installp) fileset
+  get_url:
+     url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/{{ rpm_src }}"
+     url_username: anonymous
+     url_password: anonymous
+     dest: "{{ download_dir }}/{{ rpm_src }}"
+     mode: '0644'
+  when: not rpm_dest.stat.exists
+  delegate_to: localhost
 
-  - name: Check for yum_src file on localhost
-    stat:
-      path: "{{ download_dir }}/{{ yum_src }}"
-    register: yum_dest
-    delegate_to: localhost
+- name: Check for yum_src file on localhost
+  stat:
+     path: "{{ download_dir }}/{{ yum_src }}"
+  register: yum_dest
+  delegate_to: localhost
 
-  - name: Download yum bundle file
-    get_url:
-      url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ yum_src }}"
-      url_username: anonymous
-      url_password: anonymous
-      dest: "{{ download_dir }}/{{ yum_src }}"
-      mode: '0644'
-    when: not yum_dest.stat.exists
-    delegate_to: localhost
+- name: Download yum bundle file
+  get_url:
+     url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ yum_src }}"
+     url_username: anonymous
+     url_password: anonymous
+     dest: "{{ download_dir }}/{{ yum_src }}"
+     mode: '0644'
+  when: not yum_dest.stat.exists
+  delegate_to: localhost
 
-  - name: Check for script file on localhost
-    stat:
-      path: "{{ download_dir }}/yum_installer.sh"
-    register: script_dest
-    delegate_to: localhost
+- name: Check for script file on localhost
+  stat:
+     path: "{{ download_dir }}/yum_installer.sh"
+  register: script_dest
+  delegate_to: localhost
 
-  - name: Copy the installer script file
-    copy:
-      src: "files/yum_installer.sh"
-      dest: "{{ download_dir }}/yum_installer.sh"
-      mode: '0755'
-    when: not script_dest.stat.exists
-    delegate_to: localhost
+- name: Copy the installer script file
+  copy:
+     src: "files/yum_installer.sh"
+     dest: "{{ download_dir }}/yum_installer.sh"
+     mode: '0755'
+  when: not script_dest.stat.exists
+  delegate_to: localhost
 
 # DEFINE / EXPAND target path
-  - name: Check for target directory
-    raw: "test -d {{ target_dir }} && echo true || echo false"
-    register: target_exists
+- name: Check for target directory
+  raw: "test -d {{ target_dir }} && echo true || echo false"
+  register: target_exists
+  ignore_errors: true
+  changed_when: false
 
-  - name: Check for target yum bundle
-    raw: "test -e {{ target_dir }}/{{ yum_src }} && echo true || echo false"
-    register: yum_target_exists
-    when: target_exists.stdout is search("true")
+- name: Check for target yum bundle
+  raw: "test -e {{ target_dir }}/{{ yum_src }} && echo true || echo false"
+  register: yum_target_exists
+  when: target_exists.stdout is search("true")
+  ignore_errors: true
+  changed_when: false
 
-  - name: Create target filesystem for image transfer
-    raw: "crfs -v jfs2 -g rootvg -a size=200M -m {{ target_dir }} -A yes -p rw"
-    register: crfs_result
-    when: target_exists.stdout is search("false")
+- name: Create target filesystem for image transfer
+  raw: "crfs -v jfs2 -g rootvg -a size=200M -m {{ target_dir }} -A yes -p rw"
+  register: crfs_result
+  when: target_exists.stdout is search("false")
 
-  - name: Mount target filesystem
-    raw: "mount {{ target_dir }}"
-    when: crfs_result.rc is defined and crfs_result.rc == 0
+- name: Mount target filesystem
+  raw: "mount {{ target_dir }}"
+  when: crfs_result.rc is defined and crfs_result.rc == 0
 
 # TRANSFER files to target inventory
-  - name: Transfer install images
-    raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} root@{{ aix_host }}:{{ target_dir }}"
-    register: scp_result
-    ignore_errors: True
-    delegate_to: localhost
+- name: Transfer install images
+  raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} root@{{ aix_host }}:{{ target_dir }}"
+  register: scp_result
+  delegate_to: localhost
+  ignore_errors: true
+
 
 # EXECUTE restore on target inventory
-  - name: Restore yum bundle content
-    raw: "{{ target_dir }}/yum_installer.sh {{ target_dir }}"
-    ignore_errors: True
-    when: scp_result.rc == 0
+- name: Restore yum bundle content
+  raw: "{{ target_dir }}/yum_installer.sh {{ target_dir }}"
+  ignore_errors: true
+  when: scp_result.rc == 0
 
 # REMOVE temporary filesystem resource
-  - name: Remove temporary storage space
-    raw: "umount -f {{ target_dir }} && rmfs -r {{ target_dir }}"
-    when: crfs_result.rc is defined and crfs_result.rc == 0
+- name: Remove temporary storage space
+  raw: "umount -f {{ target_dir }} && rmfs -r {{ target_dir }}"
+  when: crfs_result.rc is defined and crfs_result.rc == 0
 
-  - name: Print status
-    debug:
-      msg: Bootstrap attempt of yum on {{ aix_host }} has completed
+- name: Print status
+  debug:
+     msg: Bootstrap attempt of yum on {{ aix_host }} has completed
