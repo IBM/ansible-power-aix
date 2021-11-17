@@ -1,6 +1,4 @@
 plugins/modules/aixpert.py validate-modules:module-invalid-version-added
-plugins/modules/alt_disk.py validate-modules:module-invalid-version-added
-plugins/modules/backup.py validate-modules:module-invalid-version-added
 plugins/modules/bootlist.py validate-modules:module-invalid-version-added
 plugins/modules/devices.py validate-modules:module-invalid-version-added
 plugins/modules/emgr.py validate-modules:module-invalid-version-added
@@ -32,5 +30,7 @@ plugins/modules/reboot.py validate-modules:module-invalid-version-added
 plugins/modules/smtctl.py validate-modules:module-invalid-version-added
 plugins/modules/suma.py validate-modules:module-invalid-version-added
 plugins/modules/user.py validate-modules:module-invalid-version-added
+plugins/modules/alt_disk.py validate-modules:module-invalid-version-added
+plugins/modules/backup.py validate-modules:module-invalid-version-added
 plugins/modules/lvm_facts.py validate-modules:invalid-ansiblemodule-schema
 plugins/modules/lpar_facts.py validate-modules:invalid-ansiblemodule-schema
