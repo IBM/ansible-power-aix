@@ -84,7 +84,7 @@ options:
       rootvg has been cloned.
     type: str
 notes:
-  - M(alt_disk) only backs up mounted file systems. Mount all file
+  - M(ibm.power_aix.alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
   - When no target is specified, copy is performed to only one alternate
     disk even if the rootvg contains multiple disks.
