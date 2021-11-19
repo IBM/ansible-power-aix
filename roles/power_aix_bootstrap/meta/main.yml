@@ -2,7 +2,7 @@
 galaxy_info:
   role_name: power_aix_bootstrap
   author: Paul Finley
-  description: Ansible role for bootstrapping IBM Power Systems AIX servers with Yum package manager.
+  description: Ansible role for bootstrapping IBM Power Systems AIX servers with Yum or DNF package managers.
   company: IBM
 
   license: GPL-3.0-only

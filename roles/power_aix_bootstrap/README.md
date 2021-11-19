@@ -11,9 +11,32 @@ None.
 
 Available variables are listed below, along with default values:
 
-    pkgtype (True, str, yum)
+    pkgtype (True, str, none)
 
 Specifies the package service requiring bootstrap installation.
+pagtype: [yum, python, dnf, wget, pycurl]
+Bootstrap for yum and python is supported for AIX 7.1 and AIX 7.2.
+Bootstrap for dnf is supported for AIX 7.3
+
+- yum
+Uses the AIX toolsbox to install the yum package and dependencies.
+- python
+Install python2 using yum.
+- dnf
+Uses the AIX toolsbox to install dnf and dependencies on AIX 7.3 and above.
+- wget
+Uses dnf or yum to install wget.
+-pycurl
+Installs pycurl
+
+
+    opt_free_size (optional, str, 500)
+
+Specifies the free space in megabytes needed in the /opt folder. used by dnf, wget and pycurl bootstraps.
+
+    var_free_size (optional, str, 500)
+
+Specifies the free space in megabytes needed in the /var folder. used by pycurl bootstrap.
 
     download_dir (optional, str, ~)
 
@@ -36,5 +59,15 @@ None.
       vars:
         pkgtype: yum
 
+## Example Playbook
+
+    - hosts: aix
+      gather_facts: no
+      include_role:
+        name: power_aix_bootstrap
+      vars:
+        pkgtype: wget
+        opt_free_size: 1000
+
 ## Copyright
-© Copyright IBM Corporation 2020
+© Copyright IBM Corporation 2021

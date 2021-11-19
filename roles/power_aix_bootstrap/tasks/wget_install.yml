@@ -53,7 +53,7 @@
     - name: Increase /opt is required.
       include_tasks: increase_filesystem.yml
       with_items:
-        - {filesystem: "opt", size_needed: "{{ opt_size }}"}
+        - {filesystem: "opt", size_needed: "{{ opt_free_size }}"}
 
     # Install wget using yum
     - block:

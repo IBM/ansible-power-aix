@@ -2,7 +2,6 @@
 ---
 # Install pycurl and dependencies
 
-
 # Do not continue if pycurl and wget are installed.
 - name: Verify if pycurl package exists.
   raw: "{{ interpreter_name }} -c 'import pycurl' && echo true || echo false"
@@ -13,7 +12,6 @@
   debug:
      msg: "End play for host {{ aix_host }} because pycurl is installed."
   when: pycurl_exists.stdout is search("true")
-
 
 - name: Install pycurl if it is not installed
   block:
@@ -46,8 +44,8 @@
      - name: Increase /opt if it is required.
        include_tasks: increase_filesystem.yml
        with_items:
-          - {filesystem: "opt", size_needed: "{{ opt_size }}"}
-          - {filesystem: "var", size_needed: 50}
+          - {filesystem: "opt", size_needed: "{{ opt_free_size }}"}
+          - {filesystem: "var", size_needed: "{{ var_free_size }}"}
 
      # Prepare the system to use the /opt/freeware/bin/python3
      # and /opt/freeware/bin/dnf
