@@ -3,5 +3,6 @@ rpm_src: "rpm.rte"
 yum_src: "yum_bundle.tar"
 dnf_src_71_72: "dnf_bundle_aix_71_72.tar"
 dnf_src_73: "dnf_bundle_aix_73.tar"
+dnf_install_script: "dnf_installer.sh"
 opt_free_size: 500
 var_free_size: 50

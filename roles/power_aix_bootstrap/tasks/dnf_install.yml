@@ -34,7 +34,7 @@
 
   when: (output.stdout_lines[0] | int) >= 73
 
-# { Excute this block if dnf is not installed and the AIX version is igual or greater than 7.3
+# { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.3
 - block:
 
      # DOWNLOAD (local) install images
@@ -81,14 +81,14 @@
 
      - name: Check for dnf script file on localhost
        stat:
-          path: "{{ download_dir }}/dnf_aixtoolbox.sh"
+          path: "{{ download_dir }}/{{ dnf_install_script }}"
        register: script_dest
        delegate_to: localhost
 
      - name: Copy the installer script from role to local "{{ download_dir }}"
        copy:
-          src: "files/dnf_aixtoolbox.sh"
-          dest: "{{ download_dir }}/dnf_aixtoolbox.sh"
+          src: "files/{{ dnf_install_script }}"
+          dest: "{{ download_dir }}/{{ dnf_install_script }}"
           mode: '0755'
        delegate_to: localhost
 
@@ -110,7 +110,7 @@
      # TRANSFER files to target inventory
      - name: Transfer install images
        raw: >
-        scp -p {{ download_dir }}/dnf_aixtoolbox.sh
+        scp -p {{ download_dir }}/{{ dnf_install_script }}
         {{ download_dir }}/{{ dnf_src_71_72 }}
         {{ download_dir }}/{{ dnf_src_73 }}
         root@{{ aix_host }}:{{ target_dir }}
@@ -124,14 +124,14 @@
      # it will just install dnf.
 
      - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
-       raw: "{{ target_dir }}/dnf_aixtoolbox.sh -y {{ target_dir }}"
+       raw: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
        ignore_errors: true
        when:
           - scp_result.rc == 0
           - yum_exists.stdout is search("true")
 
      - name: Restore dnf bundle at the target if yum is not installed.
-       raw: "{{ target_dir }}/dnf_aixtoolbox.sh -n {{ target_dir }}"
+       raw: "{{ target_dir }}/{{ dnf_install_script }} -n {{ target_dir }}"
        ignore_errors: true
        when:
           - scp_result.rc == 0

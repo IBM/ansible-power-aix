@@ -9,7 +9,7 @@ None.
 
 ## Role Variables
 
-Available variables are listed below, along with default values:
+Available variables are listed below, along with if they are required, type and default values:
 
     pkgtype (True, str, none)
 
@@ -34,7 +34,7 @@ Installs pycurl
 
 Specifies the free space in megabytes needed in the /opt folder. It is used by dnf, wget and pycurl bootstraps.
 
-    var_free_size (optional, str, 500)
+    var_free_size (optional, str, 50)
 
 Specifies the free space in megabytes needed in the /var folder. It is used by the pycurl bootstrap.
 
