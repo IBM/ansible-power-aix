@@ -82,7 +82,12 @@
             ansible_python_interpreter: "{{interpreter_name}}"
             install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
 
-        - name: Create a filesystem to hold any cache from dnf.
+        - name: Check for target directory to hold the dnf cache.
+          stat:
+             path: "{{ target_dir }}"
+          register: dnf_cache
+
+        - name: Create a filesystem for the dnf cache if it does not exist.
           filesystem:
             filesystem: "{{ target_dir }}"
             vg: rootvg
@@ -90,6 +95,7 @@
             auto_mount: false
             permissions: rw
             attributes: size=50M
+          when: not dnf_cache.stat.exists
 
         - name: Mount target filesystem
           mount:
@@ -114,12 +120,13 @@
             state: umount
             mount_dir: "{{ target_dir }}"
             force: true
+          when: not dnf_cache.stat.exists
 
         - name: Remove temporary storage space
           filesystem:
             filesystem: "{{ target_dir }}"
             state: absent
-
+          when:  not dnf_cache.stat.exists
 
       when: dnf_tools_exists is search("true")
 

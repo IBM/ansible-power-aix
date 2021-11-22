@@ -109,7 +109,8 @@
 # REMOVE temporary filesystem resource
 - name: Remove temporary storage space
   raw: "umount -f {{ target_dir }} && rmfs -r {{ target_dir }}"
-  when: crfs_result.rc is defined and crfs_result.rc == 0
+  fail_when: false
+  when: target_exists.stdout is search("false")
 
 - name: Print status
   debug:
