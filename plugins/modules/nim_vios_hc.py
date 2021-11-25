@@ -377,8 +377,9 @@ def vios_health(module, mgmt_sys_uuid, hmc_ip, vios_uuids):
         cmd.extend(['-' + 'v' * module._verbosity])
         if module._verbosity >= 3:
             cmd.extend(['-D'])
-
-    ret, stdout, stderr = module.run_command(cmd)
+    # path prefix is used here to ensure the dependent module paths are present.
+    # In this case, curl module.
+    ret, stdout, stderr = module.run_command(cmd, path_prefix=os.path.dirname(vioshc_interpreter))
     if ret != 0:
         OUTPUT.append('    VIOS Health check failed, vioshc returned: {0}'
                       .format(stderr))
@@ -418,8 +419,9 @@ def vios_health_init(module, hmc_id, hmc_ip):
         cmd.extend(['-' + 'v' * module._verbosity])
         if module._verbosity >= 3:
             cmd.extend(['-D'])
-
-    ret, stdout, stderr = module.run_command(cmd)
+    # path prefix is used here to ensure the dependent module paths are present.
+    # In this case, curl module.
+    ret, stdout, stderr = module.run_command(cmd, path_prefix=os.path.dirname(vioshc_interpreter))
     if ret != 0:
         OUTPUT.append('    Failed to get the VIOS information, vioshc returned: {0}'
                       .format(stderr))

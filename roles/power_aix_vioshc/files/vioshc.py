@@ -940,8 +940,10 @@ def get_vscsi_mapping(vios_name, vios_uuid):
             device_target_mapping[backing_device_name].append(remote_logical_partition_id)
 
     for dev, dev_target_mapping in device_target_mapping.items():
-        device_target_mapping.sort()
+        dev_target_mapping.sort()
 
+    # Reinitialize iter_
+    iter_ = tree.iter()
     vios_scsi_mapping = {}
     for elem in iter_:
         backing_device_name = ""
@@ -961,7 +963,7 @@ def get_vscsi_mapping(vios_name, vios_uuid):
                     backing_device_type = "LogicalVolume"
                 if str_tag == "PhysicalVolume" or\
                    str_tag == "LogicalUnit" or str_tag == "VirtualDisk":
-                    sub_children = child.getchildren()
+                    sub_children = list(child)
                     for kid in sub_children:
                         if re.sub(r'{[^>]*}', "", kid.tag) == 'VolumeName':
                             backing_device_name = re.sub(r'<[^>]*>', "", kid.text)
@@ -1154,15 +1156,15 @@ def build_sea_config(vios_name, vios_uuid, sea_config):
             elem_child = list(elem)
             for child in elem_child:
                 if re.sub(r'{[^>]*}', "", child.tag) == 'BackingDeviceChoice':
-                    sub_child = child.getchildren()
+                    sub_child = list(child)
                     for child in sub_child:
                         if re.sub(r'{[^>]*}', "", child.tag) == 'EthernetBackingDevice':
-                            sub_child2 = child.getchildren()
+                            sub_child2 = list(child)
                             for child in sub_child2:
                                 if re.sub(r'{[^>]*}', "", child.tag) == 'DeviceName':
                                     BackingDeviceName = child.text
                                 if re.sub(r'{[^>]*}', "", child.tag) == 'IPInterface':
-                                    sub_child3 = child.getchildren()
+                                    sub_child3 = list(child)
                                     for child in sub_child3:
                                         if re.sub(r'{[^>]*}', "", child.tag) == 'State':
                                             BackingDeviceState = child.text
@@ -1173,10 +1175,10 @@ def build_sea_config(vios_name, vios_uuid, sea_config):
                 if re.sub(r'{[^>]*}', "", child.tag) == 'DeviceName':
                     SEADeviceName = child.text
                 if re.sub(r'{[^>]*}', "", child.tag) == 'TrunkAdapters':
-                    sub_child = child.getchildren()
+                    sub_child = list(child)
                     for child in sub_child:
                         if re.sub(r'{[^>]*}', "", child.tag) == 'TrunkAdapter':
-                            sub_child2 = child.getchildren()
+                            sub_child2 = list(child)
                             for child in sub_child2:
                                 if re.sub(r'{[^>]*}', "", child.tag) == 'PortVLANID':
                                     VLANIDs.append(child.text)
