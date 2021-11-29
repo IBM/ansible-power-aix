@@ -7,11 +7,16 @@
   register: output
   changed_when: false
 
+- name: Set a aix73
+  set_fact:
+     aix73: true
+  when: (output.stdout_lines[0] | int) >= 73
+
 - name: Fail if AIX version < 7.3
   fail:
      msg: "End playbook for {{ aix_host }}. Bootstrap dnf for AIX version \
            {{ output.stdout_lines[0] }} is not supported."
-  when: (output.stdout_lines[0] | int) < 73
+  when: not aix73
 
 #   CHECK for DNF on inventory host
 - block:
@@ -32,7 +37,7 @@
        changed_when: false
        when: dnf_exists.stdout is search("false")
 
-  when: (output.stdout_lines[0] | int) >= 73
+  when: aix73
 
 # { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.3
 - block:
@@ -51,11 +56,12 @@
           mode: '0644'
        delegate_to: localhost
 
-     - name: Check for "{{ dnf_src_71_72 }}" file on localhost
-       stat:
-          path: "{{ download_dir }}/{{ dnf_src_71_72 }}"
-       register: dnf_71_72_dest
-       delegate_to: localhost
+#     - name: Check for "{{ dnf_src_71_72 }}" file on localhost
+#       stat:
+#          path: "{{ download_dir }}/{{ dnf_src_71_72 }}"
+#       register: dnf_71_72_dest
+#       delegate_to: localhost
+#       when: not aix73
 
      - name: Check for "{{ dnf_src_73 }}" file on localhost
        stat:
@@ -63,15 +69,15 @@
        register: dnf_73_dest
        delegate_to: localhost
 
-     - name: Download dnf bundle file for 7.1 and 7.2 to the controller
-       get_url:
-          url: "http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ dnf_src_71_72 }}"
-          dest: "{{ download_dir }}/{{ dnf_src_71_72 }}"
-          mode: '0644'
-       when: not dnf_71_72_dest.stat.exists
-       delegate_to: localhost
+#     - name: Download dnf bundle file for 7.1 and 7.2 to the controller
+#       get_url:
+#          url: "http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ dnf_src_71_72 }}"
+#          dest: "{{ download_dir }}/{{ dnf_src_71_72 }}"
+#          mode: '0644'
+#       when: not aix73 and not dnf_71_72_dest.stat.exists
+#       delegate_to: localhost
 
-     - name: Download dnf bundle file for 7.3 to the controller
+     - name: Download dnf bundle file "{{ dnf_src_73 }}" for 7.3 to the controller
        get_url:
           url: "http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ dnf_src_73 }}"
           dest: "{{ download_dir }}/{{ dnf_src_73 }}"
@@ -93,30 +99,42 @@
        delegate_to: localhost
 
      # DEFINE / EXPAND target path
-     - name: Check for target directory
+     - name: Check for target directory "{{ target_dir }}"
        raw: "test -d {{ target_dir }} && echo true || echo false"
        register: target_exists
+       changed_when: false
 
-     - name: Create target filesystem for image transfer if it does not exist.
+     - name: Create target filesystem "{{ target_dir }}" for image transfer if it does not exist.
        raw: "crfs -v jfs2 -g rootvg -a size=350M -m {{ target_dir }} -A yes -p rw"
        register: crfs_result
        when: target_exists.stdout is search("false")
 
-     - name: Mount target filesystem
+     - name: Mount target filesystem "{{ target_dir }}"
        raw: "mount {{ target_dir }}"
        when: crfs_result.rc is defined and crfs_result.rc == 0
 
 
      # TRANSFER files to target inventory
-     - name: Transfer install images
+     - name: Transfer install images if AIX 7.3
        raw: >
         scp -p {{ download_dir }}/{{ dnf_install_script }}
-        {{ download_dir }}/{{ dnf_src_71_72 }}
         {{ download_dir }}/{{ dnf_src_73 }}
         root@{{ aix_host }}:{{ target_dir }}
        register: scp_result
        ignore_errors: true
+       when: aix73
        delegate_to: localhost
+
+#     - name: Transfer install images if AIX 7.1 or AIX 7.2
+#       raw: >
+#        scp -p {{ download_dir }}/{{ dnf_install_script }}
+#        {{ download_dir }}/{{ dnf_src_71_72 }}
+#        root@{{ aix_host }}:{{ target_dir }}
+#       register: scp_result
+#       ignore_errors: true
+#       when: not aix73
+#       delegate_to: localhost
+
 
      # EXECUTE restore on target inventory
      # The modified AIX toolsbox script will restore the appropiate bundle if
@@ -163,4 +181,4 @@
        when: dnf_installed.stdout is search("true")
 
 #    Block to install dnf }
-  when: (output.stdout_lines[0] | int) >= 73 and dnf_exists.stdout is search("false")
+  when: aix73 and dnf_exists.stdout is search("false")

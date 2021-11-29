@@ -41,83 +41,41 @@
        when: dnf_tools_exists.stdout is search("false")
 
      # Ensure there is enough space to install the tools
-     - name: Increase /opt if it is required.
+     - name: Increase /opt and /var if it is required.
        include_tasks: increase_filesystem.yml
        with_items:
           - {filesystem: "opt", size_needed: "{{ opt_free_size }}"}
           - {filesystem: "var", size_needed: "{{ var_free_size }}"}
 
-     # Prepare the system to use the /opt/freeware/bin/python3
-     # and /opt/freeware/bin/dnf
-     - name: Set the AIX tool's box python interpreter
-       set_fact:
-          ansible_python_interpreter: "{{ interpreter_name }}"
-
-     - name: Retrieve the PATH from the host.
-       shell: "echo $PATH"
-       register: target_path
-       changed_when: false
-
-     - name: Set PATH, PYCURL_CURL_CONFIG
-       set_fact:
-          install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
-          pycurl_curl_config: "/opt/freeware/bin/curl-config"
-
-     - name: Print the temporary PATH for this playbook
-       debug:
-          msg: "Temporary host path - {{ install_path }}"
-
      # Install pip
      - name: install pip
-       raw: "'{{ interpreter_name }}' -m ensurepip --upgrade && echo true || echo false"
+       shell: "'{{ interpreter_name }}' -m ensurepip && echo true || echo false"
 
-     - name: Create a filesystem to hold any cache from dnf.
-       filesystem:
-          filesystem: "{{ target_dir }}"
-          vg: rootvg
-          state: present
-          auto_mount: false
-          permissions: rw
-          attributes: size=250M
-
-     - name: Mount target filesystem
-       mount:
-          mount_dir: "{{ target_dir }}"
+     - name: Upgrade PIP
+       shell: "'{{ interpreter_name }}' -m pip install --upgrade pip"
+       environment:
+          PATH: /opt/freeware/bin
 
      # Install dependencies
-     - name: Update AIX Toolsbox's python3. Install curl-devel,
+     - name: Update AIX Toolsbox's python3. Install gcc, curl-devel,
              python3-devel and curl.
        environment:
-          PATH: "{{ install_path }}"
+          PATH: /opt/freeware/bin
+       vars:
+          ansible_python_interpreter: "{{ interpreter_name }}"
        dnf:
           name:
+             - "gcc"
              - "python3"
              - "curl-devel"
              - "python3-devel"
              - "curl"
           state: latest
-          download_dir: "{{ target_dir }}"
        register: dnf_output
 
      # Install pycurl
      - name: Install pycurl using pip
-       environment:
-          PATH: "{{ install_path }}"
-          PYCURL_CURL_CONFIG: "{{ pycurl_curl_config }}"
-       pip:
-          name: pycurl
-          executable: "/opt/freeware/bin/pip3"
-
-       # REMOVE temporary filesystem resource
-     - name: Unmount temporary storage space
-       mount:
-          state: umount
-          mount_dir: "{{ target_dir }}"
-
-     - name: Remove temporary storage space
-       filesystem:
-          filesystem: "{{ target_dir }}"
-          state: absent
+       raw: "export PATH=$PATH:/opt/freeware/bin ; {{ interpreter_name }} -m pip install pycurl"
 
      - name: Print pycurl installation success.
        debug:

@@ -70,63 +70,19 @@
         - debug:
             msg: "Install wget using dnf"
 
-        # Prepare the system to use the /opt/freeware/bin/python3 and
-        # /opt/freeware/bin/dnf if dnf is installed.
-        - name: Retrieve the PATH from the host.
-          shell: "echo $PATH"
-          register: target_path
-
-        - name: Set the AIX tool's box python3 interpreter and
-                temporary add PATH /opt/freeware/bin/dnf
-          set_fact:
-            ansible_python_interpreter: "{{interpreter_name}}"
-            install_path: "/opt/freeware/bin:{{ target_path.stdout_lines[0] }}"
-
-        - name: Check for target directory to hold the dnf cache.
-          stat:
-             path: "{{ target_dir }}"
-          register: dnf_cache
-
-        - name: Create a filesystem for the dnf cache if it does not exist.
-          filesystem:
-            filesystem: "{{ target_dir }}"
-            vg: rootvg
-            state: present
-            auto_mount: false
-            permissions: rw
-            attributes: size=50M
-          when: not dnf_cache.stat.exists
-
-        - name: Mount target filesystem
-          mount:
-            mount_dir: "{{ target_dir }}"
-
         - name: Install wget using dnf
           environment:
-            PATH: "{{ install_path }}"
+            PATH: /opt/freeware/bin
+          vars:
+            ansible_python_interpreter: "{{ interpreter_name }}"
           dnf:
             name:
               - "wget"
             state: latest
-            download_dir: "{{ target_dir }}"
 
         - name: Print status
           debug:
             msg: "wget is installed"
-
-        # REMOVE temporary filesystem resource
-        - name: Unmount temporary storage space
-          mount:
-            state: umount
-            mount_dir: "{{ target_dir }}"
-            force: true
-          when: not dnf_cache.stat.exists
-
-        - name: Remove temporary storage space
-          filesystem:
-            filesystem: "{{ target_dir }}"
-            state: absent
-          when:  not dnf_cache.stat.exists
 
       when: dnf_tools_exists is search("true")
 
