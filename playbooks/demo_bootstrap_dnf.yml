@@ -43,4 +43,4 @@
       name: power_aix_bootstrap
     vars:
       pkgtype: "pycurl"
-#     opt_free_size: 500
+      opt_free_size: 1000
