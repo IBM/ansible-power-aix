@@ -54,6 +54,10 @@ clean:
 	@rm -rf collections/ansible_collections
 	@rm -rf plugins/modules/__pycache__
 
+.PHONY: uninstall-pylint
+uninstall-pylint:
+	python -m pip uninstall --yes pylint
+
 ######################################################################################
 # installation targets
 ######################################################################################
@@ -85,6 +89,11 @@ install-sanity-test-requirements:
 .PHONY: install-unit-test-requirements
 install-unit-test-requirements:
 	python -m pip install -r tests/unit/unit.requirements
+
+.PHONY: install-pylint-py3k
+install-pylint-py3k: uninstall-pylint
+	python -m pip install --upgrade pip
+	python -m pip install pylint==2.10.*
 
 ######################################################################################
 # testing targets
