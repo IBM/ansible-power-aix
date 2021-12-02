@@ -99,7 +99,7 @@
         action: reboot
         targets: "{{ install_targets_v }}"
       register: result
-    - debug: var=result
+    # - debug: var=result
 
     - name: Perform a maintenance operation on standalone partition
       nim:
@@ -111,9 +111,9 @@
     - name: Query all standalone objects defined in a NIM master
       nim:
         action: show
-        obj_type: joker
+        obj_type: standalone
       register: result
-    - debug: var=result
+    # - debug: var=result
 
     - name: Get CState of '{{ install_targets_v }}'
       debug: var=result.meta.query[install_targets_v].Cstate
