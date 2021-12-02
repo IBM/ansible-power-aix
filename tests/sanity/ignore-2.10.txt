@@ -35,7 +35,6 @@ plugins/modules/user.py validate-modules:module-invalid-version-added
 plugins/modules/alt_disk.py pylint:consider-using-dict-items
 plugins/modules/nim_updateios.py pylint:consider-using-dict-items
 plugins/modules/nim_vios_alt_disk.py pylint:consider-using-dict-items
-plugins/modules/nim_vios_hc.py pylint:consider-using-dict-items
 plugins/modules/nim_viosupgrade.py pylint:consider-using-dict-items
 plugins/modules/flrtvc.py pylint:consider-using-with
 plugins/modules/nim_flrtvc.py pylint:consider-using-with
