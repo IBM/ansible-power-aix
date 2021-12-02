@@ -2,14 +2,21 @@
 - name: "VIOS health check information"
   gather_facts: yes
   hosts: nimserver
+  collections:
+  - ibm.power_aix
   
   vars:
   #VIOSes to do health check.
     targets_v: 
-      - "vios1"
-      - "vios2"
+      - "vios1,vios2"
+      - "vios3"
      
-  tasks:  
+  tasks:
+  - name: Install the vios health assessment tool on NIM
+    import_role:
+       name: power_aix_vioshc
+ #  vars:
+ #     vioshc_opt_free_size: 1000  
   
   #gather the vios health check data    
   - name: Gather the health check information
