@@ -103,9 +103,9 @@ options:
     - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
     type: bool
     default: yes
-  type:
+  obj_type:
     description:
-    - Specifies which NIM object type to query for action C(show).
+    - Specifies which NIM object type to query for action C(show). Ignored for any other action.
     - If not set for C(show), then all NIM objects in the target machine will be queried.
     - C(res_group) to query a resource group object.
     - C(master) to query a NIM master object.
@@ -163,7 +163,7 @@ EXAMPLES = r'''
 - name: Query all standalone objects defined in a NIM master
   nim:
     action: show
-    type: standalone
+    obj_type: standalone
 '''
 
 RETURN = r'''
@@ -230,7 +230,7 @@ meta:
                     returned: If the command was run.
                     type: str
                 rc:
-                    description: The return codeof the last comman.
+                    description: The return code of the last command.
                     returned: If the command was run.
                     type: str
                 stdout:
@@ -241,6 +241,17 @@ meta:
                     description: Standard error of the last command.
                     returned: If the command was run.
                     type: str
+        query:
+            description: Queried information of all NIM objects of the specified type.
+            returned: only for show action
+            type: dict
+            contains:
+                <nim_object>:
+                    description: Information for each individual NIM object fetched.
+                    returned: if NIM object of this type exists
+                    type: dict
+                    contains: depends on the NIM object type
+            sample: see below
 nim_node:
     description: NIM node info.
     returned: always
@@ -1691,6 +1702,57 @@ def nim_reboot(module, params):
     results['changed'] = True
 
 
+def nim_show(module, params):
+    """
+    Query information on existing NIM objects in the NIM server.
+
+    arguments:
+        module  (dict): The Ansible module
+        params  (dict): The module parameters for the command.
+    note:
+        Exits with fail_json in case of error
+    """
+    global results
+
+    module.log('NIM - show operation')
+    cmd = ['lsnim', '-l', '-Z']
+    if params['obj_type'] != 'all':
+        cmd += ['-t', params['obj_type']]
+
+    rc, stdout, stderr = module.run_command(cmd)
+
+    # parse output
+    info = {}
+    labels, values = stdout.strip().split('\n')
+    labels = labels[1:] # remote token '#' at the begining of the string
+    labels = labels.split(':')
+    values = values.split(':')
+    for label, value in zip(labels, values):
+        if label == "name":
+            info[value] = {}
+            entry_name = value
+        else:
+            info[entry_name][label] = value
+
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = rc
+    results['stdout'] = "see meta.query"
+    results['stderr'] = stderr
+    results['meta']['query'] = info
+
+    module.log('cmd: {0}'.format(results['cmd']))
+    module.log('rc: {0}'.format(results['rc']))
+    module.log('stdout: {0}'.format(results['stdout']))
+    module.log('stderr: {0}'.format(results['stderr']))
+
+    if rc != 0:
+        results['messages']['msg'] = "Failed to fetch on '{0}' NIM objects".format(params['obj_type'])
+        module.log('NIM - Error: ' + results['msg'])
+        module.fail_json(**results)
+
+    results['changed'] = False
+
+
 def main():
     global results
 
@@ -1700,7 +1762,7 @@ def main():
                         choices=['update', 'master_setup', 'check', 'compare',
                                  'script', 'allocate', 'deallocate',
                                  'bos_inst', 'define_script', 'remove',
-                                 'reset', 'reboot', 'maintenance']),
+                                 'reset', 'reboot', 'maintenance', 'show']),
             lpp_source=dict(type='str'),
             targets=dict(type='list', elements='str'),
             asynchronous=dict(type='bool', default=False),
@@ -1711,6 +1773,12 @@ def main():
             group=dict(type='str'),
             force=dict(type='bool', default=False),
             boot_client=dict(type='bool', default=True),
+            obj_type=dict(type='str', choices=['res_group', 'master',
+                        'standalone', 'cec', 'hmc', 'vios', 'ent', 'boot', 
+                        'bosinst_data', 'certificate', 'ios_backup', 
+                        'ios_mksysb', 'lpp_source', 'mksysb', 'nim_script', 
+                        'savevg', 'script', 'spot', 'all'],
+                        default='all'),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1744,6 +1812,14 @@ def main():
         #       'stdout': '',
         #       'stderr': '',
         #   }
+        #  query:
+        #    nim_obj_entry: {
+        #      'Cstate': 'ready for a NIM operation',
+        #      'Cstate_result': 'success',
+        #      'Mstate': 'currently running',
+        #      'cable_type': 'N/A',
+        #      ...
+        #    }
         # }
         nim_node={},
     )
@@ -1760,6 +1836,7 @@ def main():
     force = module.params['force']
     action = module.params['action']
     boot_client = module.params['boot_client']
+    obj_type = module.params['obj_type']
 
     params = {}
 
@@ -1768,7 +1845,7 @@ def main():
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # skip build nim node when master_setup is called
-    if action != 'master_setup':
+    if action != 'master_setup' and action != 'show':
         # Build nim node info
         build_nim_node(module)
 
@@ -1836,6 +1913,10 @@ def main():
         params['targets'] = targets
         nim_reboot(module, params)
 
+    elif action == 'show':
+        params['obj_type'] = obj_type
+        nim_show(module, params)
+
     # Exit
     if results['status']:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
@@ -1844,7 +1925,7 @@ def main():
             module.log(results['msg'])
             module.fail_json(**results)
 
-    results['msg'] = 'NIM {0} operation successfull. See status and meta for details.'.format(action)
+    results['msg'] = 'NIM {0} operation successful. See status and meta for details.'.format(action)
     module.log(results['msg'])
     module.exit_json(**results)
 
