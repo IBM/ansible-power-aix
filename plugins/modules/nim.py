@@ -47,8 +47,9 @@ options:
     - C(reboot) to reboot the given NIM clients if they are running.
     - C(maintenance) to perform a maintenance operation that commits filesets on NIM standalone
       clients.
+    - C(show) to perform a query on a NIM object.
     type: str
-    choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance ]
+    choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance, show ]
     required: true
   targets:
     description:
@@ -102,6 +103,32 @@ options:
     - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
     type: bool
     default: yes
+  type:
+    description:
+    - Specifies which NIM object type to query for action C(show).
+    - If not set for C(show), then all NIM objects in the target machine will be queried.
+    - C(res_group) to query a resource group object.
+    - C(master) to query a NIM master object.
+    - C(standalone) to query the NIM client object.
+    - C(cec) to query a CEC object.
+    - C(hmc) to query a HMC object.
+    - C(vios) to query a VIOS object.
+    - C(ent) to query an Ethernet Network object.
+    - C(boot) to query a boot image object.
+    - C(bosinst_data) to query a configuration file used for base system installation.
+    - C(certificate) to query a certificate.
+    - C(ios_backup) to query a backup image of a VIOS.
+    - C(ios_mksysb) to query a installable BOS backup image of a VIOS.
+    - C(lpp_source) to query a source device.
+    - C(mksysb) to query an AIX mksysb image.
+    - C(nim_script) to query a script to support NIM operations.
+    - C(saveg) to query a volum group backup image.
+    - C(script) to query an executable file that is run on a client.
+    - C(spot) to query a Shared Product Object Tree.
+    - C(all) query all NIM objects in the target machine.
+    type: str
+    choices: [ res_group, master, standalone, cec, hmc, vios, ent, boot, bosinst_data, certificate, ios_backup, ios_mksysb, lpp_source, mksysb, nim_script, savevg, script, spot, all ]
+    default: all
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
@@ -132,6 +159,11 @@ EXAMPLES = r'''
     script: myscript
     asynchronous: no
     targets: all
+
+- name: Query all standalone objects defined in a NIM master
+  nim:
+    action: show
+    type: standalone
 '''
 
 RETURN = r'''
