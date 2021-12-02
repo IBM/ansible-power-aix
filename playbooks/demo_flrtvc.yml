@@ -13,10 +13,11 @@
   - ibm.power_aix
 
   tasks:
-  - name: Check for wget command
-    yum:
-      name: "wget"
-      state: latest
+  - import_role:
+      name: power_aix_bootstrap
+    vars:
+      pkgtype: "wget"
+
   - name: "FLRTVC"
     flrtvc:
       path: "{{ path }}"

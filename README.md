@@ -37,6 +37,7 @@ This repository contains some example best practices for open source repositorie
 
 - AIX 7.1
 - AIX 7.2
+- AIX 7.3
 
 ### Ansible
 
@@ -47,8 +48,11 @@ This repository contains some example best practices for open source repositorie
 ### Python
 
 - Requires Python 2.7 or newer
-- To install (or upgrade) Python on AIX, you must first configure [YUM].  As part of YUM installation, Python2 will be installed by default
+- To install (or upgrade) Python on AIX 7.1 and 7.2, you must first configure [YUM].  As part of YUM installation, Python2 will be installed by default
 - After setting up and installing YUM, you may update all the packages to the latest level using the yum update command
+- AIX 7.3 will come with python3 pre-installed and Ansible will work with it.
+- AIX 7.3 package manager needs to be DNF instead of yum as yum does not work with python3.
+
 
 ## Resources
 

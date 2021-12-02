@@ -1,0 +1,18 @@
+---
+- name: "Install wget using dnf"
+  hosts: all
+  user: root
+  gather_facts: false
+
+  collections:
+  - ibm.power_aix
+
+  tasks:
+  - name: Install wget
+    dnf:
+      name: "wget"
+      state: present
+    environment:
+      PATH: /opt/freeware/bin
+    vars:
+      ansible_python_interpreter: /opt/freeware/bin/python3

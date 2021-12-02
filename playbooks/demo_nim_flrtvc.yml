@@ -9,6 +9,12 @@
   collections:
   - ibm.power_aix
   tasks:
+
+    - import_role:
+        name: power_aix_bootstrap
+      vars:
+        pkgtype: "wget"
+
     - name: "FLRTVC"
       nim_flrtvc:
         targets: "{{ vm_targets }}"
