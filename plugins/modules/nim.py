@@ -107,27 +107,7 @@ options:
     description:
     - Specifies which NIM object type to query for action C(show). Ignored for any other action.
     - If not set for C(show), then all NIM objects in the target machine will be queried.
-    - C(res_group) to query a resource group object.
-    - C(master) to query a NIM master object.
-    - C(standalone) to query the NIM client object.
-    - C(cec) to query a CEC object.
-    - C(hmc) to query a HMC object.
-    - C(vios) to query a VIOS object.
-    - C(ent) to query an Ethernet Network object.
-    - C(boot) to query a boot image object.
-    - C(bosinst_data) to query a configuration file used for base system installation.
-    - C(certificate) to query a certificate.
-    - C(ios_backup) to query a backup image of a VIOS.
-    - C(ios_mksysb) to query a installable BOS backup image of a VIOS.
-    - C(lpp_source) to query a source device.
-    - C(mksysb) to query an AIX mksysb image.
-    - C(nim_script) to query a script to support NIM operations.
-    - C(saveg) to query a volum group backup image.
-    - C(script) to query an executable file that is run on a client.
-    - C(spot) to query a Shared Product Object Tree.
-    - C(all) query all NIM objects in the target machine.
     type: str
-    choices: [ res_group, master, standalone, cec, hmc, vios, ent, boot, bosinst_data, certificate, ios_backup, ios_mksysb, lpp_source, mksysb, nim_script, savevg, script, spot, all ]
     default: all
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
@@ -1718,39 +1698,43 @@ def nim_show(module, params):
     cmd = ['lsnim', '-l', '-Z']
     if params['obj_type'] != 'all':
         cmd += ['-t', params['obj_type']]
+    results['changed'] = False
 
     rc, stdout, stderr = module.run_command(cmd)
-
-    # parse output
-    info = {}
-    labels, values = stdout.strip().split('\n')
-    labels = labels[1:] # remote token '#' at the begining of the string
-    labels = labels.split(':')
-    values = values.split(':')
-    for label, value in zip(labels, values):
-        if label == "name":
-            info[value] = {}
-            entry_name = value
-        else:
-            info[entry_name][label] = value
 
     results['cmd'] = ' '.join(cmd)
     results['rc'] = rc
     results['stdout'] = "see meta.query"
     results['stderr'] = stderr
-    results['meta']['query'] = info
 
-    module.log('cmd: {0}'.format(results['cmd']))
-    module.log('rc: {0}'.format(results['rc']))
-    module.log('stdout: {0}'.format(results['stdout']))
-    module.log('stderr: {0}'.format(results['stderr']))
+    module.log('cmd: {0}'.format(' '.join(cmd)))
+    module.log('rc: {0}'.format(rc))
+    module.log('stdout: {0}'.format(stdout))
+    module.log('stderr: {0}'.format(stderr))
+
+    # check if any info was fetched
+    if not stdout and rc == 0:
+        results['meta']['messages'] = "There are no defined NIM objects of type '{0}'".format(params['obj_type'])
+        return
 
     if rc != 0:
-        results['messages']['msg'] = "Failed to fetch on '{0}' NIM objects".format(params['obj_type'])
+        results['meta']['messages'] = "Failed to fetch '{0}' NIM objects types".format(params['obj_type'])
         module.log('NIM - Error: ' + results['msg'])
         module.fail_json(**results)
-
-    results['changed'] = False
+    else:
+        # parse output
+        info = {}
+        labels, values = stdout.strip().split('\n')
+        labels = labels[1:]  # remote token '#' at the begining of the string
+        labels = labels.split(':')
+        values = values.split(':')
+        for label, value in zip(labels, values):
+            if label == "name":
+                info[value] = {}
+                entry_name = value
+            else:
+                info[entry_name][label] = value
+        results['meta']['query'] = info
 
 
 def main():
@@ -1773,12 +1757,7 @@ def main():
             group=dict(type='str'),
             force=dict(type='bool', default=False),
             boot_client=dict(type='bool', default=True),
-            obj_type=dict(type='str', choices=['res_group', 'master',
-                        'standalone', 'cec', 'hmc', 'vios', 'ent', 'boot', 
-                        'bosinst_data', 'certificate', 'ios_backup', 
-                        'ios_mksysb', 'lpp_source', 'mksysb', 'nim_script', 
-                        'savevg', 'script', 'spot', 'all'],
-                        default='all'),
+            obj_type=dict(type='str', default='all'),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],

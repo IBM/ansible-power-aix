@@ -111,9 +111,9 @@
     - name: Query all standalone objects defined in a NIM master
       nim:
         action: show
-        obj_type: standalone
+        obj_type: joker
       register: result
-    # - debug: var=result
+    - debug: var=result
 
     - name: Get CState of '{{ install_targets_v }}'
       debug: var=result.meta.query[install_targets_v].Cstate
