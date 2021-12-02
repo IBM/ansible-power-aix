@@ -30,27 +30,12 @@
       register: result
     # - debug: var=result
 
-    # - name: BOS installation using a group resource a customization script
-    #   nim:
-    #     action: bos_inst
-    #     targets: "{{ install_targets_v }}"
-    #     group: "{{ bos_inst_resgroup_v }}"
-    #     script: "{{ bos_inst_script_v }}"
-    #   register: result
-    # # - debug: var=result
-
-    # - name: Configure the NIM master
-    #   nim:
-    #     action: master_setup
-    #     device: "{{ master_setup_device_v }}"
-    #   register: result
-    # # - debug: var=result
-
-    # - name: Get oslevels
-    #   nim:
-    #     action: check
-    #     targets: "{{ check_targets_v }}"
-    #   register: result
+    - name: Deallocate a NIM resource
+      nim:
+        action: deallocate
+        targets: "{{ install_targets_v }}"
+        lpp_source: "{{ alloc_resource_v }}"
+      register: result
     # - debug: var=result
 
     # - name: Compare installation inventories
@@ -116,9 +101,19 @@
       register: result
     - debug: var=result
 
-    # - name: Perform a maintenance operation on standalone partition
-    #   nim:
-    #     action: maintenance
-    #     targets: "{{ install_targets_v }}"
-    #   register: result
-    # # - debug: var=result
+    - name: Perform a maintenance operation on standalone partition
+      nim:
+        action: maintenance
+        targets: "{{ install_targets_v }}"
+      register: result
+    # - debug: var=result
+
+    - name: Query all standalone objects defined in a NIM master
+      nim:
+        action: show
+        obj_type: standalone
+      register: result
+    # - debug: var=result
+
+    - name: Get CState of '{{ install_targets_v }}'
+      debug: var=result.meta.query[install_targets_v].Cstate
