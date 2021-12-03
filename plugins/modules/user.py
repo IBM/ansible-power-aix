@@ -128,6 +128,10 @@ def get_chuser_command(module):
     '''
     # 'attributes' contains all of the key=value pairs that Ansible wants us to set
     attributes = module.params['attributes']
+    if attributes is None:
+        ## No attributes to change, return None before we do anything.
+        return None
+
     # 'user_attrs' contains the key=value pairs that are _currently_ set in AIX
     lsuser_cmd = "lsuser -C %s" % module.params['name']
     rc, stdout, stderr = module.run_command(lsuser_cmd)
