@@ -164,6 +164,20 @@ def get_chuser_command(module):
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
     return cmd
+
+def modify_user(module):
+    '''
+    Modify_user function modifies the attributes of the user and returns
+    output, return code and error of chuser command, if any.
+
+    arguments:
+        module  (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    return:
+        (message for command, changed status)
+    '''
+
     msg = None
     changed = False
     # Get + Run chuser commands
@@ -177,6 +191,7 @@ def get_chuser_command(module):
             msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
         changed = True
 
+    # Change user password
     if module.params['password'] is not None:
         pass_msg = change_password(module)
         if msg is not None:
@@ -185,7 +200,7 @@ def get_chuser_command(module):
             msg = pass_msg
         changed = True
 
-    return ( msg, changed )
+    return (msg, changed)
 
 
 def create_user(module):
@@ -276,7 +291,7 @@ def user_exists(module):
     cmd.append(module.params['name'])
 
     rc, out, err = module.run_command(cmd)
-    if (rc == 0):
+    if rc == 0:
         return True
     else:
         return False
@@ -292,7 +307,7 @@ def change_password(module):
     note:
         Exits with fail_json in case of error
     return:
-        Message for successfull command
+        Message for successful command
     '''
     name = module.params['name']
     passwd = module.params['password']
