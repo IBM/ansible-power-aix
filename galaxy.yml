@@ -46,4 +46,6 @@ issues: https://github.com/IBM/ansible-power-aix/issues
 build_ignore:
 - builds
 - devops
+- 'docs/_pdf'
+- 'tests/unit'
 - '*.tar.gz'
