@@ -193,11 +193,11 @@ def modify_user(module):
 
     # Change user password
     if module.params['password'] is not None:
-        pass_msg = change_password(module)
+        msg_pass = change_password(module)
         if msg is not None:
-            msg += pass_msg
+            msg += msg_pass
         else:
-            msg = pass_msg
+            msg = msg_pass
         changed = True
 
     return (msg, changed)
