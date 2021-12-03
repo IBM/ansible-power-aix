@@ -200,6 +200,9 @@ def modify_user(module):
             msg = msg_pass
         changed = True
 
+    if msg is None:
+        msg = "No changes were made."
+
     return (msg, changed)
 
 
