@@ -116,57 +116,66 @@ stderr:
 from ansible.module_utils.basic import AnsibleModule
 import re
 
-
-def modify_user(module):
+def get_chuser_command(module):
     '''
-    Modify_user function modifies the attributes of the user and returns
-    output, return code and error of chuser command, if any.
-
+    Returns the 'cmd' needed to run to implement changes on 
     arguments:
         module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
     return:
-        ( Message for command, changed status )
+        cmd string, or None if no changes are necessary.
     '''
+    # 'attributes' contains all of the key=value pairs that Ansible wants us to set
     attributes = module.params['attributes']
+    # 'user_attrs' contains the key=value pairs that are _currently_ set in AIX
+    lsuser_cmd = "lsuser -C %s" % module.params['name']
+    rc, stdout, stderr = module.run_command(lsuser_cmd)
+    if rc != 0:
+        msg = "\nFailed to validate attributes for the user: %s" % module.params['name']
+        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+    keys = stdout.splitlines()[0].split(':')
+    values = stdout.splitlines()[1].split(':')
+    user_attrs = dict(zip(keys, values))
+
+    # Now loop over every key-value in attributes
     opts = ""
-    load_module_opts = None
+    cmd = ""
+    for attr, val in attributes.items():
+        if attr == 'load_module':
+            load_module_opts = "-R %s " % val
+        else:
+            pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
+            if val in [True, False] or re.match(pattern, str(val)):
+                val = str(val).lower()
+            # For idempotency, we compare what Anisble whats the value to be
+            #  compared to what is already set
+            # Only add attr=val to the opts list they're different. No reason to
+            #  if the values are identical!
+            if user_attrs[attr] != val:
+                opts += "%s=\"%s\" " % (attr, val)
+
+    if load_module_opts is not None:
+        opts = load_module_opts + opts
+    if opts:
+        cmd = "chuser %s %s" % (opts, module.params['name'])
+
+    if not cmd:
+        # No change sare necessary.  It's best to return None instead of an empty string
+        cmd = None
+    return cmd
     msg = None
     changed = False
-
-    if attributes is not None:
-        # Get all settings for user and store in dict user_attrs
-        cmd = "lsuser -C %s" % module.params['name']
+    # Get + Run chuser commands
+    cmd = get_chuser_command(module)
+    if cmd is not None:
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
-            msg = "\nFailed to validate attributes for the user: %s" % module.params['name']
+            msg = "\nFailed to modify attributes for the user: %s" % module.params['name']
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
-        keys = stdout.splitlines()[0].split(':')
-        values = stdout.splitlines()[1].split(':')
-        user_attrs = dict(zip(keys, values))
-        for attr, val in attributes.items():
-            if attr == 'load_module':
-                load_module_opts = "-R %s " % val
-            else:
-                pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
-                if val in [True, False] or re.match(pattern, str(val)):
-                    val = str(val).lower()
-                # Confirm if setting is already set before adding to opts
-                if user_attrs[attr] != val:
-                    opts += "%s=\"%s\" " % (attr, val)
-
-        if load_module_opts is not None:
-            opts = load_module_opts + opts
-        if opts:
-            cmd = "chuser %s %s" % (opts, module.params['name'])
-            rc, stdout, stderr = module.run_command(cmd)
-            if rc != 0:
-                msg = "\nFailed to modify attributes for the user: %s" % module.params['name']
-                module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
-            else:
-                msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
-            changed = True
+        else:
+            msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
+        changed = True
 
     if module.params['password'] is not None:
         pass_msg = change_password(module)
