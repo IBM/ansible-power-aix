@@ -213,13 +213,14 @@ def create_user(module):
         module  (dict): The Ansible module
     note:
         Exits with fail_json in case of error
+        If this successfully returns, that means changes were made.
     return:
-        Message for successfull command
+        Message for successful command.
     '''
     attributes = module.params['attributes']
     opts = ""
     load_module_opts = None
-    msg = None
+    msg = ""
 
     if attributes is not None:
         for attr, val in attributes.items():
@@ -229,11 +230,8 @@ def create_user(module):
                 opts += "%s=\"%s\" " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
-
     cmd = "mkuser %s %s" % (opts, module.params['name'])
-
     rc, stdout, stderr = module.run_command(cmd)
-
     if rc != 0:
         msg = "Failed to create user: %s" % module.params['name']
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
@@ -241,9 +239,8 @@ def create_user(module):
         msg = "Username is created SUCCESSFULLY: %s" % module.params['name']
 
     if module.params['password'] is not None:
-        msg_pass = modify_user(module)
+        msg_pass = change_password(module)
         msg += msg_pass
-
     return msg
 
 
