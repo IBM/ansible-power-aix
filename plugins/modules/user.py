@@ -167,8 +167,6 @@ def modify_user(module):
             else:
                 msg = "\nAll provided attributes for the user: %s are set SUCCESSFULLY" % module.params['name']
             changed = True
-        else:
-            msg = "\nNo changes were made to user: %s" % module.params['name']
 
     if module.params['password'] is not None:
         pass_msg = change_password(module)
@@ -176,6 +174,7 @@ def modify_user(module):
             msg += pass_msg
         else:
             msg = pass_msg
+        changed = True
 
     return ( msg, changed )
 
