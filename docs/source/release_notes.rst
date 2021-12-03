@@ -6,6 +6,56 @@ Releases
 ========
 
 
+Version 1.4.0
+-------------
+Notes
+  * Support for the new AIX 7.3 release.
+  * Updates to multiple modules and roles to ensure python2/python3 compatibility.
+  * Updates to the power_aix_bootstrap to install dnf on AIX 7.3.
+  * Updates to the flrtc and nim_flrtvc modules to work with the new AIX toolsbox
+    wget binary path: /opt/freeware/bin.
+  * Multiple fixes to clean up ansible-lint and other sanity checks.
+  * Fix issue #168. power_aix_bootstrap inventory_host variable problem.
+  * Fix nim_upateios and nimvios_alt_disk issues with python3.
+  * Fix issue #163 with the mount.py module.
+  * Fix issue #159 for user.py. Add quotes to attribute arguments when creating a user.
+
+Availability
+  * `Automation Hub v1.4.0`_
+  * `Galaxy v1.4.0`_
+  * `GitHub v1.4.0`_
+
+.. _Automation Hub v1.4.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.4.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.4.0.tar.gz
+
+.. _GitHub v1.4.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.4.0/ibm-power_aix-1.4.0.tar.gz
+
+
+Version 1.3.1
+-------------
+Notes
+  * Fix issue #145: user module with non string attributes fails.
+  * Fixes to pass sanity checks on Ansible minimum required version.
+
+Availability
+  * `Automation Hub v1.3.1`_
+  * `Galaxy v1.3.1`_
+  * `GitHub v1.3.1`_
+
+.. _Automation Hub v1.3.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.3.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.3.1.tar.gz
+
+.. _GitHub v1.3.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.3.1/ibm-power_aix-1.3.1.tar.gz
+
+
 Version 1.3.1
 -------------
 Notes
