@@ -145,6 +145,7 @@ def get_chuser_command(module):
     # Now loop over every key-value in attributes
     opts = ""
     cmd = ""
+    load_module_opts = None
     for attr, val in attributes.items():
         if attr == 'load_module':
             load_module_opts = "-R %s " % val
