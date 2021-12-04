@@ -5,7 +5,6 @@ roles/power_aix_bootstrap/files/yum_installer.sh shellcheck!skip #helper script
 plugins/modules/alt_disk.py pylint:consider-using-dict-items
 plugins/modules/nim_updateios.py pylint:consider-using-dict-items
 plugins/modules/nim_vios_alt_disk.py pylint:consider-using-dict-items
-plugins/modules/nim_vios_hc.py pylint:consider-using-dict-items
 plugins/modules/nim_viosupgrade.py pylint:consider-using-dict-items
 plugins/modules/flrtvc.py pylint:consider-using-with
 plugins/modules/nim_flrtvc.py pylint:consider-using-with
@@ -69,3 +68,7 @@ plugins/modules/lvg.py pylint:global-variable-not-assigned
 plugins/modules/mount.py pylint:global-variable-not-assigned
 plugins/modules/nim_flrtvc.py pylint:global-variable-not-assigned
 plugins/modules/nim_vios_alt_disk.py pylint:global-variable-not-assigned
+roles/power_aix_vioshc/files/vioshc.py pylint:global-variable-not-assigned
+roles/power_aix_vioshc/files/vioshc.py pylint:consider-using-f-string
+roles/power_aix_vioshc/files/vioshc.py pylint:unspecified-encoding
+roles/power_aix_vioshc/files/vioshc.py pylint:consider-using-with

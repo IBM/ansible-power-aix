@@ -6,6 +6,34 @@ Releases
 ========
 
 
+Version 1.4.0
+-------------
+Notes
+  * Support for the new AIX 7.3 release.
+  * Updates to multiple modules and roles to ensure python2/python3 compatibility.
+  * Updates to the power_aix_bootstrap to install dnf on AIX 7.3.
+  * Updates to the flrtc and nim_flrtvc modules to work with the new AIX toolsbox
+    wget binary path: /opt/freeware/bin.
+  * Multiple fixes to clean up ansible-lint and other sanity checks.
+  * Fix issue #168. power_aix_bootstrap inventory_host variable problem.
+  * Fix issue #157 for the mount.py module. Error while changing the state from mount to unmount while mounting/umounting for a NFSv4 filesytem.
+  * Fix issue #151 for user.py. Fail to create/modify user if attribute "gecos" contains spaces.
+
+Availability
+  * `Automation Hub v1.4.0`_
+  * `Galaxy v1.4.0`_
+  * `GitHub v1.4.0`_
+
+.. _Automation Hub v1.4.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.4.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.4.0.tar.gz
+
+.. _GitHub v1.4.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.4.0/ibm-power_aix-1.4.0.tar.gz
+
+
 Version 1.3.1
 -------------
 Notes

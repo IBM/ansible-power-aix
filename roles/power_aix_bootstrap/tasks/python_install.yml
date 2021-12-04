@@ -1,33 +1,34 @@
 # Copyright (c) IBM Corporation 2020
 ---
 # CHECK for Yum on inventory host
-  - name: Check for existence of yum
-    raw: "rpm -q --quiet yum && echo true || echo false"
-    register: yum_exists
+- name: Check for existence of yum
+  raw: "rpm -q --quiet yum && echo true || echo false"
+  register: yum_exists
+  changed_when: false
 
-  - name: End play if inventory host doesn't have yum installed
-    meta: end_host
-    when: yum_exists.stdout is search("false")
+- name: End play if inventory host doesn't have yum installed
+  meta: end_host
+  when: yum_exists.stdout is search("false")
 
 # EXPAND target paths
-  - name: Expand /var target directory (+100M)
-    ibm.power_aix.filesystem:
-      filesystem: /var
-      attributes: size=+100M
-      state: present
+- name: Expand /var target directory (+100M)
+  ibm.power_aix.filesystem:
+    filesystem: /var
+    attributes: size=+100M
+    state: present
 
-  - name: Expand /opt target directory (+400M)
-    ibm.power_aix.filesystem:
-      filesystem: /opt
-      attributes: size=+400M
-      state: present
+- name: Expand /opt target directory (+400M)
+  ibm.power_aix.filesystem:
+    filesystem: /opt
+    attributes: size=+400M
+    state: present
 
 # INSTALL using yum
-  - name: Install/ Update python and requisite rpms
-    yum:
-      name: python
-      state: latest
+- name: Install/ Update python and requisite rpms
+  yum:
+    name: python
+    state: latest
 
-  - name: Print status
-    debug:
-      msg: Bootstrap attempt of python on {{ aix_host }} has completed
+- name: Print status
+  debug:
+    msg: Bootstrap attempt of python on {{ aix_host }} has completed

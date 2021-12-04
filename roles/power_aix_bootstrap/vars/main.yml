@@ -1,5 +1,6 @@
-# Copyright (c) IBM Corporation 2020
-pkgtype: "yum"
+# Copyright (c) IBM Corporation 2021
 download_dir: "~"
 target_dir: "/tmp/.ansible.cpdir.yum"
 aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
+interpreter_name: /opt/freeware/bin/python3
+aix73: false
