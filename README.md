@@ -33,6 +33,11 @@ This repository contains some example best practices for open source repositorie
 <!-- ## Notes -->
 ## Requirements
 
+- AIX 7.3 will require additional software only for the flrtvc, nim_flrtvc and nim_vios_hc AIX Ansible Collection's modules.
+    Additional open-source software is installed by configuring [DNF] first. [YUM] only supports Python2.
+  - Modules flrtvc and nim_flrtvc requires wget. See demo playbooks examples.
+  - Module nim_vios_hc software requirements will be automatically installed using power_aix_vioshc role. See demo playbook examples.
+
 ### Platforms
 
 - AIX 7.1
@@ -48,10 +53,9 @@ This repository contains some example best practices for open source repositorie
 ### Python
 
 - Requires Python 2.7 or newer
-- To install (or upgrade) Python on AIX 7.1 and 7.2, you must first configure [YUM].  As part of YUM installation, Python2 will be installed by default
-- After setting up and installing YUM, you may update all the packages to the latest level using the yum update command
-- AIX 7.3 will come with python3 pre-installed and Ansible will work with it.
-- AIX 7.3 package manager needs to be DNF instead of yum as yum does not work with python3.
+- To install (or upgrade) Python on AIX 7.1 and 7.2, you must first configure [YUM].  As part of YUM installation, Python2 will be installed by default.
+- After setting up and installing YUM, you may update all the packages to the latest level using the yum update command.
+- AIX 7.3 will come with Python3 pre-installed. Ansible will work with AIX 7.3 with no need for additional software.
 
 
 ## Resources

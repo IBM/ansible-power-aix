@@ -4,8 +4,8 @@ Following is the current list of maintainers on this project
 
 The maintainers are listed in alphabetical order of their Github username.
 
-* Paul B. Finley (@pbfinley1911)
+* Pedro V Torres (@pvtorres)
 
 
 
-Paul Finley - pfinley@us.ibm.com
+Pedro V Torres -  pvtorres@us.ibm.com
