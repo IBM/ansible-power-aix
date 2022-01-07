@@ -1,0 +1,18 @@
+---
+
+# CHECK for dnf on inventory host
+- name: "Install dnf"
+  include_role:
+     name: power_aix_bootstrap
+  vars:
+     pkgtype: "dnf"
+     download_dir: "~"
+     target_dir: "/tmp/.ansible.cpdir"
+
+# Install pycurl if it doesn't exist.
+- name: "Install pycurl"
+  include_role:
+     name: power_aix_bootstrap
+  vars:
+     pkgtype: "pycurl"
+     opt_free_size: "{{ vioshc_opt_free_size }}"
