@@ -149,7 +149,7 @@
           - yum_exists.stdout is search("true")
 
      - name: Restore dnf bundle at the target if yum is not installed.
-       raw: "{{ target_dir }}/{{ dnf_install_script }} -n {{ target_dir }}"
+       raw: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
        ignore_errors: true
        when:
           - scp_result.rc == 0
