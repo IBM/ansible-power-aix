@@ -56,3 +56,5 @@ lsvg_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_o
 lsvg_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_output2"
 lsvg_output_path3 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_output3"
 lquerylv_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lquerylv_output1"
+lsuser_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsuser_output1"
+lsuser_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsuser_output2"

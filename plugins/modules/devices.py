@@ -268,7 +268,7 @@ def chdev(module, device):
         for attr, val in attributes.items():
 
             if device == "inet0" and attr in\
-            ("route", "rout6", "delroute", "delrout6"):
+                    ("route", "rout6", "delroute", "delrout6"):
 
                 found = re.search(val, init_props)
 

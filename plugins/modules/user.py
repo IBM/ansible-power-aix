@@ -116,9 +116,10 @@ stderr:
 from ansible.module_utils.basic import AnsibleModule
 import re
 
+
 def get_chuser_command(module):
     '''
-    Returns the 'cmd' needed to run to implement changes on 
+    Returns the 'cmd' needed to run to implement changes on
     arguments:
         module  (dict): The Ansible module
     note:
@@ -129,7 +130,7 @@ def get_chuser_command(module):
     # 'attributes' contains all of the key=value pairs that Ansible wants us to set
     attributes = module.params['attributes']
     if attributes is None:
-        ## No attributes to change, return None before we do anything.
+        # No attributes to change, return None before we do anything.
         return None
 
     # 'user_attrs' contains the key=value pairs that are _currently_ set in AIX
@@ -169,6 +170,7 @@ def get_chuser_command(module):
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
     return cmd
+
 
 def modify_user(module):
     '''
