@@ -179,6 +179,7 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 results = None
 
@@ -263,9 +264,25 @@ def chdev(module, device):
 
     if attributes:
         opts += "-a '"
+        skip_attr = False
         for attr, val in attributes.items():
-            opts += "%s=%s " % (attr, val)
+
+            if device == "inet0" and attr in\
+            ("route", "rout6", "delroute", "delrout6"):
+
+                found = re.search(val, init_props)
+
+                if (found is None and attr in ("delroute", "delrout6")) or\
+                   (found is not None and attr in ("route", "rout6")):
+                    skip_attr = True
+
+            if not skip_attr:
+                opts += "%s=%s " % (attr, val)
         opts += "' "
+
+    if opts == "-a '' ":
+        msg = "Nothing was modified for device '%s'" % device
+        return False, msg
 
     if not opts:
         msg = "No changes specified for the device '%s'" % device
