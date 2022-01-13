@@ -272,11 +272,9 @@ def chdev(module, device):
 
                 found = re.search(val, init_props)
 
-                if found is None and attr in ("delroute", "delrout6"):
+                if (found is None and attr in ("delroute", "delrout6")) or\
+                   (found is not None and attr in ("route", "rout6")):
                     skip_attr = True
-                else:
-                    if found is not None and attr in ("route", "rout6"):
-                        skip_attr = True
 
             if not skip_attr:
                 opts += "%s=%s " % (attr, val)
