@@ -376,7 +376,9 @@ def main():
 
     # check if anything changed
     pattern = r"(Already Installed|Not Installed|Not Committable|Not Rejectable|0503-439)"
-    if re.search(pattern, stdout) or re.search(pattern, stderr):
+    if not re.search(r"SUCCESSES", stdout) and\
+            not re.search(r"SUCCESS", stderr) and\
+            (re.search(pattern, stdout) or re.search(pattern, stderr)):
         result['changed'] = False
 
     module.exit_json(**result)
