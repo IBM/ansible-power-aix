@@ -244,6 +244,7 @@ stderr:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+import re
 
 
 def main():
@@ -364,6 +365,7 @@ def main():
     result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
+
     if rc != 0:
         result['msg'] = 'installp \'{0}\' failed.'.format(action)
         module.fail_json(**result)
@@ -371,6 +373,14 @@ def main():
     result['msg'] = 'installp \'{0}\' successful.'.format(action)
     if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
         result['changed'] = True
+
+    # check if anything changed
+    pattern = r"(Already Installed|Not Installed|Not Committable|Not Rejectable|0503-439)"
+    if not re.search(r"SUCCESSES", stdout) and\
+            not re.search(r"SUCCESS", stderr) and\
+            (re.search(pattern, stdout) or re.search(pattern, stderr)):
+        result['changed'] = False
+
     module.exit_json(**result)
 
 
