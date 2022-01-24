@@ -16,10 +16,17 @@ DOCUMENTATION = r'''
 author:
 - AIX Development Team (@pbfinley1911)
 module: lpp_facts
+<<<<<<< HEAD
 short_description: Returns installed software products or fixes as facts.
 description:
 - Lists and returns information about installed filesets or fileset updates in Ansible facts.
 version_added: '1.1.0'
+=======
+short_description: Returns installed software products/fixes as facts.
+description:
+- Lists and returns information about installed filesets or fileset updates or fixes in Ansible facts.
+version_added: '2.9'
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -52,6 +59,7 @@ options:
     - Mutually exclusive with I(all_updates).
     type: bool
     default: no
+<<<<<<< HEAD
   reqs:
     description:
     - Returns all requisites for a fileset.
@@ -67,12 +75,24 @@ options:
     - Mutually exclusive with fixes.
     type: str
     choices: [ all, apar, service_pack, sp, technology_level, tl ]
+=======
+  fix_type:
+    description:
+    - Specifies the type of fixes.
+    - Mutually exclusive with fixes.
+    type: str
+    default: no
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
   fixes:
     description:
     - Specifies the names of the fixes.
     - Mutually exclusive with fix_type.
     type: list
     elements: str
+<<<<<<< HEAD
+=======
+    default: no
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
 notes:
   - You can refer to the IBM documentation for additional information on the lslpp command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lslpp.html).
@@ -113,16 +133,25 @@ EXAMPLES = r'''
 - name: Print the fileset facts
   debug:
     var: ansible_facts.filesets
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
 - name: Populate fixes facts with the fixes which are APARs only.
   lpp_facts:
     fix_type: apar
 - name: Print the fixes facts
   debug:
     var: ansible_facts.fixes
+<<<<<<< HEAD
 
 - name: Populate fixes facts for the list of fixes with keywords
         7200-01_AIX_ML, IV82301, IV99819, 72-02-021832_SP .
+=======
+    
+- name: Populate fixes facts with the fixes which the list of fixes .
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
   lpp_facts:
     fixes: 7200-01_AIX_ML, IV82301, IV99819, 72-02-021832_SP
 - name: Print the fixes facts
@@ -133,7 +162,11 @@ EXAMPLES = r'''
 RETURN = r'''
 ansible_facts:
   description:
+<<<<<<< HEAD
   - Facts to add to ansible_facts about the installed software products or fixes on the system
+=======
+  - Facts to add to ansible_facts about the installed software products, fixes on the system
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
   returned: always
   type: complex
   contains:
@@ -213,6 +246,7 @@ ansible_facts:
               type: list
               elements: str
               sample: ["/etc/objrepos"]
+<<<<<<< HEAD
             requisites:
                description:
                - Requisites of the filesets
@@ -235,6 +269,8 @@ ansible_facts:
                 returned: always
                 type: str
                 sample: "OK"
+=======
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
     fixes:
       description:
       - Maps the fixes name to the dictionary of filesets.
@@ -253,7 +289,11 @@ ansible_facts:
           - Abstract of the fix
           returned: always
           type: str
+<<<<<<< HEAD
           sample: "clcomd generates coredump"
+=======
+          sample: "Arabic characters are corrupted in dthelpview"
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
         filesets:
           description:
           - Maps the fileset level to the fixes information.
@@ -269,7 +309,11 @@ ansible_facts:
               sample: '"inst_level": "7.2.1.0"'
             name:
               description:
+<<<<<<< HEAD
               - fileset name
+=======
+              - fileset name 
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
               returned: always
               type: str
             reqLevel:
@@ -279,10 +323,17 @@ ansible_facts:
               type: str
             status:
               description:
+<<<<<<< HEAD
               - C(Down Level) specifies that the fileset installed on the system is at a lower level than the required level
               - C(Correct level) specifies that the fileset installed on the system is at the same level as the required level
               - C(Superseded) specifies that the fileset installed on the system is at a higher level than the required level
               - C(not installed) specifies that the fileset is not installed on the system
+=======
+              - Down Level.
+              - Correct level.
+              - Superseded.
+              - not installed.
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
               returned: always
               type: str
 
@@ -299,7 +350,43 @@ LPP_TYPE = {
     'F': 'fix'
 }
 
+def list_fixes(module):
+    
+    fixes = {}
+    cmd = []
+    fixes_list = []
+    all_fixes = True
+    fix_type = ''
+    is_continue = False
+    
+    # Details on what each status symbol means from instfix output
+    FIX_STATUS = {
+                  '-': "Down Level",
+                  '=': "Correct Level",
+                  '+': "Superseded",
+                  '!': "Not installed"
+                 }
+    
+    instfix_path = module.get_bin_path('instfix', required=True)
+    '''instfix sample output:
+    ##Keyword:Fileset:ReqLevel:InstLevel:Status:Abstract
+     IV82292:bos.net.tcp.ftp:7.2.1.0:7.2.5.1:+:FTP LEAKS MEMORY AND MAY DUMP CORE WITH TLS
+    '''
+    cmd = [instfix_path, '-icq']
+    if module.params['fix_type']:
+        fix_type = module.params['fix_type']
+    if module.params['fixes']:
+        fixes_list = module.params['fixes']               
+        if len(fixes_list) > 0:                
+                cmdstr = ""    
+                for fix in fixes_list:
+                    cmdstr += fix 
+                cmd += ['-k', cmdstr]
+            
 
+    ret, stdout, stderr = module.run_command(cmd)
+
+<<<<<<< HEAD
 def list_fixes(module):
     """
     List the fixes installed on the system including APAR, technology level
@@ -342,6 +429,10 @@ def list_fixes(module):
     ret, stdout, stderr = module.run_command(cmd)
 
     instfix_stdout = stdout.splitlines()
+=======
+    instfix_stdout = stdout.splitlines()
+
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
     for line in instfix_stdout:
         raw_fields = line.split(':')
         if len(raw_fields) < 6:
@@ -352,6 +443,7 @@ def list_fixes(module):
         abstract = fields[5]
         is_continue = False
         if (fix_type == "apar" and name.startswith('I')) \
+<<<<<<< HEAD
            or ((fix_type == "service_pack" or fix_type == "sp")
                and name.endswith("_SP")) \
            or ((fix_type == "technology_level" or fix_type == "tl")
@@ -359,6 +451,16 @@ def list_fixes(module):
            or (fix_type == "all"):
             is_continue = True
         if (fix_type != '' and is_continue) or fix_type == '':
+=======
+           or ((fix_type == "service_pack" or fix_type == "sp") \
+               and name.endswith("_SP")) \
+           or ((fix_type == "technology_level" or fix_type == "tl")\
+               and name.endswith("_ML")) \
+           or (fix_type == "all"):
+            is_continue = True
+
+        if (fix_type != '' and is_continue == True) or fix_type == '':
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
             if name not in fixes:
                 fixes[name] = {'name': name, 'abstract': abstract, 'filesets': {}}
             if fileset_name not in fixes[name]['filesets']:
@@ -367,6 +469,7 @@ def list_fixes(module):
                 fileset_info['reqLevel'] = fields[2]
                 fileset_info['inst_level'] = fields[3]
                 fileset_info['status'] = FIX_STATUS.get(fields[4], '')
+<<<<<<< HEAD
 
             fixes[name]['filesets'][fileset_name] = fileset_info
 
@@ -520,6 +623,13 @@ def fileset_consistency_check(module, name):
         cons_check = "NOT OK"
     return cons_check
      
+=======
+        
+            fixes[name]['filesets'][fileset_name] = fileset_info
+       
+    return fixes
+    
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -529,8 +639,12 @@ def main():
             all_updates=dict(type='bool', default=False),
             base_levels_only=dict(type='bool', default=False),
             fixes=dict(type='list', elements='str'),
+<<<<<<< HEAD
             fix_type=dict(type='str', choices=['apar', 'technology_level', 'service_pack', 'sp', 'tl', 'all']),
             reqs=dict(type='bool', default=False)
+=======
+            fix_type=dict(type='str', choices=['apar', 'technology_level', 'service_pack', 'sp', 'tl', 'all'])
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
         ),
         mutually_exclusive=[
             ['filesets', 'bundle'],
@@ -557,7 +671,11 @@ def main():
         cmd += ['all']
 
     ret, stdout, stderr = module.run_command(cmd)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
     # Ignore errors as lslpp might return 1 with -b
     # List of fields returned by lslpp -lc:
     # Source:Fileset:Level:PTF Id:State:Type:Description:EFIX Locked
@@ -608,6 +726,14 @@ def main():
     if module.params["fix_type"] or module.params["fixes"]:
         fixes = list_fixes(module)
 
+<<<<<<< HEAD
+=======
+ 
+    fixes = {}
+    if module.params["fix_type"] or module.params["fixes"]:
+        fixes = list_fixes(module)
+       
+>>>>>>> 2295131... Enhancement for ansible_facts.fixes in lpp_facts.
     results = dict(ansible_facts=dict(filesets=filesets, fixes=fixes))
     module.exit_json(**results)
 
