@@ -111,7 +111,7 @@
     - name: Query all standalone objects defined in a NIM master
       nim:
         action: show
-        obj_type: standalone
+        object_type: standalone
       register: result
     # - debug: var=result
 

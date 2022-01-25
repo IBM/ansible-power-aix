@@ -103,7 +103,7 @@ options:
     - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
     type: bool
     default: yes
-  obj_type:
+  object_type:
     description:
     - Specifies which NIM object type to query for action C(show). Ignored for any other action.
     - If not set for C(show), then all NIM objects in the target machine will be queried.
@@ -143,7 +143,7 @@ EXAMPLES = r'''
 - name: Query all standalone objects defined in a NIM master
   nim:
     action: show
-    obj_type: standalone
+    object_type: standalone
 '''
 
 RETURN = r'''
@@ -1696,8 +1696,8 @@ def nim_show(module, params):
 
     module.log('NIM - show operation')
     cmd = ['lsnim', '-l', '-Z']
-    if params['obj_type'] != 'all':
-        cmd += ['-t', params['obj_type']]
+    if params['object_type'] != 'all':
+        cmd += ['-t', params['object_type']]
     results['changed'] = False
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -1714,11 +1714,11 @@ def nim_show(module, params):
 
     # check if any info was fetched
     if not stdout and rc == 0:
-        results['meta']['messages'] = "There are no defined NIM objects of type '{0}'".format(params['obj_type'])
+        results['meta']['messages'] = "There are no defined NIM objects of type '{0}'".format(params['object_type'])
         return
 
     if rc != 0:
-        results['meta']['messages'] = "Failed to fetch '{0}' NIM objects types".format(params['obj_type'])
+        results['meta']['messages'] = "Failed to fetch '{0}' NIM objects types".format(params['object_type'])
         module.log('NIM - Error: ' + results['msg'])
         module.fail_json(**results)
     else:
@@ -1757,7 +1757,7 @@ def main():
             group=dict(type='str'),
             force=dict(type='bool', default=False),
             boot_client=dict(type='bool', default=True),
-            obj_type=dict(type='str', default='all'),
+            object_type=dict(type='str', default='all'),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1815,7 +1815,7 @@ def main():
     force = module.params['force']
     action = module.params['action']
     boot_client = module.params['boot_client']
-    obj_type = module.params['obj_type']
+    object_type = module.params['object_type']
 
     params = {}
 
@@ -1823,7 +1823,7 @@ def main():
 
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
-    # skip build nim node when master_setup is called
+    # skip build nim node for actions: master_setup or show
     if action != 'master_setup' and action != 'show':
         # Build nim node info
         build_nim_node(module)
@@ -1893,7 +1893,7 @@ def main():
         nim_reboot(module, params)
 
     elif action == 'show':
-        params['obj_type'] = obj_type
+        params['object_type'] = object_type
         nim_show(module, params)
 
     # Exit
