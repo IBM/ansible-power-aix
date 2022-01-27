@@ -1,14 +1,21 @@
 ---
-# NOTES:
-# I tested this with a NIM client that has 72X OS
-# with a PV (hdisk1) that is of the same disk size
-# as it's original rootvg
+# PREREQUISITES:
+# 1. setup NIM master and client connection
+# 2. make sure there is a free physical volume
+# that does not belong to any volume group and
+# has enough space for an alt_disk
+# 3. make sure NIM master OS level is at least
+# to the desired level for migration
+# 4. NIM LPP source for the desired level of
+# migration must be created before hand
+# 5. c_rsh must be active (should be good if (1)
+# is properly setup)
 - name: "nim_alt_disk_migration demo"
   hosts: nimserver2
   gather_facts: false
   remote_user: root
   vars:
-    nim_client_v: p9zpa-ansible-test1
+    nim_client_v: p9zpa-ansible-test4
     alt_disk: hdisk1
     lpp_source_v: lpp_2134A_730
     spot_v: spot_2134A_730
@@ -16,12 +23,26 @@
     - ibm.power_aix
   tasks:
 
-# perform alt_disk_migration
+    # perform alt_disk_migration
     - import_role:
         name: ibm.power_aix.nim_alt_disk_migration
       vars:
+        # required: NIM standalone object name
+        # associated with the NIM client
         nim_client: "{{ nim_client_v }}"
-        pv: "{{ alt_disk }}"
+        # required: Physical Volume name in the NIM
+        # client where the alt_disk will be created
+        target_disk: "{{ alt_disk }}"
+        # required: NIM lpp_source object name
+        # associated to a lpp_source for the desired
+        # level of migration
         lpp_source: "{{ lpp_source_v }}"
-        # force: true
-        # spot: "{{ spot_v }}"
+        # determines to reboot the client LPAR after the
+        # alt_disk is successfully created
+        reboot: false
+        # determines auto creation of SPOT resource derived
+        # from the input lpp_source
+        force_create_spot: true
+        # optional, provide a SPOT resource, if not given
+        # then the role will derive one from lpp_source
+        spot: "{{ spot_v }}"
