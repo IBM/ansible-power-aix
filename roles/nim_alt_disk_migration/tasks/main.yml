@@ -70,8 +70,8 @@
 ############################################################
 # TODO: make sure the SPOT resource matches the NIM master's
 # level
-# 0505-204 nimadm: SPOT dflt_spot does not have bos.alt_disk_install.rte installed.", 
-# "0505-205 nimadm: The level of bos.alt_disk_install.rte installed in SPOT", 
+# 0505-204 nimadm: SPOT dflt_spot does not have bos.alt_disk_install.rte installed.",
+# "0505-205 nimadm: The level of bos.alt_disk_install.rte installed in SPOT",
 # "dflt_spot (0.0.0.0) does not match the NIM master's level (7.3.0.0)."]
 # HOW TO FIX:
 # http://aix-skills.blogspot.com/2015/11/spot-does-not-match-nim-masters-level.html

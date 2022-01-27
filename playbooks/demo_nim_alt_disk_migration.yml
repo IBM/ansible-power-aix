@@ -39,10 +39,10 @@
         lpp_source: "{{ lpp_source_v }}"
         # determines to reboot the client LPAR after the
         # alt_disk is successfully created
-        reboot: false
+        # reboot: false
         # determines auto creation of SPOT resource derived
         # from the input lpp_source
-        force_create_spot: true
+        # force_create_spot: true
         # optional, provide a SPOT resource, if not given
         # then the role will derive one from lpp_source
-        spot: "{{ spot_v }}"
+        # spot: "{{ spot_v }}"
