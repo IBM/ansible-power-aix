@@ -33,14 +33,14 @@
         to any volume group"
   shell: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
-    '/usr/sbin/getlvodm -j {{ pv }}'
+    '/usr/sbin/getlvodm -j {{ target_disk }}'
   changed_when: false
   register: pv_availability_output
 
 - name: "Fetch specified physical volume size"
   shell: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
-    '/usr/sbin/bootinfo -s {{ pv }}'
+    '/usr/sbin/bootinfo -s {{ target_disk }}'
   changed_when: false
   register: pv_size_output
 
@@ -67,4 +67,4 @@
     - fail:
         msg: "There is not enough space for an alternate disk"
       when: pv_size | int < used_pps | int
-    - debug: msg="Specified disk '{{ pv }}' is valid"
+    - debug: msg="Specified disk '{{ target_disk }}' is valid"

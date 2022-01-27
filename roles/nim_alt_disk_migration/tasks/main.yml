@@ -1,26 +1,41 @@
 # Copyright (c) IBM Corporation 2020
 ---
+############################################################
+############################################################
+
 - name: "Fail if a NIM client LPAR is not specified"
   fail:
     msg: "NIM client LPAR to be migrated is not specified"
   when: nim_client is not defined
 - debug: msg="{{ nim_client }} specified to be migrated"
 
+############################################################
+############################################################
+
 - name: "Fetch client oslevel"
   include_tasks: "get_oslevel.yml"
   when: nim_client is defined
 
+############################################################
+############################################################
+
 - name: "Fail if a physical volume is not specified
         for alternate disk creation"
   fail:
-    msg: "pv not specified"
-  when: pv is not defined
-- debug: msg="{{ pv }} of {{ nim_client }} will be used to
+    msg: "target_disk not specified"
+  when: target_disk is not defined
+- debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
               create an alternate disk copy"
+
+############################################################
+############################################################
 
 - name: "Verify that the specfied physical volume availability"
   include_tasks: "validate_pv.yml"
-  when: pv is defined
+  when: target_disk is defined
+
+############################################################
+############################################################
 
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
@@ -29,10 +44,14 @@
 - debug: msg="LPP resource {{ lpp_source }} specified for migration"
 
 ############################################################
+############################################################
+
+############################################################
 # NOTE: specifying SPOT resource is optional, if not given
 # then NIM master will generate corresponding SPOT resource
 # from the specified LPP resource.
 ############################################################
+
 - name: "Create SPOT resource if not specified"
   include_tasks: "create_spot.yml"
   when: spot is not defined
@@ -80,8 +99,9 @@
 # - async and polling
 # - large timeout and polling
 ############################################################
+
 - name: "Migrate to alternate disk"
-  shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ pv }} -Y"
+  shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ target_disk }} -Y"
   register: results
   ignore_errors: true
   ignore_unreachable: true
