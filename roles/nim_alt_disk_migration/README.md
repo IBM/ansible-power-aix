@@ -15,7 +15,7 @@ Available variables are listed below, along with default values:
 
 Specifies the NIM client object that represent the LPAR to be migrated.
 
-	pv (required)
+	target_disk (required)
 
 Specifies the physical volume where the alternate disk will be created.
 
@@ -41,7 +41,6 @@ None.
 		nim_client: p9zpa-ansible-test1
 		pv: hdisk1
 		lpp_source: lpp_2134A_730
-		spot: spot_2134A_730
 
 ## Copyright
 © Copyright IBM Corporation 2021
