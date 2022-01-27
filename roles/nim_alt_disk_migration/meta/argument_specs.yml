@@ -1,0 +1,37 @@
+---
+argument_specs:
+  main:
+    short_description: >
+      This role is used to migrate a client OS levels from
+      AIX 7.1/7.2 to AIX 7.3.
+    author:
+      - "Joseph de Joya"
+      - "Rae Yang"
+    options:
+      nim_client:
+        type: "str"
+        required: true
+        description: >
+          Specifies a NIM object name that is associated to
+          the NIM client LPAR to be migrated.
+
+      target_disk:
+        type: "str"
+        required: true
+        description: >
+          Specifies the physical volume where the alternate
+          disk will be created in the NIM client LPAR.
+
+      lpp_source:
+        type: "str"
+        required: true
+        description: >
+          Specifies a NIM object name associated to a LPP
+          resource for the desired level of migration.
+
+      spot:
+        type: "str"
+        required: false
+        description: >
+          Specifies a NIM object name associated to a SPOT
+          resource associated to the specified I(lpp_source).

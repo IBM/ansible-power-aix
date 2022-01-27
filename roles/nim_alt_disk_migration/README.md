@@ -13,19 +13,20 @@ Available variables are listed below, along with default values:
 
 	nim_client (required)
 
-Specifies the NIM client object that represent the LPAR to be migrated.
+Specifies a NIM object name that is associated to the NIM client LPAR to be migrated.
 
 	target_disk (required)
 
-Specifies the physical volume where the alternate disk will be created.
+Specifies the physical volume where the alternate disk will be created in the NIM client LPAR.
 
     lpp_source (required)
 
-Specifies the NIM LPP resource to use for migration.
+Specifies a NIM object name associated to a LPP resource for the desired level of migration.
 
 	spot (required)
 
-Specifies the NIM SPOT resource to use for migration.
+Specifies a NIM object name associated to a SPOT resource associated to the specified 
+I(lpp_source).
 
 ## Dependencies
 
