@@ -35,3 +35,11 @@ argument_specs:
         description: >
           Specifies a NIM object name associated to a SPOT
           resource associated to the specified I(lpp_source).
+
+      reboot_client:
+        type: "bool"
+        required: false
+        default: false
+        description: >
+          Specifies if the NIM client LPAR will be automatically
+          rebooted after successfully creating the alternate disk.

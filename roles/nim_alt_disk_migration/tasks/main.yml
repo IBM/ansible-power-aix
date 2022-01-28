@@ -108,10 +108,24 @@
 - debug: var=results
 
 ############################################################
-# TODO: add reboot sequence, perhaps use nim module reboot action.
-# Even though the previous task says it failed, I don't think the nimadm
-# command actually failed, as it successfully created an altinst_rootvg
-# after manually rebooting the LPAR, it is now in migrated to 730.
+############################################################
+
+- block:
+    - name: "Rebooting {{ nim_client }}"
+      ibm.power_aix.nim:
+        action: reboot
+        targets: "{{ nim_client }}"
+      register: results
+    - debug: var=results
+  when: reboot_client
+
+- debug:
+    msg: >
+      'altinst_rootvg' successfully created in '{{ nim_client }}'.
+      Reboot '{{ nim_client}}' to boot into the alterate disk.
+  when: not reboot_client
+
+############################################################
 ############################################################
 
 - debug: msg="MIGRATION COMPLETE!!!"
