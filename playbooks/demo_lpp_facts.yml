@@ -1,6 +1,6 @@
 ---
 - name: "Print the fileset related information"
-  hosts: d68bay02.aus.stglabs.ibm.com
+  hosts: aix
   gather_facts: yes
   vars:
     log_file: "/tmp/ansible_lpp_debug.log"
