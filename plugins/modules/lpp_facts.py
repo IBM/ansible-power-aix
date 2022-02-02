@@ -305,7 +305,6 @@ LPP_TYPE = {
 }
 
 def list_fixes(module):
-
     """
     List the fixes installed on the system including APAR, technology level
     service pack.
@@ -336,19 +335,18 @@ def list_fixes(module):
     cmd = [instfix_path, '-icq']
     if module.params['fix_type']:
         fix_type = module.params['fix_type']
-    if module.params['fixes']:
+    elif module.params['fixes']:
         fixes_list = module.params['fixes']               
-        if len(fixes_list) > 0:                
-                cmdstr = ""    
+        if len(fixes_list) > 0:     
+                cmdstr = ''           
                 for fix in fixes_list:
-                    cmdstr += fix 
+                    cmdstr += fix.strip() + ' '
+                cmdstr.strip()
                 cmd += ['-k', cmdstr]
             
-
     ret, stdout, stderr = module.run_command(cmd)
 
     instfix_stdout = stdout.splitlines()
-
     for line in instfix_stdout:
         raw_fields = line.split(':')
         if len(raw_fields) < 6:
@@ -365,8 +363,7 @@ def list_fixes(module):
                and name.endswith("_ML")) \
            or (fix_type == "all"):
             is_continue = True
-
-        if (fix_type != '' and is_continue == True) or fix_type == '':
+        if (fix_type != '' and is_continue) or fix_type == '':
             if name not in fixes:
                 fixes[name] = {'name': name, 'abstract': abstract, 'filesets': {}}
             if fileset_name not in fixes[name]['filesets']:
@@ -405,6 +402,11 @@ def list_reqs(name, module):
     
     for line in stdout.splitlines():
         raw_fields = line.split(':')
+        ''' In cases where requisites are not present, then the length of the raw fields from
+        the output line will be less than 3. Hence continue to the next line as this would not
+        need any processing.
+        
+        '''
         if len(raw_fields) < 3:
             continue
         fields = [field.strip() for field in raw_fields]
@@ -415,12 +417,18 @@ def list_reqs(name, module):
         *coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix 7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib 5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0
         '''
         
+        '''Some of the filesets might have no requisites.
+        Example:
+        /usr/lib/objrepos:udapl.rte 7.2.5.100:NONE
+        /etc/objrepos:udapl.rte 7.2.5.100:NONE
+        '''
+        if fields[2] == "NONE":
+           continue    
+       
         reqs = re.split(r"\s+|{", fields[2])
         num_reqs = len(reqs)
         
-        # Some of the filesets might have no requisites.
-        if fields[2] == "NONE":
-           continue
+
         ''' Requisites has 3 fields : req_type, fileset name, level.
         Minimum 1st 2 fields should be present.
         Sample
@@ -436,26 +444,40 @@ def list_reqs(name, module):
                 The values are in order and hence parse through the list
                 and assign the values to the corresponding field names.
                 '''
+                ''' If the requisites is not one of the types :
+                instreq, ifreq, coreq, prereq then we don't need to process further.
+                We continue to next requisite
+                '''
                 if reqs[i] not in req_type_list:
                     i = i + 1
                     continue
-                #ignore '*' in the requisite_type(Eg: *coreq as coreq )
+                #1st field will be requisite type. ignore '*' in the requisite_type(Eg: *coreq as coreq )
                 req_type = reqs[i][1:]
                 i = i + 1
-
+                
+                '''2nd field will be fileset name.
+                 This is to fill the fileset name which will be followed by level
+                *coreq bos.sysmgt.trace 5.3.0.30 
+                In  this fileset will "bos.sysmgt.trace "
+                '''
                 fileset = reqs[i]
                 i = i + 1
                 ''' level field may not be present in some cases. Hence
                 only if level field is present update the value.
                 Increment the iterator if the next field doesn't start with
                 the next requisite set of fields and has only level information.
-                (Example: *coreq bos.perf.perfstat 5.3.0.30)
+                (Example: *coreq bos.perf.perfstat)
                 '''
                 if i < num_reqs:
+                    
+                    ''' 3rd field will be fileset level. Sometimes this might be some additional
+                    text followed by the level. So process the additional texts here and get the
+                    level .
+                    '''
                     if reqs[i] not in req_type_list:
-                        ''' In some cases, prerequistes might be listed in brackets like below:
+                        ''' In some cases, prerequisites might be listed in brackets like below:
                         * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1 
-                        In this case, pickup the latest bos.rte.libc 5.3.0.1 and ignore the data in braces.
+                        In this case, both will be listed as part of levels.
                         '''
                         if '(' in reqs[i] or ')' in reqs[i]: 
                             level += reqs[i]
@@ -463,7 +485,8 @@ def list_reqs(name, module):
                       
                         level += reqs[i]
                         i = i + 1
-                    
+                
+                # create a dictionary for each requisite type if not present already.    
                 if req_type not in requisites:
                    requisites[req_type] = {}
                 if fileset not in requisites[req_type]:
@@ -536,8 +559,7 @@ def main():
     # Ignore errors as lslpp might return 1 with -b
     # List of fields returned by lslpp -lc:
     # Source:Fileset:Level:PTF Id:State:Type:Description:EFIX Locked
-    msg = ''
-    msg1 = ''
+
     filesets = {}
     for line in stdout.splitlines():
         raw_fields = line.split(':')
@@ -579,7 +601,7 @@ def main():
             filesets[name]['levels'][level] = info
         else:
             filesets[name]['levels'][level]['sources'].append(fields[0])
-        
+ 
     fixes = {}
     if module.params["fix_type"] or module.params["fixes"]:
         fixes = list_fixes(module)
