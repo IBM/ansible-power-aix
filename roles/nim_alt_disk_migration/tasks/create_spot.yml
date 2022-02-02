@@ -105,7 +105,7 @@
   shell: >
     /usr/sbin/nim -o define -t spot -a location={{ location }}
     -a server=master -a source={{ lpp_source }}
-    {{ dflt_spot_name }}
+    dflt_{{ lpp_source }}_spot
   register: result
   changed_when:
     - result is not failed
@@ -121,4 +121,4 @@
 
 - name: "Set SPOT resource to be used"
   set_fact:
-    spot: "{{ dflt_spot_name }}"
+    spot: "dflt_{{ lpp_source }}_spot"
