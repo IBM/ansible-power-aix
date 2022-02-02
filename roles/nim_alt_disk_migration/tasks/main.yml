@@ -122,7 +122,7 @@
 - debug:
     msg: >
       'altinst_rootvg' successfully created in '{{ nim_client }}'.
-      Reboot '{{ nim_client}}' to boot into the alterate disk.
+      Reboot '{{ nim_client }}' to boot into the alterate disk.
   when: not reboot_client
 
 ############################################################
