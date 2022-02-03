@@ -239,6 +239,46 @@ ansible_facts:
           description: Number of Configured LPARs.
           returned: when available
           type: int
+        inc_core_crypto_capable:
+          description: Capability of In-Core Crypto Acceleration.
+          returned: always
+          type: bool
+        inc_core_crypto_enabled:
+          description: Enablement of In-Core Crypto Acceleration.
+          returned: always
+          type: bool
+        nxcrypto_acc_capable:
+          description: Capability of NX Crypto Acceleration.
+          returned: always
+          type: bool 
+        nxcrypto_acc_enabled:
+          description: Enablement of NX Crypto Acceleration.
+          returned: always
+          type: bool 
+        full_coredump:
+          description: Full core dump status.
+          returned: always
+          type: bool   
+        proc_imp_mode:
+          description: Processor Implementation Mode.
+          returned: always
+          type: str   
+        proc_type:
+          description: Processor Type.
+          returned: always
+          type: str   
+        oslevel:
+          description: Operating system level.
+          returned: always
+          type: dict
+          elements: dict
+          contains: 
+           oslevel:
+              description:
+              - OperatingSystemBaseVersion TechnologyLevel ServicePack Build (vrmf).
+              returned: always
+              type: dict
+              sample: '"oslevel": { "build": 2147, "sp": 3, "tl": 2, "base": "7.2.0.0" }' 
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -291,7 +331,13 @@ descr2key = {
     "Power Saving Mode": ('psmode', 'str'),
     "Sub Processor Mode": ('spcm_status', 'str'),
     "Service Partition ID": ('servpar_id', 'int'),
-    "Number of Configured LPARs": ('num_lpars', 'int')
+    "Number of Configured LPARs": ('num_lpars', 'int'),
+    "Processor Implementation Mode": ('proc_imp_mode', 'str'),
+    "Processor Type": ('proc_type', 'str'),
+    "NX Crypto Acceleration": ('nxcrypto_acc', 'bool'),
+    "In-Core Crypto Acceleration": ('inc_core_crypto', 'bool'),
+    "Full Core": ('full_coredump', 'bool'),
+    "oslevel": ('oslevel', 'str')
 }
 
 
@@ -302,23 +348,60 @@ def main():
     )
 
     lparstat_path = module.get_bin_path('lparstat', required=True)
-
+    prtconf_path = module.get_bin_path('prtconf', required=True)
+    oslevel_path = module.get_bin_path('oslevel', required=True)
     cmd = [lparstat_path, '-is']
     ret, stdout, stderr = module.run_command(cmd, check_rc=True)
-
+    ''' prtconf to get the following:
+     "NX Crypto Acceleration" 
+     "In-Core Crypto Acceleration" 
+     "Processor Implementation Mode" 
+     "Processor Type"
+     "Full Core"' 
+    '''
+    cmd = [prtconf_path] 
+    ret1, stdout1, stderr1 = module.run_command(cmd, check_rc=True)
+    stdout = stdout + "\n" + stdout1
+    
+    '''Get oslevel and print in the format of 
+        base level, 
+        technology level,
+        service pack,
+        build
+    '''
+    cmd = [oslevel_path, '-s']
+    ret1, stdout1, stderr1 = module.run_command(cmd, check_rc=True)
+    stdout1 = "oslevel: " + stdout1
+    
+    stdout = stdout + "\n" + stdout1
     lparstat = {}
     for line in stdout.splitlines():
         if ':' not in line:
             continue
         attr, val = line.split(':', 2)
         key = descr2key.get(attr.strip(), None)
-        if key:
+        if key:                
             val = val.strip()
             if not val or val == '-':
                 continue
             id, vtype = key
             if vtype == 'str':
-                lparstat[id] = val
+                if(id == "oslevel"):
+                    oslevel_val = {}
+                    vrmf = val.split('-')
+                    if len(vrmf) == 4:
+                        # formatting the base level in the format 7.2.0.0
+                        baselevel = "%s.%s.%s.%s" % \
+                        (int(int(vrmf[0])/1000) % 10, int(int(vrmf[0])/100) % 10, \
+                         int(int(vrmf[0])/10) % 10, int(vrmf[0]) % 10)
+                        lparstat[id] = {
+                         'base': baselevel,
+                         'tl': int(vrmf[1]),
+                         'sp': int(vrmf[2]),
+                         'build': int(vrmf[3])
+                        }
+                else: 
+                    lparstat[id] = val
             elif vtype == 'int':
                 lparstat[id] = int(val)
             elif vtype == 'float':
@@ -329,7 +412,36 @@ def main():
                 lparstat[id] = float(val.split()[0].strip())
             elif vtype == 'percent':
                 lparstat[id] = float(val.strip().rstrip('%'))
-
+            elif vtype == 'bool':
+                if id == "full_coredump":
+                    if(val.strip() == "false"):
+                        lparstat[id] = False
+                    else:
+                        lparstat[id] = True
+                elif id == "nxcrypto_acc":
+                    nxcrypto_val = val.strip()
+                    if "not capable" in nxcrypto_val:
+                        lparstat['nxcrypto_acc_capable'] = False
+                    else:
+                        lparstat['nxcrypto_acc_capable'] = True
+                    if "not enabled" in nxcrypto_val:
+                        lparstat['nxcrypto_acc_enabled'] = False
+                    else:
+                        lparstat['nxcrypto_acc_enabled'] = True
+                elif id == "inc_core_crypto":
+                    inc_crypto_val = val.strip()
+                    if "not capable" in inc_crypto_val:
+                        lparstat['inc_core_crypto_capable'] = False
+                    else:
+                        lparstat['inc_core_crypto_capable'] = True
+                    if "not enabled" in inc_crypto_val:
+                        lparstat['inc_crypto_acc_enabled'] = False
+                    else:
+                        lparstat['inc_crypto_acc_enabled'] = True
+                    
+                
+                    
+ 
     module.exit_json(ansible_facts=dict(lpar=lparstat))
 
 
