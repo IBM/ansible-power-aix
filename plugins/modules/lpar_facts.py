@@ -420,21 +420,21 @@ def main():
                         lparstat[id] = True
                 elif id == "nxcrypto_acc":
                     nxcrypto_val = val.strip()
-                    if "not capable" in nxcrypto_val:
+                    if "not Capable" in nxcrypto_val:
                         lparstat['nxcrypto_acc_capable'] = False
                     else:
                         lparstat['nxcrypto_acc_capable'] = True
-                    if "not enabled" in nxcrypto_val:
+                    if "not Enabled" in nxcrypto_val:
                         lparstat['nxcrypto_acc_enabled'] = False
                     else:
                         lparstat['nxcrypto_acc_enabled'] = True
                 elif id == "inc_core_crypto":
                     inc_crypto_val = val.strip()
-                    if "not capable" in inc_crypto_val:
+                    if "not Capable" in inc_crypto_val:
                         lparstat['inc_core_crypto_capable'] = False
                     else:
                         lparstat['inc_core_crypto_capable'] = True
-                    if "not enabled" in inc_crypto_val:
+                    if "not Enabled" in inc_crypto_val:
                         lparstat['inc_core_crypto_enabled'] = False
                     else:
                         lparstat['inc_core_crypto_enabled'] = True
