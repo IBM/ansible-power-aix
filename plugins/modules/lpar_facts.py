@@ -435,9 +435,9 @@ def main():
                     else:
                         lparstat['inc_core_crypto_capable'] = True
                     if "not enabled" in inc_crypto_val:
-                        lparstat['inc_crypto_acc_enabled'] = False
+                        lparstat['inc_core_crypto_enabled'] = False
                     else:
-                        lparstat['inc_crypto_acc_enabled'] = True
+                        lparstat['inc_core_crypto_enabled'] = True
                     
                 
                     
