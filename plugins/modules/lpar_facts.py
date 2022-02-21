@@ -380,7 +380,7 @@ def main():
             continue
         attr, val = line.split(':', 2)
         key = descr2key.get(attr.strip(), None)
-        if key:                
+        if key:
             val = val.strip()
             if not val or val == '-':
                 continue
