@@ -116,7 +116,7 @@
 # when: create_spot | bool == true # DELETE WITH BLOCK
 
 - debug:
-    msg: "SPOT resource '{{ dflt_spot_name }}' already exists."
+    msg: "SPOT resource 'dflt_{{ lpp_source }}_spot' already exists."
   when: result.stderr.find( "0042-081" ) != -1
 
 - name: "Set SPOT resource to be used"

@@ -1,0 +1,12 @@
+# Copyright (c) IBM Corporation 2022
+# maximum time to wait for NIMADM to complete in hours
+wait_nimadm_timeout_hours: 4
+
+# Maximum time to wait for NIMADM to complete in seconds
+wait_nimadm_timeout_secs: "{{ (wait_nimadm_timeout_hours * 60 * 60) | int }}"
+
+# Retry times
+retry_chk_nimadm_comp: "{{ (wait_nimadm_timeout_secs | int / 60) | int + 1 }}"
+
+# Retry interval time in seconds
+interval: 60

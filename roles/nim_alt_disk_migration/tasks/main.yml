@@ -93,21 +93,45 @@
 # x.x.x.x is the NIM master
 # why would it be unreachable when the shell cmd nimadm it was reachable and the task was
 # running
-# POSSIBLE CAUSE:
-# - the task is taking too long and times out
-# POSSIBLE SOLUTION:
-# - async and polling
-# - large timeout and polling
+#
+# SOLUTION
+# - asynchronous action and polling
+#   large timeout: nimadm takes 2-3 hours to complete
+#   migration in normal case. The timeout (async)
+#   is set up to 4 hours, which is high enough to not
+#   cause "check on it later" task to fail
+#   or no longer exist error.
+#
+#   poll = 0 to start the task and immediately move on
+#   to the next one without waiting a result. The nimadm
+#   task will run until it either complete, fail or timeout.
 ############################################################
 
 - name: "Migrate to alternate disk"
   shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ target_disk }} -Y"
   register: results
-  ignore_errors: true
-  ignore_unreachable: true
-- debug: var=results
+  async: "{{ wait_nimadm_timeout_secs }}"
+  poll: 0
+- debug: #var=results
+    msg: "timeout = {{ wait_nimadm_timeout_secs }}"
 
 ############################################################
+#
+# check on async task later
+# perform a task to check on nimadm task via its registered
+# job ID
+############################################################
+
+- name: "Check on an async task"
+  async_status:
+    jid: "{{ results.ansible_job_id }}"
+  register: async_poll_results
+  until: async_poll_results.finished
+  retries: "{{ retry_chk_nimadm_comp }}"
+  delay: "{{ interval }}"
+- debug: #var=async_poll_results
+    msg: "retry = {{ retry_chk_nimadm_comp }}"
+
 ############################################################
 
 - block:
