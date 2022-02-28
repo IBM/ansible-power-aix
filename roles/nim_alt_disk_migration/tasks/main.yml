@@ -58,6 +58,13 @@
 - debug: msg="SPOT resource {{ spot }} specified for migration"
 
 ############################################################
+############################################################
+
+- name: "Verify that the client LPAR is at least a Power8 machine"
+  include_tasks: "validate_min_power_level.yml"
+- debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
+
+############################################################
 # TODO: make sure to setup rsh (remote command exection) from
 # NIM master to specified NIM client
 # create an entry in each others hostname (NIM client/master)
