@@ -230,7 +230,6 @@ meta:
                     description: Information for each individual NIM object fetched.
                     returned: if NIM object of this type exists
                     type: dict
-                    contains: depends on the NIM object type
             sample: see below
 nim_node:
     description: NIM node info.
