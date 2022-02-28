@@ -306,6 +306,7 @@ stdout:
        x         1530 ./tmp/vgdata/datavg/datavg.data
        x          278 ./tmp/vgdata/datavg/backup.data
            total size: 4393'
+
 stderr:
     description: The standard error of the command.
     returned: always

@@ -67,14 +67,12 @@ options:
     - Mutually exclusive with fixes.
     type: str
     choices: [ all, apar, service_pack, sp, technology_level, tl ]
-    default: no
   fixes:
     description:
     - Specifies the names of the fixes.
     - Mutually exclusive with fix_type.
     type: list
     elements: str
-    default: no
 notes:
   - You can refer to the IBM documentation for additional information on the lslpp command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lslpp.html).
@@ -115,14 +113,14 @@ EXAMPLES = r'''
 - name: Print the fileset facts
   debug:
     var: ansible_facts.filesets
-    
+
 - name: Populate fixes facts with the fixes which are APARs only.
   lpp_facts:
     fix_type: apar
 - name: Print the fixes facts
   debug:
     var: ansible_facts.fixes
-    
+
 - name: Populate fixes facts for the list of fixes with keywords
         7200-01_AIX_ML, IV82301, IV99819, 72-02-021832_SP .
   lpp_facts:
@@ -220,26 +218,23 @@ ansible_facts:
                - Requisites of the filesets
                returned: when available
                type: dict
-               sample: "requisites": { 
-                            "coreq": {
-                                "bos.aso": {
-                                    "name": "bos.aso",
-                                    "level": [
-                                        "7.2.0.0"
-                                    ],
-
-                                    }
-                                }
-                            }
-                        }    
-                            
+               sample:
+                "requisites": {
+                    "coreq": {
+                        "bos.aso": {
+                            "name": "bos.aso",
+                            "level": [
+                                "7.2.0.0"
+                            ],
+                        }
+                    }
+                }
             ver_cons_check:
-                description: 
+                description:
                 - Status of fileset version consistency check
                 returned: always
                 type: str
-                sample:
-                "ver_cons_check": "OK"
+                sample: "OK"
     fixes:
       description:
       - Maps the fixes name to the dictionary of filesets.
@@ -274,7 +269,7 @@ ansible_facts:
               sample: '"inst_level": "7.2.1.0"'
             name:
               description:
-              - fileset name 
+              - fileset name
               returned: always
               type: str
             reqLevel:
@@ -304,6 +299,7 @@ LPP_TYPE = {
     'F': 'fix'
 }
 
+
 def list_fixes(module):
     """
     List the fixes installed on the system including APAR, technology level
@@ -315,18 +311,17 @@ def list_fixes(module):
     fixes = {}
     cmd = []
     fixes_list = []
-    all_fixes = True
     fix_type = ''
     is_continue = False
-    
+
     # Details on what each status symbol means from instfix output
     FIX_STATUS = {
-                  '-': "Down Level",
-                  '=': "Correct Level",
-                  '+': "Superseded",
-                  '!': "Not installed"
-                 }
-    
+        '-': "Down Level",
+        '=': "Correct Level",
+        '+': "Superseded",
+        '!': "Not installed"
+    }
+
     instfix_path = module.get_bin_path('instfix', required=True)
     '''instfix sample output:
     ##Keyword:Fileset:ReqLevel:InstLevel:Status:Abstract
@@ -336,14 +331,14 @@ def list_fixes(module):
     if module.params['fix_type']:
         fix_type = module.params['fix_type']
     elif module.params['fixes']:
-        fixes_list = module.params['fixes']               
-        if len(fixes_list) > 0:     
-                cmdstr = ''           
-                for fix in fixes_list:
-                    cmdstr += fix.strip() + ' '
-                cmdstr.strip()
-                cmd += ['-k', cmdstr]
-            
+        fixes_list = module.params['fixes']
+        if len(fixes_list) > 0:
+            cmdstr = ''
+            for fix in fixes_list:
+                cmdstr += fix.strip() + ' '
+            cmdstr.strip()
+            cmd += ['-k', cmdstr]
+
     ret, stdout, stderr = module.run_command(cmd)
 
     instfix_stdout = stdout.splitlines()
@@ -357,9 +352,9 @@ def list_fixes(module):
         abstract = fields[5]
         is_continue = False
         if (fix_type == "apar" and name.startswith('I')) \
-           or ((fix_type == "service_pack" or fix_type == "sp") \
+           or ((fix_type == "service_pack" or fix_type == "sp")
                and name.endswith("_SP")) \
-           or ((fix_type == "technology_level" or fix_type == "tl")\
+           or ((fix_type == "technology_level" or fix_type == "tl")
                and name.endswith("_ML")) \
            or (fix_type == "all"):
             is_continue = True
@@ -372,71 +367,77 @@ def list_fixes(module):
                 fileset_info['reqLevel'] = fields[2]
                 fileset_info['inst_level'] = fields[3]
                 fileset_info['status'] = FIX_STATUS.get(fields[4], '')
-        
+
             fixes[name]['filesets'][fileset_name] = fileset_info
-       
+
     return fixes
 
 
 def list_reqs(name, module):
-      
     """
-    List the requisites of the filesets 
+    List the requisites of the filesets
     param module: Ansible module argument spec.
     param name: fileset name for which requisites has to be gathered
     return: dict requisites
     """
-    requisites = {}    
-    req_type_list = ["*coreq", "*prereq", "*ifreq", "*instreq" ]
+    requisites = {}
+    req_type_list = ["*coreq", "*prereq", "*ifreq", "*instreq"]
     i = 0
-    
+
     lslpp_path = module.get_bin_path('lslpp', required=True)
-    ''' sample command output 
+    ''' sample command output
     lslpp -pcq bos.perf.tools
-    /usr/lib/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix 7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib 5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0 
-    /etc/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix 7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib 5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0 
+    /usr/lib/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30
+    *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix
+    7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib
+    5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0\n
+    /etc/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30
+    *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix
+    7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib
+    5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0
     '''
     cmd = [lslpp_path, '-cpq', name]
-    
+
     ret, stdout, stderr = module.run_command(cmd)
-    
+
     for line in stdout.splitlines():
         raw_fields = line.split(':')
         ''' In cases where requisites are not present, then the length of the raw fields from
         the output line will be less than 3. Hence continue to the next line as this would not
         need any processing.
-        
         '''
         if len(raw_fields) < 3:
             continue
         fields = [field.strip() for field in raw_fields]
-        
+
         ''' 3rd field contains the requisites separated by spaces.
         Parse the requisites and categorize it as coreqs, prereqs, ifreqs.
-        Sample 3rd field from lslpp -cpq 
-        *coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix 7.1.3.0 *ifreq bos.adt.include 5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib 5.3.0.30 *ifreq bos.rte.control 5.3.0.10 *prereq bos.rte.libc 7.1.3.0
+        Sample 3rd field from lslpp -cpq
+        *coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq
+        perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix 7.1.3.0 *ifreq bos.adt.include
+        5.3.0.30 *ifreq bos.mp64 5.3.0.30 *ifreq bos.pmapi.lib 5.3.0.30 *ifreq bos.rte.control
+        5.3.0.10 *prereq bos.rte.libc 7.1.3.0
         '''
-        
+
         '''Some of the filesets might have no requisites.
         Example:
         /usr/lib/objrepos:udapl.rte 7.2.5.100:NONE
         /etc/objrepos:udapl.rte 7.2.5.100:NONE
         '''
         if fields[2] == "NONE":
-           continue    
-       
+            continue
+
         reqs = re.split(r"\s+|{", fields[2])
         num_reqs = len(reqs)
-        
 
         ''' Requisites has 3 fields : req_type, fileset name, level.
         Minimum 1st 2 fields should be present.
         Sample
-        *coreq bos.sysmgt.trace 5.3.0.30 
+        *coreq bos.sysmgt.trace 5.3.0.30
         '''
         if len(reqs) >= 2:
             while i < num_reqs:
-                #Reinitialize the local variables
+                # Reinitialize the local variables
                 req_type = ''
                 fileset = ''
                 level = ''
@@ -451,13 +452,14 @@ def list_reqs(name, module):
                 if reqs[i] not in req_type_list:
                     i = i + 1
                     continue
-                #1st field will be requisite type. ignore '*' in the requisite_type(Eg: *coreq as coreq )
+                # 1st field will be requisite type. ignore '*' in the requisite_type(Eg:
+                # *coreq as coreq )
                 req_type = reqs[i][1:]
                 i = i + 1
-                
+
                 '''2nd field will be fileset name.
                  This is to fill the fileset name which will be followed by level
-                *coreq bos.sysmgt.trace 5.3.0.30 
+                *coreq bos.sysmgt.trace 5.3.0.30
                 In  this fileset will "bos.sysmgt.trace "
                 '''
                 fileset = reqs[i]
@@ -469,35 +471,35 @@ def list_reqs(name, module):
                 (Example: *coreq bos.perf.perfstat)
                 '''
                 if i < num_reqs:
-                    
                     ''' 3rd field will be fileset level. Sometimes this might be some additional
                     text followed by the level. So process the additional texts here and get the
                     level .
                     '''
                     if reqs[i] not in req_type_list:
                         ''' In some cases, prerequisites might be listed in brackets like below:
-                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1 
+                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1
                         In this case, both will be listed as part of levels.
                         '''
-                        if '(' in reqs[i] or ')' in reqs[i]: 
+                        if '(' in reqs[i] or ')' in reqs[i]:
                             level += reqs[i]
                             i = i + 1
-                      
+
                         level += reqs[i]
                         i = i + 1
-                
-                # create a dictionary for each requisite type if not present already.    
+
+                # create a dictionary for each requisite type if not present already.
                 if req_type not in requisites:
-                   requisites[req_type] = {}
+                    requisites[req_type] = {}
                 if fileset not in requisites[req_type]:
-                   requisites[req_type][fileset] = {}  
-                   requisites[req_type][fileset]["level"] = [level]
+                    requisites[req_type][fileset] = {}
+                    requisites[req_type][fileset]["level"] = [level]
                 else:
                     requisites[req_type][fileset]["level"].append(level)
-               
+
                 requisites[req_type][fileset]["name"] = fileset
-            
-    return requisites   
+
+    return requisites
+
 
 def fileset_consistency_check(module, name):
     """
@@ -555,7 +557,7 @@ def main():
         cmd += ['all']
 
     ret, stdout, stderr = module.run_command(cmd)
-    
+
     # Ignore errors as lslpp might return 1 with -b
     # List of fields returned by lslpp -lc:
     # Source:Fileset:Level:PTF Id:State:Type:Description:EFIX Locked
@@ -595,7 +597,7 @@ def main():
             info['description'] = fields[6]
             info['emgr_locked'] = fields[7] == 'EFIXLOCKED'
             info['sources'] = [fields[0]]
-            if module.params["reqs"] == True :
+            if module.params["reqs"] is True:
                 info["requisites"] = list_reqs(name, module)
 
             filesets[name]['levels'][level] = info
@@ -605,7 +607,7 @@ def main():
     fixes = {}
     if module.params["fix_type"] or module.params["fixes"]:
         fixes = list_fixes(module)
-       
+
     results = dict(ansible_facts=dict(filesets=filesets, fixes=fixes))
     module.exit_json(**results)
 
