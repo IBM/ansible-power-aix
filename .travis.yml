@@ -1,52 +1,222 @@
+---
+arch: amd64
 os: linux
-sudo: required
-dist: bionic
+dist: focal
 language: python
 python:
-  - "3.7"
+  - "3.8"
 
-# command to install dependencies
-install:
-  - sudo add-apt-repository ppa:deadsnakes/ppa --yes
-  - sudo apt-get --yes --force-yes install python3-venv
-  - pip install ansible==2.9
-  - pip install flake8
-  - pip3 install ansible-doc-extractor
-  - pip install sphinx
-  - pip install sphinx_rtd_theme
-  - ansible --version
-  - flake8 --version
+jobs:
+  allow_failures:
+    - name: "sanity-test"
+    - name: "porting-test"
+    - name: "compile-test"
+    - name: "module-linting-test"
+    - name: "unit-test"
+    - name: "gen-doc-files"
 
-env:
-  global:
-    secure: tK8BlMX+G8su+bH8Qbrfq182UWYkdE0R3KTQNcAsiRVz0PjYldQglMkZk7oNGiiy/g2X6HTysrcWpiQEwxHK7soMKgZvD7e0fuZRQbfmHRFT70MNl7z9LkhFqbvD3DQKTUwvvuGSygNLHgGaAFnQaqKyBbMEQ7sxDC8+YsUypYWMFN6YhHySG1b7AOkgsBybA53o6O2cMg7XGiSHV2ImObJztQi9YiV4KCb7E3eeSrU+Mz9e2thM+8XQ1a+7iLHH1KvZG/UPSqYSBgmAFrCHtBpucvWyYgJ3I8b2qXMLs3QsoOPlAs/eF5g4k4NrYvz40aNaS6T/eJUGs0CFn6xmdQMC5+Vsrjmn2xJB25S0/XB6dtyz+iqHBTG461MTdlj+eMYz5FTL5njH32Ud0Up/9jd35ZYxvtrSdFtvclvqQMHnRzGJZHYEJE8+Z76KKiap5qIQXrzfuhnIMNPnfi+dWlyXD/RZ7mNXDNHEUpHkB9820iDM5oukJ0NUFYD5gxJXWO7gn1zju+hgwyNt/cpdLIiiGeX2TxYfBA/jHfwYE7ttOjysnaxyhvd3KrsF+b+GWNKI/9sksHEerAA0Ciuh4VbXrQ4n7mNrlK3gdAl7wEA06wTaad9JghN6SEpyEMAE23aA1nuW3PpcLFGrOd2EKt7VDqusoXFVeERD8Lb1OK8=
+  include:
+  ########################################################################
+  # sanity test
+  # - makes sure that the collection passes the ansible sanity tests
+  ########################################################################
+    - name: "sanity-test"
+      env: 
+        - NAME="sanity-test"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make sanity-test
 
-# command to run tests
-script:
+    - name: "sanity-test"
+      env: 
+        - NAME="sanity-test"
+        - ANSIBLE_VERSION="3"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make sanity-test
 
-  # With flake ignore
-  #  E402: <module> level import not at top of file (as per Ansible module developement)
-  #  W503: line break before binary operator (PEP8 advices to put logical operator ahead)
-  # - flake8 plugins/modules/* --max-line-length=160 --ignore=E402,W503
+    - name: "sanity-test"
+      env:
+        - NAME="sanity-test"
+        - ANSIBLE_VERSION="4"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make sanity-test
 
-  # checking yaml syntax is not relevant since there are just examples.
-  #- ansible-playbook playbook_aix_flrtvc.yml --syntax-check
-  #- ansible-playbook playbook_aix_suma_targets_all.yml --syntax-check
+    - name: "sanity-test"
+      env:
+        - NAME="sanity-test"
+        - ANSIBLE_VERSION="devel"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible-devel-branch
+        - make install-sanity-test-requirements
+        - make sanity-test
 
-  # devops/bin/sanity_test.sh is the old script that runs the ansible sanity tests,
-  # it is no longer needed as the sanity tests is now run with github actions
-  # workflow
-  # - bash devops/bin/sanity_test.sh
+  ########################################################################
+  # porting test
+  # - makes sure that the collection is properly ported for python3
+  ########################################################################
+    - name: "porting-test"
+      env:
+        - NAME="porting-test"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - python -m pip install --upgrade pip
+        - python -m pip install pylint==2.10.*
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make porting
 
-  - bash devops/bin/gen_doc.sh
+  ########################################################################
+  # compile test
+  # - makes sure that the collection has compatible syntax
+  # with python version 2.7, 3.6, 3.7, and 3.8
+  ########################################################################
+    - name: "compile-test"
+      language: python
+      python:
+        - "2.7"
+      env:
+        - NAME="compile-test"
+        - PYTHON_VERSION="2.7"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make compile PYTHON_VERSION=${PYTHON_VERSION}
 
-# push the generated documentation using GitHub Pages
+    - name: "compile-test"
+      language: python
+      python:
+        - "3.6"
+      env:
+        - NAME="compile-test"
+        - PYTHON_VERSION="3.6"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make compile PYTHON_VERSION=${PYTHON_VERSION}
+
+    - name: "compile-test"
+      language: python
+      python:
+        - "3.7"
+      env:
+        - NAME="compile-test"
+        - PYTHON_VERSION="3.7"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make compile PYTHON_VERSION=${PYTHON_VERSION}
+
+    - name: "compile-test"
+      language: python
+      python:
+        - "3.8"
+      env:
+        - NAME="compile-test"
+        - PYTHON_VERSION="3.8"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make compile PYTHON_VERSION=${PYTHON_VERSION}
+
+  ########################################################################
+  # module linting test
+  # - makes sure that the collection conforms with PEP8 coding style
+  # standards
+  ########################################################################
+    - name: "module-linting-test"
+      env: 
+        - NAME="module-linting-test"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make module-lint
+
+  ########################################################################
+  # unit test
+  # - run unit tests for the modules
+  ########################################################################
+    - name: "unit-test"
+      env: 
+        - NAME="unit-test"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=2.9
+        - make install-unit-test-requirements
+        - make unit-test
+
+  ########################################################################
+  # generate doc files
+  ########################################################################
+    - name: "gen-doc-files"
+      env: 
+        - NAME="gen-doc-files"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=2.9
+        - python -m pip install ansible-doc-extractor
+        - python -m pip install sphinx
+        - python -m pip install sphinx_rtd_theme
+        - bash devops/bin/gen_doc.sh
+
+# push the generate documentation using Github Pages
 deploy:
-    provider: pages
-    strategy: git
-    skip_cleanup: true
-    token: $GITHUB_API_KEY
-    local_dir: docs/build
-    keep_history: true
-    on:
-        branch: dev-collection
+  provider: pages
+  strategy: git
+  skip_cleanup: true
+  token: $GIHUB_API_KEY
+  local_dir: docs/build
+  keep_history: true
+  on:
+    branch: dev-collection

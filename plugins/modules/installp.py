@@ -191,6 +191,7 @@ rc:
     description: The command return code.
     returned: always
     type: int
+
 stdout:
     description: The standard output.
     returned: always
@@ -236,6 +237,7 @@ stdout:
         ******************************************************************************\n
         End of installp PREVIEW.  No deinstall operation has actually occurred.\n
         ******************************************************************************"
+
 stderr:
     description: The standard error.
     returned: always

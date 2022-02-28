@@ -17,6 +17,8 @@ plugins/modules/nim_flrtvc.py pylint:unspecified-encoding
 plugins/modules/nim_suma.py pylint:unspecified-encoding
 plugins/modules/nim_viosupgrade.py pylint:unspecified-encoding
 plugins/modules/lpar_facts.py pylint:use-dict-literal
+plugins/modules/lpar_facts.py pylint:consider-using-f-string
+plugins/modules/lpp_facts.py pylint:consider-using-f-string
 plugins/modules/mktun.py pylint:use-dict-literal
 plugins/modules/mount.py pylint:use-dict-literal
 plugins/modules/emgr.py pylint:consider-using-f-string
