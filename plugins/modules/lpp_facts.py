@@ -307,7 +307,10 @@ def list_fixes(module):
     param module: Ansible module argument spec.
     return: dict fixes
     """
+<<<<<<< HEAD
     
+=======
+>>>>>>> e80ec19... setting up travis CI (#66)
     fixes = {}
     cmd = []
     fixes_list = []
@@ -519,7 +522,12 @@ def fileset_consistency_check(module, name):
     else:
         cons_check = "NOT OK"
     return cons_check
+<<<<<<< HEAD
      
+=======
+
+
+>>>>>>> e80ec19... setting up travis CI (#66)
 def main():
     module = AnsibleModule(
         argument_spec=dict(
