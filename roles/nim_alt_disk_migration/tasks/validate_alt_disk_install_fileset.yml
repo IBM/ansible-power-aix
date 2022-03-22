@@ -1,0 +1,140 @@
+---
+############################################################
+############################################################
+# Validations:
+# 1. check if 'bos.alt_disk_install.rte' fileset is
+#    installed in NIM master
+#
+# 2. check if 'bos.alt_disk_install.rte' fileset is
+#    installed in lpp_source
+#
+# 3. check if 'bos.alt_disk_install.rte' fileset is
+#    installed in spot, if NOT then customize SPOT
+#    resource and install the fileset using lpp_source
+#
+# 4. check if the 'bos.alt_disk_install.rte' fileset
+#    is on the same level for NIM master, lpp_source
+#    and spot
+
+############################################################
+############################################################
+- name: "Query bos.alt_disk_install.rte fileset in NIM master"
+  ibm.power_aix.lpp_facts:
+    filesets: bos.alt_disk_install.rte
+
+- set_fact:
+    nim_master_fileset_levels: >
+      "{{ ansible_facts['filesets']['bos.alt_disk_install.rte']['levels'].keys() | list }}"
+
+- name: "Check if 'bos.alt_disk_install.rte is installed in NIM master"
+  fail:
+    msg: "Fileset 'bos.alt_disk_install.rte' not installed in NIM master" 
+  when: "'bos.alt_disk_install.rte' not in ansible_facts.filesets"
+- debug:
+    msg: >
+     'bos.alt_disk_install.rte' in NIM master is at 
+     level {{ nim_master_fileset_levels }}
+
+############################################################
+############################################################
+
+- name: "Query bos.alt_disk_install.rte fileset {{ lpp_facts }}"
+  shell: "nim -o showres {{ lpp_source }} | grep 'bos.alt_disk_install.rte'"
+  changed_when: false
+  register: lpp_source_query
+  failed_when:
+    - lpp_source_query.rc != 0
+    - lpp_srouce_query.stderr != ''
+
+- name: "Check if 'bos.alt_disk_install.rte is in in {{ lpp_source }}"
+  fail:
+    msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}" 
+  when: "lpp_source_query.stdout == ''"
+
+- block:
+    - set_fact:
+        lpp_source_fileset_level_pattern: "(\\s+bos\\.alt_disk_install\\.rte\\s+)([0-9\\.]+)"
+    - set_fact:
+        lpp_source_fileset_level: "{{ lpp_source_query.stdout |
+          regex_search(lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
+
+- debug:
+    msg: >
+     'bos.alt_disk_install.rte' in {{ lpp_source }} is at
+     level '{{ lpp_source_fileset_level }}'
+
+
+############################################################
+############################################################
+
+- name: "Query bos.alt_disk_install.rte fileset in {{ spot }}"
+  shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
+  changed_when: false
+  register: spot_query
+  failed_when:
+    - spot_query.rc != 0
+    - spot_query.stderr != ''
+
+# if 'bos.alt_disk_install.rte' fileset is not in SPOT then add the fileset
+- name: "Add 'bos.alt_disk_install.rte fileset to {{ spot }}"
+  block:
+    - command: >
+        nim -o cust -a lpp_source={{ lpp_source }} 
+        -a filesets=bos.alt_disk_install.rte {{ spot }}
+      register: spot_fileset_install
+      
+    - fail:
+        msg: >
+          Installation of 'bos.alt_disk_install.rte' on {{ spot }} failed
+      when: "spot_fileset_install is failed"
+
+    - debug:
+        msg: >
+          'bos.alt_disk_install.rte' fileset installed in {{ spot }}
+
+  when: "spot_query.stdout == ''"
+
+- block:
+    - shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
+      changed_when: false
+      register: spot_query
+    # - debug: var=spot_query
+
+    - set_fact:
+        spot_fileset_level_pattern: "(\\s+bos\\.alt_disk_install\\.rte\\s+)([0-9\\.]+)"
+    - set_fact:
+        spot_fileset_level: "{{ spot_query.stdout |
+          regex_search(spot_fileset_level_pattern, '\\2') | join('\n') }}"
+
+############################################################
+############################################################
+
+- name: "Check if 'bos.alt_disk_install.rte' fileset level matches between NIM master
+        and {{ lpp_source }}"
+  fail:
+    msg: >
+      NIM master and {{ lpp_source }} 'bos.alt_disk_install.rte'
+      fileset levels do not match
+  when: "lpp_source_fileset_level not in nim_master_fileset_levels"
+
+############################################################
+############################################################
+
+- name: "Check if 'bos.alt_disk_install.rte' fileset level matches between NIM master
+        and {{ spot }}"
+  fail:
+    msg: >
+      NIM master and {{ spot}} 'bos.alt_disk_install.rte'
+      fileset levels do not match
+  when: "spot_fileset_level not in nim_master_fileset_levels"
+
+############################################################
+############################################################
+
+- name: "Check if 'bos.alt_disk_install.rte' fileset level matches between {{ lpp_source }}
+        and {{ spot }}"
+  fail:
+    msg: >
+      {{ lpp_source }} and {{ spot}} 'bos.alt_disk_install.rte'
+      fileset levels do not match
+  when: "lpp_source_fileset_level != spot_fileset_level"

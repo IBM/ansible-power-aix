@@ -32,6 +32,7 @@ plugins/modules/_nim_upgradeios.py pylint:consider-using-f-string
 plugins/modules/nim_updateios.py pylint:consider-using-f-string
 plugins/modules/nim_suma.py pylint:consider-using-f-string
 plugins/modules/nim_viosupgrade.py pylint:consider-using-f-string
+plugins/modules/nim_resource.py pylint:consider-using-f-string
 plugins/modules/suma.py pylint:consider-using-f-string
 plugins/modules/lvm_facts.py pylint:consider-using-f-string
 plugins/modules/devices.py pylint:consider-using-f-string
