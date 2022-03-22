@@ -45,4 +45,4 @@
         # force_create_spot: true
         # optional, provide a SPOT resource, if not given
         # then the role will derive one from lpp_source
-        # spot: "{{ spot_v }}"
+        spot: "{{ spot_v }}"
