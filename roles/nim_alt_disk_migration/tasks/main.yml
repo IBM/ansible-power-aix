@@ -65,41 +65,7 @@
 - debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
 
 ############################################################
-# TODO: make sure to setup rsh (remote command exection) from
-# NIM master to specified NIM client
-# create an entry in each others hostname (NIM client/master)
-# /.rhosts  file to make the rsh command useable.
-# ADDITIONAL RESEARCH:
-# - do you actually need to do this step to make nimadm
-# work?
-############################################################
-
-############################################################
-# TODO: make sure the SPOT resource matches the NIM master's
-# level
-# 0505-204 nimadm: SPOT dflt_spot does not have bos.alt_disk_install.rte installed.",
-# "0505-205 nimadm: The level of bos.alt_disk_install.rte installed in SPOT",
-# "dflt_spot (0.0.0.0) does not match the NIM master's level (7.3.0.0)."]
-# HOW TO FIX:
-# http://aix-skills.blogspot.com/2015/11/spot-does-not-match-nim-masters-level.html
-############################################################
-
-############################################################
 # TODO: create a plugin to support nimadm (NIM alternate disk migration)
-#
-# TODO: fix the following issue below,
-# INVESTIGATE: successfully creates an altinst_rootvg on NIM client
-# however Ansible output give the following error:
-# TASK [ibm.power_aix.alt_disk_migration : Migrate to alternate disk] *********************************
-# fatal: [x.x.x.x]: UNREACHABLE! =>
-#     {
-#       "changed": false,
-#       "msg": "Failed to connect to the host via ssh: Shared connection to x.x.x.x closed.",
-#       "unreachable": true
-#     }
-# x.x.x.x is the NIM master
-# why would it be unreachable when the shell cmd nimadm it was reachable and the task was
-# running
 #
 # SOLUTION
 # - asynchronous action and polling
@@ -123,7 +89,6 @@
     msg: "timeout = {{ wait_nimadm_timeout_secs }}"
 
 ############################################################
-#
 # check on async task later
 # perform a task to check on nimadm task via its registered
 # job ID
