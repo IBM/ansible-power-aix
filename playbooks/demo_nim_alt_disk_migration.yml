@@ -11,14 +11,14 @@
 # 5. c_rsh must be active (should be good if (1)
 # is properly setup)
 - name: "nim_alt_disk_migration demo"
-  hosts: nimserver2
+  hosts: nimserver1
   gather_facts: false
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test4
     alt_disk: hdisk1
-    lpp_source_v: lpp_2134A_730
-    spot_v: spot_2134A_730
+    lpp_source_v: lpp_source_2145C_730_GOLD
+    spot_v: dflt_lpp_source_2145C_730_GOLD_spot
   collections:
     - ibm.power_aix
   tasks:
