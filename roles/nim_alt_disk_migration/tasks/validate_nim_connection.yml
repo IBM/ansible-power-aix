@@ -1,0 +1,138 @@
+# Copyright (c) IBM Corporation 2022
+---
+#################################################
+# the following cases are validated
+#
+# make sure machine is defined on master
+# 1. lsnim -l {{ nim_client }}
+#
+# make sure nimsh active on both master/client
+# 2. lssrc -s nimsh | grep active
+#
+# make sure 2 resource are active
+# 3. lssrc -ls inetd | grep tftp | grep active
+#
+# Make sure bootps is active
+# 4. lssrc -ls inetd | grep bootpd | grep active
+#
+# c_rsh is up and running
+# 5. /usr/lpp/bos.system/nim/methods/c_rsh <client> /usr/bin/hostname
+#
+# check nimsh status on client
+# 6. /usr/lpp/bos.system/nim/methods/c_rsh <client> "lssrc -s nimsh | grep active"
+#
+# check master host name from /etc/niminfo on client
+# 7. cat /etc/niminfo | grep NIM_MASTER_HOSTNAME
+#
+###################################################
+
+
+- name: "check if client is defined on master"
+  shell: "lsnim -l {{ nim_client }}"
+  changed_when: false
+  register: chk_client_output
+  failed_when:
+    - chk_client_output is failed
+    # 0042-053 lsnim: there is no NIM object named "quimby07"
+    - chk_client_output.stderr.find( "0042-053" ) != -1
+
+
+#####################################################
+#####################################################
+
+
+- name: "get nimsh status on master"
+  shell: "lssrc -s nimsh | grep nimsh | awk '{print $4}'"
+  register: nimsh_output
+
+- name: "validate nimsh state"
+  fail:
+    msg: "nimsh is not active on NIM master"
+  when: nimsh_output.stdout != "active"
+
+
+######################################################
+######################################################
+
+- name: "check if c_rsh is up and running"
+  shell: "/usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }} /usr/bin/hostname"
+  changed_when: false
+  register: c_rsh_output
+  failed_when:
+    - c_rsh_output is failed
+
+
+######################################################
+######################################################
+
+- name: "get tftp status on master"
+  shell: "lssrc -ls inetd | grep tftp | awk '{print $5}'"
+  register: tftp_output
+
+- name: "validate tftp status"
+  fail:
+    msg: "tftp is not active on NIM master"
+  when: tftp_output.stdout != "active"
+
+
+#####################################################
+####################################################
+
+
+- name: "get bootpd status on master"
+  shell: "lssrc -ls inetd | grep bootpd | awk '{print $5}'"
+  register: bootpd_output
+
+- name: "validate bootpd status"
+  fail:
+    msg: "bootpd is not active on NIM master"
+  when: bootpd_output.stdout != "active"
+
+
+#####################################################
+#####################################################
+
+
+- name: "get nimsh status on client"
+  command: >
+    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
+    '/usr/bin/lssrc -s nimsh'
+  register: nimsh_client_output
+
+- name: "Parse and nimsh status"
+  block:
+    - set_fact:
+        nimsh_status: "{{ nimsh_client_output.stdout | regex_search('active') }}"
+
+- name: "validate nimsh status on client"
+  fail:
+    msg: "nimsh status is not active on NIM client {{ nim_client }}"
+  when: nimsh_status != "active"
+
+
+######################################################
+######################################################
+
+- name: "get niminfo from client"
+  command: >
+    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
+    '/usr/bin/cat /etc/niminfo | /usr/bin/grep NIM_MASTER_HOSTNAME'
+  register: niminfo_output
+
+- name: "get nim master host name"
+  shell: "hostname"
+  register: hostname_output
+
+- name: "Parse and get niminfo"
+  block:
+    - set_fact:
+        master_match: "{{ niminfo_output.stdout | regex_search(hostname_output.stdout) }}"
+
+- name: "validate client master hostname from niminfo"
+  fail:
+    msg: "client {{ nim_client }} connects to a different NIM master"
+  when: master_match == ""
+
+
+#####################################################
+#####################################################

@@ -12,6 +12,13 @@
 ############################################################
 ############################################################
 
+- name: "Verify NIM master and client connection"
+  include_tasks: "validate_nim_connection.yml"
+- debug: msg="NIM master and clients connectiotn validation complete"
+
+############################################################
+############################################################
+
 - name: "Fetch client oslevel"
   include_tasks: "get_oslevel.yml"
   when: nim_client is defined
@@ -70,6 +77,7 @@
 - name: "Verify if alt_disk_install.rte fileset is present"
   include_tasks: "validate_alt_disk_install_fileset.yml"
 - debug: msg="Fileset alt_disk_install.rte presence validation passed"
+
 #
 ############################################################
 # - asynchronous action and polling
