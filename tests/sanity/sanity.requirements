@@ -4,3 +4,5 @@ six
 voluptuous
 yamllint
 flake8
+ansible-lint
+shellcheck-py

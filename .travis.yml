@@ -6,14 +6,22 @@ language: python
 python:
   - "3.8"
 
+notifications:
+  email: false
+  slack:
+    secure: UbqjanV/F+ruYr860cV5+uVChJorQVxhM0bOao9cWhzjHIsqlZYr6SOYjYGqzZSwDskeAaF/qS/CGOMjVRVP+C14/voCUaNTHydEnqaMKr3VM1VVfjyv6Y7O82pEXPBJjR5QhnzDWohu2ONwNW84lCgtRqekG+8JTJb5YQ1nObdj6BHzVuUEcyuolkVImkWd1RdImtSx1TWT/r/oZRzIvBN4aTRo+PkMERDyoJn5zLMFmjABejhNwPaz/TEB9S93dpFG9lOKUgqJFFWAFUVxKKchDcAJ9eOccGgXoV/TK60h4asBXzZMokZTRXZVIgHwhRYfbFKkEEQoHXrIKxmSfqJgjtmofvauPPhPKPE23ZEXv2ckz1JnR5BL1WZVggXod8gz5z9dLtfn80/ySMEUzoc9BaOUKti0YTuofOxXlBi2O1C3WJR3WR4m+tpeUEZLkv4V/yhoWULJ7HaeIe+P9vBDHJEBloKz2oOXfw0MHQY48SFJT6eXx8oqj5r2s1q6JaiW3FGinxmmUW6K3W09hhMDduuXb6o6Iv+/Jo9aZyOHEagnC3jHrNiHv8LBoWxOuFQNCFPTj6jJre0pC0NmV7ZF3jC/BT3s5qWGu7b+87UCzy6KKa2D8YCKFogI2mu0MGEltWInjTHwaoLfZcemOapCi0UgixK2EimjTrIJjKU=
+    on_success: always
+    on_failure: always
+
 jobs:
-  allow_failures:
-    - name: "sanity-test"
-    - name: "porting-test"
-    - name: "compile-test"
-    - name: "module-linting-test"
-    - name: "unit-test"
-    - name: "gen-doc-files"
+  # allow_failures:
+  #   - name: "sanity-test"
+  #   - name: "porting-test"
+  #   - name: "compile-test"
+  #   - name: "module-linting-test"
+  #   - name: "role-linting-test"
+  #   - name: "unit-test"
+  #   - name: "gen-doc-files"
 
   include:
   ########################################################################
@@ -50,6 +58,19 @@ jobs:
       env:
         - NAME="sanity-test"
         - ANSIBLE_VERSION="4"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make sanity-test
+
+    - name: "sanity-test"
+      env:
+        - NAME="sanity-test"
+        - ANSIBLE_VERSION="5"
         - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
       script:
         - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
@@ -176,6 +197,24 @@ jobs:
         - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
         - make install-sanity-test-requirements
         - make module-lint
+  
+  ########################################################################
+  # role linting test
+  # - makes sure that the collection conforms with PEP8 coding style
+  # standards
+  ########################################################################
+    - name: "role-linting-test"
+      env: 
+        - NAME="role-linting-test"
+        - ANSIBLE_VERSION="2.9"
+        - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
+      script:
+        - git clone --branch ${TRAVIS_BRANCH} git@github.ibm.com:ansible-power-aix/development.git ${ANSIBLE_COLLECTION_DIR}
+        - cd ${ANSIBLE_COLLECTION_DIR}
+        - export ANSIBLE_COLLECTIONS_PATHS=$(pwd)
+        - make install-ansible ANSIBLE_VERSION=${ANSIBLE_VERSION}
+        - make install-sanity-test-requirements
+        - make role-lint
 
   ########################################################################
   # unit test

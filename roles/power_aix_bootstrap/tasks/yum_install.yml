@@ -93,7 +93,7 @@
   when: crfs_result.rc is defined and crfs_result.rc == 0
 
 # TRANSFER files to target inventory
-- name: Transfer install images
+- name: Transfer install images # noqa no-changed-when
   raw: "scp -p {{ download_dir }}/yum_installer.sh {{ download_dir }}/{{ rpm_src }} {{ download_dir }}/{{ yum_src }} root@{{ aix_host }}:{{ target_dir }}"
   register: scp_result
   delegate_to: localhost
@@ -103,13 +103,13 @@
 # EXECUTE restore on target inventory
 - name: Restore yum bundle content
   raw: "{{ target_dir }}/yum_installer.sh {{ target_dir }}"
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   when: scp_result.rc == 0
 
 # REMOVE temporary filesystem resource
 - name: Remove temporary storage space
   raw: "umount -f {{ target_dir }} && rmfs -r {{ target_dir }}"
-  ignore_errors: true
+  ignore_errors: true # noqa ignore-errors
   when: target_exists.stdout is search("false")
 
 - name: Print status

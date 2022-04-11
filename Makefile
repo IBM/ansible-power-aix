@@ -6,6 +6,14 @@ ifndef MODULE
 	MODULE = plugins/modules/*.py
 endif
 
+ifndef ROLE
+	ROLE = roles
+endif
+
+ifndef SHELLSCRIPT
+	SHELLSCRIPT := $(shell find roles -name "*.sh")
+endif
+
 VIOSHC_SCRIPT = roles/power_aix_vioshc/files/vioshc.py
 
 ifndef TEST
@@ -33,6 +41,7 @@ help:
 	run unit testing"
 	@echo "lint 						lint ansible module and roles"         
 	@echo "module-lint MODULE=<module path> 		lint ansible module"         
+	@echo "role-lint ROLE=<role path> 			lint ansible role"         
 	@echo "porting MODULE=<module path>			check if module is python3 ported"
 	@echo "sanity-test MODULE=<module path>		run sanity test on the collections"
 	@echo "unit-test TEST=<test path>			run unit test suite for the collection"
@@ -82,7 +91,7 @@ install-unit-test-requirements:
 ######################################################################################
 
 .PHONY: lint
-lint: module-lint
+lint: module-lint role-lint
 
 .PHONY: module-lint
 module-lint:
@@ -91,6 +100,10 @@ module-lint:
 	flake8 --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) $(MODULE)
 	python -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
 		$(MODULE)
+
+.PHONY: role-lint
+role-lint:
+	ansible-lint --force-color -f pep8 $(ROLE)
 
 .PHONY: porting
 porting:

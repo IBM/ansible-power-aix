@@ -61,7 +61,7 @@
           yum:
             name:
               - "wget"
-            state: latest
+            state: latest # noqa package-latest
       when: dnf_tools_exists is search("false")
 
     # Install wget using dnf
@@ -81,7 +81,7 @@
           dnf:
             name:
               - "wget"
-            state: latest
+            state: latest # noqa package-latest
 
         - name: Print status
           debug:
