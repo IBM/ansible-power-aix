@@ -27,7 +27,7 @@
 - name: Install/ Update python and requisite rpms
   yum:
     name: python
-    state: latest
+    state: latest # noqa package-latest
 
 - name: Print status
   debug:
