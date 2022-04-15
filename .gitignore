@@ -7,3 +7,4 @@ venv*
 tests/output
 hosts
 *.swp
+*__pycache*

@@ -1,6 +1,6 @@
 ---
 - name: "FLRTVC on AIX playbook"
-  hosts: all
+  hosts: aix
   gather_facts: no
   vars:
     apar: sec
@@ -8,25 +8,29 @@
     check: no
     download_only: yes
     extend: yes
-
+    protocol_v: "https"
   collections:
-  - ibm.power_aix
+    - ibm.power_aix
 
   tasks:
-  - import_role:
-      name: power_aix_bootstrap
-    vars:
-      pkgtype: "wget"
+    - name: Install wget if it is not installed.
+      import_role:
+        name: power_aix_bootstrap
+      vars:
+        pkgtype: "wget"
 
-  - name: "FLRTVC"
-    flrtvc:
-      path: "{{ path }}"
-      verbose: yes
-      apar: "{{ apar }}"
-      force: no
-      clean: False
-      check_only: "{{ check }}"
-      download_only: "{{ download_only }}"
-      extend_fs: "{{ extend }}"
-    register: result
-  - debug: var=result
+    - name: "FLRTVC"
+      flrtvc:
+        path: "{{ path }}"
+        verbose: yes
+        apar: "{{ apar }}"
+        force: no
+        clean: False
+        check_only: "{{ check }}"
+        download_only: "{{ download_only }}"
+        extend_fs: "{{ extend }}"
+        protocol: "{{ protocol_v }}"
+      environment:
+        PATH: "/usr/bin:/usr/sbin/:/opt/freeware/bin"
+      register: result
+    - debug: var=result
