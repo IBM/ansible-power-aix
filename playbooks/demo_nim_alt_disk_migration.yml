@@ -16,7 +16,7 @@
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test4
-    alt_disk: hdisk1
+    target_disk: hdisk2
     lpp_source_v: lpp_source_2145C_730_GOLD
     spot_v: dflt_lpp_source_2145C_730_GOLD_spot
   collections:
@@ -32,7 +32,7 @@
         nim_client: "{{ nim_client_v }}"
         # required: Physical Volume name in the NIM
         # client where the alt_disk will be created
-        target_disk: "{{ alt_disk }}"
+        target_disk: "{{ target_disk }}"
         # required: NIM lpp_source object name
         # associated to a lpp_source for the desired
         # level of migration
@@ -45,4 +45,32 @@
         # force_create_spot: true
         # optional, provide a SPOT resource, if not given
         # then the role will derive one from lpp_source
-        spot: "{{ spot_v }}"
+        # spot: "{{ spot_v }}"
+
+# - name: "change bootlist"
+#   hosts: ansible-test4
+#   gather_facts: false
+#   remote_user: root
+#   vars:
+#     target_disk: hdisk0
+#   collections:
+#     - ibm.power_aix
+#   tasks:
+#     - name: "change bootlist back to old rootvg"
+#       ibm.power_aix.bootlist:
+#         normal:
+#           - device: "{{ target_disk }}"
+
+# - name: "reboot client LPAR"
+#   hosts: nimserver1
+#   gather_facts: false
+#   remote_user: root
+#   vars:
+#     nim_client_v: p9zpa-ansible-test4
+#   collections:
+#     - ibm.power_aix
+#   tasks:
+#     - name: "reboot client LPAR"
+#       ibm.power_aix.nim:
+#         action: reboot
+#         targets: "{{ nim_client_v }}"
