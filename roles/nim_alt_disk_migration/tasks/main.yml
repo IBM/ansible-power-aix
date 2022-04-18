@@ -78,7 +78,6 @@
   include_tasks: "validate_alt_disk_install_fileset.yml"
 - debug: msg="Fileset alt_disk_install.rte presence validation passed"
 
-#
 ############################################################
 # - asynchronous action and polling
 #   large timeout: nimadm takes 2-3 hours to complete

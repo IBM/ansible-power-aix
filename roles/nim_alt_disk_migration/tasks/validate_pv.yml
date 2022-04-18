@@ -50,14 +50,19 @@
         used_pp_pattern: "(?<=USED PPs:)[\\s0-9]+[\\(]([0-9]+)"
 # 0516-320 /usr/sbin/getlvodm: Physical volume hdisk1 is not assigned to
 #        a volume group.
-        pv_available: "{% if pv_availability_output.stderr.find('0516-320') != -1 %}
+        pv_available_cond1: "{% if pv_availability_output.stderr.find('0516-320') != -1 %}
           true {% else %} false {% endif %}"
     - set_fact:
         # in megabytes
         used_pps: "{{ used_pp_output.stdout |
           regex_search(used_pp_pattern, '\\1') | join('\n') }}"
         pv_size: "{{ pv_size_output.stdout }}"
-        pv_available: "{{ pv_available | trim }}"
+        pv_available_cond1: "{{ pv_available_cond1 | trim }}"
+        pv_available_cond2: "{{ pv_availability_output.stderr == '' }}"
+        pv_available_cond3: "{{ pv_availability_output.stdout == '' }}"
+        pv_available_cond4: "{{ pv_availability_output.rc == 0 }}"
+    - set_fact:
+        pv_available: "{{ pv_available_cond1 or (pv_available_cond2 and pv_available_cond3 and pv_available_cond4) }}"
 
 - name: "Validate specified physical volume"
   block:
