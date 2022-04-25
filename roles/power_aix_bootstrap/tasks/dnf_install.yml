@@ -75,17 +75,17 @@
           dest: "{{ target_dir }}"
           mode: 0755
        with_items:
-         - "files/{{ dnf_install_script }}"
-         - "{{ download_dir }}/{{ dnf_src_73 }}"
+          - "files/{{ dnf_install_script }}"
+          - "{{ download_dir }}/{{ dnf_src_73 }}"
 
      - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
-       shell: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
+       command: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
        failed_when: false
        when:
           - yum_exists.stdout is search("true")
 
      - name: Restore dnf bundle at the target if yum is not installed.
-       shell: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
+       command: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
        failed_when: false
        when:
           - yum_exists.stdout is not search("true")

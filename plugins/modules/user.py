@@ -72,7 +72,7 @@ options:
   password:
     description:
     - Specifies the encrypted string for the password to create or change the password.
-    - Can be used when I(state=present) or state=modify.
+    - Can be used when I(state=present) or I(state=modify).
     type: str
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
