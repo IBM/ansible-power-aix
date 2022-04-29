@@ -9,6 +9,9 @@
     download_only: yes
     extend: yes
     protocol_v: "https"
+    force_v: no
+    clean_v: False
+    verbose_v: yes
   collections:
     - ibm.power_aix
 
@@ -22,10 +25,10 @@
     - name: "FLRTVC"
       flrtvc:
         path: "{{ path }}"
-        verbose: yes
+        verbose: "{{ verbose_v }}"
         apar: "{{ apar }}"
-        force: no
-        clean: False
+        force: "{{ force_v }}"
+        clean: "{{ clean_v }}"
         check_only: "{{ check }}"
         download_only: "{{ download_only }}"
         extend_fs: "{{ extend }}"
