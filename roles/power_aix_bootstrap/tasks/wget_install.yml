@@ -67,6 +67,9 @@
     # Install wget using dnf
     - block:
 
+        - set_fact:
+            ansible_python_interpreter: "{{ interpreter_name }}"
+
         - debug:
             msg: "Install wget using dnf"
 

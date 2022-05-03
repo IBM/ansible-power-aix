@@ -2,7 +2,7 @@
 - name: "Backup operations on rootvg using mksysb and alt_disk_mksysb for AIX"
   hosts: ansible-test1
   remote_user: root
-  gather_facts: True
+  gather_facts: no
   vars:
     type:                     "mksysb"
     location_create:          "/tmp/backupfs/rootvg_sysb"

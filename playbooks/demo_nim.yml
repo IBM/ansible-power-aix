@@ -24,8 +24,8 @@
         action: update
         targets: "{{ install_targets_v }}"
         lpp_source: "{{ update_lpp_v }}"
-        asynchronous: True
-        force: False
+        asynchronous: true
+        force: false
       register: result
     # - debug: var=result
 
@@ -73,7 +73,7 @@
         action: script
         targets: "{{ install_targets_v }}"
         script: "{{ apply_script_v }}"
-        asynchronous: True
+        asynchronous: true
       register: result
     # - debug: var=result
 
@@ -104,7 +104,7 @@
       nim:
         action: reset
         targets: "{{ check_targets_v }}"
-        force: False
+        force: false
       register: result
     # - debug: var=result
 

@@ -1,18 +1,23 @@
 ---
 - name: "Reboot the machine"
-  hosts: quimby05
+  hosts: aix
   gather_facts: no
   vars:
     log_file: "/tmp/ansible_reboot_debug.log"
-
+    pre_reboot_delay_v: 0
+    post_reboot_delay_v: 0
+    reboot_timeout_v: 0
+    test_command_v: ""
+  collections:
+    - ibm.power_aix
   tasks:
-    - name: "reboot the machine without any delay"
-      ibm.power_aix.reboot:
       
-    - name: "reboot the machine with delay"
+    - name: "reboot the machine"
       ibm.power_aix.reboot:
-        pre_reboot_delay: 20
-        post_reboot_delay: 20
+              pre_reboot_delay: "{{ pre_reboot_delay_v }}"
+              post_reboot_delay: "{{ post_reboot_delay_v }}"
+              reboot_timeout: "{{ reboot_timeout_v }}"
+              test_command: "{{ test_command_v }}"
       register: reboot_result
 
     - debug: var=reboot_result
