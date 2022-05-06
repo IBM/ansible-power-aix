@@ -16,7 +16,7 @@
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test4
-    target_disk: hdisk2
+    target_disk_v: hdisk2
     lpp_source_v: lpp_source_2145C_730_GOLD
     spot_v: dflt_lpp_source_2145C_730_GOLD_spot
   collections:
@@ -32,7 +32,7 @@
         nim_client: "{{ nim_client_v }}"
         # required: Physical Volume name in the NIM
         # client where the alt_disk will be created
-        target_disk: "{{ target_disk }}"
+        target_disk: "{{ target_disk_v }}"
         # required: NIM lpp_source object name
         # associated to a lpp_source for the desired
         # level of migration

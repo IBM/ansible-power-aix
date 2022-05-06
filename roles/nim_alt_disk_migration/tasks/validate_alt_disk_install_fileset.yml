@@ -38,13 +38,13 @@
 ############################################################
 ############################################################
 
-- name: "Query bos.alt_disk_install.rte fileset {{ lpp_facts }}"
+- name: "Query bos.alt_disk_install.rte fileset {{ lpp_source }}"
   shell: "nim -o showres {{ lpp_source }} | grep 'bos.alt_disk_install.rte'"
   changed_when: false
   register: lpp_source_query
   failed_when:
     - lpp_source_query.rc != 0
-    - lpp_srouce_query.stderr != ''
+    - lpp_source_query.stderr != ''
 
 - name: "Check if 'bos.alt_disk_install.rte is in in {{ lpp_source }}"
   fail:
@@ -63,38 +63,22 @@
      'bos.alt_disk_install.rte' in {{ lpp_source }} is at
      level '{{ lpp_source_fileset_level }}'
 
-
 ############################################################
 ############################################################
 
 - name: "Query bos.alt_disk_install.rte fileset in {{ spot }}"
-  shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
-  changed_when: false
-  register: spot_query
-  failed_when:
-    - spot_query.rc != 0
-    - spot_query.stderr != ''
-
-# if 'bos.alt_disk_install.rte' fileset is not in SPOT then add the fileset
-- name: "Add 'bos.alt_disk_install.rte fileset to {{ spot }}"
   block:
-    - command: >
-        nim -o cust -a lpp_source={{ lpp_source }} 
-        -a filesets=bos.alt_disk_install.rte {{ spot }}
-      register: spot_fileset_install
-      
-    - fail:
-        msg: >
-          Installation of 'bos.alt_disk_install.rte' on {{ spot }} failed
-      when: "spot_fileset_install is failed"
+    - shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
+      changed_when: false
+      register: spot_query
+      failed_when:
+        - spot_query.rc != 0
+        - spot_query.stderr != ''
 
-    - debug:
-        msg: >
-          'bos.alt_disk_install.rte' fileset installed in {{ spot }}
+    # if 'bos.alt_disk_install.rte' is not installed in SPOT then install it
+    - include_tasks: "add_alt_disk_install_fileset.yml"
+      when: spot_query.stdout == ''
 
-  when: "spot_query.stdout == ''"
-
-- block:
     - shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
       changed_when: false
       register: spot_query
@@ -105,6 +89,7 @@
     - set_fact:
         spot_fileset_level: "{{ spot_query.stdout |
           regex_search(spot_fileset_level_pattern, '\\2') | join('\n') }}"
+  when: spot is defined
 
 ############################################################
 ############################################################
@@ -126,7 +111,9 @@
     msg: >
       NIM master and {{ spot}} 'bos.alt_disk_install.rte'
       fileset levels do not match
-  when: "spot_fileset_level not in nim_master_fileset_levels"
+  when:
+    - spot is defined
+    - "spot_fileset_level not in nim_master_fileset_levels"
 
 ############################################################
 ############################################################
@@ -137,4 +124,6 @@
     msg: >
       {{ lpp_source }} and {{ spot}} 'bos.alt_disk_install.rte'
       fileset levels do not match
-  when: "lpp_source_fileset_level != spot_fileset_level"
+  when:
+    - spot is defined
+    - "lpp_source_fileset_level != spot_fileset_level"

@@ -26,24 +26,6 @@
 ############################################################
 ############################################################
 
-- name: "Fail if a physical volume is not specified
-        for alternate disk creation"
-  fail:
-    msg: "target_disk not specified"
-  when: target_disk is not defined
-- debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
-              create an alternate disk copy"
-
-############################################################
-############################################################
-
-- name: "Verify that the specfied physical volume availability"
-  include_tasks: "validate_pv.yml"
-  when: target_disk is defined
-
-############################################################
-############################################################
-
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
     msg: "NIM LPP resource not specified"
@@ -52,6 +34,17 @@
 
 ############################################################
 ############################################################
+
+- name: "Check if we still need to migrate"
+  include_tasks: "idempotency_check.yml"
+- debug: msg="Proceed to migration"
+
+############################################################
+############################################################
+
+- name: "Verify if alt_disk_install.rte fileset is present"
+  include_tasks: "validate_alt_disk_install_fileset.yml"
+- debug: msg="Fileset alt_disk_install.rte presence validation passed"
 
 ############################################################
 # NOTE: specifying SPOT resource is optional, if not given
@@ -67,16 +60,30 @@
 ############################################################
 ############################################################
 
+- name: "Fail if a physical volume is not specified
+        for alternate disk creation"
+  fail:
+    msg: "target_disk not specified"
+  when: target_disk is not defined
+- debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
+              create an alternate disk copy"
+
+#############################################################
+#############################################################
+
+- name: "Verify that the specfied physical volume availability"
+  include_tasks: "validate_pv.yml"
+  when: target_disk is defined
+
+#############################################################
+#############################################################
+
 - name: "Verify that the client LPAR is at least a Power8 machine"
   include_tasks: "validate_min_power_level.yml"
 - debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
 
 ############################################################
 ############################################################
-
-- name: "Verify if alt_disk_install.rte fileset is present"
-  include_tasks: "validate_alt_disk_install_fileset.yml"
-- debug: msg="Fileset alt_disk_install.rte presence validation passed"
 
 ############################################################
 # - asynchronous action and polling
@@ -115,6 +122,7 @@
 - debug: #var=async_poll_results
     msg: "retry = {{ retry_chk_nimadm_comp }}"
 
+############################################################
 ############################################################
 
 - block:
