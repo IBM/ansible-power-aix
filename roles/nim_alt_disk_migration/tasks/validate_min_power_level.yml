@@ -3,6 +3,7 @@
   command: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
     '/usr/sbin/prtconf'
+  changed_when: false
   register: prtconf_output
 
 - name: "Parse and Processor Type"

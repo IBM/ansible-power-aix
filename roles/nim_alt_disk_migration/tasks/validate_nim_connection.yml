@@ -43,6 +43,7 @@
 
 - name: "get nimsh status on master"
   shell: "lssrc -s nimsh | grep nimsh | awk '{print $4}'"
+  changed_when: false
   register: nimsh_output
 
 - name: "validate nimsh state"
@@ -67,6 +68,7 @@
 
 - name: "get tftp status on master"
   shell: "lssrc -ls inetd | grep tftp | awk '{print $5}'"
+  changed_when: false
   register: tftp_output
 
 - name: "validate tftp status"
@@ -81,6 +83,7 @@
 
 - name: "get bootpd status on master"
   shell: "lssrc -ls inetd | grep bootpd | awk '{print $5}'"
+  changed_when: false
   register: bootpd_output
 
 - name: "validate bootpd status"
@@ -97,6 +100,7 @@
   command: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
     '/usr/bin/lssrc -s nimsh'
+  changed_when: false
   register: nimsh_client_output
 
 - name: "Parse and nimsh status"
@@ -117,10 +121,12 @@
   command: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
     '/usr/bin/cat /etc/niminfo | /usr/bin/grep NIM_MASTER_HOSTNAME'
+  changed_when: false
   register: niminfo_output
 
 - name: "get nim master host name"
   shell: "hostname"
+  changed_when: false
   register: hostname_output
 
 - name: "Parse and get niminfo"

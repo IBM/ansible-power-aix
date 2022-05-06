@@ -25,7 +25,6 @@
         lpp_source_location: "{{ lpp_source_info.location | 
           regex_search(location_pattern, '\\0') | join('\n') }}"
 
-
 ############################################################
 # NOTE: if SPOT is not specified then create a SPOT
 # resource from a specified LPP source
@@ -49,10 +48,23 @@
       location: "{{ lpp_source_location }}"
   register: result
 
-- debug:
-    msg: "SPOT resource 'dflt_{{ lpp_source }}_spot' already exists."
+- name: "if SPOT resource already exists then query if 'bos.alt_disk_install.rte is installed'"
+  block:
+    - debug:
+        msg: "SPOT resource 'dflt_{{ lpp_source }}_spot' already exists."
+
+    - shell: "nim -o showres dflt_{{ lpp_source }}_spot | grep 'bos.alt_disk_install.rte'"
+      changed_when: false
+      register: spot_query
+      failed_when:
+        - spot_query.rc != 0
+        - spot_query.stderr != ''
   when: result.stderr.find( "0042-081" ) != -1
 
 - name: "Set SPOT resource to be used"
   set_fact:
     spot: "dflt_{{ lpp_source }}_spot"
+
+- include_tasks: "add_alt_disk_install_fileset.yml"
+  when: 
+    - result.stderr.find( "0042-081" ) == -1 or spot_query.stdout == ''
