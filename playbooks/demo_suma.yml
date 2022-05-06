@@ -5,6 +5,8 @@
   vars:
     download_dir: /usr/sys/inst.images
     download_only: False
+#    action download will download and install the fixes.
+    action_v: list
   tasks:
 
   - name: Check oslevel of system
@@ -29,6 +31,7 @@
 
   - name: Check for, and install, system updates
     ibm.power_aix.suma:
+      action: "{{ action_v }}"
       oslevel: 'latest'
       download_dir: "{{ download_dir }}"
       download_only: "{{ download_only }}"
@@ -55,13 +58,13 @@
 #   register: output
 # - debug: var=output
 
-  - name: Wait for 10 seconds
-    pause:
-      seconds: 10
+#  - name: Wait for 10 seconds
+#    pause:
+#      seconds: 10
 
-  - name: Wait for the system to reboot
-    wait_for_connection:
-      connect_timeout: 20
-      sleep: 5
-      delay: 5
-      timeout: 600
+#  - name: Wait for the system to reboot
+#    wait_for_connection:
+#      connect_timeout: 20
+#      sleep: 5
+#      delay: 5
+#      timeout: 600

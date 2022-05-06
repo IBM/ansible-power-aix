@@ -947,7 +947,11 @@ def run_flrtvc(flrtvc_path, params, force):
                     module.log('stderr:{0}'.format(stderr))
                     results['meta']['messages'].append(msg)
             myfile.write(stdout)
-
+    # There is no need to continue if there are no vulnerabilities.
+    if re.search(r"No vulnerabilities", stdout):
+        results['msg'] = 'There are no vulnerabities. \nFLRTVC completed successfully'
+        module.log(results['msg'])
+        module.exit_json(**results)
     return True
 
 
@@ -1099,6 +1103,10 @@ def run_installer(epkgs, dst_path, resize_fs=True):
         Create and build results['meta']['5.install']
     """
     if not epkgs:
+        # There were fixes downloaded but not interim fixes, which are the ones
+        # the flrtvc module could install.
+        msg = 'There are no interim fixes in epkg format to be installed.'
+        results['meta']['messages'].append(msg)
         return True
 
     destpath = os.path.abspath(os.path.join(dst_path))
