@@ -7,6 +7,9 @@
     download_only: False
 #    action download will download and install the fixes.
     action_v: list
+  collections:
+    - ibm.power_aix
+
   tasks:
 
   - name: Check oslevel of system
@@ -16,17 +19,17 @@
   - debug: var=output
 
   - name: Create file system for system updates
-    aix_filesystem:
+    ibm.power_aix.filesystem:
       filesystem: "{{ download_dir }}"
-      size: 1G
+      attributes: size=1G
       state: present
       vg: rootvg
     when: ansible_distribution == 'AIX'
 
   - name: Mount the file system (if necessary)
-    aix_filesystem:
-      filesystem: "{{ download_dir }}"
-      state: mounted
+    mount:
+      state: mount
+      mount_dir: "{{ download_dir }}"
     when: ansible_distribution == 'AIX'
 
   - name: Check for, and install, system updates
