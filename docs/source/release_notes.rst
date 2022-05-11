@@ -6,6 +6,34 @@ Releases
 ========
 
 
+Version 1.4.1
+-------------
+Notes
+  * Fix DNF bootstrap for AIX 7.3 in role power_aix_bootstrap role in supporting new AIX Linux toolbox changes.
+  * Fix DNF bootstrap in role power_aix_bootstrap to run with Ansible Tower.
+  * Fix devices module to support inet0 add/delete routes.
+  * Fix installp module idempotency issue to show changes in case of at least one successful operation.
+  * Fix flrtvc module messages if there are no interim fixes to install.
+  * Fix flrtvc module to prevent failures after downloading compressed file fixes; there are no interim fixes to install.
+  * Issue #184: Add missing file vioshc_dep_install.yml to the power_aix_vioshc role.
+  * Fix user module idempotency issue by comparing current values to requested changes before executing any actions.
+
+
+Availability
+  * `Automation Hub v1.4.1`_
+  * `Galaxy v1.4.1`_
+  * `GitHub v1.4.1`_
+
+.. _Automation Hub v1.4.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.4.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.4.1.tar.gz
+
+.. _GitHub v1.4.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.4.0/ibm-power_aix-1.4.0.tar.gz
+
+
 Version 1.4.0
 -------------
 Notes
