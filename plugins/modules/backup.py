@@ -98,7 +98,7 @@ options:
     - Specifies the phase(s) to execute during the invocation of the alt_disk_mksysb command.
     - Can be used if I(action=restore) or I(type=mksysb).
     type: str
-    choices: [ 1, 2, 3, 12, 23, all ]
+    choices: [ '1', '2', '3', '12', '23', 'all' ]
   data_file:
     description:
     - Specifies a full path filename to use instead of the one from the image being restored.
