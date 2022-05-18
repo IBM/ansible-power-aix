@@ -296,7 +296,10 @@ descr2key = {
 
 
 def main():
-    module = AnsibleModule(argument_spec=dict())
+    module = AnsibleModule(
+        argument_spec=dict(),
+        supports_check_mode=True
+    )
 
     lparstat_path = module.get_bin_path('lparstat', required=True)
 
