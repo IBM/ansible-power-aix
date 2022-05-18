@@ -21,7 +21,7 @@ short_description: Reports LVM information as facts.
 description:
 - List and reports details about defined AIX Logical Volume Manager (LVM) components such as
   Physical volumes, Logical volumes and Volume groups in Ansible facts.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -418,7 +418,7 @@ def main():
             name=dict(type='str', default='all'),
             lvm=dict(type='dict', default={}),
         ),
-        supports_check_mode=False
+        supports_check_mode=True,
     )
     msg = ""
     type = module.params['component']

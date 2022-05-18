@@ -24,7 +24,7 @@ description:
 - It uses restvg or alt_disk_mksysb to restore a backup image to disk(s).
 - mksysb and alt_disk_mksysb operate on system volume group creating and restoring installable
   backup image while savevg and restvg operate on data volume group.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -98,7 +98,7 @@ options:
     - Specifies the phase(s) to execute during the invocation of the alt_disk_mksysb command.
     - Can be used if I(action=restore) or I(type=mksysb).
     type: str
-    choices: [ 1, 2, 3, 12, 23, all ]
+    choices: [ '1', '2', '3', '12', '23', 'all' ]
   data_file:
     description:
     - Specifies a full path filename to use instead of the one from the image being restored.

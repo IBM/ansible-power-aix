@@ -24,7 +24,7 @@ description:
 - Lists the mksysb or ios_backup resources available on the NIM master and allows to filter results.
 - Uses the NIM BOS installation operation to mksysb backup images on clients.
 - Uses the NIM viosbr operation to restore VIOS configuration ios_backup on clients.
-version_added: '2.9'
+version_added: '1.0.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

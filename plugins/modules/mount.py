@@ -19,7 +19,7 @@ module: mount
 short_description: Mounts/unmounts a filesystem or device on AIX.
 description:
 - This module mounts/unmounts a Filesystem/Device on the specified path.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

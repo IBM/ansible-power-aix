@@ -19,7 +19,7 @@ module: lpar_facts
 short_description: Reports logical partition (LPAR) related information as facts.
 description:
 - Lists and reports information related to logical partition (LPAR) in Ansible facts.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -296,7 +296,10 @@ descr2key = {
 
 
 def main():
-    module = AnsibleModule(argument_spec=dict())
+    module = AnsibleModule(
+        argument_spec=dict(),
+        supports_check_mode=True
+    )
 
     lparstat_path = module.get_bin_path('lparstat', required=True)
 

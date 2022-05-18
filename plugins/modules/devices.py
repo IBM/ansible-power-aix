@@ -22,7 +22,7 @@ description:
 - This module allows to configure a specified device or all devices in defined state. It can change
   attributes of a device in 'Defined/Available' state. At last it can unconfigure or stop a device
   in 'Available' state.
-version_added: '2.9'
+version_added: '1.0.0'
 requirements:
 - AIX
 - Python >= 2.7

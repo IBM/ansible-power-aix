@@ -24,7 +24,7 @@ description:
 - The installation is a new and complete installation using the provided VIOS image, any customized
   configurations that might exist on the currently running system before the installation starts
   (including the timezone) are not included in the new installation image.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.2 TL3
 - Python >= 2.7

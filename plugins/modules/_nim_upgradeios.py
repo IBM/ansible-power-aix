@@ -23,7 +23,7 @@ description:
 - VIOSes of a tuple must be on the same cluster and the node states must be OK.
 - When upgrading VIOSes pair, it checks the cluster state, stop it before installing
   the VIOS, and restart it after installation.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

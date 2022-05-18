@@ -16,7 +16,7 @@ module: reboot
 short_description: Reboot AIX machines.
 description:
 - Reboot a machine and validate by runnning a test command once the system comes back up.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - Python >= 2.7
 - 'Privileged user with authorization: B(aix.system.boot.shutdown)'

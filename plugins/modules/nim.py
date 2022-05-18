@@ -22,7 +22,7 @@ description:
 - It allows to configure the NIM master server, manage NIM objects, perform various operations on
   NIM clients such as software or Base Operating System (BOS) installation, SP or TL updates using
   existing NIM resources, reboot, etc.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

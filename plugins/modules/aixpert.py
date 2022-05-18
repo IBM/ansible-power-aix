@@ -21,7 +21,7 @@ description:
 - This module uses the B(aixpert) command to manage a variety of system configuration settings
   enabling the desired security level on a logical partition (LPAR).
 - It allows to query, check, apply, save, undo security settings.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX
 - Python >= 2.7

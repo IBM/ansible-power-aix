@@ -23,7 +23,7 @@ description:
 - SUMA provides flexible, task-based options to periodically check the availability of specific new
   fixes, technology levels (TL) and service packs (SP). Therefore, system administrators do not have
   to manually retrieve maintenance updates.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

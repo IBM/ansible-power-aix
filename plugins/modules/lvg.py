@@ -20,7 +20,7 @@ short_description: Configure AIX LVM volume groups
 description:
 - This module creates, removes, modifies attributes, resizes, activates and deactivates volume
   groups.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
