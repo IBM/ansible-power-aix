@@ -19,7 +19,7 @@ module: lvol
 short_description: Configure AIX LVM logical volumes
 description:
 - This module creates, removes and modifies attributes of LVM logical volumes.
-version_added: "2.9"
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

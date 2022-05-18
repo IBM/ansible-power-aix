@@ -20,7 +20,7 @@ short_description: Generic installer for various packaging formats.
 description:
 - A generic installer that installs software products of various packaging formats.
 - For example, installp, RPM, SI, and ISMP.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

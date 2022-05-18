@@ -20,7 +20,7 @@ short_description: Manage presence, attributes and member of AIX groups.
 description:
 - It allows to create new group, to change/remove attributes and administrators or members of a
   group, and to delete an existing group.
-version_added: "2.9"
+version_added: '1.0.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

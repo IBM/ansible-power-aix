@@ -19,7 +19,7 @@ module: lpp_facts
 short_description: Returns installed software products as facts.
 description:
 - Lists and returns information about installed filesets or fileset updates in Ansible facts.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

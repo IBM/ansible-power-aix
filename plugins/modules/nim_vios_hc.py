@@ -23,7 +23,7 @@ description:
 - In the current version, it validates the vSCSI, NPIv, SEA mappings configurations and vNIC
   configurations (when set) so the update of the VIOS pair can be attempted. The SSP configuration
   is not checked yet, that is not required so far.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

@@ -22,7 +22,7 @@ description:
   the database containing interim fix information.
 - It can perform the following operations install, commit, check, mount, unmount, remove, list
   interim fix (ifix) and view package locks.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

@@ -21,7 +21,7 @@ description:
 - Alters the list of possible boot devices from which the system may be booted. When the system is
   booted, it will scan the devices in the list and attempt to boot from the first device it finds
   containing a boot image.
-version_added: '2.9'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

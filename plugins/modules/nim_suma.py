@@ -23,7 +23,7 @@ description:
   downloaded from the IBM Fix Central website and the related NIM resource is created on the NIM
   master. The user can then run another task to install the systems with this new resource.
 - Updates are downloaded based on the lowest technical level of all target systems.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

@@ -20,7 +20,7 @@ short_description: Sets the required values for starting TCP/IP on a host.
 description:
 - This module sets the required minimal values required for using TCP/IP on a host machine.
 - These values are written to the configuration database.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

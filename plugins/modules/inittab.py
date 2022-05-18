@@ -19,7 +19,7 @@ module: inittab
 short_description: Manage inittab entries on AIX.
 description:
     - It allows to create, change and remove entries in the B(/etc/inittab) file.
-version_added: "2.9"
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

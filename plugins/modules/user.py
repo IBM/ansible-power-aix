@@ -20,7 +20,7 @@ short_description: Create new users or change/remove attributes of users on AIX.
 description:
 - This module facilitates the creation of a new user with provided attributes, the
   modification of attributes or deletion of an existing user.
-version_added: '2.9'
+version_added: '1.0.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

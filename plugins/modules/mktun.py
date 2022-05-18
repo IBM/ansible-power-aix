@@ -22,7 +22,7 @@ description:
 - Activates tunnels.
 - Deactivates operational tunnels and optionally removes tunnel definitions.
 - Exports and imports tunnel definitions.
-version_added: '2.9'
+version_added: '1.2.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

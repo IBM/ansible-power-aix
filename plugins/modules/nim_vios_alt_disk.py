@@ -20,7 +20,7 @@ short_description: Uses NIM to create/cleanup an alternate rootvg disk of VIOS c
 description:
 - Performs alternate disk copy and cleanup operations through the Network Installation Management
   (NIM) copying the root volume group to an alternate disk or cleaning an existing copy.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

@@ -26,7 +26,7 @@ description:
   installation. It rejects fixes that do not match these requirements and installs the remaining.
 - In case of inter-locking file(s) you might want run against the task.
 - You will get the list of installed and rejected fixes in the results meta data.
-version_added: '2.9'
+version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7

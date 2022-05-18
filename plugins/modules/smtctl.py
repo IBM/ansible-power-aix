@@ -23,7 +23,7 @@ description:
 - The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
 - This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system.
 - This command controls the simultaneous multithreading options.
-version_added: '2.9'
+version_added: '1.3.0'
 requirements:
 - AIX  7.2
 - IBM Power9_Power8

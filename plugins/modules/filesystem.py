@@ -19,7 +19,7 @@ module: filesystem
 short_description: Local and NFS filesystems management.
 description:
 - This module allows to create, modify and remove local and NFS filesystems.
-version_added: '2.9'
+version_added: '1.0.0'
 requirements:
 - AIX
 - Python >= 2.7
