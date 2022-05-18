@@ -418,7 +418,7 @@ def main():
             name=dict(type='str', default='all'),
             lvm=dict(type='dict', default={}),
         ),
-        supports_check_mode=False,
+        supports_check_mode=True,
     )
     msg = ""
     type = module.params['component']
