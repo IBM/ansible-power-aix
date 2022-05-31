@@ -11,14 +11,16 @@
 # 5. c_rsh must be active (should be good if (1)
 # is properly setup)
 - name: "nim_alt_disk_migration demo"
-  hosts: nimserver1
+  hosts: nimserver2
   gather_facts: false
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test4
-    target_disk_v: hdisk2
-    lpp_source_v: lpp_source_2145C_730_GOLD
-    spot_v: dflt_lpp_source_2145C_730_GOLD_spot
+    target_disk_v: hdisk1
+    target_disk_policy_v: minimize
+    lpp_source_v: 730_GOLD_2147_lpp
+    spot_v: dflt_730_GOLD_2147_lpp_spot
+    force_target_disk: true
   collections:
     - ibm.power_aix
   tasks:
@@ -30,19 +32,24 @@
         # required: NIM standalone object name
         # associated with the NIM client
         nim_client: "{{ nim_client_v }}"
-        # required: Physical Volume name in the NIM
-        # client where the alt_disk will be created
-        target_disk: "{{ target_disk_v }}"
+
+        # required: specify either the target disk name
+        # or to automatically select target disk based
+        # on policy
+        target_disk:
+          # disk_name: "{{ target_disk_v }}"
+          disk_size_policy: "{{ target_disk_policy_v }}"
+          force: "{{ force_target_disk }}"
+
         # required: NIM lpp_source object name
         # associated to a lpp_source for the desired
         # level of migration
         lpp_source: "{{ lpp_source_v }}"
+
         # determines to reboot the client LPAR after the
         # alt_disk is successfully created
         reboot_client: false
-        # determines auto creation of SPOT resource derived
-        # from the input lpp_source
-        # force_create_spot: true
+
         # optional, provide a SPOT resource, if not given
         # then the role will derive one from lpp_source
         # spot: "{{ spot_v }}"
