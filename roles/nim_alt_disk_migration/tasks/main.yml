@@ -60,11 +60,48 @@
 ############################################################
 ############################################################
 
-- name: "Fail if a physical volume is not specified
-        for alternate disk creation"
+- name: "Fail if neither the disk_name or disk_size_policy
+        is specified"
   fail:
-    msg: "target_disk not specified"
-  when: target_disk is not defined
+    msg: "A 'disk_name' or 'disk_size_policy' must be specified"
+  when: (target_disk is not defined) or
+        (target_disk.disk_name is not defined and target_disk.disk_size_policy is not defined)
+
+- name: "Verify and select target disk used for alternate disk migration"
+  block:
+    - set_fact:
+        target_disk_force: "{{ target_disk.force }}"
+      when: target_disk.force is defined
+
+    - block:
+        - ibm.power_aix.internal.nim_select_target_disk:
+            nim_client: "{{ nim_client }}"
+            target_disk: "{{ target_disk.disk_name }}"
+            force: "{{ target_disk_force }}"
+          register: target_disk_selection
+
+        - set_fact:
+            target_disk: "{{ target_disk_selection.target_disk }}"
+            target_disk_valid: "{{ target_disk_selection.valid }}"
+      when: target_disk.disk_name is defined
+
+    - block:
+        - ibm.power_aix.internal.nim_select_target_disk:
+            nim_client: "{{ nim_client }}"
+            target_disk_policy: "{{ target_disk.disk_size_policy }}"
+            force: "{{ target_disk_force }}"
+          register: target_disk_selection
+
+        - set_fact:
+            target_disk: "{{ target_disk_selection.target_disk }}"
+            target_disk_valid: "{{ target_disk_selection.valid }}"
+      when:
+        - target_disk.disk_size_policy is defined
+        - target_disk.disk_name is not defined
+
+    - fail:
+        msg: "No valid target disk can be used to create an alternate disk copy"
+      when: not target_disk_valid
 - debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
               create an alternate disk copy"
 

@@ -34,3 +34,7 @@ plugins/modules/user.py validate-modules:module-invalid-version-added
 plugins/modules/alt_disk.py validate-modules:module-invalid-version-added
 plugins/modules/lvm_facts.py validate-modules:invalid-ansiblemodule-schema
 plugins/modules/lpar_facts.py validate-modules:invalid-ansiblemodule-schema
+plugins/modules/internal/nim_select_target_disk.py ansible-doc!skip
+plugins/modules/internal/nim_select_target_disk.py pylint:global-variable-not-assigned
+plugins/modules/internal/nim_select_target_disk.py pylint:consider-using-f-string
+plugins/modules/internal/nim_select_target_disk.py pylint:consider-using-dict-items
