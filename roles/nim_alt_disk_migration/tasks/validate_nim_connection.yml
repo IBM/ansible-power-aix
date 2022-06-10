@@ -28,7 +28,7 @@
 
 
 - name: "check if client is defined on master"
-  shell: "lsnim -l {{ nim_client }}"
+  command: "/usr/sbin/lsnim -l {{ nim_client }}"
   changed_when: false
   register: chk_client_output
   failed_when:
@@ -42,7 +42,7 @@
 
 
 - name: "get nimsh status on master"
-  shell: "lssrc -s nimsh | grep nimsh | awk '{print $4}'"
+  shell: "/usr/bin/lssrc -s nimsh | /usr/bin/grep nimsh | /usr/bin/awk '{print $4}'"  # noqa risky-shell-pipe
   changed_when: false
   register: nimsh_output
 
@@ -56,7 +56,7 @@
 ######################################################
 
 - name: "check if c_rsh is up and running"
-  shell: "/usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }} /usr/bin/hostname"
+  command: "/usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }} /usr/bin/hostname"
   changed_when: false
   register: c_rsh_output
   failed_when:
@@ -67,7 +67,7 @@
 ######################################################
 
 - name: "get tftp status on master"
-  shell: "lssrc -ls inetd | grep tftp | awk '{print $5}'"
+  shell: "/usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'"  # noqa risky-shell-pipe
   changed_when: false
   register: tftp_output
 
@@ -82,7 +82,7 @@
 
 
 - name: "get bootpd status on master"
-  shell: "lssrc -ls inetd | grep bootpd | awk '{print $5}'"
+  shell: "/usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'"  # noqa risky-shell-pipe
   changed_when: false
   register: bootpd_output
 
@@ -125,7 +125,7 @@
   register: niminfo_output
 
 - name: "get nim master host name"
-  shell: "hostname"
+  command: "/usr/bin/hostname"
   changed_when: false
   register: hostname_output
 
@@ -137,7 +137,7 @@
 - name: "validate client master hostname from niminfo"
   fail:
     msg: "client {{ nim_client }} connects to a different NIM master"
-  when: master_match == ""
+  when: master_match == ""  # noqa empty-string-compare
 
 
 #####################################################

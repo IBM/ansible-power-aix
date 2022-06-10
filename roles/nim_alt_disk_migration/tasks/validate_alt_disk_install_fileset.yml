@@ -28,18 +28,18 @@
 
 - name: "Check if 'bos.alt_disk_install.rte is installed in NIM master"
   fail:
-    msg: "Fileset 'bos.alt_disk_install.rte' not installed in NIM master" 
+    msg: "Fileset 'bos.alt_disk_install.rte' not installed in NIM master"
   when: "'bos.alt_disk_install.rte' not in ansible_facts.filesets"
 - debug:
     msg: >
-     'bos.alt_disk_install.rte' in NIM master is at 
+     'bos.alt_disk_install.rte' in NIM master is at
      level {{ nim_master_fileset_levels }}
 
 ############################################################
 ############################################################
 
 - name: "Query bos.alt_disk_install.rte fileset {{ lpp_source }}"
-  shell: "nim -o showres {{ lpp_source }} | grep 'bos.alt_disk_install.rte'"
+  shell: "nim -o showres {{ lpp_source }} | grep 'bos.alt_disk_install.rte'"  # noqa risky-shell-pipe
   changed_when: false
   register: lpp_source_query
   failed_when:
@@ -48,8 +48,8 @@
 
 - name: "Check if 'bos.alt_disk_install.rte is in in {{ lpp_source }}"
   fail:
-    msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}" 
-  when: "lpp_source_query.stdout == ''"
+    msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}"
+  when: "lpp_source_query.stdout == ''"  # noqa empty-string-compare
 
 - block:
     - set_fact:
@@ -109,7 +109,7 @@
         and {{ spot }}"
   fail:
     msg: >
-      NIM master and {{ spot}} 'bos.alt_disk_install.rte'
+      NIM master and {{ spot }} 'bos.alt_disk_install.rte'
       fileset levels do not match
   when:
     - spot is defined
@@ -122,7 +122,7 @@
         and {{ spot }}"
   fail:
     msg: >
-      {{ lpp_source }} and {{ spot}} 'bos.alt_disk_install.rte'
+      {{ lpp_source }} and {{ spot }} 'bos.alt_disk_install.rte'
       fileset levels do not match
   when:
     - spot is defined
