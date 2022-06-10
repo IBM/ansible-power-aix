@@ -14,7 +14,7 @@
 
 - name: "Verify NIM master and client connection"
   include_tasks: "validate_nim_connection.yml"
-- debug: msg="NIM master and clients connectiotn validation complete"
+- debug: msg="NIM master and clients connection validation complete"
 
 ############################################################
 ############################################################
@@ -83,6 +83,7 @@
         - set_fact:
             target_disk: "{{ target_disk_selection.target_disk }}"
             target_disk_valid: "{{ target_disk_selection.valid }}"
+            err_msg: "{{ target_disk_selection.msg }}"
       when: target_disk.disk_name is defined
 
     - block:
@@ -95,22 +96,17 @@
         - set_fact:
             target_disk: "{{ target_disk_selection.target_disk }}"
             target_disk_valid: "{{ target_disk_selection.valid }}"
+            err_msg: "{{ target_disk_selection.msg }}"
       when:
         - target_disk.disk_size_policy is defined
         - target_disk.disk_name is not defined
 
     - fail:
-        msg: "No valid target disk can be used to create an alternate disk copy"
+        msg: "{{ err_msg }}"
       when: not target_disk_valid
+
 - debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
               create an alternate disk copy"
-
-#############################################################
-#############################################################
-
-- name: "Verify that the specfied physical volume availability"
-  include_tasks: "validate_pv.yml"
-  when: target_disk is defined
 
 #############################################################
 #############################################################
@@ -135,12 +131,12 @@
 #   task will run until it either complete, fail or timeout.
 ############################################################
 
-- name: "Migrate to alternate disk"
-  shell: "nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ target_disk }} -Y"
+- name: "Migrate to alternate disk"  # noqa no-changed-when
+  command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ target_disk }} -Y"
   register: results
   async: "{{ wait_nimadm_timeout_secs }}"
   poll: 0
-- debug: #var=results
+- debug:  # var=results
     msg: "timeout = {{ wait_nimadm_timeout_secs }}"
 
 ############################################################
@@ -156,7 +152,7 @@
   until: async_poll_results.finished
   retries: "{{ retry_chk_nimadm_comp }}"
   delay: "{{ interval }}"
-- debug: #var=async_poll_results
+- debug:  # var=async_poll_results
     msg: "retry = {{ retry_chk_nimadm_comp }}"
 
 ############################################################

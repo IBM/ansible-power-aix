@@ -67,7 +67,7 @@
           state: present
           filesystem: "{{ target_dir }}"
           fs_type: jfs2
-          auto_mount: yes
+          auto_mount: yes  # noqa yaml
           attributes: size=350M
           permissions: 'rw'
           vg: rootvg

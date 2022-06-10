@@ -4,7 +4,7 @@
   ansible.builtin.lineinfile:
     path: /etc/bootptab
     regexp: '^{{ hostname }}:'
-    line: '{{ hostname }}:{% if bootfile %}bf={{ bootfile }}:{% endif %}{% if address %}ip={{ address }}:{% endif %}{% if server %}sa={{ server }}:{% endif %}{% if gateway %}gw={{ gateway }}:{% endif %}{% if mask %}sm={{ mask }}:{% endif %}{% if hwaddr %}hw={{ hwaddr }}:{% endif %}{% if hwtype %}ht={{ hwtype }}:{% endif %}{% if homedir %}hd={{ homedir }}:{% endif %}' # noqa line-length
+    line: '{{ hostname }}:{% if bootfile %}bf={{ bootfile }}:{% endif %}{% if address %}ip={{ address }}:{% endif %}{% if server %}sa={{ server }}:{% endif %}{% if gateway %}gw={{ gateway }}:{% endif %}{% if mask %}sm={{ mask }}:{% endif %}{% if hwaddr %}hw={{ hwaddr }}:{% endif %}{% if hwtype %}ht={{ hwtype }}:{% endif %}{% if homedir %}hd={{ homedir }}:{% endif %}'  # noqa line-length
   when: state == 'present' and hostname
 
 - name: remove bootptab entry

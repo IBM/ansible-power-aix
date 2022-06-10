@@ -1,8 +1,9 @@
 pycodestyle
-pylint
+pylint==2.13.*
 six
 voluptuous
 yamllint
 flake8
-ansible-lint
+ansible-lint==5.2.1
+rich==10.*
 shellcheck-py

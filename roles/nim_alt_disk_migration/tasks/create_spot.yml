@@ -20,9 +20,9 @@
     - set_fact:
         lpp_source_info: "{{ lpp_source_query.nim_resources.values() | first }}"
         location_pattern: "(/\\S+)(?=/)"
-     
+
     - set_fact:
-        lpp_source_location: "{{ lpp_source_info.location | 
+        lpp_source_location: "{{ lpp_source_info.location |
           regex_search(location_pattern, '\\0') | join('\n') }}"
 
 ############################################################
@@ -66,5 +66,5 @@
     spot: "dflt_{{ lpp_source }}_spot"
 
 - include_tasks: "add_alt_disk_install_fileset.yml"
-  when: 
+  when:
     - result.stderr.find( "0042-081" ) == -1 or spot_query.stdout == ''

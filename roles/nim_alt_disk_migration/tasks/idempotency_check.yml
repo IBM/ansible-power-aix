@@ -17,22 +17,22 @@
 ############################################################
 
 ############################################################
-# NOTE: this check will be using the kernel fileset 
-# bos.mp64 version to represent the release level of the 
+# NOTE: this check will be using the kernel fileset
+# bos.mp64 version to represent the release level of the
 # lpp_source
 ############################################################
 - name: "Query bos.mp64.rte fileset {{ lpp_source }}"
-  shell: "nim -o showres {{ lpp_source }} | grep 'bos.mp64'"
+  shell: "nim -o showres {{ lpp_source }} | grep 'bos.mp64'"  # noqa risky-shell-pipe
   changed_when: false
   register: lpp_source_query
   failed_when:
     - lpp_source_query.rc != 0
     - lpp_source_query.stderr != ''
 
-- name: "Check if 'bos.mp64 is in in {{ lpp_source }}"
+- name: "Check if 'bos.mp64 is in {{ lpp_source }}"
   fail:
-    msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}" 
-  when: "lpp_source_query.stdout == ''"
+    msg: "Fileset 'bos.mp64' not in in {{ lpp_source }}"
+  when: "lpp_source_query.stdout == ''"  # noqa empty-string-compare
 
 - block:
     - set_fact:

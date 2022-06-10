@@ -1,5 +1,3 @@
-plugins/modules/lvm_facts.py validate-modules:invalid-ansiblemodule-schema
-plugins/modules/lpar_facts.py validate-modules:invalid-ansiblemodule-schema
 plugins/modules/internal/nim_select_target_disk.py ansible-doc!skip
 plugins/modules/internal/nim_select_target_disk.py pylint:global-variable-not-assigned
 plugins/modules/internal/nim_select_target_disk.py pylint:consider-using-f-string

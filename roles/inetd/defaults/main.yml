@@ -2,4 +2,4 @@
 ---
 services: []
 state: enabled
-backup: no # noqa truthy
+backup: no  # noqa truthy

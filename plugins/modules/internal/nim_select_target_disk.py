@@ -40,6 +40,9 @@ options:
     - C(upper) first disk found bigger than the rootvg disk.
     - C(lower) disk size less than rootvg disk size but big enough to contain the used PPs.
     - C(nearest) disk size closest to the rootvg disk.
+    - if C(upper) or C(lower) cannot be satisfied, it will default to C(minimize).
+    - if an alternate disk copy exists, then this module will fail regardless of the policy selected.
+    - if I(force) parameter is used while an alternate disk copy exists, then it will clean up the disk.
     type: str
     choices: [ 'minimize', 'upper', 'lower', 'nearest' ]
   force:
@@ -121,27 +124,31 @@ def fail_handler(module, rc, cmd, stdout, stderr, msg=None):
     results['stdout'] = stdout
     results['stderr'] = stderr
     if results is None:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        results['msg'] += 'Command \'{0}\' failed with return code {1}.'.format(
+            ' '.join(cmd), rc)
     else:
-        results['msg'] = msg
+        results['msg'] += msg
     module.fail_json(**results)
 
 
 def clean_disk(module, disk_name, pvs):
     nim_client = module.params['nim_client']
 
-    if pvs[disk_name]['vg'] == 'altinst_rootvg':
-        # Clean existing altinst_rootvg
-        module.log('Removing altinst_rootvg')
+    # cleanup for disks that belong to altinst_rootvg or old_rootvg
+    if pvs[disk_name]['vg'] == 'altinst_rootvg' or pvs[disk_name]['vg'] == 'old_rootvg':
+        # Clean existing altinst_rootvg or old_rootvg
+        module.log('Removing {0}'.format(pvs[disk_name]['vg']))
         cmd = [
             '/usr/lpp/bos.sysmgt/nim/methods/c_rsh',
             nim_client,
-            '/usr/sbin/alt_rootvg_op -X altinst_rootvg'
+            '/usr/sbin/alt_rootvg_op -X {0}'.format(pvs[disk_name]['vg'])
         ]
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
             fail_handler(module, rc, cmd, stdout, stderr)
         results['changed'] = True
+
+    # cleanup for disks that belong to any other volume group
     else:
         module.log('Removing physical volume {0} from volume group {1}'.format(
             disk_name, pvs[disk_name]['vg']
@@ -155,8 +162,9 @@ def clean_disk(module, disk_name, pvs):
             ]
         # if VG where PV belongs is varied off
         else:
-            # TODO: discussion, what to do
-            raise Exception("TODO: needs to be discussed")
+            results['msg'] += "Unable to cleanup {0} because it belongs ".format(disk_name)
+            results['msg'] += "to a varied off volume group."
+            return False
 
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
@@ -170,9 +178,11 @@ def clean_disk(module, disk_name, pvs):
         '/usr/sbin/chpv -C {0}'.format(disk_name)
     ]
     rc, stdout, stderr = module.run_command(cmd)
+
     if rc != 0:
         fail_handler(module, rc, cmd, stdout, stderr)
     results['changed'] = True
+    return True
 
 
 def belong_to_vg(module, target_disk):
@@ -242,7 +252,9 @@ def is_valid(module, target_disk):
     if belong_to_vg(module, target_disk):
         if force:
             pvs = get_pvs(module)
-            clean_disk(module, target_disk, pvs)
+            cleaned = clean_disk(module, target_disk, pvs)
+            if not cleaned:
+                return False
         else:
             results['msg'] += "Physical volume '{0}' belongs ".format(target_disk)
             results['msg'] += "to a volume group.\n"
@@ -419,7 +431,7 @@ def find_valid_altdisk(module):
     # check an alternate disk does not already exist
     found_altdisk = ''
     for pv in pvs:
-        if pvs[pv]['vg'] == 'altinst_rootvg':
+        if pvs[pv]['vg'] == 'altinst_rootvg' or pvs[pv]['vg'] == 'old_rootvg':
             found_altdisk = pv
             break
 
@@ -429,8 +441,11 @@ def find_valid_altdisk(module):
             return found_altdisk, False
 
         # Clean existing altinst_rootvg
-        clean_disk(module, found_altdisk, pvs)
-        return found_altdisk, True
+        cleaned = clean_disk(module, found_altdisk, pvs)
+        if cleaned:
+            return found_altdisk, True
+        else:
+            return found_altdisk, False
 
     pvs = get_free_pvs(module, pvs)
     if pvs is None:
