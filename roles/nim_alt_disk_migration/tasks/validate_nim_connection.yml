@@ -35,6 +35,7 @@
     - chk_client_output is failed
     # 0042-053 lsnim: there is no NIM object named "quimby07"
     - chk_client_output.stderr.find( "0042-053" ) != -1
+# - debug: var=chk_client_output
 
 
 #####################################################
