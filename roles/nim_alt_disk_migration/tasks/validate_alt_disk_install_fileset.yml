@@ -24,7 +24,7 @@
 
 - set_fact:
     nim_master_fileset_levels: >
-      "{{ ansible_facts['filesets']['bos.alt_disk_install.rte']['levels'].keys() | list }}"
+      {{ ansible_facts['filesets']['bos.alt_disk_install.rte']['levels'].keys() | list }}
 
 - name: "Check if 'bos.alt_disk_install.rte is installed in NIM master"
   fail:
@@ -96,34 +96,60 @@
 
 - name: "Check if 'bos.alt_disk_install.rte' fileset level matches between NIM master
         and {{ lpp_source }}"
-  fail:
-    msg: >
-      NIM master and {{ lpp_source }} 'bos.alt_disk_install.rte'
-      fileset levels do not match
-  when: "lpp_source_fileset_level not in nim_master_fileset_levels"
+  block:
+    - set_fact:
+        nim_master_fileset_level: >
+          {{ nim_master_fileset_levels.0 }}
+    - set_fact:
+        nim_master_fileset_level_major_num: "{{ nim_master_fileset_level.split('.')[0] }}"
+        nim_master_fileset_level_minor_num: "{{ nim_master_fileset_level.split('.')[1] }}"
+    - set_fact:
+        nim_master_fileset_level: >
+          {{ nim_master_fileset_level_major_num + nim_master_fileset_level_minor_num + '00' }}
+
+    - set_fact:
+        lpp_source_fileset_level_major_num: "{{ lpp_source_fileset_level.split('.')[0] }}"
+        lpp_source_fileset_level_minor_num: "{{ lpp_source_fileset_level.split('.')[1] }}"
+    - set_fact:
+        lpp_source_fileset_level: >
+          {{ lpp_source_fileset_level_major_num + lpp_source_fileset_level_minor_num + '00' }}
+
+    - fail:
+        msg: >
+          NIM master and {{ lpp_source }} 'bos.alt_disk_install.rte'
+          fileset levels do not match
+      when: lpp_source_fileset_level != nim_master_fileset_level
 
 ############################################################
 ############################################################
 
 - name: "Check if 'bos.alt_disk_install.rte' fileset level matches between NIM master
         and {{ spot }}"
-  fail:
-    msg: >
-      NIM master and {{ spot }} 'bos.alt_disk_install.rte'
-      fileset levels do not match
-  when:
-    - spot is defined
-    - "spot_fileset_level not in nim_master_fileset_levels"
+  block:
+    - fail:
+        msg: >
+            NIM master and {{ spot }} 'bos.alt_disk_install.rte'
+            fileset levels do not match
+      when: "spot_fileset_level not in nim_master_fileset_levels"
+  when: spot is defined
 
 ############################################################
 ############################################################
 
 - name: "Check if 'bos.alt_disk_install.rte' fileset level matches between {{ lpp_source }}
         and {{ spot }}"
-  fail:
-    msg: >
-      {{ lpp_source }} and {{ spot }} 'bos.alt_disk_install.rte'
-      fileset levels do not match
-  when:
-    - spot is defined
-    - "lpp_source_fileset_level != spot_fileset_level"
+  block:
+    - set_fact:
+        spot_fileset_level_major_num: "{{ spot_fileset_level.split('.')[0] }}"
+        spot_fileset_level_minor_num: "{{ spot_fileset_level.split('.')[1] }}"
+    - set_fact:
+        spot_fileset_level: >
+          {{ spot_fileset_level_major_num + spot_fileset_level_minor_num + '00' }}
+
+    - fail:
+        msg: >
+          {{ lpp_source }} and {{ spot }} 'bos.alt_disk_install.rte'
+          fileset levels do not match
+
+      when: spot_fileset_level != lpp_source_fileset_level
+  when: spot is defined
