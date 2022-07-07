@@ -39,57 +39,71 @@
 ############################################################
 
 - name: "Query bos.alt_disk_install.rte fileset {{ lpp_source }}"
-  shell: "nim -o showres {{ lpp_source }} | grep 'bos.alt_disk_install.rte'"  # noqa risky-shell-pipe
-  changed_when: false
+  ibm.power_aix.nim_resource:
+    action: show
+    name: "{{ lpp_source }}"
+    showres:
+      fetch_contents: true
   register: lpp_source_query
-  failed_when:
-    - lpp_source_query.rc != 0
-    - lpp_source_query.stderr != ''
 
 - name: "Check if 'bos.alt_disk_install.rte is in in {{ lpp_source }}"
-  fail:
-    msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}"
-  when: "lpp_source_query.stdout == ''"  # noqa empty-string-compare
-
-- block:
+  block:
     - set_fact:
-        lpp_source_fileset_level_pattern: "(\\s+bos\\.alt_disk_install\\.rte\\s+)([0-9\\.]+)"
-    - set_fact:
-        lpp_source_fileset_level: "{{ lpp_source_query.stdout |
-          regex_search(lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
+        lpp_source_fileset: "{{ lpp_source_query['nim_resources'][lpp_source]['contents'] }}"
 
-- debug:
-    msg: >
-     'bos.alt_disk_install.rte' in {{ lpp_source }} is at
-     level '{{ lpp_source_fileset_level }}'
+    - fail:
+        msg: "Fileset 'bos.alt_disk_install.rte' not in in {{ lpp_source }}"
+      when: lpp_source_fileset['bos.alt_disk_install.rte'] is not defined
+
+    - debug: msg="defined"
+      when: lpp_source_fileset['bos.alt_disk_install.rte'] is defined
+
+    - set_fact:
+        lpp_source_fileset_level: "{{ lpp_source_fileset['bos.alt_disk_install.rte'] }}"
+    - set_fact:
+        lpp_source_fileset_level: "{{ lpp_source_fileset_level['level'] | first }}"
+
+    - debug:
+        msg: >
+         'bos.alt_disk_install.rte' in {{ lpp_source }} is at
+         level '{{ lpp_source_fileset_level }}'
 
 ############################################################
 ############################################################
 
 - name: "Query bos.alt_disk_install.rte fileset in {{ spot }}"
   block:
-    - shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
-      changed_when: false
+    - ibm.power_aix.nim_resource:
+        action: show
+        name: "{{ spot }}"
+        showres:
+          fetch_contents: true
       register: spot_query
-      failed_when:
-        - spot_query.rc != 0
-        - spot_query.stderr != ''
 
     # if 'bos.alt_disk_install.rte' is not installed in SPOT then install it
+    - set_fact:
+        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
+
     - include_tasks: "add_alt_disk_install_fileset.yml"
-      when: spot_query.stdout == ''
+      when: spot_fileset['bos.alt_disk_install.rte'] is not defined
 
-    - shell: "nim -o showres {{ spot }} | grep 'bos.alt_disk_install.rte'"
-      changed_when: false
+    - ibm.power_aix.nim_resource:
+        action: show
+        name: "{{ spot }}"
+        showres:
+          fetch_contents: true
       register: spot_query
-    # - debug: var=spot_query
 
     - set_fact:
-        spot_fileset_level_pattern: "(\\s+bos\\.alt_disk_install\\.rte\\s+)([0-9\\.]+)"
+        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
     - set_fact:
-        spot_fileset_level: "{{ spot_query.stdout |
-          regex_search(spot_fileset_level_pattern, '\\2') | join('\n') }}"
-  when: spot is defined
+        spot_fileset_level: "{{ spot_fileset['bos.alt_disk_install.rte']['level'] | first }}"
+
+    - debug:
+        msg: >
+         'bos.alt_disk_install.rte' in {{ spot }} is at
+         level '{{ spot_fileset_level }}'
+  when: spot != ""
 
 ############################################################
 ############################################################
@@ -131,7 +145,7 @@
             NIM master and {{ spot }} 'bos.alt_disk_install.rte'
             fileset levels do not match
       when: "spot_fileset_level not in nim_master_fileset_levels"
-  when: spot is defined
+  when: spot != ""
 
 ############################################################
 ############################################################
@@ -152,4 +166,4 @@
           fileset levels do not match
 
       when: spot_fileset_level != lpp_source_fileset_level
-  when: spot is defined
+  when: spot != ""

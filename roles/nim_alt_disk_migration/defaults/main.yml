@@ -1,3 +1,37 @@
 ---
+
+# determines to reboot the client LPAR after the
+# alt_disk is successfully created
 reboot_client: false
+
 target_disk_force: false
+
+# Debug flag to exit the playbook before calling nimadm to perform the migration.
+debug_skip_nimadm: false
+
+# required if perform_migration:  NIM client
+nim_client: ""
+
+# Control flags.
+# validate_resources: Will perform the validations of the lpp_source and spot
+#   It will also retrieve the AIX level from lpp_source.
+# perform_migration: a value of false will exit the playbook without performing the migration.
+#   This flag is used in conjuntion with validate_resources: true to use the role to
+#   only validate the resources and exit the playbook.
+control_phases:
+   validate_nim_resources: true
+   perform_migration: true
+
+# required: NIM lpp_source object name
+# associated to a lpp_source for the desired
+# level of migration
+lpp_source: ""
+
+# optional, provide a SPOT resource, if not given
+# then the role will derive one from lpp_source
+spot: ""
+
+# Stores lpp_source bos.mp64 level.
+lpp_source_fileset_level: ""
+# Idempotency check.
+no_need_to_migrate: false

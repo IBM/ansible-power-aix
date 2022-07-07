@@ -57,6 +57,28 @@ options:
     - Specifies the attribute-value pairs required for I(action=create) or I(action=show)
     type: dict
     required: false
+  showres:
+    description:
+    - show the contents of a resource.
+    - supports spot and lpp_source.
+    type: dict
+    required: false
+    suboptions:
+      fetch_contents:
+        description:
+        - determines if the contents of a valid resource type will be fetched.
+        type: bool
+        default: false
+      max_retries:
+        description:
+        - max number of attempts to fetch the contents a resource.
+        type: int
+        default: 10
+      retry_wait_time:
+        description:
+        - wait time in seconds in between retrying attempts to fetch the contents of a resorce.
+        type: int
+        default: 1
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_73/install/nim_concepts.html),
@@ -177,9 +199,36 @@ nim_resources:
 '''
 
 import re
+import time
 from ansible.module_utils.basic import AnsibleModule
 
 results = None
+
+NIM_SHOWRES = [
+    'spot',
+    'lpp_source',
+    # below are not yet supported
+    'script',
+    'bosinst_data',
+    'image_data',
+    'installp_bundle',
+    'fix_bundle',
+    'resolv_conf',
+    'exclude_files',
+    'adapter_def',
+]
+# NIM resource objects that contains filesets
+# that can be fetched through nim -o showres
+NIM_SHOWRES_FILESETS = [
+    'spot',
+    'lpp_source',
+]
+# headers for spot and lpp_source showres output
+NIM_SHOWRES_FILESET_HEADERS = [
+    'package_name',
+    'fileset',
+    'level',
+]
 
 
 def res_show(module):
@@ -236,6 +285,12 @@ def res_show(module):
     else:
         results['nim_resources'] = build_dic(stdout)
         results['nim_resource_found'] = True
+
+    if module.params['showres']:
+        # check if we need to fetch the filesets installed in a lpp_source or
+        # spot NIM object.
+        for resource, info in results['nim_resources'].items():
+            results['nim_resources'][resource]['contents'] = res_showres(module, resource, info)
 
     return
 
@@ -373,14 +428,112 @@ def build_dic(stdout):
     return info
 
 
+def res_showres(module, resource, info):
+    """
+    Fetch contents of valid NIM object resource
+
+    arguments:
+        module  (dict): The Ansible module
+        resource (str): NIM resource name
+        info    (info): NIM resource attributes information
+    return:
+        contents: (dict): NIM resource contents
+    """
+    fail_msg = 'Unable to fetch contents of {0}.'.format(resource)
+    max_retries = module.params['showres']['max_retries']
+    retry_wait_time = module.params['showres']['max_retries']
+    contents = {}
+    results['testing'] = ""
+    # 0042-001 nim: processing error encountered on "master":,
+    #     0042-207 m_showres: Unable to allocate the spot_72V_2114 resource to master.
+    pattern = r"0042-207"
+
+    if info['type'] in NIM_SHOWRES:
+        cmd = 'nim -o showres '
+        if info['type'] == 'spot':
+            cmd += '-a lslpp_flags=Lc '
+        elif info['type'] == 'lpp_source':
+            cmd += '-a installp_flags=L '
+        cmd += resource
+
+        while True:
+            return_code, stdout, stderr = module.run_command(cmd)
+            results['testing'] += "max_retries: {0}, rc: {1}".format(max_retries, return_code)
+
+            if return_code != 0:
+                max_retries -= 1
+                results['cmd'] = cmd
+                results['stderr'] = stderr
+                results['stdout'] = stdout
+                results['rc'] = return_code
+
+                if max_retries == 0:
+                    results['msg'] += fail_msg
+                    results['msg'] += "Number of attempts to fetch contents of "
+                    results['msg'] += "{0} has been reached.".format(resource)
+                    module.fail_json(**results)
+                    break
+
+                found = re.search(pattern, stderr)
+                if found:
+                    # error code 0042-207 means that the resource is
+                    # currently being used by another showres command
+                    # wait and retry
+                    time.sleep(retry_wait_time)
+                    continue
+                else:
+                    # for any other error proceed to the next resource
+                    results['msg'] += fail_msg
+                    module.fail_json(**results)
+                    break
+            else:
+                # successfully fetched contents, stored in stdout
+                # break out of retry loop and parse contents
+                break
+
+        # parse contents of nim resource
+        if info['type'] in NIM_SHOWRES_FILESETS:
+            lines = stdout.splitlines()
+            for line in lines[1:]:
+                fileset_info = line.split(':')[0:3]
+                # fileset_info[0] - package name
+                # fileset_info[1] - fileset name
+                # fileset_info[2] - fileset level
+                if fileset_info[1] in contents:
+                    contents[fileset_info[1]][NIM_SHOWRES_FILESET_HEADERS[2]].append(
+                        fileset_info[2]
+                    )
+                else:
+                    contents[fileset_info[1]] = dict(
+                        zip(
+                            NIM_SHOWRES_FILESET_HEADERS[0:2],
+                            fileset_info[0:2]
+                        )
+                    )
+                    contents[fileset_info[1]][NIM_SHOWRES_FILESET_HEADERS[2]] = [
+                        fileset_info[2]
+                    ]
+
+    return contents
+
+
 def main():
     global results
+
+    showres_spec = dict(
+        fetch_contents=dict(type='bool', default=False),
+        max_retries=dict(type='int', default=10),
+        retry_wait_time=dict(type='int', default=1)
+    )
+
     module = AnsibleModule(
+
         argument_spec=dict(
             action=dict(type='str', required=True, choices=['show', 'create', 'delete']),
             name=dict(type='str'),
             object_type=dict(type='str'),
             attributes=dict(type='dict'),
+            showres=dict(type='dict', options=showres_spec),
         ),
         required_if=[
             ('action', 'create', ('name', 'object_type', 'attributes')),

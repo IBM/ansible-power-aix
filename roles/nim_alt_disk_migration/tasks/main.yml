@@ -1,179 +1,296 @@
 # Copyright (c) IBM Corporation 2020
 ---
-############################################################
-############################################################
-
-- name: "Fail if a NIM client LPAR is not specified"
-  fail:
-    msg: "NIM client LPAR to be migrated is not specified"
-  when: nim_client is not defined
-- debug: msg="{{ nim_client }} specified to be migrated"
-
-############################################################
-############################################################
-
-- name: "Verify NIM master and client connection"
-  include_tasks: "validate_nim_connection.yml"
-- debug: msg="NIM master and clients connection validation complete"
-
-############################################################
-############################################################
-
-- name: "Fetch client oslevel"
-  include_tasks: "get_oslevel.yml"
-  when: nim_client is defined
-
-############################################################
-############################################################
+#############################################################
+#############################################################
 
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
     msg: "NIM LPP resource not specified"
-  when: lpp_source is not defined
+  when: lpp_source == ""  # noqa empty-string-compare
 - debug: msg="LPP resource {{ lpp_source }} specified for migration"
 
-############################################################
-############################################################
 
-- name: "Check if we still need to migrate"
-  include_tasks: "idempotency_check.yml"
-- debug: msg="Proceed to migration"
+#############################################################
+#############################################################
 
-############################################################
-############################################################
-
-- name: "Verify if alt_disk_install.rte fileset is present"
-  include_tasks: "validate_alt_disk_install_fileset.yml"
-- debug: msg="Fileset alt_disk_install.rte presence validation passed"
-
-############################################################
-# NOTE: specifying SPOT resource is optional, if not given
-# then NIM master will generate corresponding SPOT resource
-# from the specified LPP resource.
-############################################################
-
-- name: "Create SPOT resource if not specified"
-  include_tasks: "create_spot.yml"
-  when: spot is not defined
-- debug: msg="SPOT resource {{ spot }} specified for migration"
-
-############################################################
-############################################################
-
-- name: "Fail if neither the disk_name or disk_size_policy
-        is specified"
-  fail:
-    msg: "A 'disk_name' or 'disk_size_policy' must be specified"
-  when: (target_disk is not defined) or
-        (target_disk.disk_name is not defined and target_disk.disk_size_policy is not defined)
-
-- name: "Verify and select target disk used for alternate disk migration"
+- name: "Perform resources validations (if control_phases.validate_nim_resources)"
   block:
+    - name: "Retrieve {{ lpp_source }} AIX release level"
+      include_tasks: "retrieve_lpp_source_os_level.yml"
+
+    #############################################################
+    #############################################################
+
+    - name: "Verify if alt_disk_install.rte fileset is present"
+      include_tasks: "validate_alt_disk_install_fileset.yml"
+    - debug: msg="Fileset alt_disk_install.rte presence validation passed"
+
+    ############################################################
+    # NOTE: specifying SPOT resource is optional, if not given
+    # then NIM master will generate corresponding SPOT resource
+    # from the specified LPP resource.
+    ############################################################
+
+    - name: "Create SPOT resource if not specified"
+      include_tasks: "create_spot.yml"
+      when: spot == ""  # noqa empty-string-compare
+    - debug: msg="SPOT resource {{ spot }} specified for migration"
+
+    - debug: msg=" Resources {{ lpp_source and spot }} are valid and ready."
+
+  #  when: control_phases.validate_nim_resources
+  when: >
+     control_phases is defined and
+     control_phases.validate_nim_resources is defined and
+     control_phases.validate_nim_resources
+
+
+- name: "Perform migration if control_phases.perform_migration"
+  block:
+    #############################################################
+    #############################################################
+
+    - name: "Fail if a NIM client LPAR is not specified"
+      fail:
+        msg: "NIM client LPAR to be migrated is not specified"
+      when: nim_client == ""  # noqa empty-string-compare
+    - debug: msg="{{ nim_client }} specified to be migrated"
+
+    #############################################################
+    #############################################################
+
+    - name: "Assert if the user does not input at least one target_disk option."
+      assert:
+        fail_msg: >
+          Error: target_disk input is required with at least disk_name or disk_size_policy
+        that:
+          - target_disk is defined
+          - target_disk | type_debug == "dict"
+
+    - name: "Fail if the user inputs the target_disk with both: disk_size_policy and disk_name"
+      fail:  # noqa empty-string-compare
+        msg: "Error: target_disk input is required with at least disk_name or disk_size_policy"
+      when: >
+        target_disk.disk_size_policy is defined and
+        target_disk.disk_size_policy != "" and
+        target_disk.disk_name is defined and
+        target_disk.disk_name != ""
+
+    - name: "Fail if both target_disk disk_size_policy and disk_name have no value"
+      fail:  # noqa empty-string-compare
+        msg: "Error: target_disk input is required with at least disk_name or disk_size_policy"
+      when: >
+        target_disk.disk_size_policy is defined and
+        target_disk.disk_size_policy == "" and
+        target_disk.disk_name is defined and
+        target_disk.disk_name == ""
+
+    #############################################################
+    #############################################################
+
+    - name: "Verify NIM master and client connection"
+      include_tasks: "validate_nim_connection.yml"
+    - debug: msg="NIM master and clients connection validation complete"
+
+    #############################################################
+    #############################################################
+
+    - name: "Fetch client oslevel"
+      include_tasks: "get_oslevel.yml"
+
+    #############################################################
+    #############################################################
+    # IDEMPOTENCY: Read the <LPP_RESOURCE_FILE> section of OS_LEVEL to
+    # verify if S is already at migration level.
+
+    # Read the nim file created during the verification of resources.
+    - name: "Read bos.mp64 version from file {{ nim_info_file_path }}_{{ lpp_source }}"
+      slurp:
+        src: "{{ nim_info_file_path }}_{{ lpp_source }}"
+      register: output
+
+    - name: "Retrieve lpp_source bos.mp64 level"
+      set_fact:
+        variable: "{{ output['content'] | b64decode }}"
+
+    #  Example bos.mp64:7300
     - set_fact:
-        target_disk_force: "{{ target_disk.force }}"
-      when: target_disk.force is defined
+        lpp_source_fileset_level: "{{ variable.split(':')[1] }}"
+    - debug: var=lpp_source_fileset_level
+
+    - name: "Determine if we need to migrate {{ nim_client }} "
+      block:
+        - debug:
+            msg: "{{ nim_client }} is already at {{ lpp_source_fileset_level }} or higher"
+        - name: No need to migreate
+          set_fact:
+            no_need_to_migrate: true
+      when: client_oslevel | int >= lpp_source_fileset_level | int
+
+    ############################################################
+    ############################################################
 
     - block:
-        - ibm.power_aix.internal.nim_select_target_disk:
-            nim_client: "{{ nim_client }}"
-            target_disk: "{{ target_disk.disk_name }}"
-            force: "{{ target_disk_force }}"
-          register: target_disk_selection
+        - name: "Verify that the client LPAR is at least a Power8 machine"
+          include_tasks: "validate_min_power_level.yml"
+        - debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
+      when: not no_need_to_migrate and (lpp_source_fileset_level | int >= 7300)
 
-        - set_fact:
-            target_disk: "{{ target_disk_selection.target_disk }}"
-            target_disk_valid: "{{ target_disk_selection.valid }}"
-            err_msg: "{{ target_disk_selection.msg }}"
-      when: target_disk.disk_name is defined
+    ############################################################
+    ############################################################
 
-    - block:
-        - ibm.power_aix.internal.nim_select_target_disk:
-            nim_client: "{{ nim_client }}"
-            target_disk_policy: "{{ target_disk.disk_size_policy }}"
-            force: "{{ target_disk_force }}"
-          register: target_disk_selection
+    - set_fact:
+        target_disk_force: true
+      when: target_disk.force is defined and target_disk.force
 
-        - set_fact:
-            target_disk: "{{ target_disk_selection.target_disk }}"
-            target_disk_valid: "{{ target_disk_selection.valid }}"
-            err_msg: "{{ target_disk_selection.msg }}"
-      when:
-        - target_disk.disk_size_policy is defined
-        - target_disk.disk_name is not defined
+    - name: "Verify and select target disk used for alternate disk migration"
+      block:
+        - block:
+            - ibm.power_aix.internal.nim_select_target_disk:
+                nim_client: "{{ nim_client }}"
+                target_disk: "{{ target_disk.disk_name }}"
+                force: "{{ target_disk_force }}"
+              register: target_disk_selection
 
-    - fail:
-        msg: "{{ err_msg }}"
-      when: not target_disk_valid
+            - set_fact:
+                client_target_disk: "{{ target_disk_selection.target_disk }}"
+                target_disk_valid: "{{ target_disk_selection.valid }}"
+                err_msg: "{{ target_disk_selection.msg }}"
+          when: target_disk.disk_name is defined and target_disk.disk_name != ""
 
-- debug: msg="{{ target_disk }} of {{ nim_client }} will be used to
-              create an alternate disk copy"
+        - block:
+            - ibm.power_aix.internal.nim_select_target_disk:
+                nim_client: "{{ nim_client }}"
+                target_disk_policy: "{{ target_disk.disk_size_policy }}"
+                force: "{{ target_disk_force }}"
+              register: target_disk_selection
 
-#############################################################
-#############################################################
+            - set_fact:
+                client_target_disk: "{{ target_disk_selection.target_disk }}"
+                target_disk_valid: "{{ target_disk_selection.valid }}"
+                err_msg: "{{ target_disk_selection.msg }}"
+          when: target_disk.disk_size_policy is defined and target_disk.disk_size_policy != ""
 
-- name: "Verify that the client LPAR is at least a Power8 machine"
-  include_tasks: "validate_min_power_level.yml"
-- debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
+        - fail:
+            msg: "{{ err_msg }}"
+          when: not target_disk_valid
 
-############################################################
-############################################################
+        - debug: msg="{{ client_target_disk }} of {{ nim_client }} will be used to
+                      create an alternate disk copy"
+      when: not no_need_to_migrate  # nim_select_target_disk block
 
-############################################################
-# - asynchronous action and polling
-#   large timeout: nimadm takes 2-3 hours to complete
-#   migration in normal case. The timeout (async)
-#   is set up to 4 hours, which is high enough to not
-#   cause "check on it later" task to fail
-#   or no longer exist error.
-#
-#   poll = 0 to start the task and immediately move on
-#   to the next one without waiting a result. The nimadm
-#   task will run until it either complete, fail or timeout.
-############################################################
+    #############################################################
+    #############################################################
 
-- name: "Migrate to alternate disk"  # noqa no-changed-when
-  command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ target_disk }} -Y"
-  register: results
-  async: "{{ wait_nimadm_timeout_secs }}"
-  poll: 0
-- debug:  # var=results
-    msg: "timeout = {{ wait_nimadm_timeout_secs }}"
+    ############################################################
+    # - asynchronous action and polling
+    #   large timeout: nimadm takes 2-3 hours to complete
+    #   migration in normal case. The timeout (async)
+    #   is set up to 4 hours, which is high enough to not
+    #   cause "check on it later" task to fail
+    #   or no longer exist error.
+    #
+    #   poll = 0 to start the task and immediately move on
+    #   to the next one without waiting a result. The nimadm
+    #   task will run until it either complete, fail or timeout.
+    ############################################################
 
-############################################################
-# check on async task later
-# perform a task to check on nimadm task via its registered
-# job ID
-############################################################
+    - name: "Execute nimadm and wait for migration completion."
+      block:
 
-- name: "Check on an async task"
-  async_status:
-    jid: "{{ results.ansible_job_id }}"
-  register: async_poll_results
-  until: async_poll_results.finished
-  retries: "{{ retry_chk_nimadm_comp }}"
-  delay: "{{ interval }}"
-- debug:  # var=async_poll_results
-    msg: "retry = {{ retry_chk_nimadm_comp }}"
+        - name: "Migrate to alternate disk"  # noqa no-changed-when
+          command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
+          register: results
+          async: "{{ wait_nimadm_timeout_secs }}"
+          poll: 0
+        - debug:  # var=results
+            msg:
+              - "timeout = {{ wait_nimadm_timeout_secs }} seconds or
+                {{ wait_nimadm_timeout_hours }} hours "
+              - "Maximum retries: {{ retry_chk_nimadm_comp }} of {{ interval }} seconds"
+        - debug: var=results
+        ############################################################
+        # check on async task later
+        # perform a task to check on nimadm task via its registered
+        # job ID
+        ############################################################
 
-############################################################
-############################################################
+        - name: "Polling until migration finishes (ignore FAILED RETRING messages) "
+          async_status:
+            jid: "{{ results.ansible_job_id }}"
+          register: async_poll_results
+          until: async_poll_results.finished
+          retries: "{{ retry_chk_nimadm_comp }}"
+          delay: "{{ interval }}"
+        - debug:  # var=async_poll_results
+            msg: "retry = {{ retry_chk_nimadm_comp }}"
 
-- block:
-    - name: "Rebooting {{ nim_client }}"
-      ibm.power_aix.nim:
-        action: reboot
-        targets: "{{ nim_client }}"
-      register: results
-    - debug: var=results
-  when: reboot_client
+        #############################################################
+        #############################################################
+
+        - block:
+            - name: "Rebooting {{ nim_client }}"
+              ibm.power_aix.nim:
+                action: reboot
+                targets: "{{ nim_client }}"
+              register: results
+            - debug: var=results
+          when: reboot_client
+
+        - debug:
+            msg: >
+              'altinst_rootvg' successfully created in '{{ nim_client }}'.
+              Reboot '{{ nim_client }}' to boot into the alterate disk.
+          when: not reboot_client
+
+        ############################################################
+        ############################################################
+
+        - debug: msg="MIGRATION COMPLETE!!!"
+      # run nimadm and wait for completion block
+      when: not debug_skip_nimadm and not no_need_to_migrate
+
+
+  # Perform migration block
+  # when: control_phases.perform_migration
+  when: >
+     control_phases is defined and
+     control_phases.perform_migration is defined and
+     control_phases.perform_migration
+
+# Print a summary of what was executed.
+
+- set_fact:
+    msg1: ""
+
+- set_fact:
+    msg1: "- Validation of resources: Completed!"
+  when: control_phases.validate_nim_resources
+
+- set_fact:
+    msg1: >
+      "{{ msg1 }} \n- {{ nim_client }} is already at {{ lpp_source_fileset_level }}
+      or higher. Skipping migration."
+  when: control_phases.perform_migration and not debug_skip_nimadm and no_need_to_migrate
+
+- set_fact:
+    msg1: >
+      " {{ msg1 }} \n- Migration of {{ nim_client_v }} to {{ lpp_source_fileset_level }}
+      Completed."
+  when: control_phases.perform_migration and not debug_skip_nimadm and not no_need_to_migrate
+
+- set_fact:
+    msg1:
+      - "{{ msg1 }} \n- Migration of {{ nim_client_v }} to {{ lpp_source_fileset_level }}
+         NOT Completed"
+      - "    Skipping call to nimadm due to debug_skip_nimadm (debug preview action only)"
+      - "    /usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d
+        {{ client_target_disk }} -Y"
+  when: debug_skip_nimadm and control_phases.perform_migration and not no_need_to_migrate
 
 - debug:
-    msg: >
-      'altinst_rootvg' successfully created in '{{ nim_client }}'.
-      Reboot '{{ nim_client }}' to boot into the alterate disk.
-  when: not reboot_client
+    msg: "The role did not perform any actions."
+  when: msg1 == ""  # noqa empty-string-compare
 
-############################################################
-############################################################
-
-- debug: msg="MIGRATION COMPLETE!!!"
+- debug: var=msg1
+  when: msg1 != ""  # noqa empty-string-compare

@@ -8,5 +8,14 @@ wait_nimadm_timeout_secs: "{{ (wait_nimadm_timeout_hours * 60 * 60) | int }}"
 # Retry times
 retry_chk_nimadm_comp: "{{ (wait_nimadm_timeout_secs | int / 60) | int + 1 }}"
 
-# Retry interval time in seconds
+# Retry interval time in seconds to wait before checking the status to the NIMADM operation.
 interval: 60
+
+# For nim_resource show showres operation.
+# Maximum time to retry to read a resource (lpp_source or spot) if the resource is busy.
+dflt_max_retries: 10
+# Retry interval time in seconds to wait before retrying accessing a busy lpp_resource or spot.
+dflt_retry_wait_time: 1
+# Location of the nim information file to store the lpp_source AIX level.
+# /var/adm/ras/ansible_nim_info_file_{{ lpp_source }}
+nim_info_file_path: /var/adm/ras/ansible_nim_info_file
