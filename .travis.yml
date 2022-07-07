@@ -254,7 +254,7 @@ deploy:
   provider: pages
   strategy: git
   skip_cleanup: true
-  token: $GIHUB_API_KEY
+  token: $GITHUB_API_KEY
   local_dir: docs/build
   keep_history: true
   on:

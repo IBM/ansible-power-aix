@@ -1,5 +1,5 @@
 ---
-name: run ibm.power_aix collection sanity tests
+name: generate ibm.power_aix collection documentation source files
 
 # run sanity test during pull request to dev-collection
 on:
@@ -11,10 +11,9 @@ on:
 
 jobs:
   ########################################################################
-  # sanity test
-  # - makes sure that the collection passes the ansible sanity tests
+  # generate doc files
   ########################################################################
-  sanity-test:
+  gen-doc:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,10 +21,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ansible-version: ['2.9', '3', '4', '5', 'devel']
         python-version: ['3.8']
+        ansible-version: ['2.9']
 
-    name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
+    name: generate documenation source files
     steps:
     - name: checkout repository
       uses: actions/checkout@v2
@@ -37,20 +36,19 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         
-    - name: install ansible ${{ matrix.ansible-version }}
-      if: ${{ matrix.ansible-version != 'devel' }}
+    - name: install document generation requirements
       run: |
         make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-
-    - name: install ansible ${{ matrix.ansible-version }}
-      if: ${{ matrix.ansible-version == 'devel' }}
+        python -m pip install ansible-doc-extractor
+        python -m pip install sphinx
+        python -m pip install sphinx_rtd_theme
+        
+    - name: run document generator script
       run: |
-        make install-ansible-devel-branch
+        bash devops/bin/gen_doc.sh
 
-    - name: install sanity test requirements
-      run: |
-        make install-sanity-test-requirements
-
-    - name: run sanity test on ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
-      run: |
-        make sanity-test PYTHON_VERSION=${{ matrix.python-version }}
+    - name: publish documentation to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/build
