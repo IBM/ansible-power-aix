@@ -53,18 +53,24 @@
     - debug:
         msg: "SPOT resource 'dflt_{{ lpp_source }}_spot' already exists."
 
-    - shell: "nim -o showres dflt_{{ lpp_source }}_spot | grep 'bos.alt_disk_install.rte'"
-      changed_when: false
+    - ibm.power_aix.nim_resource:
+        action: show
+        name: "dflt_{{ lpp_source }}_spot"
+        showres:
+          fetch_contents: true
+          max_retries: "{{ dflt_max_retries }}"
+          retry_wait_time: "{{ dflt_retry_wait_time }}"
       register: spot_query
-      failed_when:
-        - spot_query.rc != 0
-        - spot_query.stderr != ''
   when: result.stderr.find( "0042-081" ) != -1
 
 - name: "Set SPOT resource to be used"
-  set_fact:
-    spot: "dflt_{{ lpp_source }}_spot"
+  block:
+    - set_fact:
+        spot: "dflt_{{ lpp_source }}_spot"
+    - set_fact:
+        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
 
 - include_tasks: "add_alt_disk_install_fileset.yml"
-  when:
-    - result.stderr.find( "0042-081" ) == -1 or spot_query.stdout == ''
+  when: >
+    result.stderr.find( "0042-081" ) == -1 or
+    spot_fileset['bos.alt_disk_install.rte'] is not defined

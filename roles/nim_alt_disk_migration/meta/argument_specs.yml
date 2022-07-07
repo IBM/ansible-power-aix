@@ -7,6 +7,7 @@ argument_specs:
     author:
       - "Joseph de Joya"
       - "Rae Yang"
+      - "Pedro V Torres"
     options:
       nim_client:
         type: "str"

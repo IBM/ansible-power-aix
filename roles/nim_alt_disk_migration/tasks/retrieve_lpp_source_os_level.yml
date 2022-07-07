@@ -54,10 +54,10 @@
     - set_fact:
         lpp_source_fileset_level: "{{ lpp_source_major_num + lpp_source_minor_num + '00' }}"
 
-- name: "Determine if we need to migrate {{ nim_client }}"
-  block:
-    - debug:
-        msg: "{{ nim_client }} is already at {{ lpp_source_fileset_level }} or higher"
+- name: "Save bos.mp version on file {{ nim_info_file_path }}_{{ lpp_source }}"
+  copy:  # noqa risky-file-permissions
+    dest: "{{ nim_info_file_path }}_{{ lpp_source }}"
+    content: bos.mp64:{{ lpp_source_fileset_level }}
+    force: true
 
-    - meta: end_play
-  when: client_oslevel | int >= lpp_source_fileset_level | int
+- debug: var=nim_file_info

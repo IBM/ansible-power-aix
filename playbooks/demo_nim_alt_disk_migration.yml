@@ -11,16 +11,18 @@
 # 5. c_rsh must be active (should be good if (1)
 # is properly setup)
 - name: "nim_alt_disk_migration demo"
-  hosts: ansible-test1 
+  hosts: nimserver 
   gather_facts: false
   remote_user: root
   vars:
     nim_client_v: p9zpa-ansible-test2
-    target_disk_v: hdisk2
+    target_disk_v: ""
     target_disk_policy_v: minimize
     lpp_source_v: lpp_72V_2114
     spot_v: spot_72V_2114
     force_target_disk: true
+    validate_nim_resources_v: true
+    perform_migration_v: true
   collections:
     - ibm.power_aix
   tasks:
@@ -37,7 +39,7 @@
         # or to automatically select target disk based
         # on policy
         target_disk:
-          # disk_name: "{{ target_disk_v }}"
+          disk_name: "{{ target_disk_v }}"
           disk_size_policy: "{{ target_disk_policy_v }}"
           force: "{{ force_target_disk }}"
 
@@ -52,10 +54,22 @@
 
         # optional, provide a SPOT resource, if not given
         # then the role will derive one from lpp_source
-        # spot: "{{ spot_v }}"
+        spot: "{{ spot_v }}"
+
+        # Control_phases options:
+        #  * validate_nim_resources false will not perform the nim resource
+        #    evaluation. Use for concurrent migration.
+        #  * validate_nim_resources true and perform_nim_migration false
+        #    will only evaluate the nim resources for the migration.
+
+        control_phases:
+           validate_nim_resources: "{{ validate_nim_resources_v }}"
+           perform_migration: "{{ perform_migration_v }}"
+
+
 
 # - name: "change bootlist"
-#   hosts: ansible-test4
+#   hosts: ansible-test2
 #   gather_facts: false
 #   remote_user: root
 #   vars:
@@ -69,11 +83,11 @@
 #           - device: "{{ target_disk }}"
 
 # - name: "reboot client LPAR"
-#   hosts: nimserver1
+#   hosts: nimserver 
 #   gather_facts: false
 #   remote_user: root
 #   vars:
-#     nim_client_v: p9zpa-ansible-test4
+#     nim_client_v: p9zpa-ansible-test2
 #   collections:
 #     - ibm.power_aix
 #   tasks:

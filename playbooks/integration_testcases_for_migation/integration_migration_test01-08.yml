@@ -1,0 +1,260 @@
+---
+
+- name: "nim_alt_disk_migration demo"
+  hosts: "{{ target_system }}"
+  gather_facts: false
+  remote_user: root
+  vars:
+    nim_client_v: p9zpa-ansible-test2
+    target_disk_v: hdisk1
+    target_disk_policy_v: minimize
+    lpp_source_v: lpp_72V_2114
+    spot_v: spot_72V_2114
+    force_target_disk: true
+    validate_nim_resources_v: true
+    perform_migration_v: true
+    test_case_number: 1
+  collections:
+    - ibm.power_aix
+  tasks:
+
+
+    # TEST1 Migration with lpp_source == '' - expect -  FAILURE
+    - set_fact:
+         test_case: "TEST1"
+         test_rc: false
+    - set_fact:
+         test_exec: "{{ test_case }} Migration with lpp_source == '' - expect -  FAILURE"
+    - debug: var=test_exec
+
+
+    - name: "{{ test_exec }}"
+      block:
+        - import_role:
+            name: ibm.power_aix.nim_alt_disk_migration
+          vars:
+
+            nim_client: "{{ nim_client_v }}"
+            target_disk:
+              disk_name: ""
+              disk_size_policy: "{{ target_disk_policy_v }}"
+              force: "{{ force_target_disk }}"
+            lpp_source: ""
+            reboot_client: false
+            spot: "{{ spot_v }}"
+            control_phases:
+               validate_nim_resources: false
+               perform_migration: true
+            debug_skip_nimadm: true
+      rescue:
+        - debug:
+            msg: "Expected test failure"
+        - set_fact:
+           test_rc: true
+
+    - debug: msg="End of {{ test_exec }}"
+    - assert:
+        fail_msg: "FAILURE: {{ test_exec }}"
+        that: test_rc
+
+
+    # TEST2 Migration with  nim_client == '' - expect -  FAILURE
+    - set_fact:
+         test_case: "TEST2"
+         test_rc: false
+    - set_fact:
+         test_exec: "{{ test_case }} Migration with  nim_client == '' - expect -  FAILURE"
+    - debug: var=test_exec
+
+    - name: "{{ test_exec }}"
+      block:
+        - import_role:
+            name: ibm.power_aix.nim_alt_disk_migration
+          vars:
+
+            nim_client: ""
+            target_disk:
+              disk_name: ""
+              disk_size_policy: "{{ target_disk_policy_v }}"
+              force: "{{ force_target_disk }}"
+            lpp_source: "{{ lpp_source_v }}"
+            reboot_client: false
+            spot: "{{ spot_v }}"
+            control_phases:
+               validate_nim_resources: false
+               perform_migration: true
+            debug_skip_nimadm: true
+      rescue:
+        - debug:
+            msg: "Expected test failure"
+        - set_fact:
+           test_rc: true
+
+    - debug: msg="End of {{ test_exec }}"
+    - assert:
+        fail_msg: "FAILURE: {{ test_exec }}"
+        that: test_rc
+
+
+
+    # TEST3 Migration with disk_size and disk_size_policy == ''- expect -  FAILURE
+    - set_fact:
+         test_case: "TEST3"
+         test_rc: false
+    - set_fact:
+         test_exec: "{{ test_case }} Migration with disk_size and disk_size_policy == ''- expect -  FAILURE"
+    - debug: var=test_exec
+
+    - name: "{{ test_exec }}"
+      block:
+        - include_role:
+            name: ibm.power_aix.nim_alt_disk_migration
+          vars:
+
+            nim_client: "{{ nim_client_v }}"
+            target_disk:
+              disk_name: ""
+              disk_size_policy: ""
+              force: "{{ force_target_disk }}"
+            lpp_source: "{{ lpp_source_v }}"
+            reboot_client: false
+            spot: "{{ spot_v }}"
+            control_phases:
+               validate_nim_resources: false
+               perform_migration: true
+            debug_skip_nimadm: true
+      rescue:
+        - debug:
+            msg: "Expected test failure"
+        - set_fact:
+           test_rc: true
+
+    - debug: msg="End of {{ test_exec }}"
+    - assert:
+        fail_msg: "FAILURE: {{ test_exec }}"
+        that: test_rc
+
+
+    # TEST4 Migration with disk_size and disk_size_policy (mutually exclusive) - expect -  FAILURE
+    - set_fact:
+       test_case: "TEST4"
+       test_rc: false
+       test_exec: "{{ test_case }} Migration with disk_size and disk_size_policy which are mutually exclusive- expect -  FAILURE"
+    - debug: var=test_exec
+
+
+    - name: "{{ test_exec }}"
+      block:
+        - include_role:
+            name: ibm.power_aix.nim_alt_disk_migration
+          vars:
+
+            nim_client: "{{ nim_client_v }}"
+            target_disk:
+               disk_name: "{{ target_disk_v }}"
+               disk_size_policy: "{{ target_disk_policy_v }}"
+               force: "{{ force_target_disk }}"
+            lpp_source: "{{ lpp_source_v }}"
+            reboot_client: false
+            spot: "{{ spot_v }}"
+            control_phases:
+               validate_nim_resources: false
+               perform_migration: true
+            debug_skip_nimadm: true
+      rescue:
+        - debug:
+            msg: "Expected test failure"
+        - set_fact:
+           test_rc: true
+
+    - debug: msg="End of {{ test_exec }}"
+    - assert:
+        fail_msg: "FAILURE: {{ test_exec }}"
+        that: test_rc
+
+
+    # TEST5 Play the role but do not perform anything (validate_nim_resources and perform_migration are false)- expect -  SUCCESS
+    - set_fact:
+         test_case: "TEST5"
+         test_rc: false
+    - set_fact:
+         test_exec: "{{ test_case }} Play the role but do not perform anything (validate_nim_resources and perform_migration are false)- expect -  SUCCESS"
+    - debug: var=test_exec
+
+    - name: "{{ test_exec }}"
+      include_role:
+        name: ibm.power_aix.nim_alt_disk_migration
+      vars:
+
+        nim_client: "{{ nim_client_v }}"
+        target_disk:
+          # disk_name: "{{ target_disk_v }}"
+          disk_size_policy: "{{ target_disk_policy_v }}"
+          force: "{{ force_target_disk }}"
+        lpp_source: "{{ lpp_source_v }}"
+        reboot_client: false
+        spot: "{{ spot_v }}"
+        control_phases:
+           validate_nim_resources: false
+           perform_migration: false
+
+    - debug: msg="End of {{ test_exec }}"
+
+
+    # TEST6 Perform a validation of resources only -expect - SUCCESS
+
+    - name: "TEST6 Perform a validation of resources only"
+      include_role:
+        name: ibm.power_aix.nim_alt_disk_migration
+      vars:
+        nim_client: "{{ nim_client_v }}"
+        target_disk:
+          disk_name: "{{ target_disk_v }}"
+          disk_size_policy: "{{ target_disk_policy_v }}"
+          force: "{{ force_target_disk }}"
+        lpp_source: "{{ lpp_source_v }}"
+        reboot_client: false
+        spot: "{{ spot_v }}"
+        control_phases:
+           validate_nim_resources: true
+           perform_migration: false
+
+
+    # TEST7 Perform a validation and a migration, but do not execute nimadm (debug test) -expect - SUCCESS
+    - name: "TEST7 Perform a migration, go for perform_migration but do not execute nimadm (debug test)"
+      include_role:
+        name: ibm.power_aix.nim_alt_disk_migration
+      vars:
+        nim_client: "{{ nim_client_v }}"
+        target_disk:
+          disk_name: ""
+          disk_size_policy: "{{ target_disk_policy_v }}"
+          force: "{{ force_target_disk }}"
+        lpp_source: "{{ lpp_source_v }}"
+        reboot_client: false
+        spot: "{{ spot_v }}"
+        control_phases:
+           validate_nim_resources: true
+           perform_migration: true
+        debug_skip_nimadm: true
+
+
+    # TEST8 Perform a validation and a migration -expect - SUCCESS
+    - name: "TEST8 Perform a migration"
+      include_role:
+        name: ibm.power_aix.nim_alt_disk_migration
+      vars:
+        nim_client: "{{ nim_client_v }}"
+        target_disk:
+          disk_name: ""
+          disk_size_policy: "{{ target_disk_policy_v }}"
+          force: "{{ force_target_disk }}"
+        lpp_source: "{{ lpp_source_v }}"
+        reboot_client: false
+        spot: "{{ spot_v }}"
+        control_phases:
+           validate_nim_resources: true
+           perform_migration: true
+        debug_skip_nimadm: false
+
+
