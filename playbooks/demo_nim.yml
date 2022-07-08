@@ -5,8 +5,8 @@
   gather_facts: no
   vars:
     check_targets_v:        standalone
-    install_targets_v:      carribean-lp4
-    update_lpp_v:           lpp_2124A_72X
+    install_targets_v:      quimby06 
+    update_lpp_v:           latest_sp
     bos_inst_resgroup_v:    basic_res_grp
     bos_inst_script_v:      setup_root
     master_setup_device_v:  "/dev/cd0"
