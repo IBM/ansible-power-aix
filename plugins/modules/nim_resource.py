@@ -18,7 +18,7 @@ author:
 module: nim_resource
 short_description: show/define/delete NIM resource object(s).
 description:
-- This module facilitates the display, creation removal or  of NIM resource objects.
+- This module facilitates the display, creation or deletion of NIM resource objects.
 version_added: '1.5.0'
 requirements:
 - AIX >= 7.1 TL3
