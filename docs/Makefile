@@ -11,3 +11,4 @@ all:
 clean:
 	rm -rf build
 	rm -rf source/modules/*.rst
+	rm -rf source/roles/*.md

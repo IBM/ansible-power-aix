@@ -191,58 +191,56 @@ rc:
     description: The command return code.
     returned: always
     type: int
-
 stdout:
     description: The standard output.
     returned: always
     type: str
-    sample: "
-        *******************************************************************************\n
-        installp PREVIEW:  deinstall operation will not actually occur.\n
-        *******************************************************************************\n
-        \n
-        +-----------------------------------------------------------------------------+\n
-                            Pre-deinstall Verification...\n
-        +-----------------------------------------------------------------------------+\n
-        Verifying selections...done\n
-        Verifying requisites...done\n
-        Results...\n
-        \n
-        WARNINGS\n
-        --------\n
-          Problems described in this section are not likely to be the source of any\n
-          immediate or serious failures, but further actions may be necessary or\n
-          desired.\n
-        \n
-          Not Installed\n
-          -------------\n
-          No software could be found on the system that could be deinstalled for the\n
-          following requests:\n
-        \n
-            bos.sysmgt.nim.master                    \n
-        \n
-          (The fileset may not be currently installed, or you may have made a\n
-           typographical error.)\n
-        \n
-          << End of Warning Section >>\n
-        \n
-        FILESET STATISTICS \n
-        ------------------\n
-            1  Selected to be deinstalled, of which:\n
-                1  FAILED pre-deinstall verification\n
-          ----\n
-            0  Total to be deinstalled\n
-        \n
-        \n
-        ******************************************************************************\n
-        End of installp PREVIEW.  No deinstall operation has actually occurred.\n
-        ******************************************************************************"
-
+    sample:
+      '*******************************************************************************\n
+      installp PREVIEW:  deinstall operation will not actually occur.\n
+      *******************************************************************************\n
+      \n
+      +-----------------------------------------------------------------------------+\n
+                          Pre-deinstall Verification...\n
+      +-----------------------------------------------------------------------------+\n
+      Verifying selections...done\n
+      Verifying requisites...done\n
+      Results...\n
+      \n
+      WARNINGS\n
+      --------\n
+        Problems described in this section are not likely to be the source of any\n
+        immediate or serious failures, but further actions may be necessary or\n
+        desired.\n
+      \n
+        Not Installed\n
+        -------------\n
+        No software could be found on the system that could be deinstalled for the\n
+        following requests:\n
+      \n
+          bos.sysmgt.nim.master                    \n
+      \n
+        (The fileset may not be currently installed, or you may have made a\n
+         typographical error.)\n
+      \n
+        << End of Warning Section >>\n
+      \n
+      FILESET STATISTICS \n
+      ------------------\n
+          1  Selected to be deinstalled, of which:\n
+              1  FAILED pre-deinstall verification\n
+        ----\n
+          0  Total to be deinstalled\n
+      \n
+      \n
+      ******************************************************************************\n
+      End of installp PREVIEW.  No deinstall operation has actually occurred.\n
+      ******************************************************************************'
 stderr:
     description: The standard error.
     returned: always
     type: str
-    sample: "installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name."
+    sample: 'installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name.'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
