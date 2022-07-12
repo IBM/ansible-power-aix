@@ -211,8 +211,8 @@ notes:
     JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up
     using a savevg.
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
-  - This M(ibm.power_aix.backup) module only operates on LPAR, for operation on VIOS, please checkout the
-    M(ibm.power_vios.backupios) module in the power-vios collection.
+  - This M(backup) module only operates on LPAR, for operation on VIOS, please checkout the
+    M(backupios) module in the power-vios collection.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_mksysb.html),
     U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lsmksysb.html),
@@ -291,7 +291,6 @@ cmd:
     returned: when the command is run.
     type: str
     sample: '/bin/restvg -f /dev/rmt0 -l'
-
 stdout:
     description: The standard output of the command.
     returned: always
@@ -306,7 +305,6 @@ stdout:
        x         1530 ./tmp/vgdata/datavg/datavg.data
        x          278 ./tmp/vgdata/datavg/backup.data
            total size: 4393'
-
 stderr:
     description: The standard error of the command.
     returned: always
@@ -316,7 +314,6 @@ stderr:
        Target Disks:	  Allocation Policy:
                 Shrink Filesystems:	yes
                 Preserve Physical Partitions for each Logical Volume:	no
-
        New volume on /tmp/datavg_backup:
         Cluster 51200 bytes (100 blocks).
            Volume number 1

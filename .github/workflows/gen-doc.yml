@@ -15,9 +15,9 @@ jobs:
   ########################################################################
   gen-doc:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ansible_collections/ibm/power_aix
+    # defaults:
+    #   run:
+    #     working-directory: ansible_collections/ibm/power_aix
     strategy:
       fail-fast: false
       matrix:
@@ -28,8 +28,8 @@ jobs:
     steps:
     - name: checkout repository
       uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
+      # with:
+      #   path: ansible_collections/ibm/power_aix
       
     - name: setup python
       uses: actions/setup-python@v2
@@ -42,13 +42,15 @@ jobs:
         python -m pip install ansible-doc-extractor
         python -m pip install sphinx
         python -m pip install sphinx_rtd_theme
+        python -m pip install --upgrade myst-parser
         
     - name: run document generator script
       run: |
         bash devops/bin/gen_doc.sh
 
     - name: publish documentation to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/build
+        # folder: ansible_collections/ibm/power_aix/docs/build
+        folder: docs/build
+        branch: gh-pages
