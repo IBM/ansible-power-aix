@@ -1,5 +1,4 @@
 playbooks/*issue*
-devops
 .travis.yml
 .DS_Store
 .vscode
