@@ -75,3 +75,5 @@ html_context = {
 master_doc = 'index'
 
 html_favicon = 'favicon.ico'
+
+source_suffix = ['.rst', '.md']

@@ -3,8 +3,8 @@ name: generate ibm.power_aix collection documentation source files
 
 # run sanity test during pull request to dev-collection
 on:
-  pull_request:
-    branches: [ dev-collection ]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -15,9 +15,6 @@ jobs:
   ########################################################################
   gen-doc:
     runs-on: ubuntu-latest
-    # defaults:
-    #   run:
-    #     working-directory: ansible_collections/ibm/power_aix
     strategy:
       fail-fast: false
       matrix:
@@ -28,8 +25,6 @@ jobs:
     steps:
     - name: checkout repository
       uses: actions/checkout@v2
-      # with:
-      #   path: ansible_collections/ibm/power_aix
       
     - name: setup python
       uses: actions/setup-python@v2
@@ -51,6 +46,5 @@ jobs:
     - name: publish documentation to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        # folder: ansible_collections/ibm/power_aix/docs/build
         folder: docs/build
         branch: gh-pages
