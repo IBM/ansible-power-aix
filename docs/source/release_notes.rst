@@ -5,6 +5,35 @@
 Releases
 ========
 
+Version 1.5.0
+-------------
+Notes
+  * New role, nim_alt_disk_migration, for automating AIX migration (upgrades) using nimadm ( Network Install Manager Alternate Disk Migration) utility.
+  *  Information: https://github.com/IBM/ansible-power-aix/blob/dev-collection/roles/nim_alt_disk_migration/README.md
+  * New module, nim_resource, to create, remove or display NIM resource objects such as lpp_source, spot, etc.
+  * New enhanced nim module, with new option "show" to display NIM object information.
+  * New module, tunables, for automating Kernel Tuning management of no, nfso, vmo, ioo, raso, and schedo.
+  * New module, tunfile_mgnt, for automating Kernel Tuning using files with tuning parameter values: no, nfs, vmo, ioo, raso, and schedo.
+  * Enhanced inventory for lpar_facts. Examples: facts for os level, inc_core_crypto, nxcrypto, processor type/implementation mode, and others.
+  * Enhanced inventory for lpp_facts. Examples: facts for fixes (apar, SP, TL), version consistency (lppchk).
+  * New module, chsec, for automating changes to attributes in the security stanza files.
+  * Fix DNF bootstrap not to download the AIX Toolbox bundle if it exist in the controller.
+  * Updates to sanity tests.
+
+Availability
+  * `Automation Hub v1.5.0`_
+  * `Galaxy v1.5.0`_
+  * `GitHub v1.5.0`_
+
+.. _Automation Hub v1.5.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.5.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.5.0.tar.gz
+
+.. _GitHub v1.5.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.5.0/ibm-power_aix-1.5.0.tar.gz
+
 
 Version 1.4.1
 -------------
@@ -31,7 +60,7 @@ Availability
    https://galaxy.ansible.com/download/ibm-power_aix-1.4.1.tar.gz
 
 .. _GitHub v1.4.1:
-   https://github.com/IBM/ansible-power-aix/releases/download/v1.4.0/ibm-power_aix-1.4.0.tar.gz
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.4.1/ibm-power_aix-1.4.1.tar.gz
 
 
 Version 1.4.0
