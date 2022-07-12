@@ -1,0 +1,274 @@
+.. _tunables_module:
+
+
+tunables -- Modify/Reset/Show tunables for various components on AIX.
+=====================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates in the modification/reset/show of tunable parameter(s) with provided inputs.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Specifies the action to be performed for tunables of a component.
+
+    ``show`` shows information of tunables specified by *component* and optional *tunable_params*.
+
+    ``modify`` modifies values of tunables specified by *component* and *tunable_params*.
+
+    ``reset`` resets values of tunables specified by *component* and optional *tunable_params*.
+
+
+  component (True, str, None)
+    Specifies the component name.
+
+    It must be unique, you cannot use the ALL or default keywords in the component.
+
+
+  change_type (optional, str, current)
+    Specifies the type of changes for the tunables.
+
+    For details on valid user attributes, please refers to IBM documentation.
+
+    For *action=reset*, ``change_type=current`` resets the current values of tunable/s specified by *component* and *tunable_params* to its default value.
+
+    For *action=modify*, ``change_type=current`` modifies the current values of tunable/s specified by *component* and *tunable_params_with_value*.
+
+    For *action=reset*, ``change_type=reboot`` resets the reboot values of tunable/s specified by *component* and *tunable_params* to its default value.
+
+    For *action=modify*, ``change_type=reboot`` modifies the reboot values of a tunable/s specified by *component* and *tunable_params_with_value*.
+
+    For *action=reset*, ``change_type=both`` resets the current and reboot values of tunable/s specified by *component* and *tunable_params* to its default value.
+
+    For *action=modify*, ``change_type=both`` modifies the current and reboot values of tunable/s specified by *component* and *tunable_params_with_value*.
+
+
+  bosboot_tunables (optional, bool, False)
+    Specifies whether the provided *tunable_params* or *tunable_params_with_value* are bosboot type or not.
+
+    Cannot be used when *change_type=both*.
+
+
+  tunable_params (optional, list, None)
+    Specifies the tunables in list format whose details need to be displayed or reset.
+
+    Can be used when *action=show or action=reset*.
+
+    Cannot be used with *action=modify*.
+
+
+  tunable_params_with_value (optional, dict, None)
+    Specifies the tunable(s) and their value(s) whose modification is required.
+
+    Cannot be used when *action=show or action=reset*.
+
+    Can be used with *action=modify*.
+
+
+  restricted_tunables (optional, bool, False)
+    forces the display, modification, or resetting of restricted tunables.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: "Modify vmo tunable parameters"
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        tunable_params_with_value:
+          lgpg_regions: 10
+          lgpg_size: 16777216
+
+    - name: "Modify vmo tunable parameters of type bosboot"
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        bosboot_tunables: True
+        tunable_params_with_value:
+          ame_mpsize_support: 1
+
+    - name: "Display information of all dynamic tunable parameters"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+
+    - name: "Display information of all tunable parameters including restricted"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+        restricted_tunables: True
+
+    - name: "Display information of given tunable parameters"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+        tunable_params:
+          - lgpg_regions
+          - lgpg_size
+
+    - name: "show reboot value of lgpg_regions tunable"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+      register: output
+    - debug: var=output.tunables_details.lgpg_regions.reboot_value
+
+    - name: "Modify dynamic tunables/restricted dynamic tunables"
+      # this will change the current value of given dynamic tunables and does NOT require any bosboot or reboot
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True # in case of restricted tunables otherwise default is false
+        tunable_params_with_value:
+          lgpg_regions: 10   # dynamic tunable
+          lgpg_size: 16777216 # dynamic tunables
+          enhanced_affinity_balance: 1000 # restricted dynamic tunable
+      register: result
+
+    - name: "Modify bosboot tunables/ restricted bosboot tunables"
+      # this will only change the REBOOT VALUE and needs bosboot and reboot.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        bosboot_tunables: True # mandatory
+        restricted_tunables: true # if restricted tunable to be changed
+        tunable_params_with_value:
+          kernel_heap_psize: 16777216 # bosboot tunable
+          batch_tlb: 0 # restricted bosboot tunables
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+
+    - name: "Modify combination of bosboot and dynamic tunables"
+      # this will only change the REBOOT VALUE for both bosboot and dynamic tunables and needs bosboot and reboot.
+      # so, if bosboot and dynamic tunables are used together, only reboot value will get changed and needs bosboot and reboot
+      # to make changes take into effect.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True # because of restricted tunables otherwise default is false
+        bosboot_tunables: True # because of bosboot tunables otherwise default is false
+        # if restricted tunable to be changed also then restricted_tunable: True
+        tunable_params_with_value:
+          lgpg_regions: 10   # dynamic tunable
+          lgpg_size: 16777216 # dynamic tunables
+          kernel_heap_psize: 16777216 # bosboot tunable
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+
+    - name: "Reset bosboot tunables/ restricted bosboot tunables"
+      # this will only change the REBOOT VALUE and needs bosboot and reboot.
+      # example of one restricted and one non restricted bosboot tunable
+      ibm.power_aix.tunables:
+        action: reset
+        component: vmo
+        restricted_tunables: True # because of restricted tunables otherwise default is false
+        bosboot_tunables: True # because of bosboot tunables otherwise default is false
+        tunable_params: ['kernel_heap_psize', 'batch_tlb']
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+
+    - name: "Reset combination of bosboot and dynamic tunables"
+      # this will only reset the REBOOT VALUE for both bosboot and dynamic tunables and needs bosboot and reboot.
+      # so, if bosboot and dynamic tunables are used together, only reboot value will get reset and needs bosboot and reboot.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True # because of restricted tunables otherwise default is false
+        bosboot_tunables: True # # because of bosboot tunables otherwise default is false
+        tunable_params: ['kernel_heap_psize', 'lgpg_regions', 'kernel_heap_psize', 'enhanced_affinity_balance']
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+
+
+
+
+Return Values
+-------------
+
+msg (always, str, Following tunables have been reset SUCCESSFULLY: lgpg_size lgpg_regions)
+  The execution message.
+
+
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (always., str, )
+  The standard output.
+
+
+stderr (always., str, )
+  The standard error.
+
+
+cmd (always, str, )
+  Command executed.
+
+
+tunables_details (If I(action=show)., dict, {'tunables_details': {'lgpg_regions': {'reboot_value': '0', 'current_value': '0', 'default': '0', 'dependencies': 'lgpg_size ', 'maximum_value': '9223372036854775807', 'minimum_value': '0', 'type': 'Dynamic: can be freely changed', 'unit': ''}}})
+  Dictionary output with the tunables detailed information.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@nitismis)
+

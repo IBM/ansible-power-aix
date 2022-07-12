@@ -69,7 +69,7 @@ Parameters
   password (optional, str, None)
     Specifies the encrypted string for the password to create or change the password.
 
-    Can be used when *state=present*.
+    Can be used when *state=present* or *state=modify*.
 
 
 

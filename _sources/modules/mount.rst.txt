@@ -36,6 +36,8 @@ Parameters
 
     ``umount`` unmounts a previously mounted device, directory, file, or file system
 
+    ``show`` list mounted filesytems
+
 
   mount_dir (optional, str, None)
     Specifies the directory path to mount/unmount.
@@ -108,22 +110,45 @@ Examples
     
     - name: List mounted filesystems
       ibm.power_aix.mount:
+        state: show
 
     - name: Mount filesystems
       ibm.power_aix.mount:
-        mount_dir: /dev/hd1
-        mount_over_dir: /home
+        state: mount
+        mount_dir: /mnt/tesfs
 
-    - name: Mount filesystems provided by a node"
+    - name: Mount filesystems provided by a node
       ibm.power_aix.mount:
-        node: aixbase.aus.stglabs.ibm.com
-        mount_dir: /mnt
+        state: mount
+        node: ansible-test1
+        mount_dir: /mnt/servnfs
+        mount_over_dir: /mnt/clientnfs
 
-    - name: Unmount remote filesystems
+    - name: Mount all filesystems from the 'local' mount group
       ibm.power_aix.mount:
-       state: umount
-       mount_all: remote
-       force: True
+        state: mount
+        fs_type: local
+
+    - name: Unmount filesystem
+      ibm.power_aix.mount:
+        state: umount
+        mount_dir: /mnt/testfs
+
+    - name: Unmount all remote filesystems
+      ibm.power_aix.mount:
+        state: umount
+        mount_all: remote
+        force: True
+
+    - name: Unmount all remote fileystems from a node
+      ibm.power_aix.mount:
+        state: umount
+        node: ansible-test1
+
+    - name: Unmount all filesytems from the 'local' mount group
+      ibm.power_aix.mount:
+        state: umount
+        fs_type: local
 
 
 

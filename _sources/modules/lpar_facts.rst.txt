@@ -249,6 +249,43 @@ ansible_facts (always, complex, )
       Number of Configured LPARs.
 
 
+    inc_core_crypto_capable (always, bool, )
+      Capability of In-Core Crypto Acceleration.
+
+
+    inc_core_crypto_enabled (always, bool, )
+      Enablement of In-Core Crypto Acceleration.
+
+
+    nxcrypto_acc_capable (always, bool, )
+      Capability of NX Crypto Acceleration.
+
+
+    nxcrypto_acc_enabled (always, bool, )
+      Enablement of NX Crypto Acceleration.
+
+
+    full_coredump (always, bool, )
+      Full core dump status.
+
+
+    proc_imp_mode (always, str, )
+      Processor Implementation Mode.
+
+
+    proc_type (always, str, )
+      Processor Type.
+
+
+    oslevel (always, dict, )
+      Operating system level.
+
+
+      oslevel (always, dict, "oslevel": { "build": 2147, "sp": 3, "tl": 2, "base": "7.2.0.0" })
+        OperatingSystemBaseVersion TechnologyLevel ServicePack Build (vrmf).
+
+
+
 
 
 

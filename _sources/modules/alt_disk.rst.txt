@@ -103,10 +103,12 @@ Examples
     
     - name: Perform an alternate disk copy of the rootvg to hdisk1
       alt_disk:
+        action: copy
         targets: hdisk1
 
     - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
       alt_disk:
+        action: copy
         disk_size_policy: minimize
 
     - name: Perform a cleanup of any existing alternate disk copy

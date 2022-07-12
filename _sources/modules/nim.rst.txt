@@ -61,6 +61,8 @@ Parameters
 
     ``maintenance`` to perform a maintenance operation that commits filesets on NIM standalone clients.
 
+    ``show`` to perform a query on a NIM object.
+
 
   targets (optional, list, None)
     Specifies the NIM clients to perform the action on.
@@ -112,6 +114,12 @@ Parameters
     If set to ``no``, the NIM server will not attempt to reboot the client when the action is ``bos_inst``.
 
 
+  object_type (optional, str, all)
+    Specifies which NIM object type to query for action ``show``. Ignored for any other action.
+
+    If not set for ``show``, then all NIM objects in the target machine will be queried.
+
+
 
 
 
@@ -152,6 +160,11 @@ Examples
         script: myscript
         asynchronous: no
         targets: all
+
+    - name: Query all standalone objects defined in a NIM master
+      nim:
+        action: show
+        object_type: standalone
 
 
 
@@ -212,7 +225,7 @@ meta (always, dict, )
 
 
     rc (If the command was run., str, )
-      The return codeof the last comman.
+      The return code of the last command.
 
 
     stdout (If the command was run., str, )
@@ -221,6 +234,15 @@ meta (always, dict, )
 
     stderr (If the command was run., str, )
       Standard error of the last command.
+
+
+
+  query (only for show action, dict, see below)
+    Queried information of all NIM objects of the specified type.
+
+
+    <nim_object> (if NIM object of this type exists, dict, )
+      Information for each individual NIM object fetched.
 
 
 

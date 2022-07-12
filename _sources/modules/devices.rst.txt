@@ -52,11 +52,11 @@ Parameters
   state (optional, str, available)
     Specifies the desired state of the device.
 
-    ``available`` configures device when its state is 'defined', otherwise it changes the device attributes.
+    ``available`` (alias ``present``) configures device when its state is 'defined', otherwise it changes the device attributes.
 
     ``defined`` unconfigures/stops the device when its state is 'available', otherwise it changes the device attributes.
 
-    C (removed) removes the device definition of unconfigured device in Customized Devices object class
+    ``removed`` (alias ``absent``) removes the device definition of unconfigured device in Customized Devices object class
 
 
   chtype (optional, str, both)
@@ -64,9 +64,11 @@ Parameters
 
     ``reboot`` changes the device at system reboot.
 
-    ``current`` changes the current state of the device temporarily. Not persistent after a reboot.
+    ``current`` changes the current state of the device temporarily. Not persistent after a reboot. The device will not be reset. (Not all devices supports this feature)
 
-    ``both`` changes both the current state of the device and the device database. Persistent after a reboot.
+    ``both`` changes both the current state of the device and the device database. Persistent after a reboot. The device will not be reset. (Not all devices support this feature)
+
+    ``reset`` changes both the current state of the device and the device database. Persistent after a reboot. The device will be reset.
 
 
   parent_device (optional, str, None)
@@ -104,18 +106,62 @@ Examples
         device: proc0
         state: available
 
-    - name: Modify an attribute of a device
-      devices:
-        device: en1
-        state: available
-        attributes:
-          mtu: 900
-          arp: off
-
     - name: Unconfigure a device
       devices:
         device: proc0
         state: defined
+
+    - name: Remove (delete) fcs0 device and children
+      devices:
+        device: fcs0
+        state: removed
+        recursive: 'true'
+
+    - name: Put fcs0 device and children in defined state
+      devices:
+        device: fcs0
+        state: defined
+        recursive: 'true'
+
+    - name: Put the children of device fcs0 in defined state
+      devices:
+        parent_device: fcs0
+        state: defined
+
+    - name: Remove (delete) ent0 device
+      devices:
+        device: ent0
+        state: absent
+        recursive: 'true'
+
+    - name: Change en0 MTU speed and disable arp
+      devices:
+        device: en0
+        state: available
+        attributes:
+          mtu: 900
+          arp: 'off'
+
+    - name: Configure the IP address, netmask and bring en0 up
+      devices:
+        device: en0
+        state: available
+        attributes:
+          netaddr: 192.168.0.1
+          netmask: 255.255.255.0
+          state: 'up'
+
+    - name: Modify Crypt0 device max_requests (Crypt0 does not support changes while available)
+      devices:
+        device: Crypt0
+        attributes:
+          max_requests:32
+        chtype: 'reset'
+
+    - name: Discover new devices (configure all devices)
+      devices:
+        device: "all"
+        state: available
 
 
 

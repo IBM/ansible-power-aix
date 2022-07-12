@@ -136,10 +136,12 @@ Parameters
 
     After mirror pools are enabled in a volume group, the volume group can no longer be imported into a version of AIX that does not support mirror pools.
 
-    Can be used only when creating a volume group, hence when *state=present*.
+    Can be used only when creating/extending a volume group, hence when *state=present*.
+
+    Mirror pools are only defined for *vg_type=scalable* type volume group.
 
 
-  mirror_pool_strict (optional, str, none)
+  mirror_pool_strict (optional, str, None)
     Enables mirror pool strictness for the volume group.
 
     ``none`` specifies that no restrictions are placed on the user of mirror pool.
@@ -204,16 +206,46 @@ Examples
 .. code-block:: yaml+jinja
 
     
+    - name: Create a scalable volume group with a mirror pool
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: datavg
+        pvs: hdisk1
+        vg_type: scalable
+        mirror_pool: mp1
+
+    - name: Create a volume group with multiple physical volumes
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: datavg
+        pvs: hdisk1 hdisk2 hdisk3
+
     - name: Extend a volume group
       ibm.power_aix.lvg:
-        pvs=hdisk1
-        vg_name=datavg
-        state=present
+        state: present
+        vg_name: datavg
+        pvs: hdisk1
+
+    - name: Remove a volume group
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: datavg
+
+    - name: Removing hdisk1 and hdisk2 physical volumes from a volume group
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: datavg
+        pvs: hdisk1 hdisk2
 
     - name: Varyon a volume group
       ibm.power_aix.lvg:
-        vg_name=datavg
-        state=varyon
+        vg_name: datavg
+        state: varyon
+
+    - name: Varyoff a volume group
+      ibm.power_aix.lvg:
+        state: varyoff
+        vg_name: datavg
 
 
 

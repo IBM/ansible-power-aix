@@ -97,6 +97,12 @@ Parameters
     When set, a filesystem could have increased while the task returns *changed=False*.
 
 
+  protocol (optional, str, None)
+    Optional setting which specifies preferred protocol to use for downloading files.
+
+    When set, downloads will be attempted using set protocol.
+
+
 
 
 
@@ -104,7 +110,7 @@ Notes
 -----
 
 .. note::
-   - Refer to the FLRTVC page for detail on the sctipt https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html
+   - Refer to the FLRTVC page for detail on the script. https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html
    - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file. It is downloaded from https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip.
    - The script requires ksh93 to use.
    - **v0.8.1** is the current version of the script, depending on changes, this module might need to be updated.

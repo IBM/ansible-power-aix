@@ -1,0 +1,187 @@
+.. _tunfile_mgmt_module:
+
+
+tunfile_mgmt -- Save/Restore/Validate/Modify tunables configuration file for various components on AIX.
+=======================================================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module facilitates the save/restore/validate/modify action to tunables configuration file with provided inputs.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Root user is required.
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Specifies the action to be performed for tunables in the system.
+
+    ``save`` saves the tunables values in provided *filename*.
+
+    ``restore`` restores the file *filename* in current context or boot context as mention by *make_nextboot*.
+
+    ``modify`` modifies the value of parameters *tunables_with_values* for *components* or or sets all tunables to default *set_default* for *components*
+
+    ``validate`` validates the file to be used for other actions in context *validation_type*.
+
+
+  component_to_set_dflt (optional, list, None)
+    Specifies the component name.
+
+    supported values in the list are schedo, vmo, ioo, no, nfso, raso and asoo.
+
+    It must be unique, you cannot use the ALL or default keywords in the component.
+
+
+  filename (True, str, None)
+    Specifies the file name for the *action*.
+
+    If the name not starts with '/' the file will be created in /etc/tunables.
+
+    If filename already exists, the existing file is overwritten
+
+
+  tunables_with_values (optional, dict, None)
+    In the format of dictionary of dictionary (nested dict)
+
+    Specifies the component(s), tunable(s) and their value(s) whose modification is required.
+
+    supported keys in the outer dict are schedo, vmo, ioo, no, nfso, raso and asoo.
+
+    Cannot be used when *set_default=True*.
+
+
+  make_nextboot (optional, bool, False)
+    Specifies the boot context as current or boot context during *action=restore*
+
+    If changes includes bosboot/reboot tunables it is prefered to be used as true..
+
+
+  validation_type (optional, str, current)
+    Specifies the type of validation for the *filename*.
+
+
+  save_all_tunables (optional, bool, True)
+    Specifies that all tunables should be saved or only those that are having non default values currently for *action=save*
+
+    If changes includes bosboot/reboot tunables it is prefered to be used as true..
+
+
+  set_default (optional, bool, False)
+    Specifies that all tunables should be modified to their default value for given *component*
+
+    Shoul not be used if *tunables_with_values* is used.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+        - name: "Save all tunables to a file"
+          tunfile_mgmt:
+            action: save
+            filename: /tunfile_mgmt_test
+          register: tunfile_result
+        - debug: var=tunfile_result
+
+        - name: "Validate a tunable file in current context"
+          tunfile_mgmt:
+            action: validate
+            filename: /tunfile_mgmt_test
+          register: tunfile_result
+        - debug: var=tunfile_result
+
+        - name: "Modify all tunables of given component as default to a file"
+          tunfile_mgmt:
+            action: modify
+            filename: /tunfile_mgmt_test
+            set_default: True
+            component_to_set_dflt: schedo
+          register: tunfile_result
+        - debug: var=tunfile_result
+
+        - name: "Modify multiple tunables for multiple components"
+          tunfile_mgmt:
+            action: modify
+            filename: /tunfile_mgmt_test
+            tunables_with_values:
+              vmo:
+                ame_mpsize_support: 1
+                ame_min_ucpool_size: 10
+              aso:
+                abc: 1
+                xyz: 2
+          register: tunfile_result
+        - debug: var=tunfile_result
+
+
+
+Return Values
+-------------
+
+msg (always, str, All tunables have been saved SUCCESSFULLY in file: tunfile_mgmt_test)
+  The execution message.
+
+
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (always., str, )
+  The standard output.
+
+
+stderr (always., str, )
+  The standard error.
+
+
+cmd (always, str, )
+  Command executed.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@nitismis)
+

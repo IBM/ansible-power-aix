@@ -203,51 +203,11 @@ rc (always, int, )
   The command return code.
 
 
-stdout (always, str,  *******************************************************************************
- installp PREVIEW:  deinstall operation will not actually occur.
- *******************************************************************************
- 
- +-----------------------------------------------------------------------------+
- Pre-deinstall Verification...
- +-----------------------------------------------------------------------------+
- Verifying selections...done
- Verifying requisites...done
- Results...
- 
- WARNINGS
- --------
- Problems described in this section are not likely to be the source of any
- immediate or serious failures, but further actions may be necessary or
- desired.
- 
- Not Installed
- -------------
- No software could be found on the system that could be deinstalled for the
- following requests:
- 
- bos.sysmgt.nim.master                    
- 
- (The fileset may not be currently installed, or you may have made a
- typographical error.)
- 
- << End of Warning Section >>
- 
- FILESET STATISTICS 
- ------------------
- 1  Selected to be deinstalled, of which:
- 1  FAILED pre-deinstall verification
- ----
- 0  Total to be deinstalled
- 
- 
- ******************************************************************************
- End of installp PREVIEW.  No deinstall operation has actually occurred.
- ******************************************************************************)
+stdout (always, str, *******************************************************************************\n installp PREVIEW:  deinstall operation will not actually occur.\n *******************************************************************************\n \n +-----------------------------------------------------------------------------+\n Pre-deinstall Verification...\n +-----------------------------------------------------------------------------+\n Verifying selections...done\n Verifying requisites...done\n Results...\n \n WARNINGS\n --------\n Problems described in this section are not likely to be the source of any\n immediate or serious failures, but further actions may be necessary or\n desired.\n \n Not Installed\n -------------\n No software could be found on the system that could be deinstalled for the\n following requests:\n \n bos.sysmgt.nim.master                    \n \n (The fileset may not be currently installed, or you may have made a\n typographical error.)\n \n << End of Warning Section >>\n \n FILESET STATISTICS \n ------------------\n 1  Selected to be deinstalled, of which:\n 1  FAILED pre-deinstall verification\n ----\n 0  Total to be deinstalled\n \n \n ******************************************************************************\n End of installp PREVIEW.  No deinstall operation has actually occurred.\n ******************************************************************************)
   The standard output.
 
 
-stderr (always, str, installp: Device /dev/rfd0 could not be accessed.
-Specify a valid device name.)
+stderr (always, str, installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name.)
   The standard error.
 
 

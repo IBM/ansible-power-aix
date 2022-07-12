@@ -101,13 +101,37 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    - name: Change group ansible
+    - name: Add a member to a group
+      ibm.power_aix.group:
+        state: modify
+        name: ansible
+        user_list_action: 'add'
+        user_list_type: 'members'
+        users_list: 'test1'
+
+    - name: Remove a member from a group
+      ibm.power_aix.group:
+        state: modify
+        name: ansible
+        user_list_action: 'remove'
+        user_list_type: 'members'
+        users_list: 'test1'
+
+    - name: Create a group
       ibm.power_aix.group:
         state: present
         name: ansible
-        user_list_action: 'add'
-        user_list_type: 'member'
-        users_list: 'test1'
+
+    - name: Remove a group
+      ibm.power_aix.group:
+        state: absent
+        name: ansible
+
+    - name: Modify group attributes
+      ibm.power_aix.group:
+        state: modify
+        name: ansible
+        group_attributes: "admin=true"
 
 
 

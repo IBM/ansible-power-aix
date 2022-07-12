@@ -198,7 +198,7 @@ Parameters
 
 
   extend_fs (optional, bool, False)
-    Specifies to extend the filesystem if needed.
+    Specifies to extend the '/tmp' filesystem if needed.
 
     Can be used if *action=create*.
 
@@ -254,12 +254,12 @@ Examples
         disk: /dev/hdisk1
         flags: '-K'
 
-    - name: savevg of rootvg to /dev/hdisk1
+    - name: savevg of rootvg to /dev/rmt1
       backup:
         action: create
         type: savevg
         name: rootvg
-        location: /dav/rmt1
+        location: /dev/rmt1
         exclude_data: no
         exclude_files: no
         exclude_fs: /tmp/exclude_fs_list
@@ -267,7 +267,7 @@ Examples
         extend_fs: yes
         verbose: yes
 
-    - name: savevg of datavg structure to /dev/hdisk2
+    - name: savevg of datavg structure to /dev/backup_datavg
       backup:
         action: create
         type: savevg
@@ -311,8 +311,7 @@ stdout (always, str, hdisk1 lv00 x           11 ./tmp/vgdata/datavg/image.info x
   The standard output of the command.
 
 
-stderr (always, str, Will create the Volume Group:	datavg Target Disks:	  Allocation Policy: Shrink Filesystems:	yes Preserve Physical Partitions for each Logical Volume:	no
-New volume on /tmp/datavg_backup: Cluster 51200 bytes (100 blocks). Volume number 1 Date of backup: Thu Aug  6 03:53:53 2020 Files backed up by name User root files restored: 6)
+stderr (always, str, Will create the Volume Group:	datavg Target Disks:	  Allocation Policy: Shrink Filesystems:	yes Preserve Physical Partitions for each Logical Volume:	no New volume on /tmp/datavg_backup: Cluster 51200 bytes (100 blocks). Volume number 1 Date of backup: Thu Aug  6 03:53:53 2020 Files backed up by name User root files restored: 6)
   The standard error of the command.
 
 
