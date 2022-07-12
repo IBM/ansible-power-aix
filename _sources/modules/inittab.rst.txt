@@ -1,0 +1,135 @@
+.. _inittab_module:
+
+
+inittab -- Manage inittab entries on AIX.
+=========================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+It allows to create, change and remove entries in the **/etc/inittab** file.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Privileged user with authorization: **aix.system.config.inittab**
+
+
+
+Parameters
+----------
+
+  state (True, str, None)
+    Specifies the action to be performed for the entry.
+
+    ``present`` creates the entry in the /etc/inittab file.
+
+    ``absent`` deletes an existing entry.
+
+    ``modify`` changes an existing entry.
+
+
+  name (True, str, None)
+    Specifies the name of the entry to manage.
+
+
+  runlevel (True, str, None)
+    Specifies the run levels in which the *name* can be processed.
+
+    The format is the level number next to each other without separators, such as ``'235789'``.
+
+
+  action (True, str, None)
+    Specifies the action init will perform.
+
+
+  command (True, str, None)
+    Specifies the command to run.
+
+
+  insertafter (optional, str, None)
+    Specifies the name of the entry to write the new entry after.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Create new entry for uprintfd
+      inittab:
+        state: present
+        name: uprintfd
+        runlevel: '23456789'
+        action: 'respawn'
+        command: '/usr/sbin/uprintfd'
+        insertafter: 'perfstat'
+
+    - name: Change entry for uprintfd
+      inittab:
+        state: modify
+        name: uprintfd
+        runlevel: '1234567'
+        action: 'respawn'
+        command: '/usr/sbin/uprintfd'
+
+
+
+Return Values
+-------------
+
+msg (always, str, )
+  The execution message.
+
+
+rc' (If the command failed., int, )
+  The return code.
+
+
+stdout' (If the command failed., str, )
+  The standard output.
+
+
+stderr' (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX development Team (@pbfinley1911)
+

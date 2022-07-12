@@ -1,0 +1,234 @@
+.. _installp_module:
+
+
+installp -- Installs and updates software.
+==========================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Installs available software products in a compatible installation package.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Privileged user with authorization: **aix.system.install**
+
+
+
+Parameters
+----------
+
+  action (optional, str, apply)
+    Controls what is performed.
+
+    ``apply`` to install with apply.
+
+    ``commit`` to commit applied updates.
+
+    ``reject`` to reject applied updates.
+
+    ``deinstall`` to deinstall (remove) installed software.
+
+    ``cleanup`` to clean up a failed installation.
+
+    ``list`` to list all installable software on media.
+
+    ``list_fixes`` to obtain a list of the Authorized Program Analysis Report (APAR) numbers and summaries.
+
+    ``list_applied`` to list all software products and updates that have been applied but not committed.
+
+
+  device (optional, str, None)
+    Specifies the device or directory that contains the installation images.
+
+
+  install_list (optional, list, None)
+    Lists the software products to install.
+
+    One can specify either an entire software product or any separately installable filesets within the software product. This can be used to specify the name of a fileset or fileset update.
+
+    A specific level of the software can be provided using the following format 'fileset:level'.
+
+    It indicates the level of the software product or update that is to be installed and is of the form vv.rr.mmmm.ffff. If a fileset update has an additional fix ID (also know as ptf id), that ID must also be specified in the level as in vv.rr.mmmm.ffff.ppppppp.
+
+    ``all`` installs all software products available.
+
+
+  force (optional, bool, False)
+    Forces the installation of a software product even if there exists a previously installed version of the software product that is the same as or newer than the version currently being installed.
+
+
+  bosboot (optional, bool, True)
+    Performs a bosboot in the event that creating the boot image is needed.
+
+
+  delete_image (optional, bool, False)
+    Deletes the installation image file after the software product or update has been successfully installed.
+
+
+  save (optional, bool, True)
+    Saves existing files that are replaced when installing or updating.
+
+    When *save=no* and there is a failure in the system during the installation, then no recovery of replaced files is performed.
+
+
+  parts (optional, list, None)
+    Installs the specified part of the software product.
+
+    ``root``
+
+    ``share``
+
+    ``usr``
+
+    When not specified, all parts of software are installed by default.
+
+
+  extend_fs (optional, bool, True)
+    Attempts to resize any file systems where there is insufficient space to do the installation.
+
+
+  commit (optional, bool, False)
+    Commits all specified updates that are currently applied but not committed.
+
+    When an update is committed all other software products it is dependent on must also be committed. If the requisite software products are not in the committed state, the commit fails and error messages are displayed.
+
+
+  dependencies (optional, bool, False)
+    Automatically installs any software products or updates that are requisites of the specified software product.
+
+    Automatically removes or rejects dependents of the specified software.
+
+    It causes the newest update to be installed for a given fileset, when there are multiple superseding updates for the same fileset on the installation media.
+
+
+  base_only (optional, bool, False)
+    Limits the requested action to base level filesets.
+
+    Base level filesets can be used to install software, reinstall existing fileset or downlevel existing filesets.
+
+    Some fileset do not have a base level version of the software, come preloaded on the system and cannot be force overwritten or reinstalled.
+
+
+  updates_only (optional, bool, False)
+    Indicates that the requested action should be limited to software updates.
+
+
+  platform (optional, str, all)
+    Specifies the platform.
+
+    ``POWER`` specifies POWER processor-based platform packages only.
+
+    ``neutral`` specifies neutral packages, that is, packages that are not restricted to the POWER processor-based platform.
+
+    ``all`` specifies all packages.
+
+
+  agree_licenses (optional, bool, False)
+    Agrees to required software license agreements for software to be installed.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the installp command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/i_commands/installp.html
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: List all software products and installable options contained on an installation cartridge tape
+      ibm.power_aix.installp:
+        action: list
+        device: /dev/rmt0.1
+
+    - name: List all customer-reported problems fixed by all software products on an installation tape
+      ibm.power_aix.installp:
+        action: list_fixes
+        device: /dev/rmt0.1
+        install_list: all
+
+    - name: Install all filesets within the bos.net software package and expand file systems if necessary
+      ibm.power_aix.installp:
+        extend_fs: yes
+        device: /usr/sys/inst.images
+        install_list: bos.net
+
+    - name: Reinstall and commit the NFS software product option that is already installed on the system at the same level
+      ibm.power_aix.installp:
+        commit: yes
+        force: yes
+        device: /dev/rmt0.1
+        install_list: bos.net.nfs.client:4.1.0.0
+
+    - name: Remove a fileset named bos.net.tcp.server
+      ibm.power_aix.installp:
+        action: deinstall
+        install_list: bos.net.tcp.server
+
+
+
+Return Values
+-------------
+
+msg (always, str, installp 'apply' failed.)
+  The execution message.
+
+
+cmd (always, str, )
+  The command executed.
+
+
+rc (always, int, )
+  The command return code.
+
+
+stdout (always, str, *******************************************************************************\n installp PREVIEW:  deinstall operation will not actually occur.\n *******************************************************************************\n \n +-----------------------------------------------------------------------------+\n Pre-deinstall Verification...\n +-----------------------------------------------------------------------------+\n Verifying selections...done\n Verifying requisites...done\n Results...\n \n WARNINGS\n --------\n Problems described in this section are not likely to be the source of any\n immediate or serious failures, but further actions may be necessary or\n desired.\n \n Not Installed\n -------------\n No software could be found on the system that could be deinstalled for the\n following requests:\n \n bos.sysmgt.nim.master                    \n \n (The fileset may not be currently installed, or you may have made a\n typographical error.)\n \n << End of Warning Section >>\n \n FILESET STATISTICS \n ------------------\n 1  Selected to be deinstalled, of which:\n 1  FAILED pre-deinstall verification\n ----\n 0  Total to be deinstalled\n \n \n ******************************************************************************\n End of installp PREVIEW.  No deinstall operation has actually occurred.\n ******************************************************************************)
+  The standard output.
+
+
+stderr (always, str, installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name.)
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

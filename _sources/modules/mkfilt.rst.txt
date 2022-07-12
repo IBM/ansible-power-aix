@@ -1,0 +1,479 @@
+.. _mkfilt_module:
+
+
+mkfilt -- Activates or deactivates the filter rules.
+====================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Activates or deactivates the filter rules.
+
+This command can also be used to control the filter logging function.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Privileged user with authorizations: **aix.security.network.filt,aix.security.network.stat,aix.device.manage.create**
+
+
+
+Parameters
+----------
+
+  action (optional, str, add)
+    Specifies the action to perform.
+
+    ``add`` to add filter rules.
+
+    ``check`` to check the syntax of filter rules.
+
+    ``change`` to change filter rules.
+
+    ``import`` to import filter rules from an export file.
+
+    ``export`` to export filter rules to an export file.
+
+
+  directory (optional, str, None)
+    When *action=import* or *action=export*, specifies the directory where the text files are to be read.
+
+    When *action=export*, directory will be created if it does not exist.
+
+
+  rawexport (optional, bool, False)
+    When *action=export*, specifies to export filter rules as is and to not reverse direction on rules.
+
+
+  ipv4 (optional, dict, None)
+    Specifies the IPv4 filter module state and rules.
+
+
+    default (optional, str, None)
+      Sets the action of the default filter rule.
+
+
+    log (optional, bool, None)
+      Enable the log functionality of the filter rule module.
+
+
+    force (optional, bool, False)
+      Force removal of auto-generated filter rules.
+
+
+    rules (optional, list, None)
+      Specifies the list of filter rules.
+
+
+      action (optional, str, None)
+        Specifies the action to perform.
+
+
+      id (optional, str, None)
+        Specifies the filter rule ID.
+
+        ``all`` specifies to remove all user-defined filter rules.
+
+
+      new_id (optional, str, None)
+        When *action=move*, specifies the new filter rule ID.
+
+
+      direction (optional, str, both)
+        Specifies to what packets the rule applies.
+
+
+      s_addr (optional, str, None)
+        Specifies the source address. It can be an IP address or a host name.
+
+        If a host name is specified, the first IP address returned by the name server for that host will be used.
+
+
+      s_mask (optional, str, None)
+        Specifies the source subnet mask.
+
+
+      s_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the source port of the packet and the source port *s_port* specified in this filter rule.
+
+
+      s_port (optional, str, None)
+        Specifies the source port.
+
+
+      d_addr (optional, str, None)
+        Specifies the destination address. It can be an IP address or a host name.
+
+        If a host name is specified, the first IP address returned by the name server for that host will be used.
+
+
+      d_mask (optional, str, None)
+        Specifies the destination subnet mask.
+
+
+      d_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the destination port of the packet and the destination port *d_port* specified in this filter rule.
+
+
+      d_port (optional, str, None)
+        Specifies the destination port.
+
+
+      icmp_type_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the ICMP type of the packet and the ICMP type *icmp_type* specified in this filter rule.
+
+
+      icmp_type (optional, str, None)
+        Specifies the ICMP type.
+
+
+      icmp_code_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the ICMP code of the packet and the ICMP code *icmp_code* specified in this filter rule.
+
+
+      icmp_code (optional, str, None)
+        Specifies the ICMP code.
+
+
+      tunnel (optional, str, None)
+        Specifies the ID of the tunnel related to this filter rule.
+
+        All the packets that match this filter rule must go through the specified tunnel.
+
+        If this attribute is not specified, this rule will only apply to non-tunnel traffic.
+
+
+      log (optional, bool, False)
+        Specifies the log control. Packets that match this filter rule will be included in the filter log.
+
+
+      interface (optional, str, None)
+        Specifies the name of the IP interface to which the filter rule applies.
+
+
+      fragment (optional, str, None)
+        Specifies the fragmentation control.
+
+        ``Y`` specifies all packets.
+
+        ``N`` specifies unfragmented packets only.
+
+        ``O`` specifies fragments and fragment headers only.
+
+        ``H`` specifies fragment headers and unfragmented packets only.
+
+
+      timeout (optional, str, None)
+        Specifies the expiration time. The expiration time is the amount of time the rule should remain active in seconds.
+
+
+      description (optional, str, None)
+        A short description text for the filter rule.
+
+
+      protocol (optional, str, None)
+        Specifies the protocol to which the filter rule applies.
+
+        The valid values are ``udp``, ``icmp``, ``icmpv6``, ``tcp``, ``tcp/ack``, ``ospf``, ``ipip``, ``esp``, ``ah``, and ``all``.
+
+        The protocol can also be specified numerically (between 1 and 252).
+
+
+      source_routing (optional, bool, False)
+        Specifies that this filter rule can apply to IP packets that use source routing.
+
+
+      routing (optional, str, None)
+        Specifies whether the rule will apply to forwarded packets, packets destined or originated from the local host, or both.
+
+
+      antivirus (optional, str, None)
+        Specifies the antivirus file name.
+
+        Understands some versions of ClamAV Virus Database.
+
+        Mutually exclusive with *pattern* and *pattern_filename*.
+
+
+      pattern (optional, str, None)
+        Specifies the quoted character string or pattern.
+
+        Mutually exclusive with *antivirus* and *pattern_filename*.
+
+
+      pattern_filename (optional, str, None)
+        Specifies the pattern file name.
+
+        Mutually exclusive with *antivirus* and *pattern*.
+
+
+
+
+  ipv6 (optional, dict, None)
+    Specifies the IPv6 filter module state and rules.
+
+
+    default (optional, str, None)
+      Sets the action of the default filter rule.
+
+
+    log (optional, bool, None)
+      Enable the log functionality of the filter rule module.
+
+
+    force (optional, bool, False)
+      Force removal of auto-generated filter rules.
+
+
+    rules (optional, list, None)
+      Specifies the list of filter rules.
+
+
+      action (optional, str, None)
+        Specifies the action to perform.
+
+
+      id (optional, str, None)
+        Specifies the filter rule ID.
+
+        ``all`` specifies to remove all user-defined filter rules.
+
+
+      new_id (optional, str, None)
+        When *action=move*, specifies the new filter rule ID.
+
+
+      direction (optional, str, both)
+        Specifies to what packets the rule applies.
+
+
+      s_addr (optional, str, None)
+        Specifies the source address. It can be an IP address or a host name.
+
+        If a host name is specified, the first IP address returned by the name server for that host will be used.
+
+
+      s_mask (optional, str, None)
+        Specifies the source subnet mask.
+
+
+      s_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the source port of the packet and the source port *s_port* specified in this filter rule.
+
+
+      s_port (optional, str, None)
+        Specifies the source port.
+
+
+      d_addr (optional, str, None)
+        Specifies the destination address. It can be an IP address or a host name.
+
+        If a host name is specified, the first IP address returned by the name server for that host will be used.
+
+
+      d_mask (optional, str, None)
+        Specifies the destination subnet mask.
+
+
+      d_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the destination port of the packet and the destination port *d_port* specified in this filter rule.
+
+
+      d_port (optional, str, None)
+        Specifies the destination port.
+
+
+      icmp_type_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the ICMP type of the packet and the ICMP type *icmp_type* specified in this filter rule.
+
+
+      icmp_type (optional, str, None)
+        Specifies the ICMP type.
+
+
+      icmp_code_opr (optional, str, None)
+        Specifies the operation that will be used in the comparison between the ICMP code of the packet and the ICMP code *icmp_code* specified in this filter rule.
+
+
+      icmp_code (optional, str, None)
+        Specifies the ICMP code.
+
+
+      tunnel (optional, str, None)
+        Specifies the ID of the tunnel related to this filter rule.
+
+        All the packets that match this filter rule must go through the specified tunnel.
+
+        If this attribute is not specified, this rule will only apply to non-tunnel traffic.
+
+
+      log (optional, bool, False)
+        Specifies the log control. Packets that match this filter rule will be included in the filter log.
+
+
+      interface (optional, str, None)
+        Specifies the name of the IP interface to which the filter rule applies.
+
+
+      fragment (optional, str, None)
+        Specifies the fragmentation control.
+
+        ``Y`` specifies all packets.
+
+        ``N`` specifies unfragmented packets only.
+
+        ``O`` specifies fragments and fragment headers only.
+
+        ``H`` specifies fragment headers and unfragmented packets only.
+
+
+      timeout (optional, str, None)
+        Specifies the expiration time. The expiration time is the amount of time the rule should remain active in seconds.
+
+
+      description (optional, str, None)
+        A short description text for the filter rule.
+
+
+      protocol (optional, str, None)
+        Specifies the protocol to which the filter rule applies.
+
+        The valid values are ``udp``, ``icmp``, ``icmpv6``, ``tcp``, ``tcp/ack``, ``ospf``, ``ipip``, ``esp``, ``ah``, and ``all``.
+
+        The protocol can also be specified numerically (between 1 and 252).
+
+
+      source_routing (optional, bool, False)
+        Specifies that this filter rule can apply to IP packets that use source routing.
+
+
+      routing (optional, str, None)
+        Specifies whether the rule will apply to forwarded packets, packets destined or originated from the local host, or both.
+
+
+      antivirus (optional, str, None)
+        Specifies the antivirus file name.
+
+        Understands some versions of ClamAV Virus Database.
+
+        Mutually exclusive with *pattern* and *pattern_filename*.
+
+
+      pattern (optional, str, None)
+        Specifies the quoted character string or pattern.
+
+        Mutually exclusive with *antivirus* and *pattern_filename*.
+
+
+      pattern_filename (optional, str, None)
+        Specifies the pattern file name.
+
+        Mutually exclusive with *antivirus* and *pattern*.
+
+
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the command used at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkfilt.html.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Allow SSH activity through interface en0
+      mkfilt:
+        ipv4:
+          log: yes
+          default: deny
+          rules:
+          - action: permit
+            direction: inbound
+            d_opr: eq
+            d_port: 22
+            interface: en0
+            description: permit SSH requests from any clients
+          - action: permit
+            direction: outbound
+            s_opr: eq
+            s_port: 22
+            interface: en0
+            description: permit SSH answers to any clients
+
+    - name: Remove all user-defined and auto-generated filter rules
+      mkfilt:
+        ipv4:
+          default: permit
+          force: yes
+          rules:
+          - action: remove
+            id: all
+
+    - name: Export filter rules as is into export text files
+      mkfilt:
+        action: export
+        directory: /root/export
+        rawexport: yes
+
+
+
+Return Values
+-------------
+
+msg (always, str, mkfilt completed successfully)
+  The execution message.
+
+
+stdout (always, str, )
+  The standard output
+
+
+stderr (always, str, )
+  The standard error
+
+
+filter (always, dict, )
+  The current filter settings
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

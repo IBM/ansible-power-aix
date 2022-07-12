@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modules &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="_nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers." href="modules/_nim_upgradeios.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IBM Power Systems AIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-reference">Module reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/_nim_upgradeios.html">_nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/aixpert.html">aixpert – System security settings management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/chsec.html">chsec – Modify AIX stanza files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/devices.html">devices – Devices management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/emgr.html">emgr – System interim fixes management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lpp_facts.html">lpp_facts – Returns installed software products or fixes as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mktun.html">mktun – Creates, activates, deactivates and removes tunnels.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_resource.html">nim_resource – show/define/delete NIM resource object(s).</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/reboot.html">reboot – Reboot AIX machines.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/smtctl.html">smtctl – Enable and Disable Simultaneous MultiThreading Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/tunables.html">tunables – Modify/Reset/Show tunables for various components on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/tunfile_mgmt.html">tunfile_mgmt – Save/Restore/Validate/Modify tunables configuration file for various components on AIX.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="playbooks.html">Playbooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roles.html">Roles</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IBM Power Systems AIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Modules</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/modules.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this heading"></a></h1>
+<p>The <strong>IBM Power Systems AIX collection</strong> contains modules that can be used in a playbook
+to automate tasks on AIX. Ansible executes each module on the target node and
+returns the result back to the controller. While different modules perform
+different tasks, their interfaces and responses follow similar patterns.</p>
+<section id="module-reference">
+<h2>Module reference<a class="headerlink" href="#module-reference" title="Permalink to this heading"></a></h2>
+<p>Reference material for each module contains documentation on the accepted
+parameters and their expected values.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/_nim_upgradeios.html">_nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/aixpert.html">aixpert – System security settings management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/alt_disk.html">alt_disk – Alternate rootvg disk management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/backup.html">backup – Data or system volume group backup management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/bootlist.html">bootlist – Alters the list of boot devices available to the system.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/chsec.html">chsec – Modify AIX stanza files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/devices.html">devices – Devices management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/emgr.html">emgr – System interim fixes management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/filesystem.html">filesystem – Local and NFS filesystems management.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/flrtvc.html">flrtvc – Generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/geninstall.html">geninstall – Generic installer for various packaging formats.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/group.html">group – Manage presence, attributes and member of AIX groups.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/inittab.html">inittab – Manage inittab entries on AIX.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/installp.html">installp – Installs and updates software.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lpar_facts.html">lpar_facts – Reports logical partition (LPAR) related information as facts.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lpp_facts.html">lpp_facts – Returns installed software products or fixes as facts.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lvg.html">lvg – Configure AIX LVM volume groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lvm_facts.html">lvm_facts – Reports LVM information as facts.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/lvol.html">lvol – Configure AIX LVM logical volumes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mkfilt.html">mkfilt – Activates or deactivates the filter rules.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mktcpip.html">mktcpip – Sets the required values for starting TCP/IP on a host.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mktun.html">mktun – Creates, activates, deactivates and removes tunnels.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mount.html">mount – Mounts/unmounts a filesystem or device on AIX.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/mpio.html">mpio – Returns information about MultiPath I/O capable devices.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim.html">nim – Performs NIM operations - server setup, install packages, update SP or TL.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_backup.html">nim_backup – Uses NIM to manage backup of LPAR or VIOS clients.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_flrtvc.html">nim_flrtvc – Use NIM to generate FLRTVC report, download and install security and HIPER fixes.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_resource.html">nim_resource – show/define/delete NIM resource object(s).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_suma.html">nim_suma – Use NIM to download fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_updateios.html">nim_updateios – Use NIM to update a single or a pair of Virtual I/O Servers.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_vios_alt_disk.html">nim_vios_alt_disk – Uses NIM to create/cleanup an alternate rootvg disk of VIOS clients.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_vios_hc.html">nim_vios_hc – Check if a pair of VIOSes can be updated.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/nim_viosupgrade.html">nim_viosupgrade – Use NIM to upgrade VIOS(es) with the viosupgrade tool from a NIM master.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/reboot.html">reboot – Reboot AIX machines.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/smtctl.html">smtctl – Enable and Disable Simultaneous MultiThreading Mode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/suma.html">suma – Download/Install fixes, SP or TL from IBM Fix Central website.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/tunables.html">tunables – Modify/Reset/Show tunables for various components on AIX.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/tunfile_mgmt.html">tunfile_mgmt – Save/Restore/Validate/Modify tunables configuration file for various components on AIX.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules/user.html">user – Create new users or change/remove attributes of users on AIX.</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules/_nim_upgradeios.html" class="btn btn-neutral float-right" title="_nim_upgradeios – Use NIM to update a single or a pair of Virtual I/O Servers." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, IBM.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

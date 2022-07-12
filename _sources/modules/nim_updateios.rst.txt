@@ -1,0 +1,257 @@
+.. _nim_updateios_module:
+
+
+nim_updateios -- Use NIM to update a single or a pair of Virtual I/O Servers.
+=============================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Uses the Network Installation Management (NIM) to perform updates and customization to Virtual I/O Server (VIOS) targets tuple.
+
+A tuple can be one VIOS or a pair of VIOSes to update together.
+
+Checks status of previous operation if provided before running operation on the tuple.
+
+When a cluster is configured, the VIOSes of a tuple must be on the same cluster and the node states must be OK.
+
+When updating VIOSes pair, it checks the cluster state, stop it before installing the VIOS, and restart it after installation. Then, it starts updating the second VIOS.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Privileged user with authorizations: **aix.system.install,aix.system.nim.config.server**
+
+
+
+Parameters
+----------
+
+  action (True, str, None)
+    Specifies the action to perform.
+
+    ``install`` installs new and supported filesets.
+
+    ``commit`` commits all uncommitted updates.
+
+    ``cleanup`` removes all incomplete pieces of the previous installation.
+
+    ``remove`` removes the listed filesets from the system in ``filesets`` or ``installp_bundle``.
+
+
+  targets (True, list, None)
+    Specifies the list of VIOSes NIM targets tuple to update.
+
+    You can specify a list of a VIOS to update alone, or two VIOSes to update as a couple.
+
+
+  filesets (optional, str, None)
+    Specifies a list of file sets to remove from the targets.
+
+    Can be used with *action=remove*.
+
+
+  installp_bundle (optional, str, None)
+    Specifies an *installp_bundle* resource that lists filesets to remove on the targets.
+
+    Can be used with *action=remove*.
+
+
+  lpp_source (optional, str, None)
+    Specifies the NIM *lpp_source* resource that will provide the installation images for the operation.
+
+
+  accept_licenses (optional, bool, True)
+    Specifies whether the software licenses should be automatically accepted during the installation.
+
+
+  manage_cluster (optional, bool, False)
+    Specifies whether the cluster should be check and stop before updating the vios and restarted after the update.
+
+
+  preview (optional, bool, True)
+    Specifies to run the operations in preview operation. No action is actually performed.
+
+
+  time_limit (optional, str, None)
+    Before starting the action on a VIOS tuple, the actual date is compared to this parameter value; if it is greater then the task is stopped.
+
+    The format is ``mm/dd/yyyy hh:mm``.
+
+    The resulting status for tuples in this case will be *SKIPPED-TIMEOUT*.
+
+
+  vios_status (optional, dict, None)
+    Specifies the result of a previous operation.
+
+    If set then the *vios_status* of a target tuple must contain ``SUCCESS`` to attempt update.
+
+    If no *vios_status* value is found for a tuple, then returned *status* for this tuple is set to ``SKIPPED-NO-PREV-STATUS``.
+
+
+  nim_node (optional, dict, None)
+    Allows to pass along NIM node info from a task to another so that it discovers NIM info only one time for all tasks.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the NIM concept and command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html, https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/install/nim_op_updateios.html.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Preview updateios on a pair of VIOSes
+      nim_updateios:
+        targets: 'nimvios01, nimvios02'
+        action: install
+        lpp_source: 723lpp_res
+        preview: yes
+    - name: Update VIOSes as a pair and a VIOS alone discarding cluster
+      nim_updateios:
+        targets:
+        - nimvios01,nimvios02
+        - nimvios03
+        action: install
+        lpp_source: 723lpp_res
+        time_limit: '07/21/2020 17:02'
+        manage_cluster: no
+        preview: no
+    - name: Remove a fileset of a VIOS
+      nim_updateios:
+        targets: 'nimvios01'
+        action: remove
+        filesets: openssh.base.server
+        preview: yes
+
+
+
+Return Values
+-------------
+
+msg (always, str, NIM updateios operation completed successfully)
+  The execution message.
+
+
+targets (always, list, ['vios1', 'vios2, vios3', '...'])
+  List of VIOSes actually targeted for the operation.
+
+
+stdout (always, str, )
+  The standard output.
+
+
+stderr (always, str, )
+  The standard error.
+
+
+status (always, dict, {'status': {'vios1-vios2': 'SUCCESS-UPDT', 'vios3': 'SUCCESS-ALTDC', 'vios4-vios5': 'FAILURE-CLUSTER', 'vios6-vios7': 'FAILURE-UPDT1'}})
+  Status of the execution on each target <tuple>.
+
+  If the operation status is not avalaible, the *vios_status* passed in parameter is returned.
+
+
+  <tuple> (when tuple are actually a NIM client and reachable with c_rsh., str, SUCCESS-UPDT)
+    Status of the execution on the <tuple>.
+
+    The <tuple> elements are sorted to form the key of the dictionary.
+
+    *SKIPPED-NO-PREV-STATUS* when no *vios_status* value is found for the tuple.
+
+    Previous *vios_status* when the tuple status does not contains SUCCESS.
+
+    *SKIPPED-TIMEOUT* when the *time_limit* is reached before updating the 1st VIOS of the tuple.
+
+    *FAILURE-CLUSTER* when cluster checks or operation failed.
+
+    *FAILURE-UPDT1* when update of first VIOS of the tuple failed.
+
+    *FAILURE-UPDT2* when update of second VIOS of the tuple failed.
+
+
+
+nim_node (always, dict, {'nim_node': {'vios': {'vios1': {'Cstate': 'ready for a NIM operation', 'Cstate_result': 'success', 'Mstate': 'currently running', 'cable_type1': 'N/A', 'class': 'management', 'connect': 'nimsh', 'cpuid': '00F600004C00', 'if1': 'master_net vios1.aus.stglabs.ibm.com 0', 'mgmt_profile1': 'p8-hmc 1 vios-cec', 'netboot_kernel': '64', 'platform': 'chrp', 'prev_state': 'alt_disk_install operation is being performed', 'hostname': 'vios1.aus.stglabs.ibm.com', 'cluster': {'vios1': {'repos_state': '', 'state': 'DOWN'}, 'vios2': {'repos_state': 'OK', 'state': 'OK'}, 'name': 'mycluster', 'nodes': ['vios1', 'vios2'], 'state': 'DEGRADED'}}}}})
+  NIM node info. It can contains more information if passed as option *nim_node*.
+
+
+  vios (always, dict, )
+    List of VIOS NIM resources.
+
+
+
+meta (always, dict, )
+  Detailed information on the module execution.
+
+
+  messages (always, list, see below)
+    Details on errors/warnings not related to a specific tuple.
+
+
+  <tuple> (when target is actually a NIM client, dict, )
+    Detailed information on the execution on the target tuple.
+
+
+    messages (always, list, )
+      Details on errors/warnings.
+
+
+    <vios> (when target is actually a NIM client., dict, )
+      updateios information for a specific vios.
+
+
+      cmd (If the command was run., str, )
+        Command executed.
+
+
+      stdout (If the command was run., str, )
+        Standard output of the command.
+
+
+      stderr (If the command was run., str, )
+        Standard error of the command.
+
+
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

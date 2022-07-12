@@ -1,0 +1,133 @@
+.. _smtctl_module:
+
+
+smtctl -- Enable and Disable Simultaneous MultiThreading Mode
+=============================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This command is provided for privileged users and applications to control utilization of processors with simultaneous multithreading support.
+
+The simultaneous multithreading mode allows processors to have thread level parallelism at the instruction level.
+
+This mode can be enabled or disabled for all processors either immediately or on subsequent boots of the system.
+
+This command controls the simultaneous multithreading options.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX  7.2
+- IBM Power9_Power8
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  smt_value (optional, int, None)
+    This value takes appropriate SMT value
+
+
+  smt_extra (optional, str, None)
+    ``"recommended or suspend"`` This values is mutually exclusive with smt_value and smt_state.
+
+
+  smt_limit (optional, str, None)
+    This values set the limit for the multithreading.
+
+
+  bos_boot (optional, bool, None)
+    This runs the bosboot after the respective action get executed.It is freeform command can executed with any parameter.
+
+
+  chtype (optional, str, None)
+    ``boot or now`` This take either boot or now value.
+
+
+  smt_state (optional, str, None)
+    This enable or disable  the SMT in the lpar.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - Please refer to the IBM documentation for additional information on the commands used in the module. https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/s_commands/smtctl.html
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Enable the SMT value to 8 and value needs to be persist across subsequent reboot
+      ibm.power_aix.smtctl:
+        smt_value: 8
+        bos_boot: yes
+
+    - name: Enable the SMT value to 8 to next boot if bos_boot set to yes
+      ibm.power_aix.smtctl:
+        smt_value: 8
+        chtype: boot
+        bos_boot: yes
+
+    - name: Limit the SMT value to 4
+      ibm.power_aix.smtctl:
+        smt_value: 4
+        smt_limit: limit
+
+    - name: Disable the smtctl
+      ibm.power_aix.smtctl:
+        smt_state: disabled
+
+    - name: Sets the number of threads to a value that provides the best performance
+      ibm.power_aix.smtctl:
+        smt_extra: recommended
+
+
+
+Return Values
+-------------
+
+msg (always, str, Command Executed Successfully smtctl -t 8)
+  Output on Debug
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- Madhu Pillai (@resvrin)
+

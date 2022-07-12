@@ -1,0 +1,237 @@
+.. _suma_module:
+
+
+suma -- Download/Install fixes, SP or TL from IBM Fix Central website.
+======================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Service Update Management Assistant (SUMA) sets up an automated interface to download fixes from the IBM Fix Central website to your systems.
+
+SUMA provides flexible, task-based options to periodically check the availability of specific new fixes, technology levels (TL) and service packs (SP). Therefore, system administrators do not have to manually retrieve maintenance updates.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+- Privileged user with authorizations: **aix.system.install**
+
+
+
+Parameters
+----------
+
+  action (optional, str, preview)
+    Controls the SUMA action to be performed.
+
+    ``download`` specifies to download and install the fixes.
+
+    ``preview`` specifies to execute all the checks without downloading the fixes.
+
+    ``list`` specifies to list all SUMA tasks.
+
+    ``edit`` specifies to edit an exiting SUMA task.
+
+    ``run`` specifies to run an exiting SUMA task.
+
+    ``unschedule`` specifies to remove any scheduling information for the specified SUMA task.
+
+    ``delete`` specifies to delete a SUMA task and remove any schedules for the specified SUMA task.
+
+    ``config`` specifies to list global SUMA configuration settings.
+
+    ``default`` specifies to list default SUMA tasks.
+
+
+  oslevel (optional, str, Latest)
+    Specifies the Operating System level to update to;
+
+    ``Latest`` specifies to update the target to the latest SP suma can update for the current TL.
+
+    ``xxxx-xx(-00-0000``) specifies to update the target to a specific TL.
+
+    ``xxxx-xx-xx-xxxx`` or ``xxxx-xx-xx`` specifies to update the target to a specific SP.
+
+    Required when *action=download* or *action=preview*.
+
+
+  download_dir (optional, path, /usr/sys/inst.images)
+    Specifies the directory to download updates files into.
+
+    Can be used if *action=download* or *action=preview*.
+
+
+  download_only (optional, bool, False)
+    Specifies to perform the preview and download operation only. Do not install the updates.
+
+    Can be used if *action=download* or *action=preview*.
+
+
+  last_sp (optional, bool, False)
+    Specifies to download the last SP of the TL specified in *oslevel*.
+
+    When *last_sp=no*, only the TL is downloaded and/or installed.
+
+    Can be used if *action=download* or *action=preview*.
+
+
+  extend_fs (optional, bool, True)
+    Specifies to automatically extends the filesystem if extra space is needed.
+
+    When *extend_fs=no* and additional space is required for the download, no download occurs.
+
+    When set, a filesystem could have increased while the task returns *changed=False*.
+
+    Can be used if *action=download* or *action=preview*.
+
+
+  task_id (optional, str, None)
+    Specifies the SUMA task identification number.
+
+    Can be used if *action=list* or *action=edit* or *action=delete* or *action=run* or *action=unschedule*.
+
+    Required when *action=edit* or *action=delete* or *action=run* or *action=unschedule*.
+
+
+  sched_time (optional, str, None)
+    Specifies the schedule time for the task.
+
+    When an empty or space filled string is specified, it unschedules the task.
+
+    When not set, it saves the task for later scheduling.
+
+    Can be used if *action=edit*.
+
+
+  save_task (optional, bool, False)
+    Specifies to save the SUMA task allowing scheduling information to be added later.
+
+    Can be used if *action=download* or *action=preview*.
+
+    If *oslevel* is a TL and *last_sp=yes* the task is saved with the last SP available at the time the task is saved.
+
+
+  description (optional, str, None)
+    Specifies the display name for SUMA task. This is used when viewing existing SUMA tasks in SMIT for example.
+
+    If not set they will be labelled as '*action* request for oslevel *oslevel*'.
+
+    Can be used for *action=download* or *action=preview*.
+
+
+  metadata_dir (optional, path, /var/adm/ansible/metadata)
+    Specifies the directory where metadata files are downloaded.
+
+    Can be used if *action=download* or *action=preview* when *last_sp=yes* or *oslevel* is not exact, for example *oslevel=Latest*.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - The **/var/adm/ras/suma.log** file on your system contains detailed results from running the SUMA command.
+   - The **/var/adm/ras/suma_dl.log** file on your system contains a list of files that have been downloaded.
+   - When you configure SUMA in an AIX logical partition (LPAR) or as the NIM master, it establishes a connection to the fix distribution website and downloads the available service update. The fix distribution website is an IBM server with the domain name of esupport.ibm.com. If your configuration contains a firewall that blocks the connection to the fix distribution website, you must customize the firewall rules to allow SUMA to connect to the following IP addresses 129.42.56.189, 129.42.60.189, 129.42.54.189. SUMA connects to one of these IP addresses based on your geography.
+   - You can refer to the IBM documentation for additional information on the SUMA command and configuration settings at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/s_commands/suma.html.
+   - If you hit the known bug that prevents suma from running successfully, contact IBM AIX support and request and ifix for this problem (APAR IJ06197 SUMA MAY CAUSE A NULLPOINTEREXCEPTION) at http://www-01.ibm.com/support/docview.wss?uid=isg1IJ06197.
+   - To get assistance for SUMA errors through AIX Support refer to https://www-01.ibm.com/support/docview.wss?uid=ibm10719985.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Check, download and install system updates for the current oslevel of the system
+      suma:
+        action: download
+        oslevel: Latest
+        download_dir: /usr/sys/inst.images
+
+    - name: Check and download required to update to SP 7.2.3.2
+      suma:
+        action: download
+        oslevel: '7200-03-02'
+        download_only: yes
+        download_dir: /tmp/dl_updt_7200-03-02
+      when: ansible_distribution == 'AIX'
+
+    - name: Check, download and install to latest SP of TL 7.2.4
+      suma:
+        action: download
+        oslevel: '7200-04'
+        last_sp: yes
+        extend_fs: no
+
+    - name: Check, download and install to TL 7.2.3
+      suma:
+        action: download
+        oslevel: '7200-03'
+
+
+
+Return Values
+-------------
+
+msg (always, str, Suma preview completed successfully)
+  The execution message.
+
+
+cmd (if a command was run., str, )
+  The command executed.
+
+
+stdout (always, str, )
+  The standard output of the command.
+
+
+stderr (always, str, )
+  The standard error of the command.
+
+
+meta (always, dict, {'meta': {'messages': ['Parameter last_sp=yes is ignored when oslevel is a TL ', 'Suma metadata: 7200-02-01-1732 is the latest SP of TL 7200-02', '...']}})
+  Detailed information on the module execution.
+
+
+  messages (always, list, Parameter last_sp=yes is ignored when oslevel is a TL 7200-02-00)
+    Details on errors/warnings/information
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

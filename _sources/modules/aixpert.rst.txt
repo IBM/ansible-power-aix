@@ -1,0 +1,159 @@
+.. _aixpert_module:
+
+
+aixpert -- System security settings management.
+===============================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+This module uses the **aixpert** command to manage a variety of system configuration settings enabling the desired security level on a logical partition (LPAR).
+
+It allows to query, check, apply, save, undo security settings.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX
+- Python >= 2.7
+- Privileged user with authorization: **aix.security.aixpert**
+
+
+
+Parameters
+----------
+
+  mode (True, str, None)
+    Specifies the action to be performed.
+
+    ``apply`` applies the security settings based on the level specified or profile provided. If both are provided, *level* will take precedence.
+
+    ``check`` checks the security settings against the previously applied set of rules or the provided *profile* file.
+
+    ``save`` saves the security settings for the level specified or based on the specified *profile* file. If *abbr_fmt_file* is provided, the security rules are saved in the abbreviated file format. If *norm_fmt_file* is provided, the security rules are saved in normal format.
+
+    ``undo`` undoes the previously applied security settings.
+
+    ``query`` gets the type of the profile applied on the system.
+
+
+  level (optional, str, None)
+    Specifies the security level settings to be applied or saved.
+
+    ``high`` specifies high-level security options.
+
+    ``low`` specifies low-level security options.
+
+    ``medium`` specifies medium-level security options.
+
+    ``default`` specifies AIX standards-level security options.
+
+    ``sox-cobit`` specifies SOX-COBIT best practices-level security options.
+
+
+  profile (optional, str, None)
+    When *mode=apply*, specifies the profile to be applied on the system.
+
+    When *mode=check*, specified the profile to be used to check the security settings.
+
+
+  abbr_fmt_file (optional, str, None)
+    When *mode=save* or *mode=apply*, specifies the file where the security settings need to be saved in abbreviated format.
+
+
+  norm_fmt_file (optional, str, None)
+    When *mode=apply* or *mode=save*, specifies the file where the settings should be saved in normal format.
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the aixpert command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/aixpert.html.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: "Save default level rules in normal format"
+      aixpert:
+        mode: save
+        level: default
+        norm_fmt_file: /home/kavana/norm.xml
+
+    - name: "Apply using saved profile"
+      aixpert:
+        mode: apply
+        profile: /home/kavana/norm.xml
+
+    - name: "Undo the settings"
+      aixpert:
+        mode: undo
+
+    - name: "Check the settings match the provided profile"
+      aixpert:
+        mode: check
+        profile: /home/kavana/high.xml
+
+    - name: "Query the settings"
+      aixpert:
+        mode: query
+
+
+
+Return Values
+-------------
+
+msg (always, str, aixpert security check completed successfully.)
+  The execution message.
+
+
+rc (If the command failed., int, )
+  The return code.
+
+
+stdout (If the command failed., str, )
+  The standard output.
+
+
+stderr (If the command failed., str, )
+  The standard error.
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

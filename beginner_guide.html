@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> IBM Power Systems AIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="playbooks.html">Playbooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roles.html">Roles</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">IBM Power Systems AIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/beginner_guide.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <hr class="docutils" />
+<p><strong>Beginners Guide</strong></p>
+<p>Items needed for this guide:</p>
+<ul>
+<li><p>A Controller Node to install ansilbe on.</p></li>
+<li><p>A Managed Node(s) to apply the example ansible-power-aix <a class="reference external" href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/playbooks/demo_nim_check.yml">playbook</a>.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>There are several os architectures/flavors to choose from when installing ansible to your controller node. AIX is not supported. It also is not an ideal choice for starting out. For this guide we will use Red Hat Enterprise Linux 7.                                        This guide has also been tested with CentOS 7. Check this link for possible controller node options:                      <a class="reference external" href="https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-rhel-centos-or-fedora">https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-rhel-centos-or-fedora</a></p>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>Install Ansible with:</p>
+<blockquote>
+<div><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ sudo yum install ansible
+</pre></div>
+</div>
+</div></blockquote>
+<p>To install a build from the ansible-power-aix Git repository:</p>
+<blockquote>
+<div><blockquote>
+<div><ol class="arabic">
+<li><p>Obtain a local copy from the Git repository:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ curl -L https://github.com/IBM/ansible-power-aix/blob/dev-collection/builds/ibm-power_aix-1.0.2.tar.gz<span class="se">\?</span>raw<span class="se">\=</span><span class="nb">true</span> -o ibm-power_aix-1.0.2.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p>Install the local collection archive:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ ansible-galaxy collection install ibm-power_aix-1.0.2.tar.gz
+</pre></div>
+</div>
+<p>In the output of collection installation, note the installation path to access the sample playbook:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Process install dependency map
+Starting collection install process
+Installing <span class="s1">&#39;ibm.power_aix:1.0.0&#39;</span> to <span class="s1">&#39;/Users/user/.ansible/collections/ansible_collections/ibm/power_aix&#39;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is a <a class="reference external" href="https://ibm.github.io/ansible-power-aix/roles/power_aix_bootstrap.html#example-playbook">role</a> to auto install python and yum on your managed nodes, however for this guide we will perform this step manually for clarity.</p>
+</div>
+<blockquote>
+<div><p><strong>Installing yum on AIX:</strong></p>
+<blockquote>
+<div><ol class="arabic">
+<li><dl>
+<dt>Make sure rpm.rte is installed at a level of 4.13.0.10 or higher.</dt><dd><p>To check this run:</p>
+<blockquote>
+<div><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$lslpp</span> -la rpm.rte
+</pre></div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>If it is not installed you can download rpm.rte from”<a class="reference external" href="https://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/rpm.rte">https://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/rpm.rte</a>”</dt><dd><p>Then install it:</p>
+<blockquote>
+<div><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$install</span> –d. –acgXY rpm.rte
+</pre></div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Download yum_bundle.tar from: <a class="reference external" href="https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/">https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/</a> (it’s recommended to Download the latest version)</dt><dd><dl>
+<dt>This bundle contains yum and all of it’s dependency rpms.  Extract the yum packages from the yum_bundle.tar using tar:</dt><dd><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$tar</span> -xvf yum_bundle.tar
+</pre></div>
+</div>
+</dd>
+<dt>Install each of the rpm packages using the rpm command:</dt><dd><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$rpm</span> -Uvh <span class="o">(</span>packagename<span class="o">)</span>.rpm
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>yum conf file:</dt><dd><p>yum.conf file will be installed under the path /opt/freeware/etc/yum.conf
+By default with yum-3.4.3-1 only ppc repository is enabled.with yum-3.4.3-2 or higher version, ppc, noarch &amp; any one of the ppc-6.1/ppc-7.1/ppc-7.2 repository is enabled.
+If you faced ssl error while installing with yum, &lt;baseurl&gt; use http instead of https.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
+<p><strong>Configure our Admin User for SSH Access:</strong></p>
+<blockquote>
+<div><dl>
+<dt>We need to ensure our controller node can access the managed node over SSH without a password. We will set up an SSH key pair to allow this. Log onto the control node as the admin             user and run the following command to generate an SSH key pair. Note: Just hit enter at the prompts to accept the defaults.</dt><dd><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$sudo</span> ssh-copy-id root@node_IP
+</pre></div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p><strong>Build your inventory:</strong></p>
+<blockquote>
+<div><dl>
+<dt>The inventory file can be in one of many formats, depending on the inventory plugins you have. The most common formats are INI and YAML. A basic INI etc/ansible/hosts might look               like this: (Make sure you are logged onto the Control node as the admin user).</dt><dd><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$sudo</span> vi /etc/ansible/hosts
+
+    If all hosts <span class="k">in</span> a group share a variable value, you can apply that variable to an entire group at once. In INI:
+
+    <span class="o">[</span>nimserver<span class="o">]</span>
+    host1
+    host2
+
+    <span class="o">[</span>nimserver:vars<span class="o">]</span>
+    <span class="nv">ansible_ssh_port</span><span class="o">=</span><span class="m">22</span>
+    <span class="nv">ansible_ssh_user</span><span class="o">=</span>root
+</pre></div>
+</div>
+</dd>
+<dt>Test Connection:</dt><dd><div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">$ansible</span> all -u root -m ping
+
+    host1 <span class="p">|</span> <span class="nv">SUCCESS</span> <span class="o">=</span>&gt; <span class="o">{</span>
+        <span class="s2">&quot;ansible_facts&quot;</span>: <span class="o">{</span>
+            <span class="s2">&quot;discovered_interpreter_python&quot;</span>: <span class="s2">&quot;/usr/bin/python&quot;</span>
+            <span class="o">}</span>,
+                <span class="s2">&quot;changed&quot;</span>: false,
+            <span class="s2">&quot;ping&quot;</span>: <span class="s2">&quot;pong&quot;</span>
+            <span class="o">}</span>
+
+
+    host2 <span class="p">|</span> <span class="nv">SUCCESS</span> <span class="o">=</span>&gt; <span class="o">{</span>
+        <span class="s2">&quot;ansible_facts&quot;</span>: <span class="o">{</span>
+            <span class="s2">&quot;discovered_interpreter_python&quot;</span>: <span class="s2">&quot;/usr/bin/python&quot;</span>
+            <span class="o">}</span>,
+                <span class="s2">&quot;changed&quot;</span>: false,
+                <span class="s2">&quot;ping&quot;</span>: <span class="s2">&quot;pong&quot;</span>
+            <span class="o">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Note:
+For more information you can check: <a class="reference external" href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html">https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html</a></p>
+</div></blockquote>
+<p><strong>Run your first Playbook:</strong></p>
+<blockquote>
+<div><dl>
+<dt>Run your Playbook:</dt><dd><p>Ensure you are in the collections playbook directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p>cd ~/.ansible/collections/ansible_collections/ibm/power_aix/playbooks/</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ ansible-playbook demo_nim_check.yml
+</pre></div>
+</div>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>WARNING<span class="o">]</span>: running playbook inside collection ibm.power_aix
+PLAY <span class="o">[</span>NIM check on AIX playbook<span class="o">]</span> ***********************************************
+TASK <span class="o">[</span>AIX NIM<span class="o">]</span> *****************************************************************
+<span class="o">[</span>WARNING<span class="o">]</span>: Platform aix on host host1 is using the discovered Python
+interpreter at /usr/bin/python, but future installation of another Python
+interpreter could change this. See https://docs.ansible.com/ansible/2.9/referen
+ce_appendices/interpreter_discovery.html <span class="k">for</span> more information.
+ok: <span class="o">[</span>host1<span class="o">]</span>
+TASK <span class="o">[</span>debug<span class="o">]</span> *******************************************************************
+ok: <span class="o">[</span>host1<span class="o">]</span> <span class="o">=</span>&gt; <span class="o">{</span>
+<span class="s2">&quot;nim_output&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;ansible_facts&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;discovered_interpreter_python&quot;</span>: <span class="s2">&quot;/usr/bin/python&quot;</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;changed&quot;</span>: false,
+    <span class="s2">&quot;failed&quot;</span>: false,
+    <span class="s2">&quot;msg&quot;</span>: <span class="s2">&quot;NIM check completed successfully&quot;</span>,
+    <span class="s2">&quot;nim_node&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;lpp_source&quot;</span>: <span class="o">{}</span>,
+    <span class="s2">&quot;master&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;cstate&quot;</span>: <span class="s2">&quot;ready for a NIM operation&quot;</span>,
+        <span class="s2">&quot;oslevel&quot;</span>: <span class="s2">&quot;7200-03-03-1914&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;master&quot;</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;standalone&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;Client1&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;cstate&quot;</span>: <span class="s2">&quot;ready for a NIM operation&quot;</span>,
+        <span class="s2">&quot;ip&quot;</span>: <span class="s2">&quot;client1&quot;</span>,
+        <span class="s2">&quot;oslevel&quot;</span>: <span class="s2">&quot;7200-03-03-1914&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;standalone&quot;</span>
+        <span class="o">}</span>,
+        <span class="s2">&quot;client2&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;cstate&quot;</span>: <span class="s2">&quot;ready for a NIM operation&quot;</span>,
+        <span class="s2">&quot;ip&quot;</span>: <span class="s2">&quot;client2&quot;</span>,
+        <span class="s2">&quot;oslevel&quot;</span>: <span class="s2">&quot;7200-03-03-1914&quot;</span>,
+        <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;standalone&quot;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;vios&quot;</span>: <span class="o">{}</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;nim_output&quot;</span>: <span class="o">[]</span>,
+    <span class="s2">&quot;stderr&quot;</span>: <span class="s2">&quot;&quot;</span>,
+    <span class="s2">&quot;stderr_lines&quot;</span>: <span class="o">[]</span>,
+    <span class="s2">&quot;stdout&quot;</span>: <span class="s2">&quot;&quot;</span>,
+    <span class="s2">&quot;stdout_lines&quot;</span>: <span class="o">[]</span>,
+    <span class="s2">&quot;warnings&quot;</span>: <span class="o">[</span>
+    <span class="s2">&quot;Platform aix on host host1 is using the discovered Python interpreter at /usr/bin/python, but future installation of another Python interpreter could change this. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.&quot;</span>
+    <span class="o">]</span>
+<span class="o">}</span>
+<span class="o">}</span>
+PLAY RECAP *********************************************************************
+host1        : <span class="nv">ok</span><span class="o">=</span><span class="m">2</span>   <span class="nv">changed</span><span class="o">=</span><span class="m">0</span>  <span class="nv">unreachable</span><span class="o">=</span><span class="m">0</span>  <span class="nv">failed</span><span class="o">=</span><span class="m">0</span>  <span class="nv">skipped</span><span class="o">=</span><span class="m">0</span>  <span class="nv">rescued</span><span class="o">=</span><span class="m">0</span>  <span class="nv">ignored</span><span class="o">=</span><span class="m">0</span>    IBM Power Systems AIX Collection
+</pre></div>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, IBM.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+.. _lpar_facts_module:
+
+
+lpar_facts -- Reports logical partition (LPAR) related information as facts.
+============================================================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+Lists and reports information related to logical partition (LPAR) in Ansible facts.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+
+
+Notes
+-----
+
+.. note::
+   - You can refer to the IBM documentation for additional information on the lparstat command at https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lparstat.html.
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Retrieve the LPAR related information
+      lpar_facts:
+    - name: Print the LPAR related information
+      debug:
+        var: ansible_facts.lpar
+
+
+
+Return Values
+-------------
+
+ansible_facts (always, complex, )
+  Facts to add to ansible_facts about LPAR related information.
+
+
+  lpar (always, dict, )
+    Reports logical partition (LPAR) related information.
+
+
+    nodename (always, str, )
+      Node name.
+
+
+    lpar_name (when available, str, )
+      Partition name.
+
+
+    lpar_number (when available, int, )
+      Partition number.
+
+
+    lpar_type (always, str, )
+      Type.
+
+
+    lpar_mode (always, str, )
+      Mode.
+
+
+    entitled_capacity (always, float, )
+      Entitled capacity.
+
+
+    group_id (when available, int, )
+      Partition Group-ID.
+
+
+    pool_id (when available, int, )
+      Shared Pool ID.
+
+
+    online_vcpus (always, int, )
+      Online Virtual CPUs.
+
+
+    max_vcpus (always, int, )
+      Maximum Virtual CPUs.
+
+
+    min_vcpus (always, int, )
+      Minimum Virtual CPUs.
+
+
+    online_memory (always, float, )
+      Online Memory.
+
+
+    max_memory (always, float, )
+      Maximum Memory.
+
+
+    min_memory (always, float, )
+      Minimum Memory.
+
+
+    ps_16G (when available, int, )
+      16GB Page Memory.
+
+
+    variable_weight (when available, int, )
+      Variable Capacity Weight.
+
+
+    minimum_capacity (always, float, )
+      Minimum Capacity.
+
+
+    maximum_capacity (always, float, )
+      Maximum Capacity.
+
+
+    capacity_increment (always, float, )
+      Capacity Increment.
+
+
+    max_pcpus_in_sys (always, int, )
+      Maximum Physical CPUs in system.
+
+
+    pcpus_in_sys (always, int, )
+      Active Physical CPUs in system.
+
+
+    pcpus_in_pool (when available, int, )
+      Active CPUs in Pool.
+
+
+    shcpus_in_sys (when available, int, )
+      Shared Physical CPUs in system.
+
+
+    max_pool_capacity (when available, int, )
+      Maximum Capacity of Pool.
+
+
+    entitled_pool_capacity (when available, int, )
+      Entitled Capacity of Pool.
+
+
+    unalloc_capacity (when available, float, )
+      Unallocated Capacity.
+
+
+    pcpu_percent (always, float, )
+      Physical CPU Percentage.
+
+
+    unalloc_weight (when available, int, )
+      Unallocated Weight.
+
+
+    vrm_mode (when available, str, )
+      Memory Mode.
+
+
+    ent_mem_capacity (when available, float, )
+      Total I/O Memory Entitlement.
+
+
+    var_mem_weight (when available, int, )
+      Variable Memory Capacity Weight.
+
+
+    vrm_pool_id (when available, int, )
+      Memory Pool ID.
+
+
+    vrm_pool_physmem (when available, float, )
+      Physical Memory in the Pool.
+
+
+    hyp_pagesize (when available, str, )
+      Hypervisor Page Size.
+
+
+    unalloc_var_mem_weight (when available, int, )
+      Unallocated Variable Memory Capacity Weight.
+
+
+    unalloc_ent_mem_capacity (when available, float, )
+      Unallocated I/O Memory entitlement.
+
+
+    vrm_group_id (when available, int, )
+      Memory Group ID of LPAR.
+
+
+    desired_vcpus (always, int, )
+      Desired Virtual CPUs.
+
+
+    desired_memory (always, float, )
+      Desired Memory.
+
+
+    desired_variable_capwt (when available, int, )
+      Desired Variable Capacity Weight.
+
+
+    desired_capacity (always, float, )
+      Desired Capacity.
+
+
+    ame_factor_tgt (when available, float, )
+      Target Memory Expansion Factor.
+
+
+    ame_memsizepgs (when available, float, )
+      Target Memory Expansion Size.
+
+
+    psmode (when supported, str, )
+      Power Saving Mode.
+
+
+    spcm_status (when supported, str, )
+      Sub Processor Mode.
+
+
+    servpar_id (when available, int, )
+      Service Partition ID.
+
+
+    num_lpars (when available, int, )
+      Number of Configured LPARs.
+
+
+    inc_core_crypto_capable (always, bool, )
+      Capability of In-Core Crypto Acceleration.
+
+
+    inc_core_crypto_enabled (always, bool, )
+      Enablement of In-Core Crypto Acceleration.
+
+
+    nxcrypto_acc_capable (always, bool, )
+      Capability of NX Crypto Acceleration.
+
+
+    nxcrypto_acc_enabled (always, bool, )
+      Enablement of NX Crypto Acceleration.
+
+
+    full_coredump (always, bool, )
+      Full core dump status.
+
+
+    proc_imp_mode (always, str, )
+      Processor Implementation Mode.
+
+
+    proc_type (always, str, )
+      Processor Type.
+
+
+    oslevel (always, dict, )
+      Operating system level.
+
+
+      oslevel (always, dict, "oslevel": { "build": 2147, "sp": 3, "tl": 2, "base": "7.2.0.0" })
+        OperatingSystemBaseVersion TechnologyLevel ServicePack Build (vrmf).
+
+
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+

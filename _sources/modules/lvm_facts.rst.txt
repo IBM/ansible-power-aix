@@ -1,0 +1,222 @@
+.. _lvm_facts_module:
+
+
+lvm_facts -- Reports LVM information as facts.
+==============================================
+
+.. contents::
+   :local:
+   :depth: 1
+
+
+Synopsis
+--------
+
+List and reports details about defined AIX Logical Volume Manager (LVM) components such as Physical volumes, Logical volumes and Volume groups in Ansible facts.
+
+
+
+Requirements
+------------
+The below requirements are needed on the host that executes this module.
+
+- AIX >= 7.1 TL3
+- Python >= 2.7
+
+
+
+Parameters
+----------
+
+  name (optional, str, all)
+    Specifies the name of a LVM component.
+
+
+  component (optional, str, all)
+    Specifies the type of LVM component to report information. A(pv) specifies physical volume. A(lv) specifies logical volume. A(vg) specifies volume group. ``all`` specifies all previous LVM components to be reported.
+
+
+  lvm (optional, dict, {})
+    Users can provide the existing LVM facts to which the queried facts should be updated. If not specified, the LVM facts in the ansible_facts will be replaced.
+
+
+
+
+
+
+
+
+
+Examples
+--------
+
+.. code-block:: yaml+jinja
+
+    
+    - name: Gather all lvm facts
+      lvm_facts:
+    - name: Gather VG facts
+      lvm_facts:
+        name: all
+        component: vg
+    - name: Update PV facts to existing LVM facts
+      lvm_facts:
+        name: all
+        component: pv
+        lvm: "{{ ansible_facts.LVM }}"
+    - name: Gather LV facts
+      lvm_facts:
+        name: all
+        component: lv
+
+
+
+Return Values
+-------------
+
+ansible_facts (always, complex, )
+  Facts to add to ansible_facts about the LVM components on the system.
+
+
+  lvm (success, dict, )
+    Contains a list of VGs, PVs and LVs.
+
+
+    VGs (success, dict, )
+      Contains the list of volume groups on the system.
+
+
+      name (always, str, rootvg)
+        Volume Group name.
+
+
+      vg_state (always, str, active)
+        State of the Volume Group.
+
+
+      num_lvs (always, str, 2)
+        Number of logical volumes.
+
+
+      num_pvs (always, str, 2)
+        Number of physical volumes.
+
+
+      total_pps (always, str, 952)
+        Total number of physical partitions within the volume group.
+
+
+      free_pps (always, str, 100)
+        Number of physical partitions not allocated.
+
+
+      pp_size (always, str, 64 megabyte (s))
+        Size of each physical partition.
+
+
+      size_g (always, str, 18.99)
+        Total size of the volume group in gigabytes.
+
+
+      free_g (always, str, 10.6)
+        Free space of the volume group in gigabytes.
+
+
+
+    PVs (success, dict, )
+      Contains a list of physical volumes on the system.
+
+
+      name (always, str, hdisk0)
+        PV name
+
+
+      vg (always, str, rootvg)
+        Volume group to which the physical volume has been assigned.
+
+
+      pv_state (always, str, active)
+        Physical volume state.
+
+
+      total_pps (always, str, 476)
+        Total number of physical partitions in the physical volume.
+
+
+      free_pps (always, str, 130)
+        Number of free physical partitions in the physical volume.
+
+
+      pp_size (always, str, 64 megabyte (s))
+        Size of each physical partition.
+
+
+      size_g (always, str, 18.99)
+        Total size of the physical volume in gigabytes.
+
+
+      free_g (always, str, 10.6)
+        Free space of the physical volume in gigabytes.
+
+
+
+    LVs (success, dict, )
+      Contains a list of logical volumes on the system.
+
+
+      name (always, str, hd1)
+        Logical volume name.
+
+
+      vg (always, str, rootvg)
+        Volume group to which the Logical Volume belongs to.
+
+
+      lv_state (always, str, active)
+        Logical Volume state.
+
+
+      type (always, str, jfs2)
+        Logical volume type.
+
+
+      LPs (always, str, 476)
+        Total number of logical partitions in the logical volume.
+
+
+      PPs (always, str, 130)
+        Total number of physical partitions in the logical volume.
+
+
+      PVs (always, str, 2)
+        Number of physical volumes used by the logical volume.
+
+
+      mount_point (always, str, /home)
+        File system mount point for the logical volume, if applicable.
+
+
+
+
+
+
+
+
+Status
+------
+
+
+
+
+- This module is not guaranteed to have a backwards compatible interface. *[preview]*
+
+
+- This module is maintained by community.
+
+
+
+Authors
+~~~~~~~
+
+- AIX Development Team (@pbfinley1911)
+
