@@ -1,0 +1,199 @@
+---
+- name: "Display vm tunables parameters"
+  hosts: aix
+  gather_facts: false
+  vars:
+    log_file: "/tmp/ansible_tunables_debug.log"
+  collections:
+    - ibm.power_aix
+  tasks:
+    - name: "Show all tunable parameters excluding restricted parameters"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+      register: tunables_result
+
+    - name: "Debug: tunables_result"
+      ansible.builtin.debug: var=tunables_result
+
+    - name: "Show all tunable parameters including restricted parameters"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+        restricted_tunables: true
+      register: tunables_result
+
+    - name: "Debug: tunables_result"
+      ansible.builtin.debug: var=tunables_result
+
+    - name: "Show specific tunable parameters"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+        tunable_params:
+          - vm_mmap_bmap
+          - vmm_default_pspa
+      register: tunables_result
+
+    - name: "Debug: tunables_result"
+      ansible.builtin.debug: var=tunables_result
+
+    - name: "show reboot value of lgpg_regions tunable"
+      ibm.power_aix.tunables:
+        action: show
+        component: vmo
+      register: output
+
+    - name: "Debug: output.tunables_details.lgpg_regions.reboot_value"
+      ansible.builtin.debug: var=output.tunables_details.lgpg_regions.reboot_value
+
+    - name: "Modify current value of dynamic vmo tunables"
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        tunable_params_with_value:
+          lgpg_regions: 10
+          lgpg_size: 16777216
+      register: tunables_vm_result
+
+    - name: "Modify reboot value of dynamic vmo tunables"
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        change_type: reboot
+        tunable_params_with_value:
+          lgpg_regions: 10
+          lgpg_size: 16777216
+      register: tunables_vm_result
+
+    - name: "Modify current and reboot value of dynamic vmo tunables"
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        change_type: both
+        tunable_params_with_value:
+          lgpg_regions: 10
+          lgpg_size: 16777216
+      register: tunables_vm_result
+
+    - name: "Modify vmo tunable parameters of type bosboot"
+      # the changes only change the reboot value and changes will take effect after a bosboot and reboot.
+      # If tunables of type dynamic is also included, this will change only reboot value
+      # and not the current value even for dynamic tunables.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        bosboot_tunables: true
+        change_type: reboot
+        tunable_params_with_value:
+          kernel_heap_psize: 16777216  # bosboot tunable
+      register: tunables_vm_result
+
+    - name: "Reset all vmo tunables values to default"
+      # "All tunables" means, it will also include bosboot tunables and restricted tunables 
+      # and to change their value it requires a bosboot
+      # and a reboot. After the bosboot and reboot both dynamic and bosboot tunables will be set to new values.
+      # check for booleans "bosboot_required" and "reboot_required" in the message which should be true
+      # once playbook runs.
+      ibm.power_aix.tunables:
+        action: reset
+        component: vmo
+        change_type: reboot
+        bosboot_tunables: true   # because bosboot tunables are included
+        restricted_tunables: true  # because restricted tunables are included
+      register: tunables_vm_result
+
+    - name: "Reset given dynamic vmo tunables values to default"
+      # any number of "dynamic tunables" could be provided and no bosboot or reboot is required
+      ibm.power_aix.tunables:
+        action: reset
+        component: vmo
+        tunable_params: lgpg_size, lgpg_regions
+        # if including restricted dynamic tunables
+        # then use: restricted_tunables: true
+      register: tunables_vm_result
+
+    - name: "Modify dynamic tunables/restricted dynamic tunables"
+      # this will change the current value of given dynamic tunables and does NOT require any bosboot or reboot
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True  # in case of restricted tunables otherwise default is false
+        tunable_params_with_value:
+          lgpg_regions: 10    # dynamic tunable
+          lgpg_size: 16777216  # dynamic tunables
+          enhanced_affinity_balance: 1000 # restricted dynamic tunable
+      register: result
+
+    - name: "Modify bosboot tunables/ restricted bosboot tunables"
+      # this will only change the REBOOT VALUE and needs bosboot and reboot.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True  # in case of restricted tunables otherwise default is false
+        bosboot_tunables: True  # mandatory
+        change_type: reboot
+        tunable_params_with_value:
+          kernel_heap_psize: 16777216  # bosboot tunable
+          batch_tlb: 0  # restricted bosboot tunables
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+      # if value(s) are true, please perform the required action.
+
+    - name: "Modify combination of bosboot and dynamic tunables"
+      # this will only change the REBOOT VALUE for both bosboot and dynamic tunables and needs bosboot and reboot.
+      # so, if bosboot and dynamic tunables are used together, only reboot value will get changed and needs bosboot and reboot
+      # to make changes take into effect.
+      ibm.power_aix.tunables:
+        action: modify
+        component: vmo
+        restricted_tunables: True  # because of restricted tunables otherwise default is false
+        bosboot_tunables: True  # because of bosboot tunables otherwise default is false
+        # if restricted tunable to be changed also then restricted_tunable: True
+        change_type: reboot
+        tunable_params_with_value:
+          lgpg_regions: 10    # dynamic tunable
+          lgpg_size: 16777216  # dynamic tunables
+          kernel_heap_psize: 16777216  # bosboot tunable
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+      # if value(s) are true, please perform the required action.
+
+    - name: "Reset bosboot tunables/ restricted bosboot tunables"
+      # this will only change the REBOOT VALUE and needs bosboot and reboot.
+      # example of one restricted and one non restricted bosboot tunable
+      ibm.power_aix.tunables:
+        action: reset
+        component: vmo
+        restricted_tunables: True  # because of restricted tunables otherwise default is false
+        bosboot_tunables: True  # because of bosboot tunables otherwise default is false
+        change_type: reboot
+        tunable_params: ['kernel_heap_psize', 'batch_tlb']
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+      # if value(s) are true, please perform the required action.
+
+    - name: "Reset combination of bosboot and dynamic tunables"
+      # this will only reset the REBOOT VALUE for both bosboot and dynamic tunables and needs bosboot and reboot.
+      # so, if bosboot and dynamic tunables are used together, only reboot value will get reset and needs bosboot and reboot.
+      ibm.power_aix.tunables:
+        action: reset
+        component: vmo
+        restricted_tunables: True  # because of restricted tunables otherwise default is false
+        bosboot_tunables: True  # because of bosboot tunables otherwise default is false
+        change_type: reboot
+        tunable_params: ['kernel_heap_psize', 'lgpg_regions', 'lgpg_size', 'enhanced_affinity_balance']
+
+      register: result
+      # check for:
+      # result.bosboot_required == True
+      # result.reboot_required == True
+      # if value(s) are true, please perform the required action.
