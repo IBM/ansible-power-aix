@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ansible Role: nim_alt_disk_migration &mdash; IBM Power Systems AIX 1.0.0-beta1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Ansible Role: power_aix_bootstrap" href="power_aix_bootstrap.html" />
+    <link rel="prev" title="Ansible Role: inetd" href="inetd.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> IBM Power Systems AIX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../playbooks.html">Playbooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../roles.html">Roles</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../roles.html#role-reference">Role reference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bootptab.html">Ansible Role: bootptab</a></li>
+<li class="toctree-l3"><a class="reference internal" href="inetd.html">Ansible Role: inetd</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Ansible Role: nim_alt_disk_migration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#role-variables">Role Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-playbook">Example Playbook</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#copyright">Copyright</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="power_aix_bootstrap.html">Ansible Role: power_aix_bootstrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="power_aix_vioshc.html">Ansible Role: power_aix_vioshc</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Community Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../community_guides.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../community_guides.html#helpful-links">Helpful Links</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Requirements</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Releases</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">IBM Power Systems AIX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../roles.html">Roles</a> &raquo;</li>
+      <li>Ansible Role: nim_alt_disk_migration</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/IBM/ansible-power-aix/blob/dev-collection/docs/source/roles/nim_alt_disk_migration.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ansible-role-nim-alt-disk-migration">
+<h1>Ansible Role: nim_alt_disk_migration<a class="headerlink" href="#ansible-role-nim-alt-disk-migration" title="Permalink to this heading"></a></h1>
+<p>The <span class="xref myst">IBM Power Systems AIX</span> collection provides an
+<a class="reference external" href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html">Ansible role</a>,
+referred to as <code class="docutils literal notranslate"><span class="pre">nim_alt_disk_migration</span></code>, which assists in automating in migration in
+migration of AIX 7.1/7.2 to AIX 7.3.</p>
+<p>For guides and reference, see the <a class="reference external" href="https://ibm.github.io/ansible-power-aix/roles.html">Docs Site</a>.</p>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
+<p>None.</p>
+</section>
+<section id="role-variables">
+<h2>Role Variables<a class="headerlink" href="#role-variables" title="Permalink to this heading"></a></h2>
+<p>Available variables are listed below, along with default values:</p>
+<table>
+    <thead>
+        <tr>
+            <th colspan="6"> Role Variables </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><b> Variable </b></td>
+            <td><b> Suboptions </b></td>
+            <td><b> Required </b></td>
+            <td><b> Default </b></td>
+            <td><b> Choices </b></td>
+            <td><b> Comments </b></td>
+        </tr>
+        <tr>
+            <td><b> nim_client </b></td>
+            <td>  </td>
+            <td> true </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies a NIM object name that is associated to the 
+                NIM client machine to be migrated.
+            </td>
+        </tr>
+        <tr>
+            <td><b> target_disk </b></td>
+            <td>  </td>
+            <td> true </td>
+            <td>  </td>
+            <td>  </td>
+            <td>  </td>
+        </tr>
+        <tr>
+            <td>  </td>
+            <td><b> disk_name </b></td>
+            <td>  </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the physical volume by name where 
+                the alternate disk will be created.
+            </td>
+        </tr>
+        <tr>
+            <td>  </td>
+            <td><b> disk_size_policy </b></td>
+            <td>  </td>
+            <td>  </td>
+            <td>
+                minimize,
+                upper,
+                lower,
+                nearest
+            </td>
+            <td> 
+                Specifies the disk size policy to automatically 
+                determine a valid physical volume that fits the 
+                policy where the alternate disk will be created. 
+                If an alternate disk named '<i>altinst_rootvg</i>' or 
+                '<i>old_rootvg</i>' exists, the role will fail unless
+                force option is used.
+            </td>
+        </tr>
+        <tr>
+            <td>  </td>
+            <td><b> force </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td> 
+                If physical volume specified by <b>target_disk.disk_name</b> 
+                belongs to '<i>altinst_rootvg</i>', '<i>old_rootvg</i>', or a 
+                varied on volume group then that physical volume will be 
+                cleaned up. 
+                If <b>target_disk.disk_size_policy</b> is specified and an 
+                alternate disk named '<i>altinst_rootvg</i>' or '<i>old_rootvg</i>'
+                already exists, then it will clean up the physical volume 
+                it occupies.
+            </td>
+        </tr>
+        <tr>
+            <td><b> lpp_source  </b></td>
+            <td>  </td>
+            <td> true </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies a NIM object name associated to a 
+                LPP resource for the desired level of migration.
+            </td>
+        </tr>
+        <tr>
+            <td><b> spot  </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies a NIM object name associated to a SPOT 
+                resource.
+            </td>
+        </tr>
+        <tr>
+            <td><b> reboot_client </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td> false </td>
+            <td>  </td>
+            <td> 
+                Specifies if the NIM client LPAR will be 
+                automatically rebooted after successfully 
+                creating the alternate disk.
+            </td>
+        </tr>
+        <tr>
+            <td><b> control_phases </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td>  </td>
+        </tr>
+        <tr>
+            <td>  </td>
+            <td><b> validate_nim_resources </b></td>
+            <td>  </td>
+            <td> true </td>
+            <td>  </td>
+            <td>
+                If set to false, then it will skip 
+                validation of NIM resources.
+            </td>
+        </tr>
+        <tr>
+            <td>  </td>
+            <td><b> perform_migration </b></td>
+            <td>  </td>
+            <td> true </td>
+            <td>  </td>
+            <td>
+                If set to false, then it will skip 
+                the actual migration task
+            </td>
+        </tr>
+    </tbody>
+</table>
+<p><strong>NOTES</strong>:</p>
+<ul class="simple">
+<li><p><em><strong>minimize</strong></em> disk size policy chooses smallest disk that can be selected.</p></li>
+<li><p><em><strong>upper</strong></em> disk size policy chooses the first disk found bigger than the rootvg disk.</p></li>
+<li><p><em><strong>lower</strong></em> disk size policy chooses a disk that is less than rootvg disk size but big
+enough to contain the used PPs.</p></li>
+<li><p><em><strong>nearest</strong></em> disk size policy chooses a disk closest to the rootvg disk in terms of size.</p></li>
+<li><p>if <em><strong>upper</strong></em> or <em><strong>lower</strong></em> cannot be satisfied, it will default to <em>minimize</em>.</p></li>
+<li><p>if you are using the role to ONLY validate the NIM resources then the <strong>nim_client</strong>
+variable is not required.</p></li>
+<li><p>if a <strong>spot</strong> is not specified, one will be automatically created using the specified
+<strong>lpp_source</strong>.</p></li>
+</ul>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
+<p>None.</p>
+</section>
+<section id="example-playbook">
+<h2>Example Playbook<a class="headerlink" href="#example-playbook" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">Perfrom</span> <span class="n">an</span> <span class="n">alternate</span> <span class="n">disk</span> <span class="n">migration</span> <span class="n">using</span> <span class="n">hdisk1</span><span class="o">.</span> <span class="n">Let</span> <span class="n">the</span> <span class="n">role</span> <span class="n">build</span> <span class="n">the</span> <span class="n">SPOT</span><span class="o">.</span>
+    <span class="n">hosts</span><span class="p">:</span> <span class="n">aix</span>
+    <span class="n">gather_facts</span><span class="p">:</span> <span class="n">no</span>
+    <span class="n">tasks</span><span class="p">:</span>
+      <span class="o">-</span> <span class="n">include_role</span><span class="p">:</span>
+          <span class="n">name</span><span class="p">:</span> <span class="n">nim_alt_disk_migration</span>
+        <span class="nb">vars</span><span class="p">:</span>
+          <span class="n">nim_client</span><span class="p">:</span> <span class="n">p9zpa</span><span class="o">-</span><span class="n">ansible</span><span class="o">-</span><span class="n">test1</span>
+          <span class="n">target_disk</span><span class="p">:</span>
+            <span class="n">disk_name</span><span class="p">:</span> <span class="n">hdisk1</span>
+          <span class="n">lpp_source</span><span class="p">:</span> <span class="n">lpp_2134A_730</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">Perform</span> <span class="n">an</span> <span class="n">alternate</span> <span class="n">disk</span> <span class="n">migration</span> <span class="ow">and</span> <span class="n">let</span> <span class="n">the</span> <span class="n">role</span> <span class="n">choose</span> <span class="n">the</span> <span class="n">disk</span><span class="o">.</span>
+  <span class="n">hosts</span><span class="p">:</span> <span class="n">aix</span>
+  <span class="n">gather_facts</span><span class="p">:</span> <span class="n">no</span>
+  <span class="n">tasks</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">include_role</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">nim_alt_disk_migration</span>
+      <span class="nb">vars</span><span class="p">:</span>
+        <span class="n">nim_client</span><span class="p">:</span> <span class="n">p9zpa</span><span class="o">-</span><span class="n">ansible</span><span class="o">-</span><span class="n">test1</span>
+        <span class="n">target_disk</span><span class="p">:</span>
+          <span class="n">disk_size_policy</span><span class="p">:</span> <span class="n">minimize</span>
+        <span class="n">lpp_source</span><span class="p">:</span> <span class="n">lpp_2134A_730</span>
+        <span class="n">spot</span><span class="p">:</span> <span class="n">spot_2134A_730</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Useful when migrating multiple nodes concurrently. Use first the role to perform the</span>
+<span class="c1"># validation of the resources only once. Then you can migrate the nodes without doing verifications.</span>
+
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">Validate</span> <span class="n">the</span> <span class="n">nim</span> <span class="n">lpp</span> <span class="ow">and</span> <span class="n">spot</span> <span class="n">resources</span> <span class="ow">and</span> <span class="n">exit</span> <span class="n">the</span> <span class="n">playbook</span><span class="o">.</span>
+  <span class="n">hosts</span><span class="p">:</span> <span class="n">aix</span>
+  <span class="n">gather_facts</span><span class="p">:</span> <span class="n">no</span>
+  <span class="n">tasks</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">include_role</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">nim_alt_disk_migration</span>
+      <span class="nb">vars</span><span class="p">:</span>
+        <span class="n">lpp_source</span><span class="p">:</span> <span class="n">lpp_2134A_730</span>
+        <span class="n">spot</span><span class="p">:</span> <span class="n">spot_2134A_730</span>
+        <span class="n">control_phases</span><span class="p">:</span>
+          <span class="n">validate_nim_resources</span><span class="p">:</span> <span class="n">true</span>
+          <span class="n">perform_nim_migration</span><span class="p">:</span> <span class="n">false</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Useful when migrating multiple nodes concurrently. The role will prevent the validation</span>
+<span class="c1"># of the resources and just perform the migration. The role still will perform specific </span>
+<span class="c1"># validations for the nim client such as connectity, OS level and valid hardware platform</span>
+<span class="c1"># for the OS.</span>
+
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">Perform</span> <span class="n">an</span> <span class="n">alternate</span> <span class="n">disk</span> <span class="n">without</span> <span class="n">the</span> <span class="n">lpp</span> <span class="ow">or</span> <span class="n">spot</span> <span class="n">resources</span> <span class="n">validation</span><span class="o">.</span>
+  <span class="n">hosts</span><span class="p">:</span> <span class="n">aix</span>
+  <span class="n">gather_facts</span><span class="p">:</span> <span class="n">no</span>
+  <span class="n">tasks</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">include_role</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">nim_alt_disk_migration</span>
+      <span class="nb">vars</span><span class="p">:</span>
+        <span class="n">nim_client</span><span class="p">:</span> <span class="n">p9zpa</span><span class="o">-</span><span class="n">ansible</span><span class="o">-</span><span class="n">test1</span>
+        <span class="n">target_disk</span><span class="p">:</span>
+          <span class="n">disk_size_policy</span><span class="p">:</span> <span class="n">minimize</span>
+        <span class="n">lpp_source</span><span class="p">:</span> <span class="n">lpp_2134A_730</span>
+        <span class="n">spot</span><span class="p">:</span> <span class="n">spot_2134A_730</span>
+        <span class="n">control_phases</span><span class="p">:</span>
+          <span class="n">validate_nim_resources</span><span class="p">:</span> <span class="n">false</span>
+          <span class="n">perform_nim_migration</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># For debugging purposes: debug_skip_nimadm: true</span>
+<span class="c1"># Similar to modules &quot;check_mode&quot;. Useful to execute all the validations and just exit before</span>
+<span class="c1"># performing the migration. </span>
+
+<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">Preview</span> <span class="n">an</span> <span class="n">alternate</span> <span class="n">disk</span> <span class="n">migration</span><span class="o">.</span> <span class="n">Exit</span> <span class="n">before</span> <span class="n">running</span> <span class="n">nimadm</span>
+  <span class="n">hosts</span><span class="p">:</span> <span class="n">aix</span>
+  <span class="n">gather_facts</span><span class="p">:</span> <span class="n">no</span>
+  <span class="n">tasks</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">include_role</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">nim_alt_disk_migration</span>
+      <span class="nb">vars</span><span class="p">:</span>
+        <span class="n">nim_client</span><span class="p">:</span> <span class="n">p9zpa</span><span class="o">-</span><span class="n">ansible</span><span class="o">-</span><span class="n">test1</span>
+        <span class="n">target_disk</span><span class="p">:</span>
+          <span class="n">disk_size_policy</span><span class="p">:</span> <span class="n">minimize</span>
+        <span class="n">lpp_source</span><span class="p">:</span> <span class="n">lpp_2134A_730</span>
+        <span class="n">spot</span><span class="p">:</span> <span class="n">spot_2134A_730</span>
+        <span class="n">control_phases</span><span class="p">:</span>
+          <span class="n">validate_nim_resources</span><span class="p">:</span> <span class="n">true</span>
+          <span class="n">perform_nim_migration</span><span class="p">:</span> <span class="n">true</span>
+        <span class="n">debug_skip_nimadm</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+</section>
+<section id="copyright">
+<h2>Copyright<a class="headerlink" href="#copyright" title="Permalink to this heading"></a></h2>
+<p>© Copyright IBM Corporation 2022</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inetd.html" class="btn btn-neutral float-left" title="Ansible Role: inetd" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="power_aix_bootstrap.html" class="btn btn-neutral float-right" title="Ansible Role: power_aix_bootstrap" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, IBM.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
