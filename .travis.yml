@@ -81,6 +81,9 @@ jobs:
         - make sanity-test
 
     - name: "sanity-test"
+      language: python
+      python:
+        - "3.9"
       env:
         - NAME="sanity-test"
         - ANSIBLE_VERSION="devel"
