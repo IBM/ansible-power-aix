@@ -219,7 +219,7 @@ NIM_SHOWRES = [
     'adapter_def',
 ]
 # NIM resource objects that contains filesets
-# that can be fetched through nim -o showres
+# that can be fetched through nim -o showres .
 NIM_SHOWRES_FILESETS = [
     'spot',
     'lpp_source',
@@ -308,13 +308,16 @@ def res_create(nim_cmd, module):
         updated results dictionary.
     '''
 
-    cmd = nim_cmd + ' -a server=master -o define '
     opts = ""
     name = module.params['name']
     object_type = module.params['object_type']
     attributes = module.params['attributes']
 
     if object_type:
+        if object_type == "res_group":
+            cmd = nim_cmd + ' -o define '
+        else:
+            cmd = nim_cmd + ' -a server=master -o define '
         cmd += ' -t ' + object_type
 
     if attributes is not None:
@@ -338,7 +341,8 @@ def res_create(nim_cmd, module):
     if return_code != 0:
 
         # 0042-081 The resource already exists on "master"
-        pattern = r"0042-081"
+        # 0042-032 object name must be unique
+        pattern = r"0042-081|0042-032"
         found = re.search(pattern, stderr)
         if not found:
             results['rc'] = return_code
