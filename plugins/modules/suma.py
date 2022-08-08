@@ -256,7 +256,7 @@ def find_sp_version(file):
     return:
        sp_version   value found or None
     """
-    sp_version = None
+    sp_version = ""
     module.debug("opening file: {0}".format(file))
     myfile = open(file, "r")
     for line in myfile:
