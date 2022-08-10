@@ -256,7 +256,7 @@ def find_sp_version(file):
     return:
        sp_version   value found or None
     """
-    sp_version = None
+    sp_version = ""
     module.debug("opening file: {0}".format(file))
     myfile = open(file, "r")
     for line in myfile:
@@ -267,7 +267,7 @@ def find_sp_version(file):
         if match_item:
             version = match_item.group(1)
             module.debug("matched line: {0}, version={1}".format(line.rstrip(), version))
-            if sp_version is None or version > sp_version:
+            if sp_version == "" or version > sp_version:
                 sp_version = version
             break
     myfile.close()
@@ -342,7 +342,7 @@ def compute_rq_name(rq_type, oslevel, last_sp):
             module.fail_json(**results)
         module.debug("SUMA command '{0}' rc:{1}, stdout:{2}".format(' '.join(cmd), rc, stdout))
 
-        sp_version = None
+        sp_version = ""
         if len(oslevel) == 10:
             # find latest SP build number for the SP
             file_name = suma_params['metadata_dir'] + "/installp/ppc/" + oslevel + ".xml"
@@ -354,7 +354,7 @@ def compute_rq_name(rq_type, oslevel, last_sp):
             module.debug("searching SP in files: {0}".format(files))
             for cur_file in files:
                 version = find_sp_version(cur_file)
-                if sp_version is None or version > sp_version:
+                if sp_version == "" or version > sp_version:
                     sp_version = version
 
         if sp_version is None or not sp_version.strip():
