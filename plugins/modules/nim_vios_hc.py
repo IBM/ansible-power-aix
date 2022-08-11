@@ -691,7 +691,7 @@ def main():
         proper interpreter, then fail.
         """
         vioshc_interpreter = get_vioshc_interpreter(module)
-        if(vioshc_interpreter is None):
+        if vioshc_interpreter is None:
             module.fail_json(**results)
 
         # Get the vioshc command path

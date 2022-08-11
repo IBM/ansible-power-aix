@@ -808,7 +808,7 @@ def list_fixes(module, target):
         results['meta'][target]['messages'].append('stdout: {0}'.format(stdout))
         results['meta'][target]['messages'].append('stderr: {0}'.format(stderr))
 
-    return(rc, fixes)
+    return (rc, fixes)
 
 
 def remove_fix(module, target, fix):

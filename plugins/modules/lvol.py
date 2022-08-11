@@ -470,7 +470,7 @@ def isSizeValid(module):
     strip_size = module.params['strip_size']
     num_strip_size = int(strip_size[:-1])
 
-    isPowerof2 = (num_strip_size and (not(num_strip_size & (num_strip_size - 1))))
+    isPowerof2 = (num_strip_size and (not (num_strip_size & (num_strip_size - 1))))
     if not isPowerof2:
         valid = False
         reason = "Must be a power of 2. "

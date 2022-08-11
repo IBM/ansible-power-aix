@@ -24,6 +24,9 @@ jobs:
       matrix:
         ansible-version: ['2.9', '3', '4', '5', 'devel']
         python-version: ['3.8']
+      include:
+        - ansible-version: 'devel'
+          python-version: '3.9'
 
     name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
     steps:
@@ -31,12 +34,12 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ansible_collections/ibm/power_aix
-      
+
     - name: setup python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: install ansible ${{ matrix.ansible-version }}
       if: ${{ matrix.ansible-version != 'devel' }}
       run: |
