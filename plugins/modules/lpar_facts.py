@@ -386,7 +386,7 @@ def main():
                 continue
             id, vtype = key
             if vtype == 'str':
-                if(id == "oslevel"):
+                if (id == "oslevel"):
                     vrmf = val.split('-')
                     if len(vrmf) == 4:
                         # formatting the base level in the format 7.2.0.0
@@ -413,7 +413,7 @@ def main():
                 lparstat[id] = float(val.strip().rstrip('%'))
             elif vtype == 'bool':
                 if id == "full_coredump":
-                    if(val.strip() == "false"):
+                    if (val.strip() == "false"):
                         lparstat[id] = False
                     else:
                         lparstat[id] = True
