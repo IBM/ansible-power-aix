@@ -31,7 +31,7 @@
 
 - name: Download latest rpm (installp) fileset
   get_url:
-     url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc/{{ rpm_src }}"
+     url: "{{ rpm_repo_src }}/{{ rpm_src }}"
      url_username: anonymous
      url_password: anonymous
      dest: "{{ download_dir }}/{{ rpm_src }}"
@@ -47,7 +47,7 @@
 
 - name: Download yum bundle file
   get_url:
-     url: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ yum_src }}"
+     url: "{{ yum_repo_src }}/{{ yum_src }}"
      url_username: anonymous
      url_password: anonymous
      dest: "{{ download_dir }}/{{ yum_src }}"
