@@ -275,7 +275,7 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
         for ln in stdout.splitlines()[1:]:
             fdirs.append(ln.split()[-1])
     for fdir in fdirs:
-        found = re.search(fs_name, fdir)
+        found = re.search('^' + fs_name + '$', fdir)
         if found:
             return True
 
