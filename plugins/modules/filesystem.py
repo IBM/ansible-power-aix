@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -74,6 +75,11 @@ options:
     - Specifies the virtual filesystem type to create the local filesystem.
     type: str
     default: jfs2
+  nfs_soft_mount:
+    description:
+    - Creates a soft mount, which means the system returns an error if the server does not respond.
+    type: bool
+    default: False
   auto_mount:
     description:
     - Specifies whether to automatically mount the filesystem at system restart while creating or
@@ -207,12 +213,16 @@ def nfs_opts(module):
     amount = module.params["auto_mount"]
     perms = module.params["permissions"]
     mgroup = module.params["mount_group"]
+    nfs_soft_mount = module.params["nfs_soft_mount"]
 
     opts = ""
     if amount is True:
         opts += "-A "
     elif amount is False:
         opts += "-a "
+
+    if nfs_soft_mount:
+        opts += "-S "
 
     if perms:
         opts += "-t %s " % perms
@@ -468,6 +478,7 @@ def main():
             permissions=dict(type='str', choices=['rw', 'ro']),
             mount_group=dict(type='str'),
             nfs_server=dict(type='str'),
+            nfs_soft_mount=dict(type='bool', default='False'),
             state=dict(type='str', default='present', choices=['absent', 'present']),
             rm_mount_point=dict(type='bool', default='false'),
             filesystem=dict(type='str', required=True),
@@ -481,6 +492,18 @@ def main():
         stdout='',
         stderr='',
     )
+
+    attributes = module.params['attributes']
+    fs_type = module.params['fs_type']
+    nfs_soft_mount = module.params['nfs_soft_mount']
+
+    if attributes and fs_type == "nfs":
+        result['msg'] = "Attributes are not supported with this filesystem."
+        module.exit_json(**result)
+
+    if fs_type != "nfs" and nfs_soft_mount:
+        result['msg'] = "Soft mount is not supported with this filesystem."
+        module.exit_json(**result)
 
     state = module.params['state']
     filesystem = module.params['filesystem']
