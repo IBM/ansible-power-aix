@@ -1,5 +1,7 @@
 # Copyright (c) IBM Corporation 2020
+rpm_repo_src: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/INSTALLP/ppc"
 rpm_src: "rpm.rte"
+yum_repo_src: "ftp://ftp.software.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc"
 yum_src: "yum_bundle.tar"
 dnf_src_71_72: "dnf_bundle_aix_71_72.tar"
 dnf_src_73: "dnf_bundle_aix_73.tar"
