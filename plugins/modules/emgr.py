@@ -226,6 +226,24 @@ msg:
     returned: always
     type: str
     sample: 'Missing parameter: force remove requires: ifix_label'
+count:
+    description: Number of ifixes found
+    returned: always
+    type: int
+    sample: 5
+ifixes:
+    description: List of ifixes on the system
+    returned: always
+    type: array
+    sample: [{
+        "abstract": "Multithreaded apps core dump / hang",
+        "id": "1",
+        "install_time": "10/16/22 01:44:18",
+        "label": "IJ30808s1a",
+        "state": "*Q*",
+        "state_desc": "REBOOT REQUIRED",
+        "updated_by": ""
+    }]
 stdout:
     description: The standard output.
     returned: always
@@ -299,6 +317,70 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
 
+def stdout_parser(stdout=''):
+  states_map = {
+    "S": "STABLE",
+    "M": "MOUNTED",
+    "U": "UNMOUNTED",
+    "Q": "REBOOT REQUIRED",
+    "B": "BROKEN",
+    "I": "INSTALLING",
+    "R": "REMOVING",
+    "T": "TESTED",
+    "P": "PATCHED",
+    "N": "NOT PATCHED",
+    "SP": "STABLE + PATCHED",
+    "SN": "STABLE + NOT PATCHED",
+    "QP": "BOOT IMAGE MODIFIED + PATCHED",
+    "QN": "BOOT IMAGE MODIFIED + NOT PATCHED",
+    "RQ": "REMOVING + REBOOT REQUIRED"
+  }
+
+  stdout_lines = stdout.splitlines()
+  if (len(stdout_lines) < 4):
+    return []
+    
+  categories_line = stdout_lines[1]   # extract categories
+  eqs = stdout_lines[2].split(" ")    # equal sign strings to count width of column
+  eqs_len = len(eqs)                  # length of string
+
+  # count width of each column
+  for i in range(eqs_len):
+      eqs[i] = len(eqs[i])
+
+  # count number of ifixes
+  ifix_count = 0
+  for i in range(2, len(stdout_lines)):
+      if stdout_lines[i] == "":
+          ifix_count = i - 3
+
+  # set size of categories and ifix_list arrays
+  categories = [None] * eqs_len
+  ifix_list = [None] * ifix_count
+
+  # extract and transform categories to lower case
+  start = 0
+  for i in range(eqs_len):
+      end = start + eqs[i]
+      categories[i] = categories_line[start:end].strip().lower().replace(" ", "_")
+      start = end + 1
+
+  for i in range(ifix_count):
+      line_count = 3 + i
+      ifix_str = stdout_lines[line_count]
+      ifix_item = {}
+
+      # extract ifix item details
+      start = 0
+      for j in range(eqs_len):
+          end = start + eqs[j]
+          ifix_item[categories[j]] = ifix_str[start:end].strip()
+          start = end + 1
+
+      ifix_item["state_desc"] = states_map[ifix_item["state"].replace("*","")]
+
+      ifix_list[i] = ifix_item
+  return ifix_list
 
 def main():
     global module
@@ -526,6 +608,11 @@ def main():
 
         results['stdout'] = stdout
         results['stderr'] = stderr
+
+        ifix_list = stdout_parser(stdout)
+        results['ifixes'] = ifix_list
+        results['count'] = len(ifix_list)
+        
         if rc != 0:
             # Ifix was already installed(0645-065).
             # Ifix with label to remove is not there (0645-066).
