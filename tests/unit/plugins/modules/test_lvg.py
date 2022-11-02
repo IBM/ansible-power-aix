@@ -34,7 +34,8 @@ params = {
     "multi_node_vary": None,
     "auto_on": None,
     "retry": None,
-    "major_num": None
+    "major_num": None,
+    "quorum": None
 }
 
 init_result = {

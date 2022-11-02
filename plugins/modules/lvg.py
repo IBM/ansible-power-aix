@@ -179,6 +179,11 @@ options:
     - Specifies the major number of the volume group that is created.
     - Can be used only when creating a volume group, hence when I(state=present).
     type: int
+  quorum:
+    description:
+    - Enables/disables quorum on the volume group.
+    - Can be used while changing an existing volume group, hence when I(state=present).
+    type: bool
 notes:
   - B(Attention:) using I(state=absent) with I(delete_lvs=yes) automatically deletes all logical
     volume data on the physical volume before removing the physical volume from the volume group.
@@ -711,6 +716,14 @@ def build_vg_opts(module, modify=False):
     elif retry is False:
         opt += "-O n "
 
+    # specify VG quorum option
+    quorum = module.params["quorum"]
+    if modify:
+        if quorum is True:
+            opt += "-Q y "
+        elif quorum is False:
+            opt += "-Q n "
+
     # specify total number of partitions in the VG
     # NOTE: this is only available for scalable VG
     num_partitions = module.params["num_partitions"]
@@ -766,6 +779,7 @@ def main():
             auto_on=dict(type='bool'),
             retry=dict(type='bool'),
             major_num=dict(type='int'),
+            quorum=dict(type='bool'),
         ),
     )
 
@@ -785,6 +799,12 @@ def main():
 
     if state == 'present':
         if vg_state is None:
+            # Creating VG does not support quorum option
+            quorum = module.params['quorum']
+            if quorum:
+                result['msg'] += "Attribute quorom is not supported while changing volume group %s.\n" % vg_name
+                module.fail_json(**result)
+
             # VG doesn't exist. Create it
             make_vg(module, vg_name)
         else:
