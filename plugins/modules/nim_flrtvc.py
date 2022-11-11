@@ -113,7 +113,7 @@ notes:
   - Refer to the FLRTVC page for detail on the sctipt
     U(https://www14.software.ibm.com/support/customercare/sas/f/flrt/flrtvc.html)
   - The FLRTVC ksh script is packaged as a ZIP file with the FLRTVC.ksh script and LICENSE.txt file.
-    It is downloaded from U(https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip).
+    It is downloaded from U(https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip).
   - The script requires ksh93 to use.
   - B(v0.8.1) is the current version of the script, depending on changes, this module might need to
     be updated.
@@ -1586,7 +1586,7 @@ def main():
 
     flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))
     if not download(module, results['meta'],
-                    'https://www-304.ibm.com/webapp/set2/sas/f/flrt3/FLRTVC-latest.zip',
+                    'https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest',
                     flrtvc_dst, resize_fs):
         if clean and os.path.exists(workdir):
             shutil.rmtree(workdir, ignore_errors=True)
