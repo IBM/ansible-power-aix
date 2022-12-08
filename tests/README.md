@@ -26,7 +26,7 @@ source <name_of_virtual_environement>/bin/activate
 **NOTE**: to deactivate virtual environment just run the command `deactivate` whilst
 the virtual environment is active.
 
-(5) install ansible 2.9
+(5) install ansible 2.9 (if any issue, then install 2.10.7)
 ```
 python -m pip install --upgrade pip
 python -m pip install ansible==2.9.*
