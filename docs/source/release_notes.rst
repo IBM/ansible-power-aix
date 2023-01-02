@@ -5,6 +5,35 @@
 Releases
 ========
 
+Version 1.5.1
+-------------
+Notes
+  * Various customer defects from public repository are fixed. 
+  * Fixed broken download link for flrtvc module.
+  * Added quorum to lvg module.
+  * Fix for filesystem module which ignored attributes parameter for NFS filesystems.
+  * Fix to be more strict on mount check.
+  * Allow repository sources to be overridden for local mirrors, for yum.
+  * Fix in suma module to prevent type comparison error in case the metadata file that is being searched does not specify an SP version.
+  * Fix for idempotecy issue for installp module.
+  * Updates to sanity tests.
+  * Fixed python linting issue for various modules.
+
+Availability
+  * `Automation Hub v1.5.1`_
+  * `Galaxy v1.5.1`_
+  * `GitHub v1.5.1`_
+
+.. _Automation Hub v1.5.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.5.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.5.1.tar.gz
+
+.. _GitHub v1.5.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.5.1/ibm-power_aix-1.5.1.tar.gz
+
+
 Version 1.5.0
 -------------
 Notes
@@ -381,4 +410,5 @@ Availability
 
 .. _GitHub v0.4.1:
    https://github.com/IBM/ansible-power-aix/releases/download/v0.4.1/ibm-power_aix-0.4.1.tar.gz
+
 
