@@ -72,6 +72,7 @@ options:
     description:
     - Specifies the installp flags to use when calling the installp command.
     type: str
+    default: ''
 notes:
   - You can refer to the IBM documentation for additional information on the geninstall command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/g_commands/geninstall.html)
