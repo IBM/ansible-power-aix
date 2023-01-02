@@ -68,6 +68,7 @@ options:
     description:
     - Any other options to be passed by the user to mklv or chlv command
     type: str
+    default: ''
   copies:
     description:
     - Specifies number of copies of logical volume
