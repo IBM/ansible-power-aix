@@ -131,6 +131,7 @@ import re
 
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
 
 def get_pvs(module):
     """
@@ -138,7 +139,6 @@ def get_pvs(module):
 
     return: dictionary with PVs information
     """
-    global results
 
     cmd = ['lspv']
     ret, stdout, stderr = module.run_command(cmd)
@@ -172,7 +172,6 @@ def get_free_pvs(module):
 
     return: dictionary with free PVs information
     """
-    global results
 
     cmd = ['lspv']
     ret, stdout, stderr = module.run_command(cmd)
@@ -224,7 +223,6 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
     - with a correct size
     and so can be used.
     """
-    global results
 
     # check rootvg
     if rootvg_info['status'] != 0:
@@ -374,7 +372,6 @@ def check_rootvg(module):
             "rootvg_size": size in Megabytes (int)
             "used_size": size in Megabytes (int)
     """
-    global results
 
     vg_info = {}
     vg_info["status"] = 1
@@ -435,7 +432,6 @@ def alt_disk_copy(module, params, hdisks):
     - check the rootvg, find and validate the hdisks for the operation
     - perform the alt disk copy operation
     """
-    global results
 
     # Either hdisks must be non-empty or disk_size_policy must be
     # explicitly set. This ensures the user knows what he is doing.
@@ -486,7 +482,6 @@ def alt_disk_clean(module, hdisks):
     - cleanup alternate disk volume group (alt_rootvg_op -X)
     - clear the owning volume manager from each disk (chpv -C)
     """
-    global results
 
     pvs = get_pvs(module)
     if pvs is None:

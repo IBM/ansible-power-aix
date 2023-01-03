@@ -291,6 +291,8 @@ filter:
 
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
+
 
 def list_rules(module, version):
     """
@@ -303,7 +305,6 @@ def list_rules(module, version):
     5|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|eq|657|any|0|both|inbound|no|all packets|0|all|0|||allow port 657
     6|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|657|both|inbound|no|all packets|0|all|0|||allow port 657
     """
-    global results
 
     vopt = '-v4' if version != 'ipv6' else '-v6'
 
@@ -391,7 +392,6 @@ def add_change_rules(module, params, version):
     """
     Adds a new filter rule or changes an existing one.
     """
-    global results
 
     vopt = '-v4' if version == 'ipv4' else '-v6'
 
@@ -590,7 +590,6 @@ def import_rules(module, params):
     """
     Imports filter rules from an export file.
     """
-    global results
 
     cmd = ['impfilt', '-f', params['directory']]
     module.run_command(cmd, check_rc=True)
@@ -611,7 +610,6 @@ def check_rules(module):
     """
     Checks the syntax of filter rules.
     """
-    global results
 
     cmd = ['ckfilt']
     ret, stdout, stderr = module.run_command(cmd, check_rc=True)

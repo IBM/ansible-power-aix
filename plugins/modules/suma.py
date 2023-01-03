@@ -230,7 +230,6 @@ def compute_rq_type(oslevel, last_sp):
         SP     when oslevel is xxxx-xx-xx(-xxxx)
         ERROR  when oslevel is not recognized
     """
-    global results
 
     if oslevel is None or not oslevel.strip() or oslevel == 'Latest':
         return 'Latest'
@@ -296,8 +295,6 @@ def compute_rq_name(rq_type, oslevel, last_sp):
     return:
        rq_name value
     """
-    global results
-    global suma_params
 
     rq_name = ''
     if rq_type == 'Latest':
@@ -390,8 +387,6 @@ def suma_command(action):
     return:
        stdout  suma command output
     """
-    global results
-    global suma_params
 
     rq_type = suma_params['RqType']
     cmd = ['/usr/sbin/suma', '-x', '-a', 'RqType={0}'.format(rq_type)]
@@ -435,7 +430,6 @@ def suma_list():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     task = suma_params['task_id']
     if task is None or not task.strip():
@@ -485,7 +479,6 @@ def suma_edit():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = '/usr/sbin/suma'
     if suma_params['sched_time'] is None:
@@ -532,7 +525,6 @@ def suma_unschedule():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = "/usr/sbin/suma -u {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
@@ -555,7 +547,6 @@ def suma_delete():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = "/usr/sbin/suma -d {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
@@ -578,7 +569,6 @@ def suma_run():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = "/usr/sbin/suma -x {0}".format(suma_params['task_id'])
     rc, stdout, stderr = module.run_command(cmd)
@@ -601,7 +591,6 @@ def suma_config():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = '/usr/sbin/suma -c'
     rc, stdout, stderr = module.run_command(cmd)
@@ -624,7 +613,6 @@ def suma_default():
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = '/usr/sbin/suma -D'
     rc, stdout, stderr = module.run_command(cmd)
@@ -654,8 +642,6 @@ def suma_download():
     note:
         Exits with fail_json in case of error
     """
-    global results
-    global suma_params
 
     # Check oslevel format
     if not suma_params['oslevel'].strip() or suma_params['oslevel'].upper() == 'LATEST':
@@ -817,7 +803,6 @@ def suma_download():
 def main():
     global module
     global results
-    global suma_params
 
     module = AnsibleModule(
         argument_spec=dict(

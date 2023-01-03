@@ -159,7 +159,7 @@ def modify_group(module):
     return:
         msg      (str): success or error message.
     """
-    global result
+
     msg = ""
 
     opts = ""
@@ -257,7 +257,7 @@ def create_group(module):
     return:
         msg      (str): success or error message.
     """
-    global result
+
     msg = ""
 
     cmd = ['mkgroup']
@@ -292,7 +292,7 @@ def remove_group(module):
     return:
         msg      (str): success or error message.
     """
-    global result
+
     msg = ""
     cmd = ['rmgroup']
 

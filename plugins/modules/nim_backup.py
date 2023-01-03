@@ -518,8 +518,6 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         Ansible might have this embedded in some version: require_if 4th parameter.
         Exits with fail_json in case of error
     """
-    global module
-    global results
 
     count = 0
     for param in one_of_list:
@@ -543,7 +541,6 @@ def build_nim_node(module):
     arguments:
         module      (dict): The Ansible module
     """
-    global results
 
     types = ['standalone', 'vios']
     for type in types:
@@ -561,7 +558,6 @@ def get_nim_type_info(module, type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -621,7 +617,6 @@ def expand_targets(targets):
 
     return: the list of existing machines matching the target patterns
     """
-    global results
 
     clients = []
     for target in targets:
@@ -709,7 +704,6 @@ def nim_mksysb_create(module, target, objtype, params):
         True if backup succeeded or skipped
         False otherwise
     """
-    global results
 
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
 
@@ -770,7 +764,6 @@ def nim_mksysb_restore(module, target, params):
         True if backup succeeded or skipped
         False otherwise
     """
-    global results
 
     # build sysb and spot resource names
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
@@ -887,7 +880,6 @@ def nim_iosbackup_create(module, target, params):
         True if restore succeeded or skipped
         False otherwise
     """
-    global results
 
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
 
@@ -939,7 +931,7 @@ def nim_iosbackup_restore(module, target, params):
         True if restore succeeded or skipped
         False otherwise
     """
-    global results
+
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
 
     # nim -Fo viosbr -a ios_backup=ios_backup_<vios> <vios>
@@ -994,7 +986,6 @@ def nim_list_backup(module, target, objtype, params):
     return:
         backup_info (dict): the backups information
     """
-    global results
 
     backup_info = {}
     if module.params['name']:
@@ -1046,7 +1037,6 @@ def nim_view_backup(module, params):
         Set results['status'][target] with the status
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = ['lsnim', '-l', params['name']]
     rc, stdout, stderr = module.run_command(cmd)
@@ -1094,7 +1084,6 @@ def nim_savevg_create(module, target, params):
         True if restore succeeded or skipped
         False otherwise
     """
-    global results
 
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
 
@@ -1153,7 +1142,7 @@ def nim_savevg_restore(module, target, params):
         True if restore succeeded or skipped
         False otherwise
     """
-    global results
+
     name = build_name(target, params['name'], params['name_prefix'], params['name_postfix'])
 
     # nim -o restvg -a savevg=savevg_res_name -a shrink=<yes|no> lpar_name

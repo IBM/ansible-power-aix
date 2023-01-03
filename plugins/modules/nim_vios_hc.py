@@ -87,6 +87,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 OUTPUT = []
 NIM_NODE = {}
+results = None
 
 
 def get_hmc_info(module):
@@ -230,8 +231,6 @@ def build_nim_node(module):
     Build the nim node containing the nim vios and hmc info.
     """
 
-    global NIM_NODE
-
     # Build hmc info list
     nim_hmc = get_hmc_info(module)
     NIM_NODE['nim_hmc'] = nim_hmc
@@ -296,7 +295,6 @@ def check_vios_targets(module, targets):
 
     return: the list of the existing vios tuple matching the target list
     """
-    global NIM_NODE
 
     vios_list = {}
     vios_list_tuples_res = []
@@ -407,9 +405,6 @@ def vios_health_init(module, hmc_id, hmc_ip):
     return: True if ok,
             False otherwise
     """
-    global NIM_NODE
-    global results
-    global OUTPUT
 
     module.debug('hmc_id: {0}, hmc_ip: {1}'.format(hmc_id, hmc_ip))
 
@@ -519,7 +514,6 @@ def health_check(module, targets):
 
     return: a dictionary with the state of each VIOS tuple
     """
-    global NIM_NODE
 
     module.debug('targets: {0}'.format(targets))
 
@@ -648,8 +642,6 @@ def get_vioshc_interpreter(module):
 
 def main():
     global results
-    global OUTPUT
-    global NIM_NODE
     global vioshc_cmd
     global vioshc_interpreter
 

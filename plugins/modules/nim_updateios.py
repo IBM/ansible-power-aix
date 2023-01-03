@@ -284,8 +284,6 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         Ansible might have this embedded in some version: require_if 4th parameter.
         Exits with fail_json in case of error
     """
-    global module
-    global results
 
     count = 0
     for param in one_of_list:
@@ -346,7 +344,6 @@ def refresh_nim_node(module, type):
     return:
         none
     """
-    global results
 
     if module.params['nim_node']:
         results['nim_node'] = module.params['nim_node']
@@ -377,7 +374,6 @@ def get_nim_type_info(module, type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -432,7 +428,6 @@ def check_lpp_source(module, lpp_source):
     return
         True if the lpp_source location exists
     """
-    global results
 
     # find location of lpp_source
     cmd = ['lsnim', '-a', 'location', lpp_source]
@@ -474,7 +469,6 @@ def check_vios_targets(module, targets):
     return:
         res_list    (list): The list of the existing vios tuple matching the target list
     """
-    global results
 
     vios_list = []
     res_list = []
@@ -584,7 +578,6 @@ def check_vios_cluster_status(module, target_tuple):
         True if the cluster status is valid for update.
         False otherwise.
     """
-    global results
 
     vios_key = tuple_str(target_tuple)
     tuple_len = len(target_tuple)
@@ -718,7 +711,6 @@ def cluster_stop_start(module, target_tuple, vios_key, vios, action):
         True if operation succeeded
         False otherwise
     """
-    global results
 
     node = vios
     if action == 'start':
@@ -760,7 +752,6 @@ def get_updateios_cmd(module):
     return:
         cmd      (list): command parameters
     """
-    global results
 
     cmd = ['nim', '-o', 'updateios']
     cmd += ['-a', 'updateios_flags=-{0}'.format(module.params['action'])]
@@ -802,7 +793,6 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
     return:
         none
     """
-    global results
 
     # build the updateios command from the playbook parameters
     updateios_cmd = get_updateios_cmd(module)

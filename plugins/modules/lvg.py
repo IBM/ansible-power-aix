@@ -292,7 +292,6 @@ def make_vg(module, vg_name):
     return:
         none
     """
-    global result
 
     pvs = module.params['pvs']
     opt = build_vg_opts(module)
@@ -345,7 +344,6 @@ def extend_vg(module, vg_name, vg_state, init_props):
     return:
         none
     """
-    global result
 
     # fail extendvg if vg is varied off
     varied_on = vg_state
@@ -397,8 +395,6 @@ def change_vg(module, vg_name, init_props):
     return:
         none
     """
-    global MAX_PP_PER_SMALL_VG, MAX_PP_PER_BIG_VG
-    global result
 
     major_num = module.params["major_num"]
     pp_size = module.params["pp_size"]
@@ -450,7 +446,6 @@ def reduce_vg(module, vg_name, vg_state):
     return:
         none
     """
-    global result
 
     pvs = module.params['pvs']
 
@@ -526,7 +521,6 @@ def vary_vg(module, state, vg_name, vg_state):
     return:
         none
     """
-    global result
 
     if vg_state is None:
         result['msg'] = "Volume group %s does not exist." % vg_name
@@ -564,7 +558,6 @@ def run_cmd(module, cmd, success_msg, fail_msg, init_props=None, fetch=False):
     """
     Helper function for running commands.
     """
-    global result
 
     if success_msg is None:
         success_msg = ""
@@ -595,7 +588,7 @@ def get_vg_props(module, just_pvs=False):
     return:
         init_props: string containing volume group info
     """
-    global result
+
     vg_name = module.params['vg_name']
     init_props = ''
 
@@ -634,7 +627,6 @@ def find_vg_state(module, vg_name):
         False - VG in varyoff state
         None - VG does not exist
     """
-    global result
 
     cmd = 'lsvg -o'
     fail_msg = "Command '%s' failed." % cmd

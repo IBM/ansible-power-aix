@@ -714,7 +714,6 @@ def parse_lpps_info():
     returns:
         The list of epkg to install (ordered by packaging date)
     """
-    global workdir
 
     lpps_lvl = {}
     lslpp_file = os.path.join(workdir, 'lslpp.txt')
@@ -783,7 +782,6 @@ def parse_emgr():
             efixes[label]['files'][file]
             efixes[label]['packages'][package]
     """
-    global workdir
 
     efixes = {}
     emgr_file = os.path.join(workdir, 'emgr.txt')
@@ -877,7 +875,6 @@ def run_flrtvc(flrtvc_path, params, force):
         True if flrtvc succeeded
         False otherwise
     """
-    global workdir
 
     if force:
         remove_efix()
@@ -963,7 +960,7 @@ def run_parser(report):
     note:
         Create and build results['meta']['1.parse']
     """
-    global module
+
     protocol = module.params['protocol']
     dict_rows = csv.DictReader(report, delimiter='|')
     pattern = re.compile(r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'

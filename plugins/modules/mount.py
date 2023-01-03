@@ -177,7 +177,6 @@ import re
 
 result = None
 
-
 def is_mount_group_mounted(module, mount_group):
     """
     Determines which FS are already mounted in a mount group
@@ -189,7 +188,6 @@ def is_mount_group_mounted(module, mount_group):
         point of the FS and the values are boolean values.
         True if the mount point is mounted, else False.
     """
-    global result
 
     # Fetch all FS in the mount_group
     cmd = "/usr/sbin/lsfs -u %s" % mount_group
@@ -247,7 +245,6 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
         True - if FS and mounted
         False - if FS and not mounted
     """
-    global result
 
     if mount_over_dir:
         # when mounting NFS, make sure we check for the NFS
@@ -292,7 +289,7 @@ def fs_list(module):
     return:
         none
     """
-    global result
+
     cmd = "/usr/sbin/mount"
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
@@ -317,7 +314,6 @@ def mount(module):
     return:
         none
     """
-    global result
 
     cmd = "/usr/sbin/mount "
     alternate_fs = module.params['alternate_fs']
@@ -405,7 +401,6 @@ def umount(module):
     return:
         none
     """
-    global result
 
     mount_all = module.params['mount_all']
     fs_type = module.params['fs_type']

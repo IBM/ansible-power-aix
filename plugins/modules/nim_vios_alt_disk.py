@@ -232,7 +232,6 @@ def get_target_ipaddr(module, target):
         the target hostname or IP address
         the target name if not found
     """
-    global results
 
     ipaddr = target
     for type in results['nim_node']:
@@ -268,7 +267,6 @@ def get_nim_type_info(module, lpar_type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', lpar_type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -329,7 +327,6 @@ def refresh_nim_node(module, type):
     return:
         none
     """
-    global results
 
     if module.params['nim_node']:
         results['nim_node'] = module.params['nim_node']
@@ -364,7 +361,6 @@ def check_vios_targets(module, targets):
 
     return: True iff all targets are valid NIM VIOS objects and are reachable
     """
-    global results
 
     # Check targets
     for vios_dict in targets:
@@ -441,7 +437,7 @@ def get_free_pvs(module, vios):
         vios     (str): The VIOS name
     return: dictionary with free PVs information
     """
-    global results
+
     module.debug('get_free_pvs vios: {0}'.format(vios))
 
     cmd = ['/usr/ios/cli/ioscli', 'lspv', '-free']
@@ -495,7 +491,6 @@ def find_valid_altdisk(module, params, action, vios_dict, vios_key, rootvg_info,
         0 if alternate disk is found
         1 otherwise
     """
-    global results
 
     pvs = {}
     used_pv = []
@@ -725,7 +720,6 @@ def check_rootvg(module, vios):
             "rootvg_size": size in Megabytes (int)
             "used_size": size in Megabytes (int)
     """
-    global results
 
     vg_info = {}
     copy_dict = {}
@@ -909,7 +903,6 @@ def check_valid_altdisks(module, action, vios, hdisks, vios_key, altdisk_op_tab,
         True  if alternate disk is found
         False otherwise
     """
-    global results
 
     module.debug('action: {0}, vios: {1}, hdisks: {2}, vios_key: {3}'
                  .format(action, vios, hdisks, vios_key))
@@ -974,7 +967,6 @@ def wait_altdisk_install(module, vios, hdisks, vios_key, altdisk_op_tab, err_lab
         0   if the alt_disk_install operation ends with success
         1   if the alt_disk_install operation ends with error
     """
-    global results
 
     module.debug('vios: {0}, hdisks: {1}, vios_key: {2}'
                  .format(vios, hdisks, vios_key))
@@ -1074,7 +1066,6 @@ def alt_disk_action(module, params, action, targets, vios_status, time_limit):
         altdisk_op_tab[vios_key] = "FAILURE-ALTDC[12] <error message>"
         altdisk_op_tab[vios_key] = "SUCCESS-ALTDC"
     """
-    global results
 
     module.debug('action: {0}, targets: {1}, vios_status: {2}'
                  .format(action, targets, vios_status))

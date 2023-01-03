@@ -351,7 +351,6 @@ def get_target_ipaddr(module, target):
         the target hostname or IP address
         the target name if not found
     """
-    global results
 
     ipaddr = target
     for type in results['nim_node']:
@@ -387,7 +386,6 @@ def get_nim_type_info(module, lpar_type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', lpar_type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -445,7 +443,6 @@ def get_nim_master_info(module):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = ['lsnim', '-l', 'master']
     rc, stdout, stderr = module.run_command(cmd)
@@ -482,7 +479,6 @@ def get_oslevels(module, targets):
     return:
         oslevels (dict): The oslevel of each target
     """
-    global results
 
     # Launch threads to collect information on targets
     threads = []
@@ -512,7 +508,7 @@ def run_oslevel_cmd(module, target, levels):
         target  (str): The NIM target name, can be 'master'
         levels (dict): The results of the oslevel command
     """
-    global results
+
     levels[target] = 'timedout'
 
     cmd = ['/usr/bin/oslevel', '-s']
@@ -546,7 +542,6 @@ def get_nim_lpp_source(module):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     cmd = ['lsnim', '-t', 'lpp_source', '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -584,7 +579,6 @@ def build_nim_node(module):
     arguments:
         module      (dict): The Ansible module
     """
-    global results
 
     # Build nim lpp_source list
     results['nim_node']['lpp_source'] = get_nim_lpp_source(module)
@@ -624,7 +618,6 @@ def expand_targets(targets):
     return:
         the list of existing machines matching the target patterns
     """
-    global results
 
     # Build clients list
     clients = []
@@ -692,7 +685,6 @@ def perform_customization(module, lpp_source, target, is_async):
     return:
         the return code of the command.
     """
-    global results
 
     cmd = ['nim', '-o', 'cust',
            '-a', 'lpp_source=' + lpp_source,
@@ -775,7 +767,7 @@ def list_fixes(module, target):
         a return code (0 if OK)
         the list of fixes
     """
-    global results
+
     module.debug('NIM list fixes')
 
     fixes = []
@@ -822,7 +814,6 @@ def remove_fix(module, target, fix):
     return:
         the return code of the command.
     """
-    global results
 
     cmd = ['/usr/sbin/emgr', '-r', '-L', fix]
     module.log('EMGR remove - Command:{0}'.format(cmd))
@@ -863,7 +854,6 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
     return:
         the lpp_source found or the current oslevel if not found
     """
-    global results
 
     module.debug('NIM - find resource: {0} {1}'.format(lpp_time, lpp_type))
 
@@ -915,7 +905,6 @@ def nim_update(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     lpp_source = params['lpp_source']
 
@@ -1073,8 +1062,6 @@ def nim_maintenance(module, params):
         params  (dict): The module parameters for the command.
     """
 
-    global results
-
     module.log('NIM - maintenance operation on {0}'.format(params['targets']))
 
     results['targets'] = expand_targets(params['targets'])
@@ -1144,8 +1131,6 @@ def nim_master_setup(module, params):
         Exits with fail_json in case of error
     """
 
-    global results
-
     module.log('NIM - master setup operation using {0} device'.format(params['device']))
 
     cmd = ['nim_master_setup', '-B',
@@ -1180,7 +1165,6 @@ def nim_check(module, params):
         module  (dict): The Ansible module
         params  (dict): The module parameters for the command.
     """
-    global results
 
     module.log('NIM - check operation')
 
@@ -1226,8 +1210,6 @@ def nim_compare(module, params):
         Exits with fail_json in case of error
     """
 
-    global results
-
     module.log('NIM - installation inventory comparison for {0} clients'.format(params['targets']))
 
     results['targets'] = expand_targets(params['targets'])
@@ -1272,7 +1254,6 @@ def nim_script(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     async_script = ''
     if params['asynchronous']:
@@ -1327,7 +1308,6 @@ def nim_allocate(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - allocate operation on {0} for {1} lpp source'.format(params['targets'], params['lpp_source']))
 
@@ -1373,7 +1353,6 @@ def nim_deallocate(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - deallocate operation on {0} for {1} lpp source'.format(params['targets'], params['lpp_source']))
 
@@ -1423,7 +1402,6 @@ def nim_bos_inst(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - bos_inst operation on {0} using {1} resource group'
                .format(params['targets'], params['group']))
@@ -1475,7 +1453,6 @@ def nim_define_script(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - define script operation for {0} resource with location {1}'.format(params['resource'], params['location']))
 
@@ -1526,7 +1503,6 @@ def nim_remove(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - remove operation on {0} resource'.format(params['resource']))
 
@@ -1564,7 +1540,6 @@ def nim_reset(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - reset operation on {0} resource (force: {1})'.format(params['targets'], params['force']))
 
@@ -1638,7 +1613,6 @@ def nim_reboot(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - reboot operation on {0}'.format(params['targets']))
 
@@ -1691,7 +1665,6 @@ def nim_show(module, params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     module.log('NIM - show operation')
     cmd = ['lsnim', '-l', '-Z']
