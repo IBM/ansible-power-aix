@@ -16,7 +16,7 @@ jobs:
   # with python version 2.7, 3.6, 3.7, and 3.8
   ########################################################################
   compile-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     defaults:
       run:
         working-directory: ansible_collections/ibm/power_aix
