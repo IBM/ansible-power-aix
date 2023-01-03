@@ -335,6 +335,7 @@ import re
 
 results = None
 
+
 def check_vg(module, vg):
     """
     Check if the volume group is active (i.e. varied-on).

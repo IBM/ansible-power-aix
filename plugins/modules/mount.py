@@ -177,6 +177,7 @@ import re
 
 result = None
 
+
 def is_mount_group_mounted(module, mount_group):
     """
     Determines which FS are already mounted in a mount group
