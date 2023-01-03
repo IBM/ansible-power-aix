@@ -292,6 +292,8 @@ import socket
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
+module = None
 
 def param_one_of(one_of_list, required=True, exclusive=True):
     """
@@ -305,8 +307,6 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         Ansible might have this embedded in some version: require_if 4th parameter.
         Exits with fail_json in case of error
     """
-    global module
-    global results
 
     count = 0
     for param in one_of_list:
@@ -335,7 +335,6 @@ def refresh_nim_node(module, type):
     return:
         none
     """
-    global results
 
     if module.params['nim_node']:
         results['nim_node'] = module.params['nim_node']
@@ -366,7 +365,6 @@ def get_nim_type_info(module, type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -423,7 +421,6 @@ def check_vios_targets(module, targets):
     return:
         vios_list    (list): The list of the existing vios matching the target list
     """
-    global results
 
     vios_list = []
 
@@ -506,7 +503,7 @@ def viosupgrade_query(module, params_flags):
     return:
         ret     (int) the number of error
     """
-    global results
+
     ret = 0
 
     # viosupgrade -q { [-n hostname | -f filename] }
@@ -582,7 +579,7 @@ def viosupgrade(module, params_flags):
     return:
         ret     (int) the number of error
     """
-    global results
+
     ret = 0
 
     cmd = ['/usr/sbin/viosupgrade']

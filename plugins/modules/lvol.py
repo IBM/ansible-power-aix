@@ -222,7 +222,6 @@ def create_lv(module, name):
     return:
         none
     """
-    global result
 
     opts = ''
     lv_type = module.params['lv_type']
@@ -282,7 +281,6 @@ def extend_lv(module, name, init_props):
     return:
         none
     """
-    global result
 
     # get lvid to fetch additonal information
     pattern = r"^LV IDENTIFIER:\s+(\w+\.\d+)"
@@ -387,7 +385,6 @@ def modify_lv(module, name, init_props):
     return:
         none
     """
-    global result
 
     new_name = module.params['lv_new_name']
     copies = module.params['copies']
@@ -443,7 +440,6 @@ def remove_lv(module, name):
     return:
         none
     """
-    global result
 
     cmd = 'rmlv -f %s' % name
     success_msg = "Logical volume %s removed." % name
@@ -464,7 +460,7 @@ def isSizeValid(module):
         valid  (bool): true if valid, false if not valid
         reason  (str): message for the strip size invalidity
     """
-    global result
+
     reason = ""
     valid = True
 
@@ -499,7 +495,6 @@ def get_lv_props(module):
     param name: logical volume name.
     return: standard output of lslv
     """
-    global result
 
     name = module.params['lv']
     cmd = "lslv %s" % name
@@ -518,7 +513,6 @@ def lv_run_cmd(module, cmd, success_msg, fail_msg, init_props=None, fetch=False)
     return: True - if any of the logical volume properties are modified
             False - if nothing changed
     """
-    global result
 
     if success_msg is None:
         success_msg = ""

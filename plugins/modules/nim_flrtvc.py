@@ -808,7 +808,6 @@ def parse_lpps_info(module, output, machine):
     returns:
         The list of epkg to install (ordered by packaging date)
     """
-    global workdir
 
     lpps_lvl = {}
     lslpp_file = os.path.join(workdir, 'lslpp_{0}.txt'.format(machine))
@@ -882,7 +881,6 @@ def parse_emgr(machine):
             efixes[label]['files'][file]
             efixes[label]['packages'][package]
     """
-    global workdir
 
     efixes = {}
     emgr_file = os.path.join(workdir, 'emgr_{0}.txt'.format(machine))
@@ -984,7 +982,6 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
         True if flrtvc succeeded
         False otherwise
     """
-    global workdir
 
     if force:
         remove_efix(module, output, machine)
@@ -1099,7 +1096,6 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             output['4.2.check']
         for the provided machine.
     """
-    global workdir
 
     out = {'messages': output['messages'],
            '2.discover': [],
@@ -1208,8 +1204,6 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         sorted against packaging date. Do not change the order.
         Create and build results['meta']['5.install'].
     """
-    global workdir
-    global results
 
     if not epkgs:
         msg = 'Nothing to install'

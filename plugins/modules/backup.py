@@ -333,6 +333,7 @@ rc:
 from ansible.module_utils.basic import AnsibleModule
 import re
 
+results = None
 
 def check_vg(module, vg):
     """
@@ -345,7 +346,7 @@ def check_vg(module, vg):
         True if the vg can be used
         False otherwise
     """
-    global results
+
     module.log('Checking {0} is active.'.format(vg))
 
     # list active volume groups
@@ -378,7 +379,7 @@ def mksysb(module, params):
     return:
         rc       (int): the return code of the command
     """
-    global results
+
     module.log('Creating OS backup with mksysb.')
 
     # Check if the backup image already exists
@@ -466,7 +467,7 @@ def alt_disk_mksysb(module, params):
     return:
         rc       (int): the return code of the command
     """
-    global results
+
     module.log('Restoring OS backup with alt_disk_mksysb.')
 
     # alt_disk_mksysb -m device -d target_disks...
@@ -543,7 +544,7 @@ def lsmksysb(module, params):
     return:
         rc       (int): the return code of the command
     """
-    global results
+
     module.log('Viewing OS backup information with lsmksysb.')
 
     # lsmksysb [ -f device ][ -l ]
@@ -574,7 +575,7 @@ def savevg(module, params, vg):
     return:
         rc       (int): the return code of the command
     """
-    global results
+
     module.log('Creating VG backup of {0} with savevg.'.format(vg))
 
     # Check if the backup image already exists
@@ -664,7 +665,6 @@ def restvg(module, params, action, disk):
     return:
         rc       (int): the return code of the command
     """
-    global results
 
     module.log('VG backup {0} on {1} with restvg.'.format(action, disk))
 
@@ -716,7 +716,6 @@ def restvg_view(module, params):
     return:
         rc       (int): the return code of the command
     """
-    global results
 
     location = params['location'].strip()
     if not location:

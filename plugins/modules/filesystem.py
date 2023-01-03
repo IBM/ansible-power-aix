@@ -276,7 +276,6 @@ def get_fs_props(module, filesystem):
     param filesystem: filesystem name.
     return: fs_props - output of lsfs -cq <fs>
     """
-    global result
 
     cmd = "lsfs -cq %s" % filesystem
     rc, stdout, stderr = module.run_command(cmd)
@@ -311,7 +310,6 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    global result
 
     # fetch initial attributes
     init_props_fs, init_props_nfs = get_fs_props(module, filesystem)
@@ -367,7 +365,6 @@ def mkfs(module, filesystem):
     return: changed - True/False(filesystem state created or not),
             msg - message
     """
-    global result
 
     nfs_server = module.params['nfs_server']
     perm = module.params['permissions']
@@ -431,7 +428,6 @@ def rmfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    global result
 
     rm_mount_point = module.params["rm_mount_point"]
 

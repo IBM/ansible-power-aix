@@ -362,7 +362,6 @@ def get_nim_clients(module):
     return the list of the name of the standlone objects defined on the
            NIM master.
     """
-    global results
 
     clients_list = []
 
@@ -421,7 +420,6 @@ def get_nim_lpp_source(module):
                 key = lpp source name
                 value = lpp source location
     """
-    global results
 
     lpp_source_list = {}
 
@@ -526,7 +524,6 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
     return:
        rq_name value
     """
-    global results
 
     rq_name = ''
     if rq_type == 'Latest':
@@ -723,7 +720,6 @@ def compute_dl_target(module, download_dir, lpp_source, nim_lpp_sources):
     return:
         dl_target value or msg in case of error
     """
-    global results
 
     if download_dir:
         dl_target = "{0}/{1}".format(download_dir, lpp_source)
@@ -754,7 +750,6 @@ def suma_command(module, action, suma_params):
     return:
        stdout  suma command output
     """
-    global results
 
     rq_type = suma_params['RqType']
     if rq_type == 'Latest':
@@ -799,7 +794,6 @@ def suma_download(module, suma_params):
     note:
         Exits with fail_json in case of error
     """
-    global results
 
     targets_list = suma_params['targets']
     req_oslevel = suma_params['req_oslevel']
