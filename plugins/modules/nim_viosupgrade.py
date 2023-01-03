@@ -295,6 +295,7 @@ from ansible.module_utils.basic import AnsibleModule
 results = None
 module = None
 
+
 def param_one_of(one_of_list, required=True, exclusive=True):
     """
     Check that parameter of one_of_list is defined in module.params dictionary.
