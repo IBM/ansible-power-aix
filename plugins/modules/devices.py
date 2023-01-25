@@ -184,6 +184,66 @@ import re
 results = None
 
 
+def str_to_dict(init_props, attributes):
+    """
+    Converts data from string format to dictionary format for further use.
+    Param Initial properties: Existing value of the attributes
+    Param attributes: Specified user attributes
+    Returns: Dictionary containing Initial attributes as key and the corrosponding values.
+    """
+    get_props = {}
+
+    for attr, val in attributes.items():
+        found = re.search(attr, init_props)
+        if found:
+            key = found.span()
+            val = ""
+
+            for i in range(key[1] + 1, len(init_props)):
+                if (init_props[i] != ' '):
+                    val += init_props[i]
+                elif init_props[i - 1] != ' ':
+                    break
+
+            key = init_props[key[0]:key[1]]
+            get_props[key] = val
+    return get_props
+
+
+def check_idempotency(module, init_props, attributes, msg):
+    """
+    Determines if the given attributes are already set i.e. checks for idempotency.
+    Param module: Ansible module argument spec
+    Param init_props: Existing value of the attributes
+    Param attributes: Specified user attributes
+    Param msg: Message to be concatanated
+    Returns: - Attributes that are unique
+            - Message that needs to be passed
+    """
+    ignore_attributes = []
+
+    if (type(init_props) == str):
+        init_props = str_to_dict(init_props, attributes)
+
+    for attr, val in attributes.items():
+        if attr in init_props.keys() and init_props[attr] == val:
+            attributes.pop(attr)
+            ignore_attributes.append(attr)
+
+    if len(attributes) == 0:
+        results['msg'] = "All the provided attributes are already at required level."
+        results['stdout'] = None
+        results['stdout_lines'] = None
+        module.exit_json(**results)
+
+    if len(ignore_attributes):
+        msg = "Following attributes were ignored because they are already set:\n"
+        msg += ','.join(ignore_attributes)
+        msg += '\n'
+
+    return attributes, msg
+
+
 def get_device_state(module, device):
     """
     Determines the current state of device.
@@ -252,10 +312,13 @@ def chdev(module, device):
     force = module.params["force"]
     chtype = module.params["chtype"]
     parent_device = module.params["parent_device"]
+    msg = ''
 
     ''' get initial properties of the device before
     attempting to modfiy it. '''
     init_props = get_device_attributes(module, device)
+
+    attributes, msg = check_idempotency(module, init_props, attributes, msg)
 
     opts = ""
 
@@ -307,11 +370,8 @@ def chdev(module, device):
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if init_props != get_device_attributes(module, device):
-        msg = "Modification of Device attributes completed for device '%s'" % device
+        msg += "Modification of Device attributes completed for device '%s'" % device
         rc = True
-    else:
-        msg = "Nothing was modified for device '%s'" % device
-        rc = False
 
     return rc, msg
 
