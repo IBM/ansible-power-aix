@@ -191,7 +191,7 @@ def str_to_dict(init_props, attributes):
     Param attributes: Specified user attributes
     Returns: Dictionary containing Initial attributes as key and the corrosponding values.
     """
-    get_props = dict()
+    get_props = {}
 
     for attr, val in attributes.items():
         found = re.search(attr, init_props)
