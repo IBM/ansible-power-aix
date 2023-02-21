@@ -31,6 +31,7 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
 - 'Privileged user with authorizations: B(aix.fs.manage.change,aix.system.install)'
+- set environment as PATH: "/usr/bin:/usr/sbin/:/opt/freeware/bin"
 options:
   apar:
     description:
