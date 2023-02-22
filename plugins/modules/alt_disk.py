@@ -19,7 +19,7 @@ module: alt_disk
 short_description: Alternate rootvg disk management.
 description:
 - Copy the rootvg to an alternate disk or cleanup an existing one on a logical partition (LPAR).
-version_added: '1.1.0'
+version_added: '1.2.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -83,6 +83,11 @@ options:
     - When I(action=copy), specifies the C(resolv.conf) file to replace the existing one after the
       rootvg has been cloned.
     type: str
+  allow_old_rootvg:
+    description:
+    - Allows the removal or cleanup of existing old rootvg as well.
+    type: bool
+    default: no
 notes:
   - M(alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
@@ -107,6 +112,11 @@ EXAMPLES = r'''
 - name: Perform a cleanup of any existing alternate disk copy
   alt_disk:
     action: clean
+
+- name: Perform a cleanup of any existing alternate disk copy and old rootvg
+  alt_disk:
+    action: clean
+    allow_old_rootvg: yes
 '''
 
 RETURN = r'''
@@ -216,7 +226,7 @@ def get_free_pvs(module):
     return free_pvs
 
 
-def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
+def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, allow_old_rootvg):
     """
     Find a valid alternate disk that:
     - exists,
@@ -236,29 +246,49 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force):
         module.fail_json(**results)
     # check an alternate disk does not already exist
     found_altdisk = ''
+    found_oldrootvg = ''
     for pv in pvs:
         if pvs[pv]['vg'] == 'altinst_rootvg':
             found_altdisk = pv
             break
-    if found_altdisk:
+    for pv in pvs:
+        if allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg':
+            found_oldrootvg = pv
+            break
+    if found_altdisk or found_oldrootvg:
         if not force:
-            results['msg'] = 'An alternate disk already exists on disk {0}'.format(found_altdisk)
+            if found_altdisk:
+                results['msg'] = 'An alternate disk already exists on disk {0}'.format(found_altdisk)
+            elif found_oldrootvg:
+                results['msg'] = 'An old rootvg already exists on disk {0}'.format(found_oldrootvg)
             module.fail_json(**results)
-        # Clean existing altinst_rootvg
-        module.log('Removing altinst_rootvg')
 
-        cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'altinst_rootvg']
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
-            results['stdout'] = stdout
-            results['stderr'] = stderr
-            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-            module.fail_json(**results)
+        # Clean existing altinst_rootvg
+        if found_altdisk:
+            module.log('Removing altinst_rootvg')
+            cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'altinst_rootvg']
+            ret, stdout, stderr = module.run_command(cmd)
+            if ret != 0:
+                results['stdout'] = stdout
+                results['stderr'] = stderr
+                results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+                module.fail_json(**results)
+
+        # Clean existing old_rootvg
+        if found_oldrootvg:
+            module.log('Removing old_rootvg')
+            cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'old_rootvg']
+            ret, stdout, stderr = module.run_command(cmd)
+            if ret != 0:
+                results['stdout'] = stdout
+                results['stderr'] = stderr
+                results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+                module.fail_json(**results)
 
         results['changed'] = True
 
         for pv in pvs:
-            if pvs[pv]['vg'] == 'altinst_rootvg':
+            if (pvs[pv]['vg'] == 'altinst_rootvg') or (allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg'):
                 module.log('Clearing the owning VG from disk {0}'.format(pv))
 
                 cmd = ['/usr/sbin/chpv', '-C', pv]
@@ -426,7 +456,7 @@ def check_rootvg(module):
     return vg_info
 
 
-def alt_disk_copy(module, params, hdisks):
+def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
     """
     alt_disk_copy operation
 
@@ -446,7 +476,7 @@ def alt_disk_copy(module, params, hdisks):
 
     if hdisks is None:
         hdisks = []
-    find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'], params['force'])
+    find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'], params['force'], allow_old_rootvg)
 
     module.log('Using {0} as alternate disks'.format(hdisks))
 
@@ -476,7 +506,7 @@ def alt_disk_copy(module, params, hdisks):
     results['changed'] = True
 
 
-def alt_disk_clean(module, hdisks):
+def alt_disk_clean(module, hdisks, allow_old_rootvg):
     """
     alt_disk_clean operation
 
@@ -488,18 +518,30 @@ def alt_disk_clean(module, hdisks):
     if pvs is None:
         module.fail_json(**results)
 
+    found_altdisk = False
+    found_oldrootvg = False
+
     if hdisks:
         # Check that all specified disks exist and belong to altinst_rootvg
         for hdisk in hdisks:
-            if (hdisk not in pvs) or (pvs[hdisk]['vg'] != 'altinst_rootvg'):
+            if (hdisk not in pvs) or ((pvs[hdisk]['vg'] != 'altinst_rootvg') and (not allow_old_rootvg or pvs[hdisk]['vg'] != 'old_rootvg')):
                 results['msg'] = 'Specified disk {0} is not an alternate install rootvg'\
                                  .format(hdisk)
                 module.fail_json(**results)
+
+            if pvs[hdisk]['vg'] == 'altinst_rootvg':
+                found_altdisk = True
+            if allow_old_rootvg and pvs[hdisk]['vg'] == 'old_rootvg':
+                found_oldrootvg = True
     else:
         # Retrieve the list of disks that belong to altinst_rootvg
         hdisks = []
         for pv in pvs.keys():
             if pvs[pv]['vg'] == 'altinst_rootvg':
+                found_altdisk = True
+                hdisks.append(pv)
+            if allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg':
+                found_oldrootvg = True
                 hdisks.append(pv)
         if not hdisks:
             # Do not fail if there is no altinst_rootvg to preserve idempotency
@@ -507,18 +549,34 @@ def alt_disk_clean(module, hdisks):
             return
 
     # First remove the alternate VG
-    module.log('Removing altinst_rootvg')
 
-    cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'altinst_rootvg']
-    ret, stdout, stderr = module.run_command(cmd)
-    results['rc'] = ret
-    results['cmd'] = ' '.join(cmd)
-    results['stdout'] = stdout
-    results['stderr'] = stderr
+    if found_altdisk:
+        module.log('Removing altinst_rootvg')
 
-    if ret != 0:
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
-        module.fail_json(**results)
+        cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'altinst_rootvg']
+        ret, stdout, stderr = module.run_command(cmd)
+        results['rc'] = ret
+        results['cmd'] = ' '.join(cmd)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+
+        if ret != 0:
+            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            module.fail_json(**results)
+
+    if found_oldrootvg:
+        module.log('Removing old_rootvg')
+
+        cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'old_rootvg']
+        ret, stdout, stderr = module.run_command(cmd)
+        results['rc'] = ret
+        results['cmd'] = ' '.join(cmd)
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+
+        if ret != 0:
+            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            module.fail_json(**results)
 
     # Clears the owning VG from the disks
     for hdisk in hdisks:
@@ -551,6 +609,7 @@ def main():
             device_reset=dict(type='bool', default=False),
             first_boot_script=dict(type='str'),
             resolvconf=dict(type='str'),
+            allow_old_rootvg=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
             ['targets', 'disk_size_policy']
@@ -573,11 +632,12 @@ def main():
 
     action = module.params['action']
     targets = module.params['targets']
+    allow_old_rootvg = module.params['allow_old_rootvg']
 
     if action == 'copy':
         alt_disk_copy(module, module.params, targets)
     else:
-        alt_disk_clean(module, targets)
+        alt_disk_clean(module, targets, allow_old_rootvg)
 
     results['msg'] += 'alt_disk {0} operation completed successfully'.format(action)
     module.exit_json(**results)
