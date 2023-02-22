@@ -19,7 +19,7 @@ module: alt_disk
 short_description: Alternate rootvg disk management.
 description:
 - Copy the rootvg to an alternate disk or cleanup an existing one on a logical partition (LPAR).
-version_added: '1.2.0'
+version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
