@@ -30,8 +30,9 @@ options:
     - Specifies the operation to perform.
     - C(copy) to perform and alternate disk copy.
     - C(clean) to cleanup an existing alternate disk copy.
+    - C(clean_old) to cleanup an old rootvg disk copy.
     type: str
-    choices: [ copy, clean ]
+    choices: [ copy, clean, clean_old ]
     default: copy
   targets:
     description:
@@ -107,6 +108,10 @@ EXAMPLES = r'''
 - name: Perform a cleanup of any existing alternate disk copy
   alt_disk:
     action: clean
+
+- name: Perform a cleanup of any existing old rootvg disk copy
+  alt_disk:
+    action: clean_old
 '''
 
 RETURN = r'''
@@ -535,6 +540,65 @@ def alt_disk_clean(module, hdisks):
     results['changed'] = True
 
 
+def old_disk_clean(module, hdisks):
+    """
+    old_disk_clean operation
+
+    - cleanup old alternate disk volume group (alt_rootvg_op -X)
+    - clear the owning volume manager from each disk (chpv -C)
+    """
+
+    pvs = get_pvs(module)
+    if pvs is None:
+        module.fail_json(**results)
+
+    if hdisks:
+        # Check that all specified disks exist and belong to old_rootvg
+        for hdisk in hdisks:
+            if (hdisk not in pvs) or (pvs[hdisk]['vg'] != 'old_rootvg'):
+                results['msg'] = 'Specified disk {0} is not an old rootvg'\
+                                 .format(hdisk)
+                module.fail_json(**results)
+    else:
+        # Retrieve the list of disks that belong to old_rootvg
+        hdisks = []
+        for pv in pvs.keys():
+            if pvs[pv]['vg'] == 'old_rootvg':
+                hdisks.append(pv)
+        if not hdisks:
+            # Do not fail if there is no old_rootvg to preserve idempotency
+            results['msg'] += "There is no old rootvg. "
+            return
+
+    # First remove the old VG
+    module.log('Removing old_rootvg')
+
+    cmd = ['/usr/sbin/alt_rootvg_op', '-X', 'old_rootvg']
+    ret, stdout, stderr = module.run_command(cmd)
+    results['rc'] = ret
+    results['cmd'] = ' '.join(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+
+    if ret != 0:
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        module.fail_json(**results)
+
+    # Clears the owning VG from the disks
+    for hdisk in hdisks:
+        module.log('Clearing the owning VG from disk {0}'.format(hdisk))
+
+        cmd = ['/usr/sbin/chpv', '-C', hdisk]
+        ret, stdout, stderr = module.run_command(cmd)
+        if ret != 0:
+            results['stdout'] = stdout
+            results['stderr'] = stderr
+            results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            module.fail_json(**results)
+
+    results['changed'] = True
+
+
 def main():
     global results
 
@@ -576,8 +640,13 @@ def main():
 
     if action == 'copy':
         alt_disk_copy(module, module.params, targets)
-    else:
+    elif action == 'clean_old':
+        old_disk_clean(module, targets)
+    elif action == 'clean':
         alt_disk_clean(module, targets)
+    else:
+        results['msg'] = 'Invalid action parameter'
+        module.fail_json(**results)
 
     results['msg'] += 'alt_disk {0} operation completed successfully'.format(action)
     module.exit_json(**results)
