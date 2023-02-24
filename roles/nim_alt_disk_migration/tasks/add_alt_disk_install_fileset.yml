@@ -7,7 +7,7 @@
 - name: "Add 'bos.alt_disk_install.rte fileset to {{ spot }}"
   block:
     - command: >
-        nim -o cust -a lpp_source={{ lpp_source }}
+        nim -o cust -a lpp_source={{ nim_mast_lpp | default(lpp_source) }}
         -a filesets=bos.alt_disk_install.rte {{ spot }}
       register: spot_fileset_install
 

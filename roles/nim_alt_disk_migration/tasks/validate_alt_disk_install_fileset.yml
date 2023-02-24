@@ -131,8 +131,10 @@
     - fail:
         msg: >
           NIM master and {{ lpp_source }} 'bos.alt_disk_install.rte'
-          fileset levels do not match
-      when: lpp_source_fileset_level != nim_master_fileset_level
+          fileset level
+          {{ lpp_source_fileset_level }} > {{ nim_master_fileset_level }}
+          fileset levels invalid - LPP Source cannot be higher than NIM Master
+      when: lpp_source_fileset_level > nim_master_fileset_level
 
 ############################################################
 ############################################################
@@ -143,7 +145,9 @@
     - fail:
         msg: >
             NIM master and {{ spot }} 'bos.alt_disk_install.rte'
+            {{ spot_fileset_level }} not in  {{ nim_master_fileset_levels }}
             fileset levels do not match
+            Install 'bos.alt_disk_install.rte' from {{ nim_master_fileset_level }} into {{ spot }}
       when: "spot_fileset_level not in nim_master_fileset_levels"
   when: spot != ""
 
@@ -163,7 +167,8 @@
     - fail:
         msg: >
           {{ lpp_source }} and {{ spot }} 'bos.alt_disk_install.rte'
-          fileset levels do not match
+          {{ spot_fileset_level }} < {{ lpp_source_fileset_level }}
+          fileset levels are not supported - LPP Source cannot be higher than SPOT
 
-      when: spot_fileset_level != lpp_source_fileset_level
+      when: spot_fileset_level < lpp_source_fileset_level
   when: spot != ""
