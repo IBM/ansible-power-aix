@@ -145,7 +145,7 @@
     - fail:
         msg: >
             NIM master and {{ spot }} 'bos.alt_disk_install.rte'
-            {{ spot_fileset_level }} not in  {{ nim_master_fileset_levels }}
+            {{ spot_fileset_level }} not in {{ nim_master_fileset_levels }}
             fileset levels do not match
             Install 'bos.alt_disk_install.rte' from {{ nim_master_fileset_level }} into {{ spot }}
       when: "spot_fileset_level not in nim_master_fileset_levels"

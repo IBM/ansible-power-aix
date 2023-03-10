@@ -4,7 +4,7 @@
     action: check
     targets: "{{ nim_client }}"
   register: nim_check
-- debug: var=nim_check
+- debug: var=nim_check.nim_node.standalone[nim_client]
 
 ############################################################
 # NOTE: steps on parsing
