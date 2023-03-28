@@ -184,7 +184,7 @@
 
     - name: "Clear nimadm_options variable when CacheVG and Bundle not defined"
       set_fact:
-        nimadm_options:  ""
+        nimadm_options: ""
       when:
         - nimadm_cache_vg | default("N/A")  == "N/A"
         - nimadm_bundle   | default("N/A")  == "N/A"
@@ -220,8 +220,8 @@
             msg: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
 
         - name: "Migrate to alternate disk"  # noqa no-changed-when
-          #command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
-          #command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
+          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
+          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
           command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
           register: results
           async: "{{ wait_nimadm_timeout_secs }}"
