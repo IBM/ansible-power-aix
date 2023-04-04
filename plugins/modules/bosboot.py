@@ -159,9 +159,11 @@ def validate_space(module):
     """
     req_space = determine_required_space(module)
 
-    for dir in req_space.keys():
+    # key represents directory and value represents space
+
+    for key, val in req_space.items():
         cmd = "/usr/bin/df -m "
-        cmd += dir
+        cmd += key
         rc, stdout, stderr = module.run_command(cmd)
         stdout_lines = stdout.split("\n")[1:]
 
@@ -186,11 +188,11 @@ def validate_space(module):
         # If required space is less than the present space and user has set the value of increase_space
         #  attribute to true, increase_disk_space function is called to increase the disk.
 
-        if present_space < req_space[dir]:
+        if present_space < val:
             if module.params['increase_space']:
-                increase_disk_space(req_space[dir] - present_space + 1, dir)
+                increase_disk_space(val - present_space + 1, key)
             else:
-                results['msg'] += "Not enought space in the " + dir + " directory, increase the space and try again."
+                results['msg'] += "Not enought space in the " + key + " directory, increase the space and try again."
                 results['cmd'] = cmd
                 results['stdout'] = stdout
                 results['stderr'] = stderr
@@ -388,7 +390,7 @@ def main():
 
     if not validate_disk_device(module.params['disk_device']):
         results['msg'] = "The provided disk device " + module.params['disk_device'] + " doesn't exist in the machine."
-        module.exit_json(**results)
+        module.fail_json(**results)
 
     if module.params['create_image']:
         create_image(module)
