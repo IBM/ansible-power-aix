@@ -1,0 +1,54 @@
+---
+- name: "MOUNT on AIX"
+  hosts: "{{host_name}}"
+  gather_facts: no
+  vars:
+    host_name: all
+    mount_dir_value: /mnt/testfs
+    mount_over_dir_value: /mnt/clientnfs
+    node_v: ansible-test1
+  collections:
+    ibm.power_aix
+
+  tasks:
+    - name: List mounted filesystems
+      mount:
+        state: show
+
+    - name: Mount filesystems
+      mount:
+        state: mount
+        mount_dir: "{{mount_dir_value}}"
+
+    - name: Mount filesystems provided by a node
+      mount:
+        state: mount
+        node: "{{node_v}}"
+        mount_dir: /mnt/servnfs
+        mount_over_dir: "{{mount_over_dir_value}}"
+
+    - name: Mount all filesystems from the 'local' mount group
+      mount:
+        state: mount
+        fs_type: local
+
+    - name: Unmount filesystem
+      mount:
+        state: umount
+        mount_dir: "{{mount_dir_value}}"
+
+    - name: Unmount all remote filesystems
+      mount:
+        state: umount
+        mount_all: remote
+        force: True
+
+    - name: Unmount all remote fileystems from a node
+      mount:
+        state: umount
+        node: "{{node_v}}"
+
+    - name: Unmount all filesytems from the 'local' mount group
+      mount:
+        state: umount
+        fs_type: local

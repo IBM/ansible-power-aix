@@ -1,0 +1,38 @@
+---
+- name: "GROUP on AIX"
+  hosts: "{{host_name}}"
+  gather_facts: no
+  vars:
+    host_name: all
+    user_list_val: 'test1'
+    group_name: ansible
+  collections:
+    ibm.power_aix
+  tasks:
+    - name: Create a group
+      group:
+        state: present
+        name: "{{group_name}}"
+    - name: Add a member to a group
+      group:
+        state: modify
+        name: "{{group_name}}"
+        user_list_action: 'add'
+        user_list_type: 'members'
+        users_list: "{{user_list_val}}"
+    - name: Remove a member from a group
+      group:
+        state: modify
+        name: "{{group_name}}"
+        user_list_action: 'remove'
+        user_list_type: 'members'
+        users_list: "{{user_list_val}}"
+    - name: Modify group attributes
+      group:
+        state: modify
+        name: "{{group_name}}"
+        group_attributes: "admin=true"
+    - name: Remove a group
+      group:
+        state: absent
+        name: "{{group_name}}"
