@@ -14,19 +14,15 @@ Available variables are listed below, along with if they are required, type and 
     pkgtype (True, str, none)
 
 Specifies the package service requiring bootstrap installation.
-pkgtype: [yum, python, dnf, wget, pycurl]
-Bootstrap for yum and python is supported for AIX 7.1 and AIX 7.2.
-Bootstrap for dnf is supported for AIX 7.3
+pkgtype: [dnf, wget, pycurl]
+Bootstrap for dnf is supported for all AIX versions.
+yum is not supported now on any AIX version.
 
 -- pkgtype arguments
-- yum
-Uses the AIX toolsbox to install the yum package and dependencies.
-- python
-Install python2 using yum.
 - dnf
-Uses the AIX toolsbox to install dnf and dependencies on AIX 7.3 and above.
+Uses the AIX toolsbox to install dnf and dependencies on AIX-7.1 and above.
 - wget
-Uses dnf or yum to install wget.
+Uses dnf install wget.
 -pycurl
 Installs pycurl
 
@@ -57,7 +53,7 @@ None.
       include_role:
         name: power_aix_bootstrap
       vars:
-        pkgtype: yum
+        pkgtype: dnf 
 
 
     - hosts: aix

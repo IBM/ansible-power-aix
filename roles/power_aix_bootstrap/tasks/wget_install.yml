@@ -28,27 +28,6 @@
       register: yum_tools_exists
       changed_when: false
 
-    # Verify the AIX level is 7.3 or above
-    - name: Retrieve the AIX release level.
-      raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
-      register: os_level
-      changed_when: false
-
-    - name: Verify if the operating system is AIX 7.2 and bellow as
-            bootstrap wget with dnf is not supported.
-      fail:
-        msg: "End play for host {{ aix_host }}. Please use power_aix_bootstrap \
-              with pkgtype yum for this release"
-      when: (os_level.stdout_lines[0] | int) < 73 and yum_tools_exists.stdout
-            is search("false")
-
-    - name: Verify if the operating system is AIX 7.3 or above as bootstrap
-            wget requires dnf.
-      fail:
-        msg: "End play for host {{ aix_host }}. dnf package manager is missing. Please use \
-              power_aix_bootstrap with pkgtype dnf"
-      when: (os_level.stdout_lines[0] | int) >= 73 and dnf_tools_exists.stdout is search("false")
-
     # Ensure there is enough space to install wget
     - name: Increase /opt is required.
       include_tasks: increase_filesystem.yml
