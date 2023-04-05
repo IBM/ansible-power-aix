@@ -113,6 +113,7 @@ Authors:
 - Rae Yang <raeyang@us.ibm.com>
 - Gomathi Mohan <gommohan@in.ibm.com>
 - Pedro V. Torres <pvtorres@us.ibm.com>
+- Shreyansh Chamola <shreyansh.chamola@ibm.com>
 
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new
