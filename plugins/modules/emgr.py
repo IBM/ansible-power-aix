@@ -298,6 +298,43 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         module.fail_json(**results)
 
 
+def parse_ifix_details(output):
+    """
+    Parses the output of "emgr -l" command to return the ifixes as a list instead of str.
+
+    argument:
+      stdout (str) standard output of the command.
+
+    return:
+      List of dictionaries containing information about the iFixes.
+    """
+    output = output.split('\n')
+    ifix_name = []
+
+    len_info = []
+    for i in output[2].split():
+        len_info.append(len(i))
+
+    info_list = ["ID", "STATE", "LABEL", "INSTALL TIME", "UPDATED BY", "ABSTRACT"]
+
+    ind = 3
+    while (output[ind] != ""):
+        line = output[ind]
+        current_index = 0
+        ifix_info = {}
+        for info_index in range(6):
+            upto_index = current_index + len_info[info_index]
+            if info_index == 5:
+                val = line[current_index:]
+            else:
+                val = line[current_index:upto_index]
+            ifix_info[info_list[info_index]] = val.strip()
+            current_index = upto_index + 1
+        ifix_name.append(ifix_info)
+        ind += 1
+    return ifix_name
+
+
 def main():
     global module
     global results
@@ -334,6 +371,7 @@ def main():
         msg='',
         stdout='',
         stderr='',
+        ifix_details=[],
     )
 
     bosboot_flags = {'skip': '-b', 'load_debugger': '-k', 'invoke_debugger': '-I'}
@@ -540,6 +578,8 @@ def main():
         results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
+        elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
+            results['ifix_details'] = parse_ifix_details(stdout)
     else:
         results['msg'] = 'Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
         results['stdout'] = 'No stdout as execution has been skipped.'
