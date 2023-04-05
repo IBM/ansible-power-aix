@@ -2,7 +2,7 @@
 - name: "Bootstrap Yum on AIX"
   hosts: aix
   gather_facts: no
-#  user: root
+  user: root
   collections:
   - ibm.power_aix
   tasks:
@@ -11,7 +11,7 @@
   - import_role:
       name: power_aix_bootstrap
     vars:
-      pkgtype: "yum"
+      pkgtype: "dnf"
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
 

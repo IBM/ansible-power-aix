@@ -1,22 +1,11 @@
 # Copyright (c) IBM Corporation 2021
 ---
 
-#   Verify the AIX level is 7.3 or above. Bootstrap dnf is only supported in AIX 7.3 and up.
-- name: Verify the host is at least aix 7.3, if not, exit host
+#   Verify the AIX level is 7.1 or above. Bootstrap dnf is only supported in AIX 7.1 and up.
+- name: Verify the host is at least aix 7.1, if not, exit host
   raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
   register: output
   changed_when: false
-
-- name: Set a aix73
-  set_fact:
-    aix73: true
-  when: (output.stdout_lines[0] | int) >= 73
-
-- name: Fail if AIX version < 7.3
-  fail:
-    msg: "End playbook for {{ aix_host }}. Bootstrap dnf for AIX version \
-           {{ output.stdout_lines[0] }} is not supported."
-  when: not aix73
 
 #   CHECK for DNF on inventory host
 - block:
@@ -37,30 +26,8 @@
       changed_when: false
       when: dnf_exists.stdout is search("false")
 
-  when: aix73
-
-# { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.3
+# { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.1
 - block:
-
-    - name: Set the python interpreter to python3
-      set_fact:
-        ansible_python_interpreter: /usr/bin/python3
-
-    - name: Check for "{{ dnf_src_73 }}" in "{{ download_dir }}"
-      stat:
-        path: "{{ download_dir }}/{{ dnf_src_73 }}"
-      register: dnf_src_bundle
-      delegate_to: localhost
-
-    - name: Download latest dnf bundle file "{{ dnf_src_73 }}" for 7.3 to the controller
-      get_url:
-        url: "http://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/{{ dnf_src_73 }}"
-        dest: "{{ download_dir }}/{{ dnf_src_73 }}"
-        mode: '0644'
-      when: not dnf_src_bundle.stat.exists
-      delegate_to: localhost
-
-     # DEFINE / EXPAND target path
 
     - name: Create target filesystem "{{ target_dir }}" for image transfer if it does not exist.
       filesystem:
@@ -76,24 +43,23 @@
       mount:
         mount_dir: "{{ target_dir }}"
 
-    - name: Copy dnf install images to "{{ aix_host }}:{{ target_dir }}"
+    - name: Copy dnf install script to "{{ aix_host }}:{{ target_dir }}"
       copy:
         src: "{{ item }}"
         dest: "{{ target_dir }}"
         mode: 0755
       with_items:
         - "files/{{ dnf_install_script }}"
-        - "{{ download_dir }}/{{ dnf_src_73 }}"
 
     - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
       command: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
-      failed_when: false
+#      failed_when: false
       when:
         - yum_exists.stdout is search("true")
 
     - name: Restore dnf bundle at the target if yum is not installed.
       command: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
-      failed_when: false
+#      failed_when: false
       when:
         - yum_exists.stdout is not search("true")
 
@@ -136,4 +102,4 @@
       when: dnf_installed.stat.exists
 
   #    Block to install dnf }
-  when: aix73 and dnf_exists.stdout is search("false")
+  when: dnf_exists.stdout is search("false")
