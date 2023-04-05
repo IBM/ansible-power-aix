@@ -1,0 +1,35 @@
+---
+- name: "INSTALLP on AIX"
+  hosts: "{{host_name}}"
+  gather_facts: no
+  vars:
+    host_name: all
+    device_name: /dev/rmt0.1
+  collections:
+    - ibm.power_aix
+  tasks:
+
+    - name: List all software products and installable options contained on an installation cartridge tape
+      installp:
+        action: list
+        device: "{{device_name}}"
+    - name: List all customer-reported problems fixed by all software products on an installation tape
+      installp:
+        action: list_fixes
+        device: "{{device_name}}"
+        install_list: all
+    - name: Install all filesets within the bos.net software package and expand file systems if necessary
+      installp:
+        extend_fs: yes
+        device: /usr/sys/inst.images
+        install_list: bos.net
+    - name: Reinstall and commit the NFS software product option that is already installed on the system at the same level
+      installp:
+        commit: yes
+        force: yes
+        device: "{{device_name}}"
+        install_list: bos.net.nfs.client:4.1.0.0
+    - name: Remove a fileset named bos.net.tcp.server
+      installp:
+        action: deinstall
+        install_list: bos.net.tcp.server
