@@ -204,7 +204,8 @@ def belong_to_vg(module, target_disk):
     # 0516-320 /usr/sbin/getlvodm: Physical volume hdisk1 is not assigned to
     #        a volume group.
     # physical volume belongs to a volume group if 'found' is not null
-    pattern = r"0516-320"
+    #pattern = r"0516-320"
+    pattern = r"0516-320|0516-1396"
     found = re.search(pattern, stderr, re.MULTILINE)
     if rc != 0 and not found:
         fail_handler(module, rc, cmd, stdout, stderr)
@@ -320,12 +321,17 @@ def check_rootvg(module):
             pp_size = int(match_key.group(1))
             continue
 
+        match_key = re.match(r"TOTAL PVs:\s+(\d+)\s+.*", line)
+        if match_key:
+            total_pvs = int(match_key.group(1))
+            continue
+
     if total_pps == -1 or used_pps == -1 or pp_size == -1:
         msg = 'Failed to get rootvg size, parsing error.\n'
         fail_handler(module, rc, cmd, stdout, stderr, msg=msg)
 
-    total_size = pp_size * total_pps
-    used_size = pp_size * used_pps
+    total_size = pp_size * total_pps / total_pvs
+    used_size = pp_size * used_pps / total_pvs
 
     vg_info["status"] = 0
     vg_info["rootvg_size"] = total_size

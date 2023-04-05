@@ -182,6 +182,23 @@
     #############################################################
     #############################################################
 
+    - name: "Clear nimadm_options variable when CacheVG and Bundle not defined"
+      set_fact:
+        nimadm_options: ""
+      when:
+        - nimadm_cache_vg | default("N/A")  == "N/A"
+        - nimadm_bundle   | default("N/A")  == "N/A"
+
+    - name: "Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured"
+      set_fact:
+        nimadm_options: "-j {{ nimadm_cache_vg }}"
+      when: nimadm_cache_vg | default("N/A")  != "N/A"
+
+    - name: "Add eFix Bundle to 'nimadm_options' when nimadm_bundle configured"
+      set_fact:
+        nimadm_options: "{{ nimadm_options | default('') }} -b {{ nimadm_bundle }}"
+      when: nimadm_bundle | default("N/A")  != "N/A"
+
     ############################################################
     # - asynchronous action and polling
     #   large timeout: nimadm takes 2-3 hours to complete
@@ -198,8 +215,14 @@
     - name: "Execute nimadm and wait for migration completion."
       block:
 
+        - name: "Display nimadm command"
+          debug:
+            msg: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
+
         - name: "Migrate to alternate disk"  # noqa no-changed-when
-          command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
+          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
+          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
+          command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
           register: results
           async: "{{ wait_nimadm_timeout_secs }}"
           poll: 0
@@ -275,17 +298,17 @@
 
 - set_fact:
     msg1: >
-      " {{ msg1 }} \n- Migration of {{ nim_client_v }} to {{ lpp_source_fileset_level }}
+      " {{ msg1 }} \n- Migration of {{ nim_client }} to {{ lpp_source_fileset_level }}
       Completed."
   when: control_phases.perform_migration and not debug_skip_nimadm and not no_need_to_migrate
 
 - set_fact:
     msg1:
-      - "{{ msg1 }} \n- Migration of {{ nim_client_v }} to {{ lpp_source_fileset_level }}
+      - "{{ msg1 }} \n- Migration of {{ nim_client }} to {{ lpp_source_fileset_level }}
          NOT Completed"
       - "    Skipping call to nimadm due to debug_skip_nimadm (debug preview action only)"
-      - "    /usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d
-        {{ client_target_disk }} -Y"
+      - "    /usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }}
+        -Y -d {{ client_target_disk | quote }} "
   when: debug_skip_nimadm and control_phases.perform_migration and not no_need_to_migrate
 
 - debug:
