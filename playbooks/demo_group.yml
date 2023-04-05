@@ -36,3 +36,4 @@
       group:
         state: absent
         name: "{{group_name}}"
+
