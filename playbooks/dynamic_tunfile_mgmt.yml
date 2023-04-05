@@ -1,0 +1,82 @@
+---
+- name: "tunfile manager for AIX"
+  hosts: all
+  gather_facts: no
+  vars:
+    var_set_default: True
+    var_filename: "/tunfile_mgmt_test"
+    component_name: "schedo"
+    bool_save_all_tunables: False
+    var_validation_type: "reboot"
+    var_tunables_with_values: {"nfso": {"client_delegation": 1, "nfs_rfc1323": 1}}
+    bool_make_nextboot: True
+    log_file: "/tmp/ansible_tunfile_debug.log"
+
+  tasks:
+    - name: "Save all tunables to a file"
+      tunfile_mgmt:
+        action: save
+        filename: "{{ var_filename }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Save only currently non default tunables to a file"
+      tunfile_mgmt:
+        action: save
+        filename: "{{ var_filename }}"
+        save_all_tunables: "{{ bool_save_all_tunables }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Validate a tunable file in current context"
+      tunfile_mgmt:
+        action: validate
+        filename: "{{ var_filename }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Validate a tunable file in reboot context"
+      tunfile_mgmt:
+        action: validate
+        filename: "{{ var_filename }}"
+        validation_type: "{{ var_validation_type }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Modify all tunables of given component as default to a file"
+      tunfile_mgmt:
+        action: modify
+        filename: "{{ var_filename }}"
+        set_default: "{{ var_set_default }}"
+        component_to_set_dflt: "{{ component_name }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Modify specific dynamic tunables of given component in a file"
+      tunfile_mgmt:
+        action: modify
+        filename: "{{ var_filename }}"
+        tunables_with_values: "{{ var_tunables_with_values }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Restore a file in current context"
+    #This should be used when the changes are made only for the dynamic/some restrictive parameters. Changes will take place currently.
+      tunfile_mgmt:
+        action: restore
+        filename: "{{ var_filename }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
+    - name: "Restore a file in reboot context"
+    # This should be used when the changes made are also applicable for bosboot/reboot tunables. Changes will take place after the bosboot and reboot.
+    # Ansible will show a message for bosboot and reboot.
+    # If dynamic tunables are also there, still changes will take place only after bosboot and reboot.
+    # This task just preserves the file in action as new /etc/tunables/nextboot file.
+      tunfile_mgmt:
+        action: restore
+        filename: "{{ var_filename }}"
+        make_nextboot: "{{ bool_make_nextboot }}"
+      register: tunfile_result
+    - debug: var=tunfile_result
+
