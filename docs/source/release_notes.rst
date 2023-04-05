@@ -5,6 +5,44 @@
 Releases
 ========
 
+Version 1.6.0
+-------------
+Notes
+  * New module: Bosboot.
+  * New Playbooks: mktun, mount,installp, user, mpio, mkfilt, 
+  * New Playbooks: bosboot, group, tunables, filesystem, nim_suma, logical_volume
+  * New Playbooks: tunfile_mgmt, mktcpip, inittab
+  * Enhanced idempotency for devices module.
+  * Enhancement in nim_alt_disk_migration:
+  * - Target disk without PVID accepted
+  * - Divide Used PVs by number of PVs to overcome multiple PVs in rootvg
+  * - Allow install of AIX level lower than NIM master AIX level
+  * - Reduce debug info after checking client OS level
+  * - Add cache VG and Bundle to nimadm options
+  * - Re-order nimadm flags and "quote" disk variable to allow multiple PVs in rootvg
+  * - Correct {{ nim_client_v }} to {{ nim_client }}
+  * Enhanced alt_disk module: allows to clean old_rootvg.
+  * Improved parsing for emgr module output for ifix lists and details.
+  * Fixed power_aix_bootstrap role dnf_installer.sh
+  * Fixed power_aix_bootstrap role to support DNF installation for AIX-7.1 and above.
+  * Yum is not supported anymore from ansible as a result of sunset of python 2.
+  * Fixed power_aix_bootstrap role to show failure in case it is unable to install DNF.
+
+Availability
+  * `Automation Hub v1.6.0`_
+  * `Galaxy v1.6.0`_
+  * `GitHub v1.6.0`_
+
+.. _Automation Hub v1.6.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.6.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.6.0.tar.gz
+
+.. _GitHub v1.6.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.6.0/ibm-power_aix-1.6.0.tar.gz
+
+
 Version 1.5.1
 -------------
 Notes
