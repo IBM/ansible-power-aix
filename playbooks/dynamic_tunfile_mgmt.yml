@@ -79,4 +79,3 @@
         make_nextboot: "{{ bool_make_nextboot }}"
       register: tunfile_result
     - debug: var=tunfile_result
-

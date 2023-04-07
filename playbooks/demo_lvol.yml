@@ -55,4 +55,3 @@
       lvol:
         state: absent
         lv: testrootlv
-

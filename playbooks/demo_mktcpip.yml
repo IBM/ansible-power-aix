@@ -19,4 +19,3 @@
         nameserver: "{{nameserver_v}}"
         domain: "{{domain_v}}"
         start_daemons: yes
-
