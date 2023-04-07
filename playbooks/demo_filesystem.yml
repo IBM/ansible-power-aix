@@ -32,4 +32,3 @@
         filesystem: "{{filesystem_name}}"
         state: absent
         rm_mount_point: true
-
