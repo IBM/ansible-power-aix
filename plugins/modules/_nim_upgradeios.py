@@ -377,6 +377,8 @@ import threading
 # Ansible module 'boilerplate'
 from ansible.module_utils.basic import AnsibleModule
 
+results = None
+
 # TODO check and add SSP support
 # TODO add mirrored rootvg support
 
@@ -393,7 +395,6 @@ def refresh_nim_node(module, type):
     return:
         none
     """
-    global results
 
     if module.params['nim_node']:
         results['nim_node'] = module.params['nim_node']
@@ -424,7 +425,6 @@ def get_nim_type_info(module, type):
     return:
         info_hash   (dict): information from the nim clients
     """
-    global results
 
     cmd = ['lsnim', '-t', type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
@@ -481,7 +481,6 @@ def check_vios_targets(module, targets):
     return:
         res_list    (list): The list of the existing vios tuple matching the target list
     """
-    global results
 
     vios_list = []
     res_list = []
@@ -641,7 +640,6 @@ def nim_migvios_all(module, targets, time_limit):
     return:
         none
     """
-    global results
 
     # threads = []
 
@@ -692,7 +690,6 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
     return:
         none
     """
-    global results
 
     # build the key from the tuple
     vios_key = tuple_str(target_tuple)
@@ -785,7 +782,6 @@ def nim_migvios(module, target_tuple, vios_key, vios):
     return:
         rc      the return code of the command
     """
-    global results
 
     module.log('Starting migvios on VIOS: {0}'.format(vios))
 
@@ -903,7 +899,6 @@ def nim_wait_migvios(module, vios_key, vios):
         1  if migvios failed,
         2  if internal or command error,
     """
-    global results
 
     module.log('Waiting completion of migvios on {0}...'
                .format(vios))

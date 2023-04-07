@@ -30,6 +30,17 @@ import socket
 import io
 import shutil
 
+log_file = None
+mode = None
+verbose = None
+log_dir = None
+vios_info = None
+xml_dir = None
+filename_msg = None
+hmc_info = None
+lpar_info = None
+USAGE = None
+
 # TODO: Use Standard logger instead of log routine
 
 ###############################################################################
@@ -100,8 +111,6 @@ def log(txt, debug='no'):
     Input: (str) level of the trace, writes if set to 'debug'
     Output: none
     """
-    global log_file
-    global mode
     if mode == 'debug' or mode == debug:
         log_file.write(txt)
 
@@ -115,7 +124,6 @@ def write(txt, lvl=1):
                           >0, verbose needs to be greater than lvl to see it
     Output: none
     """
-    global verbose
     log(txt + '\n')
     if verbose >= lvl:
         print(txt)
@@ -168,7 +176,6 @@ def exec_cmd(cmd):
     Output:(int) stdout of the command
     Output:(str) stderr of the command
     """
-    global log_dir
     rc = 0
     output = ''
     errout = ''
@@ -817,8 +824,6 @@ def get_vios_sea_state(vios_name, sea_device):
     Output:(str) SEA device state,
            prints error message and exits upon error
     """
-    global vios_info
-    global xml_dir
 
     state = ""
 
@@ -897,9 +902,6 @@ def get_vscsi_mapping(vios_name, vios_uuid):
     Input:  (str) vios UUID
     Output:(dict) vios_scsi_mapping dictionnary
     """
-    global filename_msg
-    global hmc_info
-    global xml_dir
     touch(filename_msg)
 
     write("\nRecovering vSCSI mapping for {0}:".format(vios_name), 2)
@@ -1043,9 +1045,6 @@ def build_fc_mapping(vios_name, vios_uuid, fc_mapping):
     Input: (dict) FC mapping to fill
     Output: none
     """
-    global hmc_info
-    global vios_info
-    global lpar_info
 
     write("\nRecovering Fiber Chanel mapping for {0}:".format(vios_name), 2)
     filename = "{0}/{1}_fc_mapping.xml".format(xml_dir, vios_name)
@@ -1116,9 +1115,6 @@ def build_sea_config(vios_name, vios_uuid, sea_config):
     Input: (dict) SEA config to fill
     Output: none
     """
-    global hmc_info
-    global vios_info
-    global lpar_info
 
     write("\nRecovering SEA configuration for {0}:".format(vios_name), 2)
 
@@ -1350,7 +1346,6 @@ def usage():
     Input:  none
     Output: none
     """
-    global USAGE
     write(USAGE, lvl=0)
 
 

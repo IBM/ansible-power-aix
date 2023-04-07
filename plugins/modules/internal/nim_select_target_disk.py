@@ -204,7 +204,7 @@ def belong_to_vg(module, target_disk):
     # 0516-320 /usr/sbin/getlvodm: Physical volume hdisk1 is not assigned to
     #        a volume group.
     # physical volume belongs to a volume group if 'found' is not null
-    #pattern = r"0516-320"
+    # pattern = r"0516-320"
     pattern = r"0516-320|0516-1396"
     found = re.search(pattern, stderr, re.MULTILINE)
     if rc != 0 and not found:
