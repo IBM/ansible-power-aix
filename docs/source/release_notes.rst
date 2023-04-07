@@ -5,6 +5,27 @@
 Releases
 ========
 
+Version 1.6.1
+-------------
+Notes
+  * Fix pylint issues
+  * Fix yamllint issue
+
+Availability
+  * `Automation Hub v1.6.1`_
+  * `Galaxy v1.6.1`_
+  * `GitHub v1.6.1`_
+
+.. _Automation Hub v1.6.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.6.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.6.1.tar.gz
+
+.. _GitHub v1.6.1:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.6.1/ibm-power_aix-1.6.1.tar.gz
+
+
 Version 1.6.0
 -------------
 Notes
