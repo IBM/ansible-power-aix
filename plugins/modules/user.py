@@ -362,7 +362,7 @@ def main():
             msg = create_user(module)
             changed = True
         else:
-            msg = "User %s already exists." % module.params['name']
+            msg, changed = modify_user(module)
     elif module.params['state'] == 'modify':
         if module.params['attributes'] is None and module.params['password'] is None:
             msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
