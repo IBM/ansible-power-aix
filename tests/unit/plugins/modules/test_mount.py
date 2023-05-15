@@ -182,7 +182,7 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.mount_dir = self.module.params["mount_dir"]
         self.mount_over_dir = self.module.params["mount_over_dir"]
         with self.assertRaises(AnsibleFailJson) as result:
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
+            mount.is_fspath_mounted(self.module)
         result = result.exception.args[0]
         self.assertTrue(result['failed'])
         pattern = r"Unexpected module FAILURE: one of the following is missing"
@@ -195,7 +195,7 @@ class TestIsFSPathMounted(unittest.TestCase):
             (0, self.df_output1, "sample stderr")
         ]
         self.assertTrue(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
+            mount.is_fspath_mounted(self.module)
         )
 
     def test_false_fs_mounted(self):
@@ -206,7 +206,7 @@ class TestIsFSPathMounted(unittest.TestCase):
             (0, self.df_output2, "sample stderr")
         ]
         self.assertFalse(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
+            mount.is_fspath_mounted(self.module)
         )
 
     def test_false_nfs_mounted(self):
@@ -217,7 +217,7 @@ class TestIsFSPathMounted(unittest.TestCase):
             (0, self.df_output1, "sample stderr")
         ]
         self.assertFalse(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
+            mount.is_fspath_mounted(self.module)
         )
 
     def test_false_nfs_mounted_both_dir_present(self):
@@ -230,7 +230,7 @@ class TestIsFSPathMounted(unittest.TestCase):
             (0, self.df_output1, "sample stderr")
         ]
         self.assertFalse(
-            mount.is_fspath_mounted(self.module, self.mount_dir, self.mount_over_dir)
+            mount.is_fspath_mounted(self.module)
         )
 
 
@@ -449,16 +449,6 @@ class TestUmount(unittest.TestCase):
         pattern = r"There are no remote filesystems to unmount"
         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_no_change_mount_dir(self):
-        self.module.params['mount_dir'] = "/tmp/testfs"
-        with mock.patch(self.is_fspath_mounted_path) as mocked_is_fspath_mounted:
-            mocked_is_fspath_mounted.return_value = False
-            mount.umount(self.module)
-            result = copy.deepcopy(mount.result)
-            self.assertFalse(result['changed'])
-            pattern = r"is not mounted"
-            self.assertRegexpMatches(result['msg'], pattern)
-
     def test_no_change_mount_over_dir(self):
         self.module.params['mount_over_dir'] = "/tmp/nfs_client"
         with mock.patch(self.is_fspath_mounted_path) as mocked_is_fspath_mounted:
@@ -470,7 +460,6 @@ class TestUmount(unittest.TestCase):
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_no_change_mount_dir_and_mount_over_dir(self):
-        self.module.params['mount_dir'] = "/tmp/nfs_serv"
         self.module.params['mount_over_dir'] = "/tmp/nfs_client"
         with mock.patch(self.is_fspath_mounted_path) as mocked_is_fspath_mounted:
             mocked_is_fspath_mounted.return_value = False
@@ -481,7 +470,7 @@ class TestUmount(unittest.TestCase):
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_fail_umount(self):
-        self.module.params['mount_dir'] = "/tmp/testfs"
+        self.module.params['mount_over_dir'] = "/tmp/testfs"
         self.module.run_command.return_value = (1, "sample stdout", "sample stderr")
         with mock.patch(self.is_fspath_mounted_path) as mocked_is_fspath_mounted:
             mocked_is_fspath_mounted.return_value = True
@@ -493,7 +482,7 @@ class TestUmount(unittest.TestCase):
             self.assertRegexpMatches(result['msg'], pattern)
         
     def test_success_umount(self):
-        self.module.params['mount_dir'] = "/tmp/testfs"
+        self.module.params['mount_over_dir'] = "/tmp/testfs"
         with mock.patch(self.is_fspath_mounted_path) as mocked_is_fspath_mounted:
             mocked_is_fspath_mounted.return_value = True
             mount.umount(self.module)

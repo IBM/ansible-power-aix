@@ -31,7 +31,8 @@ options:
     - Specifies the action to be performed.
     - C(mount) makes a file system available for use at a specified location (the mount point). In
       addition, you can use it to build other file trees made up of directory and file mounts. If no
-      parameter is specified, it gets information for the mounted file systems.
+      parameter is specified, it gets information for the mounted file systems. In case of NFS mount
+      you need to export the directory from NFS server first.
     - C(umount) unmounts a previously mounted device, directory, file, or file system
     - C(show) list mounted filesytems
     type: str
@@ -232,13 +233,11 @@ def is_mount_group_mounted(module, mount_group):
     return mnt_grp_mounted
 
 
-def is_fspath_mounted(module, mount_dir, mount_over_dir):
+def is_fspath_mounted(module):
     """
     Determines if a given mount path is a FS and is already mounted
     arguments:
         module         (dict): Ansible module argument spec.
-        mount_dir       (str): FS/Dir to be mounted. Can be None.
-        mount_over_dir  (str): path where to mount the mount_dir. Can be None.
     note:
         At least one of mount_dir or mount_over_dir must not be None.
         Exits with fail_json in case of error
@@ -246,6 +245,8 @@ def is_fspath_mounted(module, mount_dir, mount_over_dir):
         True - if FS and mounted
         False - if FS and not mounted
     """
+    mount_over_dir = module.params['mount_over_dir']
+    mount_dir = module.params['mount_dir']
 
     if mount_over_dir:
         # when mounting NFS, make sure we check for the NFS
@@ -342,7 +343,7 @@ def mount(module):
     else:
         mount_dir = module.params['mount_dir']
         mount_over_dir = module.params['mount_over_dir']
-        if is_fspath_mounted(module, mount_dir, mount_over_dir):
+        if is_fspath_mounted(module):
             # if both mount_dir and mount_over_dir is given then check for
             # mount_over_dir
             if mount_over_dir:
@@ -405,7 +406,6 @@ def umount(module):
 
     mount_all = module.params['mount_all']
     fs_type = module.params['fs_type']
-    mount_dir = module.params['mount_dir']
     mount_over_dir = module.params['mount_over_dir']
     node = module.params['node']
     force = module.params['force']
@@ -413,27 +413,25 @@ def umount(module):
     cmd = "/usr/sbin/umount "
     if force:
         cmd += "-f "
+    if fs_type:
+        cmd += "-t %s " % fs_type
     if mount_all == 'remote':
         cmd += "allr "
-    elif mount_all == 'all':
+    if mount_all == 'all':
         cmd += "all "
-    elif fs_type:
-        cmd += "-t %s " % fs_type
-    elif node:
+    if node:
         cmd += "-n %s " % node
-    elif mount_dir or mount_over_dir:
-        if is_fspath_mounted(module, mount_dir, mount_over_dir) is False:
+    if cmd == "/usr/sbin/umount " and not mount_over_dir:
+        result['msg'] = "Unmount failed, Please provide mount_over_dir value to unmount."
+        module.fail_json(**result)
+    if mount_over_dir:
+        if is_fspath_mounted(module) is False:
             # if both mount_dir and mount_over_dir is given then check for
             # mount_over_dir
             if mount_over_dir:
                 result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
-            elif mount_dir:
-                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_dir
             return
-        if mount_over_dir:
-            cmd += mount_over_dir
-        elif mount_dir:
-            cmd += mount_dir
+        cmd += mount_over_dir
 
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
@@ -489,6 +487,11 @@ def main():
         stdout='',
         stderr='',
     )
+
+    if module.params['mount_dir'] and module.params['mount_dir'][0] != "/":
+        module.params['mount_dir'] = "/" + module.params['mount_dir']
+    if module.params['mount_over_dir'] and module.params['mount_over_dir'][0] != "/":
+        module.params['mount_over_dir'] = "/" + module.params['mount_over_dir']
 
     if module.params['state'] == 'show':
         fs_list(module)
