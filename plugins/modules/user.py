@@ -74,6 +74,14 @@ options:
     - Specifies the encrypted string for the password to create or change the password.
     - Can be used when I(state=present) or I(state=modify).
     type: str
+  load_module:
+    description:
+    - Specifies the location where the operations need to be performed on the user.
+    - C(files) creates/updates/deletes the user present in the Local machine.
+    - C(LDAP) creates/updates the user present in the LDAP server.
+    type: str
+    default: 'files'
+    choices: [files, LDAP]
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html),
@@ -134,7 +142,7 @@ def get_chuser_command(module):
         return None
 
     # 'user_attrs' contains the key=value pairs that are _currently_ set in AIX
-    lsuser_cmd = "lsuser -C %s" % module.params['name']
+    lsuser_cmd = "lsuser -R %s -C %s" % (module.params['load_module'], module.params['name'])
     rc, stdout, stderr = module.run_command(lsuser_cmd)
     if rc != 0:
         msg = "\nFailed to validate attributes for the user: %s" % module.params['name']
@@ -143,23 +151,23 @@ def get_chuser_command(module):
     values = stdout.splitlines()[1].split(':')
     user_attrs = dict(zip(keys, values))
 
+    # Adding the load module to the command so that the correct user's attributes are changed.
+    load_module_opts = "-R %s " % module.params['load_module']
+
     # Now loop over every key-value in attributes
     opts = ""
     cmd = ""
     load_module_opts = None
     for attr, val in attributes.items():
-        if attr == 'load_module':
-            load_module_opts = "-R %s " % val
-        else:
-            pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
-            if val in [True, False] or re.match(pattern, str(val)):
-                val = str(val).lower()
-            # For idempotency, we compare what Anisble whats the value to be
-            #  compared to what is already set
-            # Only add attr=val to the opts list they're different. No reason to
-            #  if the values are identical!
-            if user_attrs[attr] != val:
-                opts += "%s=\"%s\" " % (attr, val)
+        pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
+        if val in [True, False] or re.match(pattern, str(val)):
+            val = str(val).lower()
+        # For idempotency, we compare what Anisble whats the value to be
+        #  compared to what is already set
+        # Only add attr=val to the opts list they're different. No reason to
+        #  if the values are identical!
+        if user_attrs[attr] != val:
+            opts += "%s=\"%s\" " % (attr, val)
 
     if load_module_opts is not None:
         opts = load_module_opts + opts
@@ -232,12 +240,12 @@ def create_user(module):
     load_module_opts = None
     msg = ""
 
+    # Adding the load module to the command so that the user is created at the right location.
+    load_module_opts = "-R %s " % module.params['load_module']
+
     if attributes is not None:
         for attr, val in attributes.items():
-            if attr == 'load_module':
-                load_module_opts = "-R %s " % val
-            else:
-                opts += "%s=\"%s\" " % (attr, val)
+            opts += "%s=\"%s\" " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
     cmd = "mkuser %s %s" % (opts, module.params['name'])
@@ -294,8 +302,12 @@ def user_exists(module):
         True if the user exists
         False if the user does not exist
     '''
-    cmd = ["lsuser"]
-    cmd.append(module.params['name'])
+    cmd = "lsuser "
+
+    # Adding the load module to the command so that the user's existence is checked at the right location.
+    load_module_opts = "-R %s" % module.params['load_module']
+    cmd += load_module_opts
+    cmd += " %s" % module.params['name']
 
     rc, out, err = module.run_command(cmd)
     if rc == 0:
@@ -325,6 +337,7 @@ def change_password(module):
     else:
         cmd = "echo \'{user}:{password}\' | chpasswd -e -c".format(user=name, password=passwd)
 
+    cmd += " -R %s" % module.params['load_module']
     pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
     if pass_rc != 0:
         msg = "\nFailed to set password for the user: %s" % module.params['name']
@@ -344,6 +357,7 @@ def main():
             remove_homedir=dict(type='bool', default=True, no_log=False),
             change_passwd_on_login=dict(type='bool', default=False, no_log=False),
             password=dict(type='str', no_log=True),
+            load_module=dict(type='str', default='files', choices=['files', 'LDAP']),
         ),
         supports_check_mode=False
     )

@@ -26,6 +26,7 @@ class TestCreateUser(unittest.TestCase):
         params["remove_homedir"] = True
         params["change_passwd_on_login"] = True
         params["password"] = "pass1234"
+        params["load_module"] = "files"
         self.module.params = params
         rc, stdout, stderr = 0, "sample stdout", "sample stderr"
         self.module.run_command.return_value = (rc, stdout, stderr)
