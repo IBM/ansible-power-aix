@@ -406,7 +406,6 @@ def umount(module):
 
     mount_all = module.params['mount_all']
     fs_type = module.params['fs_type']
-    mount_dir = module.params['mount_dir']
     mount_over_dir = module.params['mount_over_dir']
     node = module.params['node']
     force = module.params['force']
@@ -422,8 +421,8 @@ def umount(module):
         cmd += "all "
     if node:
         cmd += "-n %s " % node
-    if cmd is "/usr/sbin/umount " and not mount_over_dir:
-        result['msg'] = "Please provide mount_over_dir value to unmount."
+    if cmd == "/usr/sbin/umount " and not mount_over_dir:
+        result['msg'] = "Unmount failed, Please provide mount_over_dir value to unmount."
         module.fail_json(**result)
     if mount_over_dir:
         if is_fspath_mounted(module) is False:
