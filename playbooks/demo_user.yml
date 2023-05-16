@@ -10,22 +10,50 @@
   collections:
     ibm.power_aix
   tasks:
-    - name: Create user
+    - name: Create user in LDAP
       user:
         state: present
         name: "{{user_name}}"
         change_passwd_on_login: False
         password: "{{password_val}}"
+        load_module: LDAP
         attributes:
           home: "{{attribute_home}}"
           data: 1272
-    - name: Modify user
+    - name: Create local user
+      user:
+        state: present
+        name: testuser
+        change_passwd_on_login: False
+        password: "{{password_val}}"
+        load_module: files
+        attributes:
+          home: "{{attribute_home}}"
+          data: 1272
+    - name: Create a local user even if it is present in LDAP
+      user:
+        state: present
+        name: "{{user_name}}"
+        change_passwd_on_login: False
+        password: "{{password_val}}"
+        load_module: files
+        attributes:
+          home: "{{attribute_home}}"
+          data: 1272
+    - name: Modify locally present user
       user:
         state: modify
         name: "{{user_name}}"
         attributes:
           admin: true
-    - name: Delete user
+    - name: Modify User present in LDAP
+      user:
+        state: modify
+        name: "{{user_name}}"
+        load_module: LDAP
+        attributes:
+          admin: true
+    - name: Delete Local user
       user:
         state: absent
         name: "{{user_name}}"
