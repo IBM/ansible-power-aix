@@ -635,7 +635,7 @@ def main():
     allow_old_rootvg = module.params['allow_old_rootvg']
 
     if action == 'copy':
-        alt_disk_copy(module, module.params, targets)
+        alt_disk_copy(module, module.params, targets, allow_old_rootvg)
     else:
         alt_disk_clean(module, targets, allow_old_rootvg)
 
