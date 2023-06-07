@@ -562,6 +562,13 @@ def main():
 
         results['stdout'] = stdout
         results['stderr'] = stderr
+
+        pattern = "There is no efix data on this system"
+        found = re.search(pattern, stderr)
+
+        if rc == 0 and found:
+            module.exit_json(**results)
+
         if rc != 0:
             # Ifix was already installed(0645-065).
             # Ifix with label to remove is not there (0645-066).
@@ -573,7 +580,8 @@ def main():
 
             if not found:
                 results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
-                module.fail_json(**results)
+            
+            module.fail_json(**results)
 
         results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
