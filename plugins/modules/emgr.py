@@ -580,7 +580,7 @@ def main():
 
             if not found:
                 results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
-            
+
             module.fail_json(**results)
 
         results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
