@@ -226,8 +226,7 @@ def check_idempotency(module, init_props, attributes, msg):
         init_props = str_to_dict(init_props, attributes)
 
     for attr, val in attributes.items():
-        if attr in init_props.keys() and init_props[attr] == val:
-            attributes.pop(attr)
+        if attr in init_props.keys() and str(init_props[attr]) == str(val):
             ignore_attributes.append(attr)
 
     if len(attributes) == 0:
