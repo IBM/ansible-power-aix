@@ -228,6 +228,9 @@ def check_idempotency(module, init_props, attributes, msg):
     for attr, val in attributes.items():
         if attr in init_props.keys() and str(init_props[attr]) == str(val):
             ignore_attributes.append(attr)
+    for attr in ignore_attributes:
+        if attr in attributes:
+            del attributes[attr]
 
     if len(attributes) == 0:
         results['msg'] = "All the provided attributes are already at required level."
