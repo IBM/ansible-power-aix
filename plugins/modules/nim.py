@@ -697,9 +697,9 @@ def perform_customization(module, lpp_source, target, is_async):
         cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
     else:
         cmd = ['nim', '-o', 'cust',
-                '-a', 'lpp_source=' + lpp_source,
-                '-a', 'fixes=update_all',
-                '-a', 'accept_licenses=yes']
+               '-a', 'lpp_source=' + lpp_source,
+               '-a', 'fixes=update_all',
+               '-a', 'accept_licenses=yes']
     cmd += ['-a', 'async=yes' if is_async else 'async=no']
     if is_async:
         cmd += target
@@ -901,6 +901,7 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
 
     return lpp_source
 
+
 def check_alt_disk(module, alt_disk_update_name, target_list):
     """
     checks if the specified alt disk exists in the system or not.
@@ -916,7 +917,6 @@ def check_alt_disk(module, alt_disk_update_name, target_list):
 
     cmd = "lspv " + alt_disk_update_name
     target_miss = []
-    
     for target in target_list:
         rc = nim_exec(module, target, cmd)
         if rc:
