@@ -109,6 +109,11 @@ options:
     - If not set for C(show), then all NIM objects in the target machine will be queried.
     type: str
     default: all
+  alt_disk_update_name:
+    description:
+    - Specifies name of the alternate disk where installation takes place
+    type: str
+    default: None
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
@@ -666,7 +671,7 @@ def expand_targets(targets):
             clients = list(results['nim_node']['standalone'])
             continue
 
-        # Build target(s) from: quimby05 quimby08 quimby12
+        # Build target(s)
         if target in results['nim_node']['standalone'] or target in results['nim_node']['vios'] or target == 'master':
             clients.append(target)
 
@@ -686,10 +691,15 @@ def perform_customization(module, lpp_source, target, is_async):
         the return code of the command.
     """
 
-    cmd = ['nim', '-o', 'cust',
-           '-a', 'lpp_source=' + lpp_source,
-           '-a', 'fixes=update_all',
-           '-a', 'accept_licenses=yes']
+    alt_disk_update_name = module.params['alt_disk_update_name']
+
+    if alt_disk_update_name:
+        cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
+    else:
+        cmd = ['nim', '-o', 'cust',
+                '-a', 'lpp_source=' + lpp_source,
+                '-a', 'fixes=update_all',
+                '-a', 'accept_licenses=yes']
     cmd += ['-a', 'async=yes' if is_async else 'async=no']
     if is_async:
         cmd += target
@@ -891,6 +901,29 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
 
     return lpp_source
 
+def check_alt_disk(module, alt_disk_update_name, target_list):
+    """
+    checks if the specified alt disk exists in the system or not.
+
+    arguments:
+        module                (dict): The Ansible module
+        alt_disk_update_name  (str): Name of the alternate disk.
+        target_list           (list): List of the targets
+    returns:
+        list of targets which does not have specified alternate disk.
+        if all targets have specified alternate disk
+    """
+
+    cmd = "lspv " + alt_disk_update_name
+    target_miss = []
+    
+    for target in target_list:
+        rc = nim_exec(module, target, cmd)
+        if rc:
+            target_miss += target
+
+    return target_miss
+
 
 def nim_update(module, params):
     """
@@ -907,6 +940,7 @@ def nim_update(module, params):
     """
 
     lpp_source = params['lpp_source']
+    alt_disk_update_name = params['alt_disk_update_name']
 
     async_update = 'no'
     if params['asynchronous']:
@@ -929,6 +963,14 @@ def nim_update(module, params):
     if not target_list:
         results['msg'] = 'No matching target found for targets \'{0}\'.'.format(params['targets'])
         module.log('NIM - Error: ' + results['msg'])
+        module.fail_json(**results)
+
+    if alt_disk_update_name:
+        unavail_targets = check_alt_disk(module, alt_disk_update_name, target_list)
+
+    if unavail_targets:
+        msg = f"Following targets does not have specified alt_disk_update_name disk: {*unavail_targets, }"
+        results['msg'] = msg
         module.fail_json(**results)
 
     results['targets'] = list(target_list)
@@ -1730,6 +1772,7 @@ def main():
             force=dict(type='bool', default=False),
             boot_client=dict(type='bool', default=True),
             object_type=dict(type='str', default='all'),
+            alt_disk_update_name=dict(type='str', default=None),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1788,6 +1831,7 @@ def main():
     action = module.params['action']
     boot_client = module.params['boot_client']
     object_type = module.params['object_type']
+    alt_disk_update_name = module.params['alt_disk_update_name']
 
     params = {}
 
@@ -1805,6 +1849,7 @@ def main():
         params['lpp_source'] = lpp_source
         params['asynchronous'] = asynchronous
         params['force'] = force
+        params['alt_disk_update_name'] = alt_disk_update_name
         nim_update(module, params)
 
     elif action == 'maintenance':
