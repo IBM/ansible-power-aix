@@ -697,9 +697,9 @@ def perform_customization(module, lpp_source, target, is_async):
         cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
     else:
         cmd = ['nim', '-o', 'cust',
-                '-a', 'lpp_source=' + lpp_source,
-                '-a', 'fixes=update_all',
-                '-a', 'accept_licenses=yes']
+               '-a', 'lpp_source=' + lpp_source,
+               '-a', 'fixes=update_all',
+               '-a', 'accept_licenses=yes']
     cmd += ['-a', 'async=yes' if is_async else 'async=no']
     if is_async:
         cmd += target
@@ -900,6 +900,7 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
                      .format(lpp_time, lpp_source))
 
     return lpp_source
+
 
 def check_alt_disk(module, alt_disk_update_name, target_list):
     """
