@@ -5,6 +5,31 @@
 Releases
 ========
 
+Version 1.6.2
+-------------
+Notes
+   * Fix for mount module to handle umount state in case of existing NFS server directories.
+   * User module is now able to create local user even if the user exists in active directory (LDAP)
+   * demo_alt_disk playbook
+   * Fix for emgr module in case of no efix data available
+   * Fix for devices modules, handling runtime errors
+   * Fixed nim_backup playbooks
+   * Feature enhancement: Include alternate disk to update in nim module
+
+Availability
+  * `Automation Hub v1.6.2`_
+  * `Galaxy v1.6.2`_
+  * `GitHub v1.6.2`_
+
+.. _Automation Hub v1.6.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.6.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.6.2.tar.gz
+
+.. _GitHub v1.6.2:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.6.2/ibm-power_aix-1.6.2.tar.gz
+
 Version 1.6.1
 -------------
 Notes
