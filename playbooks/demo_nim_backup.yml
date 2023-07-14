@@ -61,7 +61,7 @@
 
   - name: Create a mksysb backup of a LPAR
     nim_backup:
-      action: backup
+      action: create
       targets: "{{ lpar_targets_v }}"
       location: "{{ sysb_location_v }}"
       # name: "{{ sysb_name_v }}"
