@@ -916,7 +916,6 @@ def check_alt_disk(module, alt_disk_update_name, target_list):
 
     cmd = "lspv " + alt_disk_update_name
     target_miss = []
-    
     for target in target_list:
         rc = nim_exec(module, target, cmd)
         if rc:
