@@ -969,7 +969,7 @@ def nim_update(module, params):
         unavail_targets = check_alt_disk(module, alt_disk_update_name, target_list)
 
     if unavail_targets:
-        msg = f"Following targets does not have specified alt_disk_update_name disk: {*unavail_targets, }"
+        msg = "Following targets does not have specified alt_disk_update_name disk:" + str(unavail_targets)
         results['msg'] = msg
         module.fail_json(**results)
 
