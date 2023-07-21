@@ -119,7 +119,6 @@ results = None
 
 
 def fail_handler(module, rc, cmd, stdout, stderr, msg=None):
-    global results
     results['rc'] = rc
     results['stdout'] = stdout
     results['stderr'] = stderr
@@ -192,7 +191,6 @@ def belong_to_vg(module, target_disk):
         True - target disk belongs to a volume group
         False - target disk does not belong to a volume group
     """
-    global results
     nim_client = module.params['nim_client']
     # check if 'target_disk' does not belong to any volume group
     cmd = [
@@ -224,7 +222,6 @@ def is_valid(module, target_disk):
         True - target disk can be used for alt_disk
         False - target disk cannot be used for alt_disk
     """
-    global results
     nim_client = module.params['nim_client']
     force = module.params['force']
 
@@ -282,7 +279,6 @@ def check_rootvg(module):
             "rootvg_size": size in Megabytes (int)
             "used_size": size in Megabytes (int)
     """
-    global results
 
     nim_client = module.params["nim_client"]
     vg_info = {}
@@ -345,7 +341,6 @@ def get_pvs(module):
 
     return: dictionary with PVs information
     """
-    global results
     nim_client = module.params["nim_client"]
 
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', nim_client, '/usr/sbin/lspv']
@@ -377,7 +372,6 @@ def get_free_pvs(module, pvs):
 
     return: dictionary with free PVs information
     """
-    global results
     nim_client = module.params["nim_client"]
 
     # hdisk0           000018fa3b12f5cb                     rootvg           active
@@ -419,7 +413,6 @@ def find_valid_altdisk(module):
     - with a correct size
     and so can be used.
     """
-    global results
     disk_size_policy = module.params['target_disk_policy']
     force = module.params['force']
     rootvg_info = check_rootvg(module)
