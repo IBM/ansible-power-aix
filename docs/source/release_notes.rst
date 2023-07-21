@@ -5,6 +5,25 @@
 Releases
 ========
 
+Version 1.6.3
+-------------
+Notes
+   * Fixed pylint, shellcheck and shebang issues for a clean build.
+
+Availability
+  * `Automation Hub v1.6.3`_
+  * `Galaxy v1.6.3`_
+  * `Github v1.6.3`_
+
+.. _Automation Hub v1.6.3:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.6.3:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.6.3.tar.gz
+
+.. _GitHub v1.6.3:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.6.3/ibm-power_aix-1.6.3.tar.gz
+
 Version 1.6.2
 -------------
 Notes
