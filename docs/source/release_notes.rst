@@ -5,6 +5,25 @@
 Releases
 ========
 
+Version 1.6.4
+-------------
+Notes
+   * Fixed documentation for release platform
+
+Availability
+  * `Automation Hub v1.6.4`_
+  * `Galaxy v1.6.4`_
+  * `Github v1.6.4`_
+
+. _Automation Hub v1.6.4:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.6.4:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.6.4.tar.gz
+
+.. _GitHub v1.6.4:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.6.4/ibm-power_aix-1.6.4.tar.gz
+
 Version 1.6.3
 -------------
 Notes
