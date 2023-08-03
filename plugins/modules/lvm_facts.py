@@ -387,17 +387,28 @@ def load_lvs(module, name, LVM):
             if rc != 0:
                 msg += "Command '%s' failed." % cmd
             else:
+                header = out.splitlines()[1]
+                headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
+                headings_indexes = []
+                for heading in headings:
+                    match = re.search(heading, header)
+                    try:
+                        assert match is not None
+                        headings_indexes.append(match.start())
+                    except AssertionError:
+                        module.fail_json(msg=f"Unable to parse 'lsvg -l {vg}' header", expected_header=headings, header=header)
+
                 for ln in out.splitlines()[2:]:
-                    lv_info = ln.split()
-                    lv = lv_info[0].strip()
+                    ln = ln.ljust(len(header))
+                    lv = ln[headings_indexes[0]:headings_indexes[1]].strip()
                     if (name != 'all' and name != lv):
                         continue
-                    type = lv_info[1].strip()
-                    lv_state = lv_info[5].strip()
-                    lps = lv_info[2].strip()
-                    pps = lv_info[3].strip()
-                    pvs = lv_info[4].strip()
-                    mnt_pt = lv_info[6].strip()
+                    type = ln[headings_indexes[1]:headings_indexes[2]].strip()
+                    lps = ln[headings_indexes[2]:headings_indexes[3]].strip()
+                    pps = ln[headings_indexes[3]:headings_indexes[4]].strip()
+                    pvs = ln[headings_indexes[4]:headings_indexes[5]].strip()
+                    lv_state = ln[headings_indexes[5]:headings_indexes[6]].strip()
+                    mnt_pt = ln[headings_indexes[6]:].strip()
                     data = {
                         'type': type,
                         'vg': vg,
