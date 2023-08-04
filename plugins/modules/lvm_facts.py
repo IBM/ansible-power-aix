@@ -288,7 +288,7 @@ def load_pvs(module, name, LVM):
             else:
                 try:
                     LVM['PVs'][pv] = parse_pvs(stdout, pv)
-                except AssertionError as err:
+                except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
     return warnings, LVM
@@ -304,7 +304,11 @@ def parse_pvs(lspv_output, pv_name):
         pv_data    (dict): Dictionary of PV data.
     """
     pv_data = dict()
-    first_line = lspv_output.splitlines()[:1][0]
+    try:
+        first_line = lspv_output.splitlines()[0]
+    except IndexError:
+        raise IndexError(f"Unable to get first line of 'lspv {pv_name}' "
+                         f"output. {lspv_output=}")
     match = re.search('VOLUME GROUP', first_line)
     assert match is not None, (f"Unable to parse 'lspv {pv_name}' first line "
                                f"to determine column sizes. {first_line=}")
@@ -377,7 +381,7 @@ def load_vgs(module, name, LVM):
             else:
                 try:
                     LVM['VGs'][vg] = parse_vgs(stdout, vg)
-                except AssertionError as err:
+                except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
     return warnings, LVM
@@ -385,15 +389,19 @@ def load_vgs(module, name, LVM):
 
 def parse_vgs(lsvg_output, vg_name):
     """
-    Parse 'lsvg <volumegroup>' output
+    Parse 'lsvg <vg>' output
     arguments:
-        lsvg_output (str): Raw output of 'lsvg <volumegroup>' cmd
+        lsvg_output (str): Raw output of 'lsvg <vg>' cmd
         vg_name     (str): Volume group name
     return:
         vg_data    (dict): Dictionary of VG data.
     """
     vg_data = dict()
-    first_line = lsvg_output.splitlines()[:1][0]
+    try:
+        first_line = lsvg_output.splitlines()[0]
+    except IndexError:
+        raise IndexError(f"Unable to get first line of 'lsvg {vg_name}' "
+                         f"output. {lsvg_output=}")
     match = re.search('VG IDENTIFIER', first_line)
     assert match is not None, (f"Unable to parse 'lsvg {vg_name}' first line "
                                f"to determine column sizes. {first_line=}")
@@ -448,26 +456,31 @@ def load_lvs(module, name, LVM):
                 try:
                     lv_data = parse_lvs(stdout, vg, name)
                     LVM['LVs'] = {**LVM['LVs'], **lv_data}
-                except AssertionError as err:
+                except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
     return warnings, LVM
 
 
-def parse_lvs(lsvg_list, vg_name, lv_name):
+def parse_lvs(lsvg_output, vg_name, lv_name):
     """
-    Parse 'lsvg -l <volumegroup>' output
+    Parse 'lsvg -l <vg>' output
     arguments:
-        lsvg_list (str): Raw output of 'lsvg -l <volumegroup>' cmd
-        vg_name   (str): Volume group name
-        lv_name   (str): Logical volume name (or 'all')
+        lsvg_output (str): Raw output of 'lsvg -l <vg>' cmd
+        vg_name     (str): Volume group name
+        lv_name     (str): Logical volume name (or 'all')
     return:
-        lv_data  (dict): Dictionary of LV data. Top level keys are LV NAMEs,
-                         values are data parse from the rest of the lsvg -l
-                         columns.
+        lv_data    (dict): Dictionary of LV data. Top level keys are LV NAMEs,
+                           values are data parse from the rest of the lsvg -l
+                           columns.
     """
     lv_data = dict()
-    header = lsvg_list.splitlines()[1]
+    try:
+        header = lsvg_output.splitlines()[1]
+    except IndexError:
+        raise IndexError(f"Unable to get header (second line) of "
+                         f"'lsvg -l {vg_name}' output. "
+                         f"{lsvg_output=}")
     headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
     headings_indexes = list()
     for heading in headings:
@@ -476,7 +489,7 @@ def parse_lvs(lsvg_list, vg_name, lv_name):
                                    f"header='{header}' expected headings='{headings}'")
         headings_indexes.append(match.start())
 
-    for ln in lsvg_list.splitlines()[2:]:
+    for ln in lsvg_output.splitlines()[2:]:
         ln = ln.ljust(len(header))
         lv = ln[headings_indexes[0]:headings_indexes[1]].strip()
         if lv_name in ['all', lv]:
