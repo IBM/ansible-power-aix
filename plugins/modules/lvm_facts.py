@@ -267,14 +267,14 @@ def load_pvs(module, name, LVM):
         name     (str): physical volume name.
         LVM     (dict): LVM facts.
     return:
-        msg  (str): message
-        LVM (dict): LVM facts
+        warnings (list): List of warning messages
+        LVM      (dict): LVM facts
     """
-    msg = ""
+    warnings = list()
     cmd = "lspv"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg += "Command '%s' failed." % cmd
+        warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
     else:
         for ln in stdout.splitlines():
             fields = ln.split()
@@ -283,7 +283,7 @@ def load_pvs(module, name, LVM):
             cmd = "lspv -L %s" % fields[0]
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                msg += "Command '%s' failed." % cmd
+                warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
             else:
                 pv_state = stdout.splitlines()[2].split()[2].strip()
                 pp_size = stdout.splitlines()[4].split()[2].strip()
@@ -302,7 +302,7 @@ def load_pvs(module, name, LVM):
                 }
                 LVM['PVs'][fields[0]] = data
 
-    return msg, LVM
+    return warnings, LVM
 
 
 def load_vgs(module, name, LVM):
@@ -313,40 +313,40 @@ def load_vgs(module, name, LVM):
         name     (str): volume group name.
         LVM     (dict): LVM facts.
     return:
-        msg  (str): message
-        LVM (dict): LVM facts
+        warnings (list): List of warning messages
+        LVM      (dict): LVM facts
     """
-    msg = ""
+    warnings = list()
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg += "Command '%s' failed." % cmd
+        warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
     else:
         for ln in stdout.splitlines():
             vg = ln.split()[0].strip()
             if (name != 'all' and name != vg):
                 continue
             cmd = "lsvg %s" % vg
-            rc, out, err = module.run_command(cmd)
+            rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                msg += "Command '%s' failed." % cmd
+                warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
                 # make sure that varied off volume groups
                 # are returned.
                 # 0516-010: Volume group must be varied on; use varyonvg command.
                 pattern = r"0516-010"
-                found = re.search(pattern, err)
+                found = re.search(pattern, stderr)
                 if found:
                     data = {
                         'vg_state': "deactivated"
                     }
                     LVM['VGs'][vg] = data
             else:
-                vg_state = out.splitlines()[1].split()[2].strip()
-                num_lvs = out.splitlines()[4].split()[1].strip()
-                num_pvs = out.splitlines()[6].split()[2].strip()
-                pp_size = out.splitlines()[1].split()[5].strip()
-                total_pps = out.splitlines()[2].split()[5].strip()
-                free_pps = out.splitlines()[3].split()[5].strip()
+                vg_state = stdout.splitlines()[1].split()[2].strip()
+                num_lvs = stdout.splitlines()[4].split()[1].strip()
+                num_pvs = stdout.splitlines()[6].split()[2].strip()
+                pp_size = stdout.splitlines()[1].split()[5].strip()
+                total_pps = stdout.splitlines()[2].split()[5].strip()
+                free_pps = stdout.splitlines()[3].split()[5].strip()
                 size_g = int(total_pps) * int(pp_size) / 1024
                 free_g = int(free_pps) * int(pp_size) / 1024
                 data = {
@@ -360,7 +360,7 @@ def load_vgs(module, name, LVM):
                     'free_g': str(free_g)
                 }
                 LVM['VGs'][vg] = data
-    return msg, LVM
+    return warnings, LVM
 
 
 def load_lvs(module, name, LVM):
@@ -371,55 +371,73 @@ def load_lvs(module, name, LVM):
         name     (str): logical volume name.
         LVM     (dict): LVM facts.
     return:
-        msg  (str): message
-        LVM (dict): LVM facts
+        warnings (list): List of warning messages
+        LVM      (dict): LVM facts
     """
-    msg = ""
+    warnings = list()
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg += "Command '%s' failed." % cmd
+        warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
     else:
         for line in stdout.splitlines():
             vg = line.split()[0].strip()
             cmd = "lsvg -l %s" % vg
-            rc, out, err = module.run_command(cmd)
+            rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                msg += "Command '%s' failed." % cmd
+                warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
             else:
-                header = out.splitlines()[1]
-                headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
-                headings_indexes = []
-                for heading in headings:
-                    match = re.search(heading, header)
-                    try:
-                        assert match is not None
-                        headings_indexes.append(match.start())
-                    except AssertionError:
-                        module.fail_json(msg=f"Unable to parse 'lsvg -l {vg}' header", expected_header=headings, header=header)
+                try:
+                    lv_data = parse_lvs(stdout, vg, name)
+                    LVM['LVs'] = {**LVM['LVs'], **lv_data}
+                except AssertionError as err:
+                    warnings.append(str(err))
 
-                for ln in out.splitlines()[2:]:
-                    ln = ln.ljust(len(header))
-                    lv = ln[headings_indexes[0]:headings_indexes[1]].strip()
-                    if (name != 'all' and name != lv):
-                        continue
-                    type = ln[headings_indexes[1]:headings_indexes[2]].strip()
-                    lps = ln[headings_indexes[2]:headings_indexes[3]].strip()
-                    pps = ln[headings_indexes[3]:headings_indexes[4]].strip()
-                    pvs = ln[headings_indexes[4]:headings_indexes[5]].strip()
-                    lv_state = ln[headings_indexes[5]:headings_indexes[6]].strip()
-                    mnt_pt = ln[headings_indexes[6]:].strip()
-                    data = {
-                        'type': type,
-                        'vg': vg,
-                        'PVs': pvs,
-                        'lv_state': lv_state,
-                        'PPs': pps,
-                        'LPs': lps,
-                        'mount_point': mnt_pt
-                    }
-                    LVM['LVs'][lv] = data
-    return msg, LVM
+    return warnings, LVM
+
+
+def parse_lvs(lsvg_list, vg_name, lv_name):
+    """
+    Parse 'lsvg -l <volumegroup>' output
+    arguments:
+        lsvg_list (str): Raw output of 'lsvg -l <volumegroup>' cmd
+        vg_name   (str): Volume group name
+        lv_name   (str): Logical volume name (or 'all')
+    return:
+        lv_data  (dict): Dictionary of LV data. Top level keys are LV NAMEs,
+                         values are data parse from the rest of the lsvg -l
+                         columns.
+    """
+    lv_data = dict()
+    header = lsvg_list.splitlines()[1]
+    headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
+    headings_indexes = list()
+    for heading in headings:
+        match = re.search(heading, header)
+        assert match is not None, (f"Unable to parse 'lsvg -l {vg_name}' header. "
+                                   f"header='{header}' expected headings='{headings}'")
+        headings_indexes.append(match.start())
+
+    for ln in lsvg_list.splitlines()[2:]:
+        ln = ln.ljust(len(header))
+        lv = ln[headings_indexes[0]:headings_indexes[1]].strip()
+        if lv_name in ['all', lv]:
+            type = ln[headings_indexes[1]:headings_indexes[2]].strip()
+            lps = ln[headings_indexes[2]:headings_indexes[3]].strip()
+            pps = ln[headings_indexes[3]:headings_indexes[4]].strip()
+            pvs = ln[headings_indexes[4]:headings_indexes[5]].strip()
+            lv_state = ln[headings_indexes[5]:headings_indexes[6]].strip()
+            mnt_pt = ln[headings_indexes[6]:].strip()
+            lv_data[lv] = {
+                'type': type,
+                'vg': vg_name,
+                'PVs': pvs,
+                'lv_state': lv_state,
+                'PPs': pps,
+                'LPs': lps,
+                'mount_point': mnt_pt
+            }
+    return lv_data
 
 
 def main():
@@ -431,24 +449,31 @@ def main():
         ),
         supports_check_mode=True,
     )
-    msg = ""
+    return_values = dict()
+    warnings = list()
     type = module.params['component']
     name = module.params['name']
     LVM = module.params['lvm']
     if type == 'vg' or type == 'all':
         if 'VGs' not in LVM:
             LVM['VGs'] = {}
-        msg, LVM = load_vgs(module, name, LVM)
+        warnings_vg, LVM = load_vgs(module, name, LVM)
+        warnings += warnings_vg
     if type == 'pv' or type == 'all':
         if 'PVs' not in LVM:
             LVM['PVs'] = {}
-        msg, LVM = load_pvs(module, name, LVM)
+        warnings_pv, LVM = load_pvs(module, name, LVM)
+        warnings += warnings_pv
     if type == 'lv' or type == 'all':
         if 'LVs' not in LVM:
             LVM['LVs'] = {}
-        msg, LVM = load_lvs(module, name, LVM)
+        warnings_lv, LVM = load_lvs(module, name, LVM)
+        warnings += warnings_lv
 
-    module.exit_json(msg=msg, ansible_facts=dict(LVM=LVM))
+    if len(warnings) > 0:
+        return_values['warnings'] = warnings
+
+    module.exit_json(ansible_facts=dict(LVM=LVM), **return_values)
 
 
 if __name__ == '__main__':
