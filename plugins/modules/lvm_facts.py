@@ -341,26 +341,50 @@ def load_vgs(module, name, LVM):
                     }
                     LVM['VGs'][vg] = data
             else:
-                vg_state = stdout.splitlines()[1].split()[2].strip()
-                num_lvs = stdout.splitlines()[4].split()[1].strip()
-                num_pvs = stdout.splitlines()[6].split()[2].strip()
-                pp_size = stdout.splitlines()[1].split()[5].strip()
-                total_pps = stdout.splitlines()[2].split()[5].strip()
-                free_pps = stdout.splitlines()[3].split()[5].strip()
-                size_g = int(total_pps) * int(pp_size) / 1024
-                free_g = int(free_pps) * int(pp_size) / 1024
-                data = {
-                    'num_lvs': num_lvs,
-                    'num_pvs': num_pvs,
-                    'vg_state': vg_state,
-                    'pp_size': "%s megabytes" % pp_size,
-                    'total_pps': total_pps,
-                    'free_pps': free_pps,
-                    'size_g': str(size_g),
-                    'free_g': str(free_g)
-                }
-                LVM['VGs'][vg] = data
+                try:
+                    LVM['VGs'][vg] = parse_vgs(stdout, vg)
+                except AssertionError as err:
+                    warnings.append(str(err))
+
     return warnings, LVM
+
+
+def parse_vgs(lsvg_output, vg_name):
+    """
+    Parse 'lsvg <volumegroup>' output
+    arguments:
+        lsvg_output (str): Raw output of 'lsvg <volumegroup>' cmd
+        vg_name     (str): Volume group name
+    return:
+        vg_data    (dict): Dictionary of VG data.
+    """
+    vg_data = dict()
+    first_line = lsvg_output.splitlines()[:1][0]
+    match = re.search('VG IDENTIFIER', first_line)
+    assert match is not None, (f"Unable to parse 'lsvg {vg_name}' first line "
+                               f"to determine column sizes. {first_line=}")
+    right_col_start_i = match.start()
+    for line in lsvg_output.splitlines():
+        left_col = line[:right_col_start_i]
+        right_col = line[right_col_start_i:]
+        for col in [left_col, right_col]:
+            if ':' in col:
+                key, value = col.split(':', 1)
+                vg_data[key] = value.strip()
+
+    # The following key/values are redundant, but ensure backwards
+    # compatibility with previous versions of this module
+    vg_data['num_lvs'] = vg_data['LVs']
+    vg_data['num_pvs'] = vg_data['TOTAL PVs']
+    vg_data['vg_state'] = vg_data['VG STATE']
+    vg_data['pp_size'] = vg_data['PP SIZE']
+    vg_data['total_pps'] = vg_data['TOTAL PPs'].split()[0]
+    vg_data['free_pps'] = vg_data['FREE PPs'].split()[0]
+    pp_size_int = int(vg_data['pp_size'].split()[0])
+    vg_data['size_g'] = int(vg_data['total_pps']) * pp_size_int / 1024
+    vg_data['free_g'] = int(vg_data['free_pps']) * pp_size_int / 1024
+
+    return vg_data
 
 
 def load_lvs(module, name, LVM):
