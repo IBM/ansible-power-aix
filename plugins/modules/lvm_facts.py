@@ -278,31 +278,65 @@ def load_pvs(module, name, LVM):
     else:
         for ln in stdout.splitlines():
             fields = ln.split()
-            if (name != 'all' and name != fields[0]):
+            pv = fields[0]
+            if (name != 'all' and name != pv):
                 continue
-            cmd = "lspv -L %s" % fields[0]
+            cmd = "lspv -L %s" % pv
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(f"Command failed. {cmd=} {rc=} {stdout=} {stderr=}")
             else:
-                pv_state = stdout.splitlines()[2].split()[2].strip()
-                pp_size = stdout.splitlines()[4].split()[2].strip()
-                total_pps = stdout.splitlines()[5].split()[2].strip()
-                free_pps = stdout.splitlines()[6].split()[2].strip()
-                size_g = int(total_pps) * int(pp_size) / 1024
-                free_g = int(free_pps) * int(pp_size) / 1024
-                data = {
-                    'vg': fields[2],
-                    'pv_state': pv_state,
-                    'pp_size': "%s megabytes" % pp_size,
-                    'total_pps': total_pps,
-                    'free_pps': free_pps,
-                    'size_g': str(size_g),
-                    'free_g': str(free_g)
-                }
-                LVM['PVs'][fields[0]] = data
+                try:
+                    LVM['PVs'][pv] = parse_pvs(stdout, pv)
+                except AssertionError as err:
+                    warnings.append(str(err))
 
     return warnings, LVM
+
+
+def parse_pvs(lspv_output, pv_name):
+    """
+    Parse 'lspv <physicalvolume>' output
+    arguments:
+        lspv_output (str): Raw output of 'lspv <physicalvolume>' cmd
+        pv_name     (str): Physical volume name
+    return:
+        pv_data    (dict): Dictionary of PV data.
+    """
+    pv_data = dict()
+    first_line = lspv_output.splitlines()[:1][0]
+    match = re.search('VOLUME GROUP', first_line)
+    assert match is not None, (f"Unable to parse 'lspv {pv_name}' first line "
+                               f"to determine column sizes. {first_line=}")
+    right_col_start_i = match.start()
+    for line in lspv_output.splitlines():
+        left_col = line[:right_col_start_i]
+        right_col = line[right_col_start_i:]
+        if 'VG IDENTIFIER' in line:
+            # special case
+            match = re.search('VG IDENTIFIER', line)
+            assert match is not None, (f"Unable to parse 'lspv {pv_name}' "
+                                       f"VG IDENTIFIER line. {line=}")
+            left_col = line[:match.start()]
+            right_col = 'VG IDENTIFIER:' + line.split()[-1]
+
+        for col in [left_col, right_col]:
+            if ':' in col:
+                key, value = col.split(':', 1)
+                pv_data[key] = value.strip()
+
+    # The following key/values are redundant, but ensure backwards
+    # compatibility with previous versions of this module
+    pv_data['vg'] = pv_data['VOLUME GROUP']
+    pv_data['pv_state'] = pv_data['PV STATE']
+    pv_data['pp_size'] = pv_data['PP SIZE']
+    pv_data['total_pps'] = pv_data['TOTAL PPs'].split()[0]
+    pv_data['free_pps'] = pv_data['FREE PPs'].split()[0]
+    pp_size_int = int(pv_data['pp_size'].split()[0])
+    pv_data['size_g'] = int(pv_data['total_pps']) * pp_size_int / 1024
+    pv_data['free_g'] = int(pv_data['free_pps']) * pp_size_int / 1024
+
+    return pv_data
 
 
 def load_vgs(module, name, LVM):
