@@ -270,7 +270,7 @@ def load_pvs(module, name, LVM):
         warnings (list): List of warning messages
         LVM      (dict): LVM facts
     """
-    warnings = list()
+    warnings = []
     cmd = "lspv"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
@@ -305,7 +305,7 @@ def parse_pvs(lspv_output, pv_name):
     return:
         pv_data    (dict): Dictionary of PV data.
     """
-    pv_data = dict()
+    pv_data = {}
     try:
         first_line = lspv_output.splitlines()[0]
     except IndexError:
@@ -357,7 +357,7 @@ def load_vgs(module, name, LVM):
         warnings (list): List of warning messages
         LVM      (dict): LVM facts
     """
-    warnings = list()
+    warnings = []
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
@@ -401,7 +401,7 @@ def parse_vgs(lsvg_output, vg_name):
     return:
         vg_data    (dict): Dictionary of VG data.
     """
-    vg_data = dict()
+    vg_data = {}
     try:
         first_line = lsvg_output.splitlines()[0]
     except IndexError:
@@ -446,7 +446,7 @@ def load_lvs(module, name, LVM):
         warnings (list): List of warning messages
         LVM      (dict): LVM facts
     """
-    warnings = list()
+    warnings = []
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
@@ -482,7 +482,7 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
                            values are data parse from the rest of the lsvg -l
                            columns.
     """
-    lv_data = dict()
+    lv_data = {}
     try:
         header = lsvg_output.splitlines()[1]
     except IndexError:
@@ -490,7 +490,7 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
                          f"'lsvg -l {vg_name}' output. "
                          f"lsvg_output={lsvg_output}")
     headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
-    headings_indexes = list()
+    headings_indexes = []
     for heading in headings:
         match = re.search(heading, header)
         assert match is not None, (f"Unable to parse 'lsvg -l {vg_name}' header. "
@@ -528,8 +528,8 @@ def main():
         ),
         supports_check_mode=True,
     )
-    return_values = dict()
-    warnings = list()
+    return_values = {}
+    warnings = []
     type = module.params['component']
     name = module.params['name']
     LVM = module.params['lvm']
