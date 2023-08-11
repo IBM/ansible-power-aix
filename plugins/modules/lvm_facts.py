@@ -314,12 +314,12 @@ def parse_pvs(lspv_output, pv_name):
     pv_data = {}
     try:
         first_line = lspv_output.splitlines()[0]
-    except IndexError as err:
+    except IndexError:
         raise IndexError(
                 "Unable to get first line of 'lspv {pv_name}' output. "
                 "lspv_output={lspv_output}"
                 .format(pv_name=pv_name, lspv_output=lspv_output)
-                ) from err
+                )
     match = re.search('VOLUME GROUP', first_line)
     assert match is not None, (
             "Unable to parse 'lspv {pv_name}' first line to determine column "
@@ -424,12 +424,12 @@ def parse_vgs(lsvg_output, vg_name):
     vg_data = {}
     try:
         first_line = lsvg_output.splitlines()[0]
-    except IndexError as err:
+    except IndexError:
         raise IndexError(
                 "Unable to get first line of 'lsvg {vg_name}' output. "
                 "lsvg_output={lsvg_output}"
                 .format(vg_name=vg_name, lsvg_output=lsvg_output)
-                ) from err
+                )
     match = re.search('VG IDENTIFIER', first_line)
     assert match is not None, (
             "Unable to parse 'lsvg {vg_name}' first line to determine column "
@@ -516,12 +516,12 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
     lv_data = {}
     try:
         header = lsvg_output.splitlines()[1]
-    except IndexError as err:
+    except IndexError:
         raise IndexError(
                 "Unable to get header (second line) of 'lsvg -l {vg_name}' "
                 "output. lsvg_output={lsvg_output}"
                 .format(vg_name=vg_name, lsvg_output=lsvg_output)
-                ) from err
+                )
     headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
     headings_indexes = []
     for heading in headings:
