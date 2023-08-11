@@ -494,7 +494,7 @@ def load_lvs(module, name, LVM):
             else:
                 try:
                     lv_data = parse_lvs(stdout, vg, name)
-                    LVM['LVs'] = {**LVM['LVs'], **lv_data}
+                    LVM['LVs'].update(lv_data)
                 except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
