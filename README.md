@@ -14,6 +14,11 @@ Power platforms as part of an enterprise automation strategy through the Ansible
 The **IBM Power Systems AIX collection** is included as an upstream collection under the
 **Ansible Content for IBM Power Systems** umbrella of community content.
 
+## Join the Power Research Program
+
+Become an IBM Power Design Partner. Engage with our Power Research team across various research studies to shape the future of Anisble on Power:
+https://ibm.biz/BdyRyk
+
 <!-- A more detailed Usage or detailed explanation of the repository here -->
 ## Usage
 
