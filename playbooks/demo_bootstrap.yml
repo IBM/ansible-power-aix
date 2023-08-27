@@ -14,8 +14,7 @@
       pkgtype: "dnf"
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
-      #Add the value of proxy if you want it to be added to dnf.conf file
-      #proxy: 
+      proxy: None
 
 # INSTALL / UPDATE Python on inventory host
 - name: "Bootstrap Python on AIX"
