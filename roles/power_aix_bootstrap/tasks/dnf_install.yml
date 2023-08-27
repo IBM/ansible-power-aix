@@ -97,7 +97,7 @@
 
     - name: Print status
       debug:
-        msg: 'Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed, dnf_installed value = "{{dnf_installed}}"'
+        msg: "Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed"
       when: yum_link_installed.stat.exists
 
     - name: Print status
@@ -114,8 +114,8 @@
     - name: Add proxy to /opt/freeware/etc/dnf/dnf.conf
       ansible.builtin.lineinfile:
         path: /opt/freeware/etc/dnf/dnf.conf
-        line: proxy={{proxy}}
+        line: proxy={{ proxy }}
         insertafter: "best=True"
 
   #     Block to set proxy }
-  when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists)and "{{proxy}}" is defined
+  when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists)and "{{ proxy }}" is defined
