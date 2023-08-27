@@ -29,13 +29,17 @@
 # { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.1
 - block:
 
+    - name: Set the python interpreter to python3
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+
     - name: Create target filesystem "{{ target_dir }}" for image transfer if it does not exist.
       filesystem:
         state: present
         filesystem: "{{ target_dir }}"
         fs_type: jfs2
         auto_mount: yes  # noqa yaml
-        attributes: size=350M
+        attributes: size=530M
         permissions: 'rw'
         vg: rootvg
 
@@ -84,7 +88,7 @@
     - name: Unmount target filesystem "{{ target_dir }}"
       mount:
         state: umount
-        mount_dir: "{{ target_dir }}"
+        mount_over_dir: "{{ target_dir }}"
 
     - name: Remove target filesystem "{{ target_dir }}"
       filesystem:
@@ -93,7 +97,7 @@
 
     - name: Print status
       debug:
-        msg: "Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed"
+        msg: 'Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed, dnf_installed value = "{{dnf_installed}}"'
       when: yum_link_installed.stat.exists
 
     - name: Print status
@@ -103,3 +107,15 @@
 
   #    Block to install dnf }
   when: dnf_exists.stdout is search("false")
+
+# { Execute this block if dnf has been installed and proxy needs to be set
+- block:
+
+    - name: Add proxy to /opt/freeware/etc/dnf/dnf.conf
+      ansible.builtin.lineinfile:
+        path: /opt/freeware/etc/dnf/dnf.conf
+        line: proxy={{proxy}}
+        insertafter: "best=True"
+
+  #     Block to set proxy }
+  when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists)and "{{proxy}}" is defined

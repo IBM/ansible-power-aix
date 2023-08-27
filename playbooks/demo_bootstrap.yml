@@ -1,6 +1,6 @@
 ---
 - name: "Bootstrap Yum on AIX"
-  hosts: aix
+  hosts: all
   gather_facts: no
   user: root
   collections:
@@ -14,6 +14,8 @@
       pkgtype: "dnf"
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
+      #Add the value of proxy if you want it to be added to dnf.conf file
+      #proxy: 
 
 # INSTALL / UPDATE Python on inventory host
 - name: "Bootstrap Python on AIX"
