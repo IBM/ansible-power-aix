@@ -4,7 +4,7 @@
   fail:
     msg: yum is not supported anymore, please try dnf
   when:
-    - (pkgtype == "yum") or (pkgtype == "dnf")
+    - (pkgtype == "yum")
     - download_dir is not defined
 
 - name: Fail if pkgtype not specified
