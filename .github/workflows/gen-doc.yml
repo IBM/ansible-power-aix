@@ -43,7 +43,3 @@ jobs:
       run: |
         bash devops/bin/gen_doc.sh
 
-    - name: publish documentation to GitHub Pages
-      with:
-        folder: docs/build
-        branch: gh-pages
