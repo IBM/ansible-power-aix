@@ -340,10 +340,8 @@ def chfs(module, filesystem):
     else:
         final_props = final_props_fs
 
-    if init_props == final_props:
+    if init_props == final_props and rc == 0:
         result["msg"] = "No changes needed in %s" % filesystem
-        # if no changes are needed, make sure to report zero return code
-        result["rc"] = 0
         return
     elif rc != 0:
         msg = "Modification of filesystem '%s' failed. cmd - '%s'" % (filesystem, cmd)
