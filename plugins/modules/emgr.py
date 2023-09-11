@@ -334,6 +334,19 @@ def parse_ifix_details(output):
         ind += 1
     return ifix_name
 
+def is_ifix_installed(module, ifix_package):
+
+    # Utility function to check if the ifix is installed in the system.
+    ifix_label = ifix_package.split('/')[-1].split('.')[0]
+    cmd = 'emgr -c -L' + ifix_label
+
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc == 0:
+        return True
+    else:
+        return False
+
 
 def main():
     global module
@@ -380,6 +393,12 @@ def main():
 
     cmd = ['emgr']
     if action == 'install':
+
+        # check if ifix is already installed in the system
+        if is_ifix_installed(module, module.params['ifix_package']):
+            results['msg'] = 'This ifix is already installed. Nothing to do.'
+            module.exit_json(**result)
+
         # Usage: emgr -e <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqmoX]
         # Usage: emgr -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-CkpIqX]
         param_one_of(['ifix_package', 'list_file'])
@@ -473,6 +492,9 @@ def main():
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
+        if is_ifix_installed(module, module.params['ifix_package']) == False:
+            results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
+            module.exit_json(**result)
         if not module.params['ifix_label']:
             results['msg'] = 'Missing parameter: force remove requires: ifix_label'
             module.fail_json(**results)
@@ -486,6 +508,9 @@ def main():
 
     elif action == 'remove':
         # Usage: emgr -r -L <label> | -n <ifix num> | -u <VUID> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqX]
+        if is_ifix_installed(module, module.params['ifix_package']) == False:
+            results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
+            module.exit_json(**result)
         param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'])
         cmd += ['-r']
         if module.params['ifix_label']:
