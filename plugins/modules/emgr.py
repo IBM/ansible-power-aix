@@ -397,7 +397,7 @@ def main():
         # check if ifix is already installed in the system
         if is_ifix_installed(module, module.params['ifix_package']):
             results['msg'] = 'This ifix is already installed. Nothing to do.'
-            module.exit_json(**result)
+            module.exit_json(**results)
 
         # Usage: emgr -e <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqmoX]
         # Usage: emgr -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-CkpIqX]
@@ -492,9 +492,9 @@ def main():
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
-        if is_ifix_installed(module, module.params['ifix_package']) == False:
+        if not is_ifix_installed(module, module.params['ifix_package']):
             results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
-            module.exit_json(**result)
+            module.exit_json(**results)
         if not module.params['ifix_label']:
             results['msg'] = 'Missing parameter: force remove requires: ifix_label'
             module.fail_json(**results)
@@ -508,9 +508,9 @@ def main():
 
     elif action == 'remove':
         # Usage: emgr -r -L <label> | -n <ifix num> | -u <VUID> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqX]
-        if is_ifix_installed(module, module.params['ifix_package']) == False:
+        if not is_ifix_installed(module, module.params['ifix_package']):
             results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
-            module.exit_json(**result)
+            module.exit_json(**results)
         param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'])
         cmd += ['-r']
         if module.params['ifix_label']:
