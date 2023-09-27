@@ -30,6 +30,7 @@ options:
     - Specifies the operation to perform.
     - C(copy) to perform and alternate disk copy.
     - C(clean) to cleanup an existing alternate disk copy.
+    - C(install) to install filesets, fixes in existing alternate disk.
     type: str
     choices: [ copy, clean ]
     default: copy
@@ -51,6 +52,12 @@ options:
     - C(nearest) disk size closest to the rootvg disk.
     type: str
     choices: [ minimize, upper, lower, nearest ]
+  existing_altinst_rootvg:
+    description:
+    - When I(action=install), specifies the bundle_name or fixes or filesets to be installed 
+      in alt_rootvg
+    type: str
+    default: none
   force:
     description:
     - Forces removal of any existing alternate disk copy on target disks.
@@ -67,6 +74,36 @@ options:
       alternate rootvg.
     type: bool
     default: no
+  bundle_name:
+    description:
+    - Path name of optional file with a list of packages or filesets that will be installed
+      after a rootvg clone. If specified then I(image_location) must be provided.
+    type: str
+    default: None
+  apar_fixes:
+    description:
+    - Optional file with a list of APARs to install after a clone of rootvg. If apar_fixes is
+      provided then I(image_location) must be provided.
+    type: str
+    default: None
+  filesets:
+    description:
+    - List of filesets to install after cloning a rootvg.
+      If specified then I(image_location) must be provided.
+    type: str
+    default: None
+  installp_flags:
+    description:
+    - The flags to use when updating or installing new filesets into the cloned altinst_rootvg.
+      If specified then I(image_location) must be provided.
+    type: str
+    default: None
+  image_location:
+    description:
+    - Location of installp images or updates to apply after a clone of rootvg.
+      This can be a directory full path name or device name.
+    type: str
+    default: None
   device_reset:
     description:
     - When I(action=copy), specifies to reset any user-defined device configurations on the target
@@ -592,6 +629,47 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
 
     results['changed'] = True
 
+def alt_rootvg_op(module):
+
+    existing_altinst_rootvg = module.params['existing_altinst_rootvg']
+    bundle_name = module.params['bundle_name']
+    apar_fixes = module.params['apar_fixes']
+    filesets = module.params['filesets']
+    installp_flags = module.params['installp_flags']
+    image_location = module.params['image_location']
+
+    if not image_location:
+        msg = 'Please provide the image location.'
+        results['msg'] = msg
+        module.fail_json(**results)
+
+    if not bundle_name and not apar_fixes and not filesets:
+        msg = 'Please provide bundle_name or apar_fixes or filesets'
+        results['msg'] = msg
+        module.fail_json(**results)
+
+    if bundle_name:
+        cmd += f'-b + {bundle_name} '
+    elif apar_fixes:
+        cmd += f'-f {apar_fixes} '
+    else:
+        cmd += f'-w {filesets} '
+
+    if installp_flags:
+        cmd += f'-I {installp_flags} '
+
+    cmd += f'-l {image_location} -d {existing_altinst_rootvg}'
+
+    ret, stdout, stderr = module.run_command(cmd)
+
+    if ret:
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        module.fail_json(**results)
+
+    results['changed'] = True
+
 
 def main():
     global results
@@ -599,10 +677,16 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str',
-                        choices=['copy', 'clean'], default='copy'),
+                        choices=['copy', 'clean', 'install'], default='copy'),
             targets=dict(type='list', elements='str'),
             disk_size_policy=dict(type='str',
                                   choices=['minimize', 'upper', 'lower', 'nearest']),
+            existing_altinst_rootvg=dict(type='str', default=None),
+            bundle_name=dict(type='str', default=None),
+            apar_fixes=dict(type='str', default=None),
+            filesets=dict(type='str', default=None),
+            installp_flags=dict(type='str', default=None),
+            image_location=dict(type='str', default=None),
             force=dict(type='bool', default=False),
             bootlist=dict(type='bool', default=False),
             remain_nim_client=dict(type='bool', default=False),
@@ -636,8 +720,10 @@ def main():
 
     if action == 'copy':
         alt_disk_copy(module, module.params, targets, allow_old_rootvg)
-    else:
+    elif action == 'clean':
         alt_disk_clean(module, targets, allow_old_rootvg)
+    else:
+        alt_rootvg_op(module)
 
     results['msg'] += 'alt_disk {0} operation completed successfully'.format(action)
     module.exit_json(**results)
