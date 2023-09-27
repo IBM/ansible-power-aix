@@ -630,6 +630,11 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
     results['changed'] = True
 
 def alt_rootvg_op(module):
+    """
+    alt_rootvg_op operation
+
+    - installs the bundle/apar_fixes/filesets
+    """
 
     existing_altinst_rootvg = module.params['existing_altinst_rootvg']
     bundle_name = module.params['bundle_name']
