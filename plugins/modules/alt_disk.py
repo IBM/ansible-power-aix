@@ -638,6 +638,8 @@ def alt_rootvg_op(module):
     installp_flags = module.params['installp_flags']
     image_location = module.params['image_location']
 
+    cmd = ''
+
     if not image_location:
         msg = 'Please provide the image location.'
         results['msg'] = msg
