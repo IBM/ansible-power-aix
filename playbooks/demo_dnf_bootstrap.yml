@@ -14,18 +14,3 @@
       pkgtype: "dnf"
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
-      proxy: None
-
-# INSTALL / UPDATE Python on inventory host
-- name: "Bootstrap Python on AIX"
-  hosts: aix
-  gather_facts: no
-#  user: root
-  collections:
-  - ibm.power_aix
-  tasks:
-
-  - import_role:
-      name: power_aix_bootstrap
-    vars:
-      pkgtype: "python"

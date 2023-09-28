@@ -43,11 +43,3 @@
 - name: Bootstrap dnf
   include_tasks: "dnf_install.yml"
   when: pkgtype == "dnf"
-
-- name: Bootstrap pycurl
-  include_tasks: "pycurl_install.yml"
-  when: pkgtype == "pycurl"
-
-- name: Bootstrap wget
-  include_tasks: "wget_install.yml"
-  when: pkgtype == "wget"

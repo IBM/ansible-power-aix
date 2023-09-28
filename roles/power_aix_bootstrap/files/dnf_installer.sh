@@ -163,8 +163,8 @@ fi
 
 # Create a temporary directroy where all downloads should go.
 curr_time=`date +%Y%m%d%H%M%S`
-mkdir -p /tmp/dnf-$curr_time
-tmppath=`echo /tmp/dnf-$curr_time`
+mkdir -p /tmp/.ansible.cpdir/dnf-$curr_time
+tmppath=`echo /tmp/.ansible.cpdir/dnf-$curr_time`
 cd $tmppath
 
 
