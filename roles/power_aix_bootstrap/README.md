@@ -14,23 +14,12 @@ Available variables are listed below, along with if they are required, type and 
     pkgtype (True, str, none)
 
 Specifies the package service requiring bootstrap installation.
-pkgtype: [dnf, wget, pycurl]
+pkgtype: [dnf]
 Bootstrap for dnf is supported for all AIX versions.
 yum is not supported now on any AIX version.
 
 -- pkgtype arguments
 - dnf
-Uses the AIX toolsbox to install dnf and dependencies on AIX-7.1 and above.
-- wget
-Uses dnf install wget.
--pycurl
-Installs pycurl
-
-    opt_free_size (optional, str, 500)
-
-Specifies the free space in megabytes needed in the /opt folder. It is used by dnf, wget and pycurl bootstraps.
-
-    var_free_size (optional, str, 200)
 
 Specifies the free space in megabytes needed in the /var folder.
 
@@ -55,14 +44,6 @@ None.
       vars:
         pkgtype: dnf 
 
-
-    - hosts: aix
-      gather_facts: no
-      include_role:
-        name: power_aix_bootstrap
-      vars:
-        pkgtype: wget
-        opt_free_size: 1000
 
 ## Copyright
 © Copyright IBM Corporation 2021
