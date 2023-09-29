@@ -32,8 +32,10 @@ options:
     description:
     - Specifies the action to be performed for the user.
     - C(present) creates a user with provided I(name) and I(attributes) in the system.
+    - If the user already exists in the system, the I(attributes) will be changed.
     - C(absent) deletes the user with provided I(name).
-    - C(modify) changes the specified attributes of an exiting user.
+    - C(modify) changes the specified I(attributes) of an exiting user.
+    - If the user doesn't exist on the system, it will be created.
     type: str
     choices: [ present, absent, modify ]
     required: true
@@ -180,6 +182,61 @@ def get_chuser_command(module):
     return cmd
 
 
+def parse_lsuserf_output(stdout):
+    '''
+    parse_lsuserf_output returns a dict with all values parsed from
+    lsuser -f output.
+
+    argument:
+        stdout:  List of lines. Output from lsuser -f.
+    return:
+        (dict):  Attributes in python dict.
+    '''
+    attrs = dict()
+    for line in stdout.splitlines():
+        if '=' in line:
+            attr, value = line.split('=')
+            attr = attr.strip()
+            value = value.strip()
+            if value != "":
+                attrs[attr] = value
+    return attrs
+
+
+def get_user_attrs(module):
+    '''
+    get_user_attrs returns a dict with all attributes defined for the user.
+    The user must exist. The function will not check its existence.
+
+    argument:
+        module  (dict): The Ansible module
+    return:
+        (dict): User attributes
+    '''
+    cmd = "lsuser -f %s" % module.params['name']
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc != 0:
+        return dict()
+    return parse_lsuserf_output(stdout)
+
+
+def changed_attrs(module, current):
+    '''
+    changed_attrs checks the difference between current attributes of
+    a user and the attributes set in the module.
+    Dictionary with changed values is returned.
+
+    argument:
+        module  (dict): The Ansible module
+        current (dict): Current user attributes
+    return:
+        (dict): Changed user attributes
+    '''
+    newattrs = module.params['attributes']
+    changed = {k: newattrs[k] for k in newattrs if k in current and str(newattrs[k]) != current[k]}
+    return changed
+
+
 def modify_user(module):
     '''
     Modify_user function modifies the attributes of the user and returns
@@ -195,6 +252,12 @@ def modify_user(module):
 
     msg = None
     changed = False
+    # Get current user attributes
+    current_attrs = get_user_attrs(module)
+    # Get user attributes to change
+    attrs = changed_attrs(module, current_attrs)
+    # Redefine attributes
+    module.params['attributes'] = attrs
     # Get + Run chuser commands
     cmd = get_chuser_command(module)
     if cmd is not None:
@@ -371,20 +434,16 @@ def main():
             changed = True
         else:
             msg = "User name is NOT FOUND : %s" % module.params['name']
-    elif module.params['state'] == 'present':
+    elif module.params['state'] == 'present' or module.params['state'] == 'modify':
         if not user_exists(module):
             msg = create_user(module)
             changed = True
         else:
             msg = "User %s already exists." % module.params['name']
-    elif module.params['state'] == 'modify':
-        if module.params['attributes'] is None and module.params['password'] is None:
-            msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
-        else:
-            if user_exists(module):
-                msg, changed = modify_user(module)
+            if module.params['attributes'] is None and module.params['password'] is None:
+                msg = "Please provide the attributes to be changed for the user: %s" % module.params['name']
             else:
-                msg = "No user found in the system to modify the attributes: %s" % module.params['name']
+                msg, changed = modify_user(module)
     else:
         msg = "Invalid state. The state provided is not supported: %s" % module.params['state']
 
