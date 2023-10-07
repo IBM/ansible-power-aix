@@ -54,7 +54,7 @@ options:
     choices: [ minimize, upper, lower, nearest ]
   existing_altinst_rootvg:
     description:
-    - When I(action=install), specifies the bundle_name or fixes or filesets to be installed 
+    - When I(action=install), specifies the bundle_name or fixes or filesets to be installed
       in alt_rootvg
     type: str
     default: none
@@ -628,6 +628,7 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
             module.fail_json(**results)
 
     results['changed'] = True
+
 
 def alt_rootvg_op(module):
     """

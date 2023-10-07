@@ -334,6 +334,7 @@ def parse_ifix_details(output):
         ind += 1
     return ifix_name
 
+
 def is_ifix_installed(module, ifix_package):
 
     # Utility function to check if the ifix is installed in the system.
