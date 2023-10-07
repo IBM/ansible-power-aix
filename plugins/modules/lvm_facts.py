@@ -314,8 +314,8 @@ def parse_pvs(lspv_output, pv_name):
     pv_data = {}
     try:
         first_line = lspv_output.splitlines()[0]
-    except IndexError:
-        raise IndexError(
+    except IndexError as no_first_line:
+        raise IndexError from no_first_line(
                 "Unable to get first line of 'lspv {pv_name}' output. "
                 "lspv_output={lspv_output}"
                 .format(pv_name=pv_name, lspv_output=lspv_output)
@@ -424,8 +424,8 @@ def parse_vgs(lsvg_output, vg_name):
     vg_data = {}
     try:
         first_line = lsvg_output.splitlines()[0]
-    except IndexError:
-        raise IndexError(
+    except IndexError as no_first_line:
+        raise IndexError from no_first_line(
                 "Unable to get first line of 'lsvg {vg_name}' output. "
                 "lsvg_output={lsvg_output}"
                 .format(vg_name=vg_name, lsvg_output=lsvg_output)
@@ -516,8 +516,8 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
     lv_data = {}
     try:
         header = lsvg_output.splitlines()[1]
-    except IndexError:
-        raise IndexError(
+    except IndexError as no_second_line:
+        raise IndexError from no_second_line(
                 "Unable to get header (second line) of 'lsvg -l {vg_name}' "
                 "output. lsvg_output={lsvg_output}"
                 .format(vg_name=vg_name, lsvg_output=lsvg_output)
