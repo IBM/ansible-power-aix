@@ -14,37 +14,37 @@
 ###############################################################################
 
 - name: Fail if master_a is not specified
-  fail:
+  ansible.builtin.fail:
     msg: "NIM Master machine(master_a) is not specified"
   when: master_a  | length > 0
 
 - name: Fail if master_b is not specified
-  fail:
+  ansible.builtin.fail:
     msg: "NIM Master machine(master_b) is not specified"
   when: master_b | length > 0
 
 - name: "Fail if Alternate disk has not been specified"
-  fail:
+  ansible.builtin.fail:
     msg: "No alternate disk (alt_disk) provided."
   when: alt_disk | length > 0
 
 - name: "Fail if a NIM LPP resource is not specified"
-  fail:
+  ansible.builtin.fail:
     msg: "NIM LPP resource not specified"
   when: lpp_source_v | length > 0
 
 - name: "Fail if spot is not provided"
-  fail:
+  ansible.builtin.fail:
     msg: "Spot was not provided"
   when: spot_v | length > 0
 
 - name: "Fail if NIM Master fileset's source has not been provided"
-  fail:
+  ansible.builtin.fail:
     msg: "nim_master_fileset_src was not provided"
   when: nim_master_fileset_src | length > 0
 
 - name: "Fail if phase was not provided"
-  fail:
+  ansible.builtin.fail:
     msg: "You did not specify the phase"
   when: phase | length > 0
 
@@ -52,11 +52,11 @@
 
 - block:
     - name: "Create database backup file"
-      import_tasks: create_backup.yml
+      ansible.builtin.import_tasks: create_backup.yml
       delegate_to: "{{ master_b }}"
 
     - name: Transfer the backup file to Controller machine
-      import_tasks: fetch_to_controller.yml
+      ansible.builtin.import_tasks: fetch_to_controller.yml
 
     - name: Unconfigure the NIM database on "{{ master_b }}"
       ansible.builtin.raw: "nim -o unconfig master"
@@ -64,7 +64,7 @@
       register: command
 
     - name: Check for failure in Unconfiguring database on "{{ master_b }}"
-      fail:
+      ansible.builtin.fail:
         msg: "Could not unconfigure database"
       when: command.rc != 0
 
@@ -75,10 +75,10 @@
       delegate_to: "{{ master_b }}"
 
     - name: Add the NIM "{{ master_b }}" as a “standalone” client to "{{ master_a }}"
-      include_tasks: client_master_setup.yml
+      ansible.builtin.import_tasks: client_master_setup.yml
 
     - name: Perform Alt Disk Migration of Master using NIM
-      include_tasks: migration.yml
+      ansible.builtin.import_tasks: migration.yml
 
     - name: Wait for 20 minutes after reboot so that the machine is up
       ansible.builtin.pause:
@@ -94,7 +94,7 @@
 
 - block:
     - name: Copy the NIM master fileset to "{{ master_b }}"
-      include_tasks: copy_fileset.yml
+      ansible.builtin.import_tasks: copy_fileset.yml
 
     - name: Install NIM master filesets to "{{ master_b }}"
       installp:
@@ -104,7 +104,7 @@
       delegate_to: "{{ master_b }}"
 
     - name: Transfer the backup file to "{{ master_b }}"
-      import_tasks: copy_to_b.yml
+      ansible.builtin.import_tasks: copy_to_b.yml
 
     - name: Restore the database
       ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_restore_db {{ db_filename }}
@@ -112,10 +112,10 @@
       register: command
 
     - name: Check for failure in restoring database on "{{ master_b }}"
-      fail:
+      ansible.builtin.fail:
         msg: "Could not restore database"
       when: command.rc != 0
 
-    - debug: msg="Database restored, NIM Master - {{ master_b }} has been migrated and restored!!!"
+    - ansible.builtin.debug: msg="Database restored, NIM Master - {{ master_b }} has been migrated and restored!!!"
 
   when: phase == "db_restore"

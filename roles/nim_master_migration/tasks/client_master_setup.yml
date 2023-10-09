@@ -2,31 +2,31 @@
 # Hostname is required for registering
 
 - name: Extract hostname from "{{ master_b }}"
-  set_fact:
+  ansible.builtin.set_fact:
     master_b_hostname: "{{ master_b.split('.')[0] | lower }}"
 
 # This command will set up our Master B machine (One that needs to be migrateed) as
 # a stand alone client to Master A machine
 
 - name: Registering {{ master_b }} as a client machine for {{ master_a }}
-  raw: nim -o define -t standalone -a platform=chrp -a if1="find_net {{ master_b }} 0" -a cable_type1=bnc {{ master_b_hostname }}
+  ansible.builtin.raw: nim -o define -t standalone -a platform=chrp -a if1="find_net {{ master_b }} 0" -a cable_type1=bnc {{ master_b_hostname }}
   register: command
   changed_when: command.rc == 0
 
 - name: Check for failure in Registering {{ master_b }} as a client machine for {{ master_a }}
-  fail:
+  ansible.builtin.fail:
     msg: Could not register "{{ master_b }}" as a client "{{ master_a }}"
   when: command.rc != 0
 
 # This command will initialise Master B machine as a client to Master A machine
 
 - name: Registering {{ master_a }} as NIM master on {{ master_b }}
-  raw: niminit -a name={{ master_b_hostname }} -a master={{ master_a }}
+  ansible.builtin.raw: niminit -a name={{ master_b_hostname }} -a master={{ master_a }}
   delegate_to: "{{ master_b }}"
   register: command
   changed_when: command.rc == 0
 
 - name: Check for failure in registering {{ master_a }} as NIM master on {{ master_b }}
-  fail:
+  ansible.builtin.fail:
     msg: Could not register {{ master_a }} as NIM master on {{ master_b }}
   when: command.rc != 0

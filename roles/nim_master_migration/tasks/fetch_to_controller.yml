@@ -1,20 +1,20 @@
 ---
 - name: Check if the file exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ db_filename }}"
   register: filestatus
   delegate_to: "{{ master_b }}"
 
 - block:
     - name: Copy file to Controller node
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ db_filename }}"
         dest: "{{ db_file_controller }}"
       delegate_to: "{{ master_b }}"
       register: syncfile
 
     - name: Check status
-      debug:
+      ansible.builtin.debug:
         msg: Backup file transferred successfully
       when: syncfile.changed
 

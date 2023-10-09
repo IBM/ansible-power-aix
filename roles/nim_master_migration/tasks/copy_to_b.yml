@@ -1,6 +1,6 @@
 ---
 - name: Check if the file already exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ db_filename }}"
   delegate_to: "{{ master_b }}"
   register: filestatus
@@ -14,7 +14,7 @@
       register: syncfile
 
     - name: Check status
-      debug:
+      ansible.builtin.debug:
         msg: Backup file transferred successfully
       when: syncfile.changed
   when: not filestatus.stat.exists

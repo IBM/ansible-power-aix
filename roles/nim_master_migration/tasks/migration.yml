@@ -1,20 +1,20 @@
 ---
 - name: "Install the required fileset for performing NIM ADM operation"
-  raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ lpp_source_v }} {{ spot_v }}
+  ansible.builtin.raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ lpp_source_v }} {{ spot_v }}
   register: command
   changed_when: command.rc == 0
 
 - name: Check for failure in installing the fileset
-  fail:
+  ansible.builtin.fail:
     msg: "The following fileset was not installed: bos.alt_disk_install.rte"
   when: command.rc != 0
 
 - name: Extract hostname from "{{ master_b }}"
-  set_fact:
+  ansible.builtin.set_fact:
     master_b_hostname: "{{ master_b.split('.')[0] | lower }}"
 
 - name: Perform NIM ADM migration
-  include_role:
+  ansible.builtin.include_role:
     name: ibm.power_aix.nim_alt_disk_migration
   vars:
     nim_client: "{{ master_b_hostname }}"
