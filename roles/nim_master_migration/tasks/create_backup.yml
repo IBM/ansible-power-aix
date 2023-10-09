@@ -15,7 +15,7 @@
 
 - name: "Get the free size of {{ db_backup_path }}"
   set_fact:
-     free_space: "{{ output.stdout_lines[1].split()[2] }}"
+    free_space: "{{ output.stdout_lines[1].split()[2] }}"
 
 - name: "Fail if space is not enough"
   fail:
@@ -25,9 +25,9 @@
 - name: Take backup of Database present on "{{ master_b }}"
   raw: /usr/lpp/bos.sysmgt/nim/methods/m_backup_db "{{ db_filename }}"
   register: command
+  changed_when: command.rc == 0
 
 - name: Check for failure in taking backup of DB
   fail:
     msg: "Could not create database backup"
   when: command.rc != 0
-

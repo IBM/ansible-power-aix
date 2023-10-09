@@ -5,75 +5,17 @@
   register: filestatus
   delegate_to: "{{ master_b }}"
 
-# - name: Initial path variable on {{ master_b }}
-#   raw: "echo $PATH"
-#   register: path_var
-
-# - name: Get path
-#   debug:
-#     msg: path_var
-
-# - name: Get path from {{ master_b }}
-#   raw: echo $PATH
-#   register: path_b
-#   delegate_to: "{{ master_b }}"
-  
-# - name: Before rsync addition
-#   debug: 
-#     msg: "{{ path_b }}"
-
-# - name: Add rsync path
-#   raw: "export PATH=/opt/freeware/bin:$PATH"
-#   delegate_to: "{{ master_b }}"
-
-# - name: Get path from {{ master_b }} after adding rsync
-#   raw: echo $PATH
-#   register: path_b
-#   delegate_to: "{{ master_b }}"
-
-# - name: After addition
-#   debug: 
-#     msg: "{{ path_b }}"
-
-
 - block:
-    # - name: Copy file from "{{ master_b }}" to "{{ master_a }}"
-    #   tags: sync-push
-    #   synchronize:
-    #     src: ~/{{ db_filename }}
-    #     dest: ~/{{ db_filename }}
-    #     mode: push
-    #   delegate_to: "{{ master_b }}"
-    #   register: syncfile
-
-# You can use path variable to send the path of rsync i.e. opt/freeware/bin
-
     - name: Copy file to Controller node
       fetch:
         src: "{{ db_filename }}"
         dest: "{{ db_file_controller }}"
       delegate_to: "{{ master_b }}"
       register: syncfile
-    # - name: Use scp to copy the backup file from {{ master_b }} to {{ master_a }}
-    #   raw: scp ~/{{ db_filename }} root@{{ master_a }}:/
-    #   delegate_to: "{{ master_b }}"
-    #   register: syncfile
+
     - name: Check status
       debug:
         msg: Backup file transferred successfully
       when: syncfile.changed
+
   when: filestatus.stat.exists
-
-# - name: Copy file from "{{ master_b }}" to "{{ master_a }}"
-#   tags: sync-push
-#   synchronize:
-#     src: ~/{{ db_filename }}
-#     dest: ~/{{ db_filename }}
-#     mode: push
-#   delegate_to: "{{ master_b }}"
-#   register: syncfile
-
-# - name: Check status
-#   debug:
-#     msg: Backup file transferred successfully
-#   when: syncfile.changed

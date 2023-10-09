@@ -1,58 +1,52 @@
 # Copyright (c) IBM Corporation 2020
 ---
-# TASKS TO BE PERFORMED
+# TASKS THAT WILL BE PERFORMED
 
-# 1. Do NIM Database backup of NIM Master B using “smitty nim_backup_db” fast path and keep the DB to the some defined location.
-# 2. Unconfigure the NIM Database using the command “nim -o unconfig master” or “smitty nim_unconfig” fastpath.
-# 3. Uninstall the NIM master fileset from NIM Master B using the command “installp -u bos.sysmgt.nim.master”.
-# 4. Add the NIM Master B as a “standalone” client to NIM Master A. -- > This would be already there. If not, we can use the client registration script to do it.
+# 1. Do NIM Database backup of NIM Master B.
+# 2. Unconfigure the NIM Database.
+# 3. Uninstall the NIM master fileset from NIM Master B.
+# 4. Add the NIM Master B as a “standalone” client to NIM Master A.
 # 5. Perform “nimadm” migration using available “non-rootvg” physical volume of NIM client.
-# 6. After migration is completed, reboot the NIM client and ensure that the NIM client has been migrated to version 73D.
-# 7. Install “bos.sysmgt.nim.master” fileset of 73D to NIM Master B and configure it as a “NIM Master”.
-# 8. Restore the NIM DB using the “smitty nim_backrest” fastpath (NIM DB restore).
-
-
-# Add wait in NIM ADM role - DONE
-# Add /opt/freeware/bin to path on all machines for usage of rsync - NOT req
-# Remove checks for os level : It is being done in NIM ADM itself - Done
-# Copy the master fileset from controller to master B before installation - Done
+# 6. After migration is completed, reboot the NIM client and ensure that the NIM client has been migrated to the new version.
+# 7. Install “bos.sysmgt.nim.master” fileset of new oslevel to NIM Master B and configure it as a “NIM Master”.
+# 8. Restore the NIM DB.
 
 ###############################################################################
 
 - name: Fail if master_a is not specified
   fail:
     msg: "NIM Master machine(master_a) is not specified"
-  when: master_a == ""
+  when: master_a  | length > 0
 
 - name: Fail if master_b is not specified
   fail:
     msg: "NIM Master machine(master_b) is not specified"
-  when: master_b == ""
+  when: master_b | length > 0
 
 - name: "Fail if Alternate disk has not been specified"
   fail:
     msg: "No alternate disk (alt_disk) provided."
-  when: alt_disk == ""
+  when: alt_disk | length > 0
 
 - name: "Fail if a NIM LPP resource is not specified"
   fail:
     msg: "NIM LPP resource not specified"
-  when: lpp_source_v == ""
+  when: lpp_source_v | length > 0
 
 - name: "Fail if spot is not provided"
   fail:
     msg: "Spot was not provided"
-  when: spot_v == ""
+  when: spot_v | length > 0
 
 - name: "Fail if NIM Master fileset's source has not been provided"
   fail:
     msg: "nim_master_fileset_src was not provided"
-  when: nim_master_fileset_src == ""
+  when: nim_master_fileset_src | length > 0
 
 - name: "Fail if phase was not provided"
   fail:
     msg: "You did not specify the phase"
-  when: phase == ""
+  when: phase | length > 0
 
 ###############################################################################
 
@@ -91,7 +85,7 @@
         minutes: 20
 
     - name: "Next Steps"
-      ansible.builtin.debug: 
+      ansible.builtin.debug:
         msg: "Migration has been done. Please run the role again with phase = db_restore to get the machine to previous state."
 
   when: phase == "backup_and_migration"
@@ -102,7 +96,7 @@
 
     - name: Install NIM master filesets to "{{ master_b }}"
       installp:
-        extend_fs: yes
+        extend_fs: true
         device: "{{ nim_master_fileset_dest }}"
         install_list: bos.sysmgt.nim.master
       delegate_to: "{{ master_b }}"

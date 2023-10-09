@@ -2,6 +2,7 @@
 - name: "Install the required fileset for performing NIM ADM operation"
   raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ lpp_source_v }} {{ spot_v }}
   register: command
+  changed_when: command.rc == 0
 
 - name: Check for failure in installing the fileset
   fail:
