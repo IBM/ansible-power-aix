@@ -90,6 +90,8 @@
 
   when: phase == "backup_and_migration"
 
+###############################################################################
+
 - block:
     - name: Copy the NIM master fileset to "{{ master_b }}"
       include_tasks: copy_fileset.yml

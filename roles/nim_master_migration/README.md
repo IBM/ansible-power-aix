@@ -1,8 +1,7 @@
 # Ansible Role: nim_alt_disk_migration
 The [IBM Power Systems AIX](../../README.md) collection provides an 
 [Ansible role](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html), 
-referred to as `nim_master_migration`, which assists in automating in migration in 
-migration of NIM master machine.
+referred to as `nim_master_migration`, which assists in automating migration of NIM master machine.
 
 For guides and reference, see the [Docs Site](https://ibm.github.io/ansible-power-aix/roles.html).
 

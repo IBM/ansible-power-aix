@@ -7,9 +7,10 @@
 
 - block:
     - name: Copy NIM master fileset to "{{ master_b }}"
-      copy:
+      ansible.builtin.copy:
         src: "{{ nim_master_fileset_src }}"
         dest: "{{ nim_master_fileset_dest }}"
+        mode: '0777'
       delegate_to: "{{ master_b }}"
     - name: Check if file has been moved
       stat:

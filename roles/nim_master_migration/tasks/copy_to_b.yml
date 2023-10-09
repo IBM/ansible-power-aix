@@ -7,9 +7,10 @@
 
 - block:
     - name: Copy file from controller node to {{ master_b }}
-      copy:
+      ansible.builtin.copy:
         src: "{{ db_file_controller }}"
         dest: "{{ db_filename }}"
+        mode: '0777'
       register: syncfile
 
     - name: Check status

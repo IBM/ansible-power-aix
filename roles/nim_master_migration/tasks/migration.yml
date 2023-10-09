@@ -20,10 +20,10 @@
     nim_client: "{{ master_b_hostname }}"
     target_disk:
       disk_name: "{{ alt_disk }}"
-      force: True
+      force: true
     lpp_source: "{{ lpp_source_v }}"
-    reboot_client: True
+    reboot_client: true
     spot: "{{ spot_v }}"
     control_phases:
-      validate_nim_resources: True
-      perform_migration: True
+      validate_nim_resources: true
+      perform_migration: true

@@ -1,5 +1,5 @@
 ---
-# Hostname is required for regsitering
+# Hostname is required for registering
 
 - name: Extract hostname from "{{ master_b }}"
   set_fact:
@@ -11,6 +11,7 @@
 - name: Registering {{ master_b }} as a client machine for {{ master_a }}
   raw: nim -o define -t standalone -a platform=chrp -a if1="find_net {{ master_b }} 0" -a cable_type1=bnc {{ master_b_hostname }}
   register: command
+  changed_when: command.rc == 0
 
 - name: Check for failure in Registering {{ master_b }} as a client machine for {{ master_a }}
   fail:
@@ -23,6 +24,7 @@
   raw: niminit -a name={{ master_b_hostname }} -a master={{ master_a }}
   delegate_to: "{{ master_b }}"
   register: command
+  changed_when: command.rc == 0
 
 - name: Check for failure in registering {{ master_a }} as NIM master on {{ master_b }}
   fail:
