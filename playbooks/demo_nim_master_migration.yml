@@ -1,0 +1,25 @@
+---
+# PREREQUISITES:
+
+- name: "nim_master_migration demo"
+  hosts: all
+  gather_facts: false
+  remote_user: root
+  collections:
+    - ibm.power_aix
+  tasks:
+    - import_role:
+        name: ibm.power_aix.nim_master_migration
+      vars:
+        master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
+        master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        alt_disk: "hdisk1"
+        db_filename: "db_backupfile"
+        lpp_source_v: "2317A_73D"
+        spot_v: "2317A_73D_spot"
+        nim_master_fileset_src: "~/bos.sysmgt"
+        nim_master_fileset_dest: "~/bos.sysmgt"
+        phase: db_restore
+        db_file_controller: "~/db_backupfile"
+        # phase: backup_and_migration
+        

@@ -1,0 +1,125 @@
+# Copyright (c) IBM Corporation 2020
+---
+# TASKS TO BE PERFORMED
+
+# 1. Do NIM Database backup of NIM Master B using “smitty nim_backup_db” fast path and keep the DB to the some defined location.
+# 2. Unconfigure the NIM Database using the command “nim -o unconfig master” or “smitty nim_unconfig” fastpath.
+# 3. Uninstall the NIM master fileset from NIM Master B using the command “installp -u bos.sysmgt.nim.master”.
+# 4. Add the NIM Master B as a “standalone” client to NIM Master A. -- > This would be already there. If not, we can use the client registration script to do it.
+# 5. Perform “nimadm” migration using available “non-rootvg” physical volume of NIM client.
+# 6. After migration is completed, reboot the NIM client and ensure that the NIM client has been migrated to version 73D.
+# 7. Install “bos.sysmgt.nim.master” fileset of 73D to NIM Master B and configure it as a “NIM Master”.
+# 8. Restore the NIM DB using the “smitty nim_backrest” fastpath (NIM DB restore).
+
+
+# Add wait in NIM ADM role - DONE
+# Add /opt/freeware/bin to path on all machines for usage of rsync - NOT req
+# Remove checks for os level : It is being done in NIM ADM itself - Done
+# Copy the master fileset from controller to master B before installation - Done
+
+###############################################################################
+
+- name: Fail if master_a is not specified
+  fail:
+    msg: "NIM Master machine(master_a) is not specified"
+  when: master_a == ""
+
+- name: Fail if master_b is not specified
+  fail:
+    msg: "NIM Master machine(master_b) is not specified"
+  when: master_b == ""
+
+- name: "Fail if Alternate disk has not been specified"
+  fail:
+    msg: "No alternate disk (alt_disk) provided."
+  when: alt_disk == ""
+
+- name: "Fail if a NIM LPP resource is not specified"
+  fail:
+    msg: "NIM LPP resource not specified"
+  when: lpp_source_v == ""
+
+- name: "Fail if spot is not provided"
+  fail:
+    msg: "Spot was not provided"
+  when: spot_v == ""
+
+- name: "Fail if NIM Master fileset's source has not been provided"
+  fail:
+    msg: "nim_master_fileset_src was not provided"
+  when: nim_master_fileset_src == ""
+
+- name: "Fail if phase was not provided"
+  fail:
+    msg: "You did not specify the phase"
+  when: phase == ""
+
+###############################################################################
+
+- block:
+    - name: "Create database backup file"
+      import_tasks: create_backup.yml
+      delegate_to: "{{ master_b }}"
+
+    - name: Transfer the backup file to Controller machine
+      import_tasks: fetch_to_controller.yml
+
+    - name: Unconfigure the NIM database on "{{ master_b }}"
+      ansible.builtin.raw: "nim -o unconfig master"
+      delegate_to: "{{ master_b }}"
+      register: command
+
+    - name: Check for failure in Unconfiguring database on "{{ master_b }}"
+      fail:
+        msg: "Could not unconfigure database"
+      when: command.rc != 0
+
+    - name: Remove Master filesets from "{{ master_b }}"
+      installp:
+        action: "deinstall"
+        install_list: bos.sysmgt.nim.master
+      delegate_to: "{{ master_b }}"
+
+    - name: Add the NIM "{{ master_b }}" as a “standalone” client to "{{ master_a }}"
+      include_tasks: client_master_setup.yml
+
+    - name: Perform Alt Disk Migration of Master using NIM
+      include_tasks: migration.yml
+
+    - name: Wait for 20 minutes after reboot so that the machine is up
+      ansible.builtin.pause:
+        minutes: 20
+
+    - name: "Next Steps"
+      ansible.builtin.debug: 
+        msg: "Migration has been done. Please run the role again with phase = db_restore to get the machine to previous state."
+
+  when: phase == "backup_and_migration"
+
+- block:
+    - name: Copy the NIM master fileset to "{{ master_b }}"
+      include_tasks: copy_fileset.yml
+
+    - name: Install NIM master filesets to "{{ master_b }}"
+      installp:
+        extend_fs: yes
+        device: "{{ nim_master_fileset_dest }}"
+        install_list: bos.sysmgt.nim.master
+      delegate_to: "{{ master_b }}"
+
+    - name: Transfer the backup file to "{{ master_b }}"
+      import_tasks: copy_to_b.yml
+
+    - name: Restore the database
+      ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_restore_db {{ db_filename }}
+      delegate_to: "{{ master_b }}"
+      register: command
+
+    - name: Check for failure in restoring database on "{{ master_b }}"
+      fail:
+        msg: "Could not restore database"
+      when: command.rc != 0
+
+    - debug: msg="Database restored, NIM Master - {{ master_b }} has been migrated and restored!!!"
+
+  when: phase == "db_restore"

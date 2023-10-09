@@ -1,0 +1,24 @@
+---
+- name: Check if NIM master fileset is present on "{{ master_b }}"
+  stat:
+    path: "{{ nim_master_fileset_dest }}"
+  register: master_fileset
+  delegate_to: "{{ master_b }}"
+
+- block:
+    - name: Copy NIM master fileset to "{{ master_b }}"
+      copy:
+        src: "{{ nim_master_fileset_src }}"
+        dest: "{{ nim_master_fileset_dest }}"
+      delegate_to: "{{ master_b }}"
+    - name: Check if file has been moved
+      stat:
+        path: "{{ nim_master_fileset_dest }}"
+      delegate_to: "{{ master_b }}"
+      register: file_present
+
+    - name: Fail if transfer was not successful
+      fail:
+        msg: File could not be copied to "{{ master_b }}"
+      when: not file_present.stat.exists
+  when: not master_fileset.stat.exists

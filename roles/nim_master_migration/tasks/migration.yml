@@ -1,0 +1,28 @@
+---
+- name: "Install the required fileset for performing NIM ADM operation"
+  raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ lpp_source_v }} {{ spot_v }}
+  register: command
+
+- name: Check for failure in installing the fileset
+  fail:
+    msg: "The following fileset was not installed: bos.alt_disk_install.rte"
+  when: command.rc != 0
+
+- name: Extract hostname from "{{ master_b }}"
+  set_fact:
+    master_b_hostname: "{{ master_b.split('.')[0] | lower }}"
+
+- name: Perform NIM ADM migration
+  include_role:
+    name: ibm.power_aix.nim_alt_disk_migration
+  vars:
+    nim_client: "{{ master_b_hostname }}"
+    target_disk:
+      disk_name: "{{ alt_disk }}"
+      force: True
+    lpp_source: "{{ lpp_source_v }}"
+    reboot_client: True
+    spot: "{{ spot_v }}"
+    control_phases:
+      validate_nim_resources: True
+      perform_migration: True
