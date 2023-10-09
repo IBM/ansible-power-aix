@@ -192,7 +192,7 @@ def parse_lsuserf_output(stdout):
     return:
         (dict):  Attributes in python dict.
     '''
-    attrs = dict()
+    attrs = {}
     for line in stdout.splitlines():
         if '=' in line:
             attr, value = line.split('=')
@@ -216,7 +216,7 @@ def get_user_attrs(module):
     cmd = "lsuser -f %s" % module.params['name']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        return dict()
+        return {}
     return parse_lsuserf_output(stdout)
 
 

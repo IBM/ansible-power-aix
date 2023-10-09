@@ -275,10 +275,9 @@ def load_pvs(module, name, LVM):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         warnings.append(
-                "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                "stderr={stderr}"
-                .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                )
+            "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+            "stderr={stderr}"
+            .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr))
     else:
         for ln in stdout.splitlines():
             fields = ln.split()
@@ -289,10 +288,10 @@ def load_pvs(module, name, LVM):
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(
-                        "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                        "stderr={stderr}"
-                        .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                        )
+                    "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+                    "stderr={stderr}"
+                    .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+                )
             else:
                 try:
                     LVM['PVs'][pv] = parse_pvs(stdout, pv)
@@ -314,18 +313,18 @@ def parse_pvs(lspv_output, pv_name):
     pv_data = {}
     try:
         first_line = lspv_output.splitlines()[0]
-    except IndexError:
-        raise IndexError(
-                "Unable to get first line of 'lspv {pv_name}' output. "
-                "lspv_output={lspv_output}"
-                .format(pv_name=pv_name, lspv_output=lspv_output)
-                )
+    except IndexError as no_first_line:
+        raise IndexError from no_first_line(
+            "Unable to get first line of 'lspv {pv_name}' output. "
+            "lspv_output={lspv_output}"
+            .format(pv_name=pv_name, lspv_output=lspv_output)
+        )
     match = re.search('VOLUME GROUP', first_line)
     assert match is not None, (
-            "Unable to parse 'lspv {pv_name}' first line to determine column "
-            "sizes. first_line={first_line}"
-            .format(pv_name=pv_name, first_line=first_line)
-            )
+        "Unable to parse 'lspv {pv_name}' first line to determine column "
+        "sizes. first_line={first_line}"
+        .format(pv_name=pv_name, first_line=first_line)
+    )
     right_col_start_i = match.start()
     for line in lspv_output.splitlines():
         left_col = line[:right_col_start_i]
@@ -334,10 +333,10 @@ def parse_pvs(lspv_output, pv_name):
             # special case
             match = re.search('VG IDENTIFIER', line)
             assert match is not None, (
-                    "Unable to parse 'lspv {pv_name}' VG IDENTIFIER line. "
-                    "line={line}"
-                    .format(pv_name=pv_name, line=line)
-                    )
+                "Unable to parse 'lspv {pv_name}' VG IDENTIFIER line. "
+                "line={line}"
+                .format(pv_name=pv_name, line=line)
+            )
             left_col = line[:match.start()]
             right_col = 'VG IDENTIFIER:' + line.split()[-1]
 
@@ -376,10 +375,10 @@ def load_vgs(module, name, LVM):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         warnings.append(
-                "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                "stderr={stderr}"
-                .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                )
+            "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+            "stderr={stderr}"
+            .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+        )
     else:
         for ln in stdout.splitlines():
             vg = ln.split()[0].strip()
@@ -389,10 +388,10 @@ def load_vgs(module, name, LVM):
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(
-                        "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                        "stderr={stderr}"
-                        .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                        )
+                    "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+                    "stderr={stderr}"
+                    .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+                )
                 # make sure that varied off volume groups
                 # are returned.
                 # 0516-010: Volume group must be varied on; use varyonvg command.
@@ -424,18 +423,18 @@ def parse_vgs(lsvg_output, vg_name):
     vg_data = {}
     try:
         first_line = lsvg_output.splitlines()[0]
-    except IndexError:
-        raise IndexError(
-                "Unable to get first line of 'lsvg {vg_name}' output. "
-                "lsvg_output={lsvg_output}"
-                .format(vg_name=vg_name, lsvg_output=lsvg_output)
-                )
+    except IndexError as no_first_line:
+        raise IndexError from no_first_line(
+            "Unable to get first line of 'lsvg {vg_name}' output. "
+            "lsvg_output={lsvg_output}"
+            .format(vg_name=vg_name, lsvg_output=lsvg_output)
+        )
     match = re.search('VG IDENTIFIER', first_line)
     assert match is not None, (
-            "Unable to parse 'lsvg {vg_name}' first line to determine column "
-            "sizes. first_line={first_line}"
-            .format(vg_name=vg_name, first_line=first_line)
-            )
+        "Unable to parse 'lsvg {vg_name}' first line to determine column "
+        "sizes. first_line={first_line}"
+        .format(vg_name=vg_name, first_line=first_line)
+    )
     right_col_start_i = match.start()
     for line in lsvg_output.splitlines():
         left_col = line[:right_col_start_i]
@@ -476,10 +475,10 @@ def load_lvs(module, name, LVM):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         warnings.append(
-                "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                "stderr={stderr}"
-                .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                )
+            "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+            "stderr={stderr}"
+            .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+        )
     else:
         for line in stdout.splitlines():
             vg = line.split()[0].strip()
@@ -487,10 +486,10 @@ def load_lvs(module, name, LVM):
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(
-                        "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
-                        "stderr={stderr}"
-                        .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
-                        )
+                    "Command failed. cmd={cmd} rc={rc} stdout={stdout} "
+                    "stderr={stderr}"
+                    .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+                )
             else:
                 try:
                     lv_data = parse_lvs(stdout, vg, name)
@@ -516,21 +515,21 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
     lv_data = {}
     try:
         header = lsvg_output.splitlines()[1]
-    except IndexError:
-        raise IndexError(
-                "Unable to get header (second line) of 'lsvg -l {vg_name}' "
-                "output. lsvg_output={lsvg_output}"
-                .format(vg_name=vg_name, lsvg_output=lsvg_output)
-                )
+    except IndexError as no_second_line:
+        raise IndexError from no_second_line(
+            "Unable to get header (second line) of 'lsvg -l {vg_name}' "
+            "output. lsvg_output={lsvg_output}"
+            .format(vg_name=vg_name, lsvg_output=lsvg_output)
+        )
     headings = ['LV NAME', 'TYPE', 'LPs', 'PPs', 'PVs', 'LV STATE', 'MOUNT POINT']
     headings_indexes = []
     for heading in headings:
         match = re.search(heading, header)
         assert match is not None, (
-                "Unable to parse 'lsvg -l {vg_name}' header. "
-                "header='{header}' expected headings='{headings}'"
-                .format(vg_name=vg_name, header=header, headings=headings)
-                )
+            "Unable to parse 'lsvg -l {vg_name}' header. "
+            "header='{header}' expected headings='{headings}'"
+            .format(vg_name=vg_name, header=header, headings=headings)
+        )
         headings_indexes.append(match.start())
 
     for ln in lsvg_output.splitlines()[2:]:
