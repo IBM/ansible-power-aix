@@ -232,9 +232,13 @@ def changed_attrs(module, current):
     return:
         (dict): Changed user attributes
     '''
-    newattrs = module.params['attributes']
-    changed = {k: newattrs[k] for k in newattrs if k in current and str(newattrs[k]) != current[k]}
-    return changed
+
+    if module.params['attributes']:
+        newattrs = module.params['attributes']
+        changed = {k: newattrs[k] for k in newattrs if k in current and str(newattrs[k]) != current[k]}
+        return changed
+    else:
+        return None
 
 
 def modify_user(module):
