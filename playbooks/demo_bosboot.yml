@@ -32,7 +32,7 @@
         directory: "{{directory_name}}"
         image_name: "{{image_name_val}}"
         create_image: true
-    - name: Create the Image with default directory and name
+    - name: Create the image with default directory and name
       bosboot:
         increase_space: true
         disk_device: "{{disk_device_val}}"
