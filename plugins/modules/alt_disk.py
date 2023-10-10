@@ -374,13 +374,12 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 # This is the nearest it can be, best choice for disk_size_policy = nearest
                 if disk_size_policy == 'nearest':
                     break
-                elif disk_size_policy == 'lower':
+                if disk_size_policy == 'lower':
                     # This will be the best choice if no disk fulfills requirements for disk_size_policy = lower
                     if prev_disk == "":
                         break
-                    else:
-                        selected_disk = prev_disk
-                        break
+                    selected_disk = prev_disk
+                    break
 
             if diffsize > 0:
                 # diffsize > 0: first disk found bigger than the rootvg disk
