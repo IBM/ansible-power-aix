@@ -137,7 +137,7 @@ def modify_entry(module):
 
     cmd = 'chitab'
 
-    new_entry = name + ":" + runlevel + ":" + action + ":" + command
+    new_entry = "\'" + name + ":" + runlevel + ":" + action + ":" + command + "\'"
     cmd = cmd + " " + new_entry
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -176,7 +176,7 @@ def create_entry(module):
         ident_opts = "-i " + identifier
         cmd = cmd + " " + ident_opts
 
-    new_entry = name + ":" + runlevel + ":" + action + ":" + command
+    new_entry = "\'" + name + ":" + runlevel + ":" + action + ":" + command + "\'"
     cmd = cmd + " " + new_entry
 
     rc, stdout, stderr = module.run_command(cmd)
