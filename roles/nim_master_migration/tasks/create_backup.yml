@@ -1,0 +1,33 @@
+---
+- name: Retrieve path from {{ db_filename }}
+  ansible.builtin.set_fact:
+    db_backup_path: "{{ db_filename | dirname }}"
+
+- name: "Verify '{{ db_backup_path }}' has atleast 10Mb of space."
+  ansible.builtin.raw: "/usr/bin/df -m {{ db_backup_path }}"
+  register: output
+  changed_when: false
+
+- name: Check for failure in getting the free space
+  ansible.builtin.fail:
+    msg: "Following command failed : df -m"
+  when: output.rc != 0
+
+- name: "Get the free size of {{ db_backup_path }}"
+  ansible.builtin.set_fact:
+    free_space: "{{ output.stdout_lines[1].split()[2] }}"
+
+- name: "Fail if space is not enough"
+  ansible.builtin.fail:
+    msg: Not enough space to take a backup
+  when: (free_space | int) < 10
+
+- name: Take backup of Database present on "{{ master_b }}"
+  ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_backup_db "{{ db_filename }}"
+  register: command
+  changed_when: command.rc == 0
+
+- name: Check for failure in taking backup of DB
+  ansible.builtin.fail:
+    msg: "Could not create database backup"
+  when: command.rc != 0
