@@ -345,6 +345,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
 
     used_size = rootvg_info["used_size"]
     rootvg_size = rootvg_info["rootvg_size"]
+
     # in auto mode, find the first alternate disk available
     if not hdisks:
         selected_disk = ""
@@ -365,10 +366,21 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 break
 
             diffsize = pvs[hdisk]['size'] - rootvg_size
+
             # matching disk size
             if diffsize == 0:
+                # In case of upper, this disk will be selected iff no better disk is available that is matching the requirements
                 selected_disk = hdisk
-                break
+                # This is the nearest it can be, best choice for disk_size_policy = nearest
+                if disk_size_policy == 'nearest':
+                    break
+                elif disk_size_policy == 'lower':
+                    # This will be the best choice if no disk fulfills requirements for disk_size_policy = lower
+                    if prev_disk == "":
+                        break
+                    else:
+                        selected_disk = prev_disk
+                        break
 
             if diffsize > 0:
                 # diffsize > 0: first disk found bigger than the rootvg disk
@@ -383,6 +395,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 else:
                     # disk_size_policy == 'nearest'
                     if prev_disk == "":
+                        # This will be the best disk for disk_size_policy = nearest if no other disk is matching the requirements
                         selected_disk = hdisk
                     elif abs(prev_diffsize) > diffsize:
                         selected_disk = hdisk
