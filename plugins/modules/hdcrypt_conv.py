@@ -258,8 +258,6 @@ def encrypt_lv(module, name):
     return:
         None
     """
-    global result
-
     password = module.params['password']
     vg_name = get_vg_name(module, name)
 
@@ -283,15 +281,15 @@ def encrypt_lv(module, name):
     result['cmd'] = cmd
     result['rc'] = rc
     if rc != 0:
-        result['msg'] += "Failed to encrypt logical volume %s. Command '%s' failed." % (name, cmd)
+        result['msg'] += f"Failed to encrypt logical volume {name}. Command '{cmd}' failed."
         module.fail_json(**result)
     elif "0516-2038" in stdout:  # 0516-2038: hdcryptmgr plain2crypt error: Logical Volume of type paging, boot, and aio_cache are not able to be encrypted
-        result['msg'] += "Logical volume %s has type that is not supported for encryption, was not converted." % name
-    elif "LV %s is already encrypted." % name in stdout:
-        result['msg'] += "LV %s is already encrypted.\n" % name
+        result['msg'] += f"Logical volume {name} has type that is not supported for encryption, was not converted."
+    elif f"LV {name} is already encrypted." in stdout:
+        result['msg'] += f"LV {name} is already encrypted.\n"
     else:
         result['changed'] = True
-        result['msg'] += "Successfully converted LV %s to an encrypted LV.\n" % name
+        result['msg'] += f"Successfully converted LV {name} to an encrypted LV.\n"
 
 
 def decrypt_lv(module, name):
@@ -303,7 +301,6 @@ def decrypt_lv(module, name):
     return:
         None
     """
-    global result
     global convert_failed
 
     password = module.params['password']
@@ -313,18 +310,18 @@ def decrypt_lv(module, name):
     result['stderr'] = stderr
     result['cmd'] = cmd
     if "3020-0125" in stdout:
-        result['msg'] += "Password to decrypt %s was incorrect.\n" % name
+        result['msg'] += f"Password to decrypt {name} was incorrect.\n"
         convert_failed = True
         return
-    elif "LV %s is not encryption enabled." % name in stdout:
-        result['msg'] += "LV %s is already decrypted.\n" % name
+    elif f"LV {name} is not encryption enabled." in stdout:
+        result['msg'] += f"LV {name} is already decrypted.\n"
         return
     elif rc != 0:
-        result['msg'] += "Failed to unlock LV %s. Command '%s' failed." % (name, cmd)
+        result['msg'] += f"Failed to unlock LV {name}. Command '{cmd}' failed."
         module.fail_json(**result)
     elif "Passphrase authentication succeeded." in stdout:
         result['changed'] = True
-        result['msg'] += "LV %s was successfully unlocked.\n" % name
+        result['msg'] += f"LV {name} was successfully unlocked.\n"
 
     cmd = expectPrompts['decrypt'] % (name)
     rc, stdout, stderr = module.run_command(cmd)
@@ -332,11 +329,11 @@ def decrypt_lv(module, name):
     result['stderr'] = stderr
     result['cmd'] = cmd
     if rc != 0:
-        result['msg'] += "Failed to decrypt logical volume %s. Command '%s' failed." % (name, cmd)
+        result['msg'] += f"Failed to decrypt logical volume {name}. Command '{cmd}' failed."
         module.fail_json(**result)
     else:
         result['changed'] = True
-        result['msg'] += "Successfully converted LV %s to a decrypted LV.\n" % name
+        result['msg'] += f"Successfully converted LV {name} to a decrypted LV.\n"
 
 
 def encrypt_pv(module, name):
@@ -365,10 +362,10 @@ def encrypt_pv(module, name):
         result['msg'] = "Failed to encrypt the physical volume."
         module.fail_json(**result)
     elif "3020-0445" in stdout:
-        result['msg'] += "Physical volume %s is already encrypted." % (name)
+        result['msg'] += f"Physical volume {name} is already encrypted."
     else:
         result['changed'] = True
-        result['msg'] += "Physical volume %s was encrypted successfully." % (name)
+        result['msg'] += f"Physical volume {name} was encrypted successfully."
 
 
 def decrypt_pv(module, name):
@@ -443,10 +440,9 @@ def pv_exists(module, name):
         True - If the physical volume exists
         False - If the physical volume does not exist.
     """
-    global result
     global convert_failed
 
-    cmd = "/usr/sbin/hdcryptmgr showpv %s" % name
+    cmd = f"/usr/sbin/hdcryptmgr showpv {name}"
 
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
@@ -457,7 +453,7 @@ def pv_exists(module, name):
         return True
     else:
         convert_failed = True
-        result['msg'] += "Physical volume %s could not be found.\n" % name
+        result['msg'] += f"Physical volume {name} could not be found.\n"
         return False
 
 
@@ -470,11 +466,10 @@ def lv_exists(module, name):
         True if logical volume exists
         False if logical volume does not exist
     """
-    global result
     global crypto_status
     global convert_failed
 
-    cmd = "/usr/sbin/hdcryptmgr showlv %s" % name
+    cmd = f"/usr/sbin/hdcryptmgr showlv {name}"
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
     result['rc'] = rc
@@ -485,7 +480,7 @@ def lv_exists(module, name):
         return True
     else:
         convert_failed = True
-        result['msg'] += "Logical volume %s could not be found.\n" % name
+        result['msg'] += f"Logical volume {name} could not be found.\n"
         return False
 
 
@@ -498,11 +493,9 @@ def get_lv_props(module, name):
     return:
         lv_props: The properties of the Logical Volume
     """
-    global result
-
-    cmd = "/usr/sbin/lslv %s" % name
-    fail_msg = "Failed to fetch the properties of logical volume %s. \
-        Command '%s' failed." % (name, cmd)
+    cmd = f"/usr/sbin/lslv {name}"
+    fail_msg = f"Failed to fetch the properties of logical volume {name}. \
+        Command '{cmd}' failed."
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
     result['rc'] = rc
@@ -524,11 +517,10 @@ def get_vg_props(module, name):
     return:
         vg_props: The properties of the Volume Group
     """
-    global result
 
-    cmd = "/usr/sbin/lsvg %s" % name
-    fail_msg = "Failed to fetch the properties of volume group %s. \
-        Command '%s' failed." % (name, cmd)
+    cmd = f"/usr/sbin/lsvg {name}"
+    fail_msg = f"Failed to fetch the properties of volume group {name}. \
+        Command '{cmd}' failed."
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
     result['rc'] = rc
@@ -565,15 +557,15 @@ def vg_encrypt_enabled(module, name):
     return:
         None
     """
-    global result
     vg_props = get_vg_props(module, name)
     pattern = r"^ENCRYPTION:\s+(\w+)"
     encrypt_status = re.search(pattern, vg_props, re.MULTILINE).group(1)
+
     if encrypt_status == 'no':
         # enable encryption on that vg
-        cmd = "/usr/sbin/chvg -k y %s" % name
-        fail_msg = "Failed to enable encryption on the volume group %s. \
-            Command '%s' failed." % (name, cmd)
+        cmd = f"/usr/sbin/chvg -k y {name}"
+        fail_msg = f"Failed to enable encryption on the volume group {name}. \
+            Command '{cmd}' failed."
         rc, stdout, stderr = module.run_command(cmd)
         result['cmd'] = cmd
         result['rc'] = rc
@@ -583,7 +575,7 @@ def vg_encrypt_enabled(module, name):
             result['msg'] += fail_msg
             module.fail_json(**result)
         result['changed'] = True
-        result['msg'] += "Encryption was enabled on volume group %s." % name
+        result['msg'] += f"Encryption was enabled on volume group {name}."
 
 
 def get_lvs_of_vg(module, name):
@@ -596,9 +588,8 @@ def get_lvs_of_vg(module, name):
         lv_list: List of the LVs in the Volume Group
     """
     global convert_failed
-    global result
 
-    cmd = "/usr/sbin/lsvg -l %s" % name
+    cmd = f"/usr/sbin/lsvg -l {name}"
     lv_list = []
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
@@ -608,7 +599,7 @@ def get_lvs_of_vg(module, name):
     if rc != 0:
         # The volume group requested could not be found.
         convert_failed = True
-        result['msg'] += "Volume Group %s could not be found.\n" % name
+        result['msg'] += f"Volume Group {name} could not be found.\n"
         return lv_list
     pattern = r"(?<=\n).\w*"
     lv_list = re.findall(pattern, stdout)
@@ -643,8 +634,6 @@ def check_password_strength(password):
 
 def main():
     global result
-    global crypto_status
-    global convert_failed
 
     device_spec = dict(
         lv=dict(type='list', elements='str'),
