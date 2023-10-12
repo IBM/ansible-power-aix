@@ -491,7 +491,7 @@ def load_lvs(module, name, LVM):
                 )
             else:
                 try:
-                    lv_data = parse_lvs(stdout, vg, name)
+                    lv_data = parse_lvs(module, stdout, vg, name)
                     LVM['LVs'].update(lv_data)
                 except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
@@ -499,7 +499,7 @@ def load_lvs(module, name, LVM):
     return warnings, LVM
 
 
-def parse_lvs(lsvg_output, vg_name, lv_name):
+def parse_lvs(module, lsvg_output, vg_name, lv_name):
     """
     Parse 'lsvg -l <vg>' output
     arguments:
