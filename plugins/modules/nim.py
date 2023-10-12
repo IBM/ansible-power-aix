@@ -1873,7 +1873,7 @@ def register_client(module, targets):
                     module.fail_json(**results)
                 rc_hn, stdout_hn, stderr_hn = module.run_command("hostname")
                 if rc_hn != 0:
-                    msg = f'Failed to get hostname of NIM master.'
+                    msg = 'Failed to get hostname of NIM master.'
                     results['msg'] += msg
                     module.fail_json(**results)
                 cmd = f'rexec {target_host_name} \" niminit -a name={machine_name} -a master={stdout_hn}\"'
