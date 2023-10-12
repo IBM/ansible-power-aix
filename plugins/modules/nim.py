@@ -35,6 +35,7 @@ options:
     - Specifies the action to perform.
     - C(update) to update NIM standalone clients with a specified C(lpp_source).
     - C(master_setup) to setup a NIM master.
+    - C(register_client) to register new nim client to nim master
     - C(check) to retrieve the B(Cstate) and B(oslevel) of each NIM client; results in I(nim_node).
     - C(compare) to compare installation inventories of the NIM clients.
     - C(script) to apply a script to customize NIM clients.
@@ -49,7 +50,7 @@ options:
       clients.
     - C(show) to perform a query on a NIM object.
     type: str
-    choices: [ update, master_setup, check, compare, script, allocate, deallocate, bos_inst, define_script, remove, reset, reboot, maintenance, show ]
+    choices: [ update,master_setup,check,compare,script,allocate,deallocate,bos_inst, define_script,remove, reset, reboot, maintenance, show, register_client ]
     required: true
   targets:
     description:
@@ -58,6 +59,13 @@ options:
     - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
     - C(*) or C(ALL) specifies all the NIM clients.
     - C(vios) or C(standalone) specifies all the NIM clients of this type.
+    type: list
+    elements: str
+  new_targets:
+    description:
+    - Specifies the new targets to be registered as nim client.
+    - Specifies <machine full name>-<login id>-<password> as a list in same format.
+    - Required when I(action) is register_client
     type: list
     elements: str
   lpp_source:
@@ -113,7 +121,6 @@ options:
     description:
     - Specifies name of the alternate disk where installation takes place
     type: str
-    default: None
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
@@ -1751,6 +1758,136 @@ def nim_show(module, params):
         results['meta']['query'] = info
 
 
+def check_machine_details_validity(module, targets):
+    """
+    Checking the machine details format.
+
+    arguments:
+        module  (dict): The Ansible module
+        targets  (list): The targets credential details.
+    note:
+        Exits with fail_json in case of error
+    """
+
+    failed_targets = []
+    successful_details = []
+
+    for target in targets:
+        target_details = target.split('-')
+        if len(target_details) != 3:
+            failed = 1
+            failed_targets.append(target_details[0])
+        else:
+            successful_details.append[target_details]
+
+    if failed:
+        msg = f"Following machine details are not in the proper format {failed_targets}"
+        msg += "Please provide the details in <full.host.name>-<login id>-<password> format."
+        results['msg'] = msg
+        module.fail_json(**results)
+
+    return successful_details
+
+
+def confirm_netrc_file(module):
+    """
+    Confirms the netrc file
+
+    arguments:
+        module  (dict): The Ansible module
+    """
+
+    cmd = 'ls /.netrc'
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc:
+        module.run_command('touch /.netrc')
+        module.run_command('chmod 600 /.netrc')
+
+
+def register_client(module, targets):
+    """
+    register new clients to the NIM master.
+
+    arguments:
+        module  (dict): The Ansible module
+        targets  (list): The targets credential details.
+    note:
+        Exits with fail_json in case of error
+    """
+
+    target_details = check_machine_details_validity(module, targets)
+    confirm_netrc_file(module)
+
+    for target_detail in target_details:
+        target_host_name = target_detail[0]
+        target_login_id = target_detail[1]
+        target_password = target_detail[2]
+        machine_name = target_host_name.split('.')[0]
+        cmd_body = f'machine {machine_name} login {target_login_id} password {target_password}'
+        cmd = f'echo {cmd_body} >> /.netrc'
+        module.run_command(cmd)
+        cmd_body = f'machine {target_host_name} login {target_login_id} password {target_password}'
+        cmd = f'echo {cmd_body} >> /.netrc'
+        module.run_command(cmd)
+        cmd = "netstat -rn"
+        rc, stdout, stderr = module.run_command(cmd)
+        gateway_line = stdout.split("\n")[4].split(' ')
+        for item in gateway_line:
+            if item != "" and item != "default":
+                client_gateway = item
+                break
+
+        cmd = "host " + machine_name
+        rc, stdout, stderr = module.run_command(cmd)
+
+        client_ip = stdout.split(" ")[-1]
+
+        # check if machine is already defined in the system
+        cmd = "lsnim"
+        rc, stdout, stderr = module.run_command(cmd)
+        resources = stdout.split('\n')
+        flag = 0
+        for resource_line in resources:
+            resource = resource_line.split(" ")[0]
+            if resource == machine_name:
+                msg = f'Machine {machine_name} is already defined'
+                results['msg'] += msg
+                flag = 1
+                break
+
+        if flag == 0:
+            cmd = f"nim -o define -t standalone -a platform=chrp -a if1=\"find_net {machine_name} 0\" "
+            cmd += f"cable_type1=bnc -a net_definition=\"ent 255.255.255.0 {client_gateway}\" -a netboot_kernel=64 "
+            cmd += machine_name
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc != 0:
+                msg = f"Client definition failed for machine {machine_name}"
+                results['msg'] += msg
+                module.fail_json(**results)
+            else:
+                rc, stdout, stderr = module.run_command("rexec $CLIENT_HN \"rm /etc/niminfo\"")
+                if rc != 0:
+                    msg = f'Failed to remove niminfo file from {machine_name}'
+                    results['msg'] += msg
+                    module.fail_json(**results)
+                rc_hn, stdout_hn, stderr_hn = module.run_command("hostname")
+                if rc_hn != 0:
+                    msg = f'Failed to get hostname of NIM master.'
+                    results['msg'] += msg
+                    module.fail_json(**results)
+                cmd = f'rexec {target_host_name} \" niminit -a name={machine_name} -a master={stdout_hn}\"'
+                rc, stdout, stderr = module.run_command(cmd)
+                if rc != 0:
+                    msg = f"Client definition failed for machine {machine_name}"
+                    results['msg'] += msg
+                    module.fail_json(**results)
+
+    msg += "Client setup is completed successfully"
+    results['msg'] += msg
+    module.exit_json(**results)
+
+
 def main():
     global results
 
@@ -1760,9 +1897,10 @@ def main():
                         choices=['update', 'master_setup', 'check', 'compare',
                                  'script', 'allocate', 'deallocate',
                                  'bos_inst', 'define_script', 'remove',
-                                 'reset', 'reboot', 'maintenance', 'show']),
+                                 'reset', 'reboot', 'maintenance', 'show', 'register_client']),
             lpp_source=dict(type='str'),
             targets=dict(type='list', elements='str'),
+            new_targets=dict(type='list', elements='str'),  # The elements format is <machine name>-<login id>-<password>
             asynchronous=dict(type='bool', default=False),
             device=dict(type='str'),
             script=dict(type='str'),
@@ -1772,7 +1910,7 @@ def main():
             force=dict(type='bool', default=False),
             boot_client=dict(type='bool', default=True),
             object_type=dict(type='str', default='all'),
-            alt_disk_update_name=dict(type='str', default=None),
+            alt_disk_update_name=dict(type='str'),
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -1786,7 +1924,8 @@ def main():
             ['action', 'remove', ['resource']],
             ['action', 'reset', ['targets']],
             ['action', 'reboot', ['targets']],
-            ['action', 'maintenance', ['targets']]
+            ['action', 'maintenance', ['targets']],
+            ['action', 'register_client', ['new_targets']]
         ]
     )
 
@@ -1840,9 +1979,13 @@ def main():
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
 
     # skip build nim node for actions: master_setup or show
-    if action != 'master_setup' and action != 'show':
+    if action != 'master_setup' and action != 'show' and action != 'register_client':
         # Build nim node info
         build_nim_node(module)
+
+    if action == 'register_client':
+        targets = module.params['new_targets']
+        register_client(module, targets)
 
     if action == 'update':
         params['targets'] = targets
