@@ -222,7 +222,7 @@ def check_idempotency(module, init_props, attributes, msg):
     """
     ignore_attributes = []
 
-    if (type(init_props) == str):
+    if isinstance(init_props, str):
         init_props = str_to_dict(init_props, attributes)
 
     for attr, val in attributes.items():

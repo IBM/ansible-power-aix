@@ -258,6 +258,8 @@ ansible_facts:
 from ansible.module_utils.basic import AnsibleModule
 import re
 
+result = None
+
 
 def load_pvs(module, name, LVM):
     """
@@ -294,14 +296,14 @@ def load_pvs(module, name, LVM):
                 )
             else:
                 try:
-                    LVM['PVs'][pv] = parse_pvs(stdout, pv)
+                    LVM['PVs'][pv] = parse_pvs(module, stdout, pv)
                 except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
     return warnings, LVM
 
 
-def parse_pvs(lspv_output, pv_name):
+def parse_pvs(module, lspv_output, pv_name):
     """
     Parse 'lspv <physicalvolume>' output
     arguments:
@@ -320,11 +322,10 @@ def parse_pvs(lspv_output, pv_name):
             .format(pv_name=pv_name, lspv_output=lspv_output)
         )
     match = re.search('VOLUME GROUP', first_line)
-    assert match is not None, (
-        "Unable to parse 'lspv {pv_name}' first line to determine column "
-        "sizes. first_line={first_line}"
-        .format(pv_name=pv_name, first_line=first_line)
-    )
+    if match is None:
+        msg = f"Unable to parse 'lspv {pv_name}' first line to determine column"
+        result['msg'] = msg
+        module.fail_json(**result)
     right_col_start_i = match.start()
     for line in lspv_output.splitlines():
         left_col = line[:right_col_start_i]
@@ -332,11 +333,10 @@ def parse_pvs(lspv_output, pv_name):
         if 'VG IDENTIFIER' in line:
             # special case
             match = re.search('VG IDENTIFIER', line)
-            assert match is not None, (
-                "Unable to parse 'lspv {pv_name}' VG IDENTIFIER line. "
-                "line={line}"
-                .format(pv_name=pv_name, line=line)
-            )
+            if match is None:
+                msg = f"Unable to parse 'lspv {pv_name}' VG IDENTIFIER line."
+                result['msg'] = msg
+                module.fail_json(**result)
             left_col = line[:match.start()]
             right_col = 'VG IDENTIFIER:' + line.split()[-1]
 
@@ -430,11 +430,10 @@ def parse_vgs(lsvg_output, vg_name):
             .format(vg_name=vg_name, lsvg_output=lsvg_output)
         )
     match = re.search('VG IDENTIFIER', first_line)
-    assert match is not None, (
-        "Unable to parse 'lsvg {vg_name}' first line to determine column "
-        "sizes. first_line={first_line}"
-        .format(vg_name=vg_name, first_line=first_line)
-    )
+    if match is None:
+        msg = f"Unable to parse 'lsvg {vg_name}' first line to determine column "
+        result['msg'] = msg
+        module.fail_json(**result)
     right_col_start_i = match.start()
     for line in lsvg_output.splitlines():
         left_col = line[:right_col_start_i]
@@ -525,11 +524,11 @@ def parse_lvs(lsvg_output, vg_name, lv_name):
     headings_indexes = []
     for heading in headings:
         match = re.search(heading, header)
-        assert match is not None, (
-            "Unable to parse 'lsvg -l {vg_name}' header. "
-            "header='{header}' expected headings='{headings}'"
-            .format(vg_name=vg_name, header=header, headings=headings)
-        )
+        if match is None:
+            msg = f"Unable to parse lsvg -l {vg_name} header."
+            msg += f"header={header}, expected headings={headings}"
+            result['msg'] = msg
+            module.fail_json(**result)
         headings_indexes.append(match.start())
 
     for ln in lsvg_output.splitlines()[2:]:
@@ -563,6 +562,17 @@ def main():
         ),
         supports_check_mode=True,
     )
+
+    global result
+
+    result = dict(
+        changed=False,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
+    )
+
     return_values = {}
     warnings = []
     type = module.params['component']

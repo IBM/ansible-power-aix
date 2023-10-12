@@ -32,7 +32,7 @@ options:
     - C(clean) to cleanup an existing alternate disk copy.
     - C(install) to install filesets, fixes in existing alternate disk.
     type: str
-    choices: [ copy, clean ]
+    choices: [ copy, clean, install ]
     default: copy
   targets:
     description:
@@ -57,7 +57,6 @@ options:
     - When I(action=install), specifies the bundle_name or fixes or filesets to be installed
       in alt_rootvg
     type: str
-    default: none
   force:
     description:
     - Forces removal of any existing alternate disk copy on target disks.
@@ -79,31 +78,26 @@ options:
     - Path name of optional file with a list of packages or filesets that will be installed
       after a rootvg clone. If specified then I(image_location) must be provided.
     type: str
-    default: None
   apar_fixes:
     description:
     - Optional file with a list of APARs to install after a clone of rootvg. If apar_fixes is
       provided then I(image_location) must be provided.
     type: str
-    default: None
   filesets:
     description:
     - List of filesets to install after cloning a rootvg.
       If specified then I(image_location) must be provided.
     type: str
-    default: None
   installp_flags:
     description:
     - The flags to use when updating or installing new filesets into the cloned altinst_rootvg.
       If specified then I(image_location) must be provided.
     type: str
-    default: None
   image_location:
     description:
     - Location of installp images or updates to apply after a clone of rootvg.
       This can be a directory full path name or device name.
     type: str
-    default: None
   device_reset:
     description:
     - When I(action=copy), specifies to reset any user-defined device configurations on the target
@@ -345,7 +339,6 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
 
     used_size = rootvg_info["used_size"]
     rootvg_size = rootvg_info["rootvg_size"]
-
     # in auto mode, find the first alternate disk available
     if not hdisks:
         selected_disk = ""
@@ -366,20 +359,10 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 break
 
             diffsize = pvs[hdisk]['size'] - rootvg_size
-
             # matching disk size
             if diffsize == 0:
-                # In case of upper, this disk will be selected iff no better disk is available that is matching the requirements
                 selected_disk = hdisk
-                # This is the nearest it can be, best choice for disk_size_policy = nearest
-                if disk_size_policy == 'nearest':
-                    break
-                if disk_size_policy == 'lower':
-                    # This will be the best choice if no disk fulfills requirements for disk_size_policy = lower
-                    if prev_disk == "":
-                        break
-                    selected_disk = prev_disk
-                    break
+                break
 
             if diffsize > 0:
                 # diffsize > 0: first disk found bigger than the rootvg disk
@@ -394,7 +377,6 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 else:
                     # disk_size_policy == 'nearest'
                     if prev_disk == "":
-                        # This will be the best disk for disk_size_policy = nearest if no other disk is matching the requirements
                         selected_disk = hdisk
                     elif abs(prev_diffsize) > diffsize:
                         selected_disk = hdisk
@@ -701,12 +683,12 @@ def main():
             targets=dict(type='list', elements='str'),
             disk_size_policy=dict(type='str',
                                   choices=['minimize', 'upper', 'lower', 'nearest']),
-            existing_altinst_rootvg=dict(type='str', default=None),
-            bundle_name=dict(type='str', default=None),
-            apar_fixes=dict(type='str', default=None),
-            filesets=dict(type='str', default=None),
-            installp_flags=dict(type='str', default=None),
-            image_location=dict(type='str', default=None),
+            existing_altinst_rootvg=dict(type='str'),
+            bundle_name=dict(type='str'),
+            apar_fixes=dict(type='str'),
+            filesets=dict(type='str'),
+            installp_flags=dict(type='str'),
+            image_location=dict(type='str'),
             force=dict(type='bool', default=False),
             bootlist=dict(type='bool', default=False),
             remain_nim_client=dict(type='bool', default=False),
