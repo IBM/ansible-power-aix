@@ -404,14 +404,14 @@ def load_vgs(module, name, LVM):
                     LVM['VGs'][vg] = data
             else:
                 try:
-                    LVM['VGs'][vg] = parse_vgs(stdout, vg)
+                    LVM['VGs'][vg] = parse_vgs(module, stdout, vg)
                 except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
 
     return warnings, LVM
 
 
-def parse_vgs(lsvg_output, vg_name):
+def parse_vgs(module, lsvg_output, vg_name):
     """
     Parse 'lsvg <vg>' output
     arguments:
