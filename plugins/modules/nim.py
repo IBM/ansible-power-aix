@@ -1841,8 +1841,6 @@ def register_client(module, targets):
         cmd = "host " + machine_name
         rc, stdout, stderr = module.run_command(cmd)
 
-        client_ip = stdout.split(" ")[-1]
-
         # check if machine is already defined in the system
         cmd = "lsnim"
         rc, stdout, stderr = module.run_command(cmd)
