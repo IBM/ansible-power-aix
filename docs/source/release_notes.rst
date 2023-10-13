@@ -5,6 +5,41 @@
 Releases
 ========
 
+Version 1.7.0
+-------------
+Notes
+   * New Role: NIM Master Migration.
+   * New module: Physical and Logical volume encryption.
+   * New demo playbook: NIM Master migration and PV/LV Encryption.
+   * NIM module enhanced to register new client.
+   * Included link to Power research program in the galaxy page.
+   * Fix for parsing lspv, lsvg header to get LV attribute indexes.
+   * Updated dnf bootstrap installer.
+   * Fix for minimum space issue to setup dnf/python.
+   * dnf setup is enhanced to support proxy servers.
+   * Fixed ansible-lint issue in demo_yum_install_DB.yml.
+   * Updated flrtvc link in nim_flrtvc module.
+   * emgr module is fixed and idempotent now.
+   * Fixed user module to support idempotency.
+   * alt_disk module has now support for install operations.
+   * Fixed utf-8 encoding issue in flrtvc module.
+   * Fixed inittab module to modify entry and is idempotent now.
+   * Fixed the logic of disk_size_policy in alt_disk module. 
+
+Availability
+  * `Automation Hub v1.7.0`_
+  * `Galaxy v1.7.0`_
+  * `GitHub v1.7.0`_
+
+.. _Automation Hub v1.7.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.7.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.7.0.tar.gz
+
+.. _GitHub v1.7.0:
+   https://github.com/IBM/ansible-power-aix/releases/download/v1.7.0/ibm-power_aix-1.7.0.tar.gz
+
 Version 1.6.4
 -------------
 Notes
