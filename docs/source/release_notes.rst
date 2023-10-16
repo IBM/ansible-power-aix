@@ -38,7 +38,7 @@ Availability
    https://galaxy.ansible.com/download/ibm-power_aix-1.7.0.tar.gz
 
 .. _GitHub v1.7.0:
-   https://github.com/IBM/ansible-power-aix/releases/download/v1.7.0/ibm-power_aix-1.7.0.tar.gz
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.7.0.tar.gz
 
 Version 1.6.4
 -------------
