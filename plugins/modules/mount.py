@@ -122,6 +122,7 @@ EXAMPLES = r'''
     node: ansible-test1
     mount_dir: /mnt/servnfs
     mount_over_dir: /mnt/clientnfs
+    options: "vers=4"
 
 - name: Mount all filesystems from the 'local' mount group
   ibm.power_aix.mount:
