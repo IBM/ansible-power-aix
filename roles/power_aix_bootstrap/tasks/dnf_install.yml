@@ -7,6 +7,12 @@
   register: output
   changed_when: false
 
+# Fail if version is less than 7.1
+- name: Fail if AIX version is less than 7.1
+  fail:
+    msg: "Bootstrap for AIX version {{ output.stdout_lines[0] }} is not supported."
+  when: (output.stdout_lines[0] | int) < 71
+
 #   CHECK for DNF on inventory host
 - block:
 
@@ -26,7 +32,18 @@
       changed_when: false
       when: dnf_exists.stdout is search("false")
 
-# { Excute this block if dnf is not installed and the AIX version is equal or greater than 7.1
+# Execute this block if DNF doesn't exist and AIX version is either 7.1 or 7.2
+- block:
+
+    - name: Create target filesystem for image transfer
+      raw: "crfs -v jfs2 -g rootvg -a size=530M -m {{ target_dir }} -A yes -p rw"
+
+    - name: Mount target filesystem
+      raw: "mount {{ target_dir }}"
+
+  when: dnf_exists.stdout is search("false") and ((output.stdout_lines[0] | int) == 71 or (output.stdout_lines[0] | int) == 72)
+
+# Execute this block if DNF doesn't exist and AIX version is 7.3
 - block:
 
     - name: Set the python interpreter to python3
@@ -46,6 +63,11 @@
     - name: Mount target filesystem "{{ target_dir }}"
       mount:
         mount_dir: "{{ target_dir }}"
+
+  when: (output.stdout_lines[0] | int) == 73 and dnf_exists.stdout is search("false")
+
+# Excute this block if dnf is not installed
+- block:
 
     - name: Copy dnf install script to "{{ aix_host }}:{{ target_dir }}"
       copy:
