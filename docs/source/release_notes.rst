@@ -5,6 +5,25 @@
 Releases
 ========
 
+Version 1.7.2
+-------------
+Notes
+   * Fixed ansible-lint issue for various playbooks.
+
+Availability
+  * `Automation Hub v1.7.2`_
+  * `Galaxy v1.7.2`_
+  * `GitHub v1.7.2`_
+
+.. _Automation Hub v1.7.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.7.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.7.2.tar.gz
+
+.. _GitHub v1.7.2:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.7.2.tar.gz
+
 Version 1.7.1
 -------------
 Notes
