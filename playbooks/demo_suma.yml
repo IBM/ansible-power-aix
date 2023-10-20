@@ -19,7 +19,7 @@
   - debug: var=output
 
   - name: Create file system for system updates
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: "{{ download_dir }}"
       attributes: size=1G
       state: present
@@ -33,7 +33,7 @@
     when: ansible_distribution == 'AIX'
 
   - name: Check for, and install, system updates
-    ibm.power_aix.suma:
+    suma:
       action: "{{ action_v }}"
       oslevel: 'latest'
       download_dir: "{{ download_dir }}"

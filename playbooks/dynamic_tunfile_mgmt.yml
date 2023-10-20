@@ -11,6 +11,8 @@
     var_tunables_with_values: {"nfso": {"client_delegation": 1, "nfs_rfc1323": 1}}
     bool_make_nextboot: True
     log_file: "/tmp/ansible_tunfile_debug.log"
+  collections:
+    - ibm.power_aix
 
   tasks:
     - name: "Save all tunables to a file"

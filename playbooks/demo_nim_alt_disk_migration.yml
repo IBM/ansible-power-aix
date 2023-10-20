@@ -11,10 +11,11 @@
 # 5. c_rsh must be active (should be good if (1)
 # is properly setup)
 - name: "nim_alt_disk_migration demo"
-  hosts: nimserver 
+  hosts: "{{ hosts_val }}" 
   gather_facts: false
   remote_user: root
   vars:
+    hosts_val: nimserver
     nim_client_v: p9zpa-ansible-test2
     target_disk_v: ""
     target_disk_policy_v: minimize
@@ -29,7 +30,7 @@
 
     # perform alt_disk_migration
     - import_role:
-        name: ibm.power_aix.nim_alt_disk_migration
+        name: nim_alt_disk_migration
       vars:
         # required: NIM standalone object name
         # associated with the NIM client
@@ -78,7 +79,7 @@
 #     - ibm.power_aix
 #   tasks:
 #     - name: "change bootlist back to old rootvg"
-#       ibm.power_aix.bootlist:
+#       bootlist:
 #         normal:
 #           - device: "{{ target_disk }}"
 
@@ -92,6 +93,6 @@
 #     - ibm.power_aix
 #   tasks:
 #     - name: "reboot client LPAR"
-#       ibm.power_aix.nim:
+#       nim:
 #         action: reboot
 #         targets: "{{ nim_client_v }}"

@@ -12,10 +12,12 @@
     var_id_1: 3
     var_id_2: 4
     var_id_3: 5
+  collections:
+    - ibm.power_aix
 
   tasks:
     - name: Create and activate a manual IPv4 tunnel
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
           - src:
@@ -27,7 +29,7 @@
               esp_spi: "{{ var_esp_algo }}"
 
     - name: Export IPv4 tunnel definition for given tunnel id on srchost
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
             - id: "{{ var_id_1 }}"
@@ -36,41 +38,41 @@
       when: 'inventory_hostname == srchost'
 
     - name: Import IPv4 tunnel definition on dsthost
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           import_ipv4: '{{ export_result.export_ipv4 }}'
       when: 'inventory_hostname == dsthost'
 
     - name: Remove manual IPv4 tunnel with given id from tunnel database
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
             - id: "{{ var_id_1 }}"
               state: absent
 
     - name: Try again to Remove manual IPv4 tunnel with given id from tunnel database
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
             - id: "{{ var_id_1 }}"
               state: absent
 
     - name: Deactivate manual IPv4 tunnel with id 4
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
             - id: "{{ var_id_2 }}"
               state: defined
 
     - name: Activate manual IPv4 tunnel with id 5
-      ibm.power_aix.mktun:
+      mktun:
         manual:
           ipv4:
             - id: "{{ var_id_3 }}"
               state: active
 
     - name: Gather the tunnel facts
-      ibm.power_aix.mktun:
+      mktun:
 
     - name: Print the tunnel facts
       debug:

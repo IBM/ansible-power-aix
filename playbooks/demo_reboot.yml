@@ -13,7 +13,7 @@
   tasks:
       
     - name: "reboot the machine"
-      ibm.power_aix.reboot:
+      reboot:
               pre_reboot_delay: "{{ pre_reboot_delay_v }}"
               post_reboot_delay: "{{ post_reboot_delay_v }}"
               reboot_timeout: "{{ reboot_timeout_v }}"

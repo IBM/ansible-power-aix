@@ -1,20 +1,23 @@
 ---
 - name: "Print the mpio related information"
-  hosts: quimby05
+  hosts: "{{ hosts_val }}"
   gather_facts: yes
   vars:
+    hosts_val: all
     log_file: "/tmp/ansible_mpio_debug.log"
+  collections:
+  - ibm.power_aix
 
   tasks:
     - name: "Gather the mpio info"
-      ibm.power_aix.mpio:
+      mpio:
 
     - name: "Gather specific device  mpio info"
-      ibm.power_aix.mpio:
+      mpio:
         device: "IBMSVC"
 
     - name: "Gather specific absent device  mpio info"
-      ibm.power_aix.mpio:
+      mpio:
         device: "ansibleNegativeTest"
 
     - name: Print the paths
