@@ -922,12 +922,15 @@ def check_alt_disk(module, alt_disk_update_name, target_list):
         if all targets have specified alternate disk
     """
 
-    cmd = "lspv " + alt_disk_update_name
+    # cmd = "lspv " + alt_disk_update_name              # Original command
+    # cmd = ['/usr/sbin/lspv', alt_disk_update_name]    # Corrected Original command
+    cmd = ['/usr/sbin/lspv', '|/usr/bin/grep', '-w', alt_disk_update_name, '|/usr/bin/grep', '-E', '"None|altinst_rootvg"']
+
     target_miss = []
     for target in target_list:
-        rc = nim_exec(module, target, cmd)
-        if rc:
-            target_miss += target
+        rc, stdout, stderr = nim_exec(module, target, cmd)
+        if rc != 0:
+            target_miss .append(target)
 
     return target_miss
 
@@ -976,7 +979,8 @@ def nim_update(module, params):
         unavail_targets = check_alt_disk(module, alt_disk_update_name, target_list)
 
     if unavail_targets:
-        msg = "Following targets does not have specified alt_disk_update_name disk:" + str(unavail_targets)
+        # msg = "Following targets does not have specified alt_disk_update_name disk:" + str(unavail_targets)
+        msg = "Following targets specified alt_disk_update_name disk (" + alt_disk_update_name +") is not present or is assigned to another VG:" + str(unavail_targets)
         results['msg'] = msg
         module.fail_json(**results)
 
@@ -1898,6 +1902,7 @@ def main():
                                  'reset', 'reboot', 'maintenance', 'show', 'register_client']),
             lpp_source=dict(type='str'),
             targets=dict(type='list', elements='str'),
+            unavail_targets=dict(type='list', elements='str'),
             new_targets=dict(type='list', elements='str'),  # The elements format is <machine name>-<login id>-<password>
             asynchronous=dict(type='bool', default=False),
             device=dict(type='str'),
