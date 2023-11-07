@@ -985,7 +985,7 @@ def nim_update(module, params):
 
     # if unavail_targets:
     #     # msg = "Following targets does not have specified alt_disk_update_name disk:" + str(unavail_targets)
-    #     msg = "Following targets specified alt_disk_update_name disk (" + alt_disk_update_name +") is not present or is assigned to another VG:" + str(unavail_targets)
+    #     msg = "Following target alt_disk_update_name disk (" + alt_disk_update_name +") not present or assigned to another VG:" + str(unavail_targets)
     #     results['msg'] = msg
     #     module.fail_json(**results)
 
@@ -1001,7 +1001,7 @@ def nim_update(module, params):
             continue
         if target in unavail_targets:
             target_list.remove(target)
-            msg = 'alt_disk_update_name disk (' + alt_disk_update_name +') not present or assigned to another VG.'
+            msg = 'alt_disk_update_name disk (' + alt_disk_update_name + ') not present or assigned to another VG.'
             results['meta'][target] = {'messages': [msg]}
             module.log('NIM - Error: ' + msg)
             results['status'][target] = 'FAILURE'
