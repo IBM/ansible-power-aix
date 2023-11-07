@@ -703,7 +703,7 @@ def perform_customization(module, lpp_source, target, is_async):
     if alt_disk_update_name:
         # cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
         cmd = ['nim', '-o', 'alt_disk_install', '-a', 'source=rootvg', '-a', 'lpp_source=' + lpp_source,
-               '-a', 'fixes=update_all', '-a', 'disk=' + alt_disk_update_name, '-a', 'installp_flags=\"-acNgXY\"', 
+               '-a', 'fixes=update_all', '-a', 'disk=' + alt_disk_update_name, '-a', 'installp_flags=\"-acNgXY\"',
                ]
     else:
         cmd = ['nim', '-o', 'cust',
