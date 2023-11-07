@@ -701,11 +701,10 @@ def perform_customization(module, lpp_source, target, is_async):
     alt_disk_update_name = module.params['alt_disk_update_name']
 
     if alt_disk_update_name:
+        # cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
         cmd = ['nim', '-o', 'alt_disk_install', '-a', 'source=rootvg', '-a', 'lpp_source=' + lpp_source,
                '-a', 'fixes=update_all', '-a', 'disk=' + alt_disk_update_name, '-a', 'installp_flags=\"-acNgXY\"', 
                ]
-        # cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
-        # cmd += '-a async=yes' if is_async else '-a async=no'
     else:
         cmd = ['nim', '-o', 'cust',
                '-a', 'lpp_source=' + lpp_source,
@@ -926,8 +925,8 @@ def check_alt_disk(module, alt_disk_update_name, target_list):
         if all targets have specified alternate disk
     """
 
-    #cmd = "lspv " + alt_disk_update_name
-    #cmd = ['/usr/sbin/lspv', alt_disk_update_name]
+    # cmd = "lspv " + alt_disk_update_name              # Original command
+    # cmd = ['/usr/sbin/lspv', alt_disk_update_name]    # Working version of original command
     cmd = ['/usr/sbin/lspv', '|/usr/bin/grep', '-w', alt_disk_update_name, '|/usr/bin/grep', '-E', '"None"']
 
     target_miss = []
@@ -1915,7 +1914,6 @@ def main():
                                  'reset', 'reboot', 'maintenance', 'show', 'register_client']),
             lpp_source=dict(type='str'),
             targets=dict(type='list', elements='str'),
-            unavail_targets=dict(type='list', elements='str'),
             new_targets=dict(type='list', elements='str'),  # The elements format is <machine name>-<login id>-<password>
             asynchronous=dict(type='bool', default=False),
             device=dict(type='str'),
