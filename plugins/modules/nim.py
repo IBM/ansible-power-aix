@@ -701,7 +701,6 @@ def perform_customization(module, lpp_source, target, is_async):
     alt_disk_update_name = module.params['alt_disk_update_name']
 
     if alt_disk_update_name:
-        # cmd = "nim -o cust -a lpp_source=" + lpp_source + " -a installp_flags=-a -Y -d " + alt_disk_update_name + " "
         cmd = ['nim', '-o', 'alt_disk_install', '-a', 'source=rootvg', '-a', 'lpp_source=' + lpp_source,
                '-a', 'fixes=update_all', '-a', 'disk=' + alt_disk_update_name, '-a', 'installp_flags=\"-acNgXY\"',
                ]
@@ -925,8 +924,6 @@ def check_alt_disk(module, alt_disk_update_name, target_list):
         if all targets have specified alternate disk
     """
 
-    # cmd = "lspv " + alt_disk_update_name              # Original command
-    # cmd = ['/usr/sbin/lspv', alt_disk_update_name]    # Working version of original command
     cmd = ['/usr/sbin/lspv', '|/usr/bin/grep', '-w', alt_disk_update_name, '|/usr/bin/grep', '-E', '"None"']
 
     target_miss = []
@@ -982,12 +979,6 @@ def nim_update(module, params):
         unavail_targets = check_alt_disk(module, alt_disk_update_name, target_list)
     else:
         unavail_targets = []
-
-    # if unavail_targets:
-    #     # msg = "Following targets does not have specified alt_disk_update_name disk:" + str(unavail_targets)
-    #     msg = "Following target alt_disk_update_name disk (" + alt_disk_update_name +") not present or assigned to another VG:" + str(unavail_targets)
-    #     results['msg'] = msg
-    #     module.fail_json(**results)
 
     results['targets'] = list(target_list)
     module.debug('NIM - Target list: {0}'.format(target_list))
