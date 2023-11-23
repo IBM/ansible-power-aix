@@ -631,36 +631,32 @@ def alt_rootvg_op(module):
     - installs the bundle/apar_fixes/filesets
     """
 
-    existing_altinst_rootvg = module.params['existing_altinst_rootvg']
-    bundle_name = module.params['bundle_name']
-    apar_fixes = module.params['apar_fixes']
-    filesets = module.params['filesets']
-    installp_flags = module.params['installp_flags']
-    image_location = module.params['image_location']
+    cmd = ['alt_disk_copy']
 
-    cmd = ''
-
-    if not image_location:
+    if not module.params['image_location']:
         msg = 'Please provide the image location.'
         results['msg'] = msg
         module.fail_json(**results)
 
-    if not bundle_name and not apar_fixes and not filesets:
+    if not module.params['bundle_name'] and not module.params['apar_fixes'] and not module.params['filesets']:
         msg = 'Please provide bundle_name or apar_fixes or filesets'
         results['msg'] = msg
         module.fail_json(**results)
 
-    if bundle_name:
-        cmd += f'-b + {bundle_name} '
-    elif apar_fixes:
-        cmd += f'-f {apar_fixes} '
+    if module.params['bundle_name']:
+        cmd += ['-b', module.params['bundle_name']]
+
+    elif module.params['apar_fixes']:
+        cmd += ['-f', module.params['apar_fixes']]
+
     else:
-        cmd += f'-w {filesets} '
+        cmd += ['-w', module.params['filesets']]
 
-    if installp_flags:
-        cmd += f'-I {installp_flags} '
+    if module.params['installp_flags']:
+        cmd += ['-I', module.params['installp_flags']]
 
-    cmd += f'-l {image_location} -d {existing_altinst_rootvg}'
+    cmd += ['-l', module.params['image_location']]
+    cmd += ['-d', module.params['existing_altinst_rootvg']]
 
     ret, stdout, stderr = module.run_command(cmd)
 
