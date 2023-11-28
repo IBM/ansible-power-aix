@@ -40,7 +40,7 @@ options:
       its attributes.
     - C(absent) deletes an existing group. Users who are group members are not removed.
     - C(modify) changes specified value of attributes of an existing group. When the group does not
-      exist, use I(sate=present).
+      exist, use I(state=present).
     type: str
     choices: [ present, absent, modify ]
     required: true
@@ -54,7 +54,7 @@ options:
     - Specifies to add or remove members/admins from the group.
     - C(add) to add members or admins of the group with provided I(users_list) in group I(name)
     - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
-    - Can be used when I(state=present) or I(state=modify).
+    - Can be used when I(state=modify).
     type: str
     choices: [ add, remove ]
   user_list_type:
@@ -62,14 +62,14 @@ options:
     - Specifies the type of user to add/remove.
     - C(members) specifies the I(user_list_action) is performed on members of the group
     - C(admins) specifies the I(user_list_action) is performed on admins of the group
-    - Can be used when I(state=present) or I(state=modify).
+    - Can be used when I(state=modify).
     type: str
     choices: [ members, admins ]
   users_list:
     description:
     - Specifies a list of user to be added/removed as members/admins of the group.
     - Should be used along with I(user_list_action) and I(user_list_type) parameters.
-    - Can be used when I(state=present) or I(state=modify).
+    - Can be used when I(state=modify).
     type: list
     elements: str
   remove_keystore:
@@ -179,7 +179,7 @@ def modify_group(module):
 
         rc, stdout, stderr = module.run_command(cmd)
 
-        result['cmd'] = ' '.join(cmd)
+        result['cmd'] = cmd
         result['rc'] = rc
         result['stdout'] = stdout
         result['stderr'] = stderr
@@ -260,12 +260,17 @@ def create_group(module):
 
     msg = ""
 
-    cmd = ['mkgroup']
-    cmd += [module.params['name']]
+    cmd = "mkgroup"
+
+    if module.params['group_attributes']:
+        for attr, val in module.params['group_attributes'].items():
+            cmd += " " + str(attr) + "=" + str(val)
+
+    cmd += " " + module.params['name']
 
     rc, stdout, stderr = module.run_command(cmd)
 
-    result['cmd'] = ' '.join(cmd)
+    result['cmd'] = cmd
     result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
@@ -275,9 +280,6 @@ def create_group(module):
     else:
         msg = "Group: %s SUCCESSFULLY created." % module.params['name']
         result['changed'] = True
-
-    if module.params['group_attributes'] or module.params['user_list_action']:
-        msg += modify_group(module)
 
     return msg
 
@@ -328,6 +330,10 @@ def group_exists(module):
     cmd += [module.params['name']]
 
     rc, out, err = module.run_command(cmd)
+
+    result['cmd'] = cmd
+    result['stdout'] = out
+    result['stderr'] = err
 
     if rc == 0:
         return True

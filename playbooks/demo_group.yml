@@ -13,6 +13,12 @@
       group:
         state: present
         name: "{{group_name}}"
+    - name: Create a group with group attributes
+      group:
+        state: present
+        name: group1
+        group_attributes:
+          id: 1000
     - name: Add a member to a group
       group:
         state: modify
