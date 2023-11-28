@@ -10,7 +10,7 @@
   - import_role:
       name: power_aix_bootstrap
     vars:
-      pkgtype: "yum"
+      pkgtype: "dnf"
       download_dir: "~"
       target_dir: "/tmp/.ansible.cpdir"
 
@@ -23,7 +23,7 @@
 
   tasks:
   - name: "Create large enabled file system"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /RPMS
       attributes: size=4G
       state: present
@@ -34,13 +34,13 @@
       mount_dir: /RPMS
 
   - name: "Add space for /opt (+375M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /opt
       attributes: size=+0M
       state: present
 
   - name: "Add space for /var (+10M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /var
       attributes: size=+0M
       state: present
@@ -71,14 +71,14 @@
     register: httpd_exists
 
   - name: "Add space for /opt (+35M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /opt
       attributes: size=+35M
       state: present
     when: httpd_exists.stdout is search("false")
 
   - name: "Add space for /var (+15M)"
-    ibm.power_aix.filesystem:
+    filesystem:
       filesystem: /var
       attributes: size=+15M
       state: present

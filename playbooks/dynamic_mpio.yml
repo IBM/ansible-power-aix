@@ -6,17 +6,19 @@
     device: "IBMSVC"
     absent_device: "ansibleNegativeTest"
     log_file: "/tmp/ansible_mpio_debug.log"
+  collections:
+    - ibm.power_aix
 
   tasks:
     - name: "Gather the mpio info"
-      ibm.power_aix.mpio:
+      mpio:
 
     - name: "Gather specific device  mpio info"
       ibm.power_aix.mpio:
         device: "{{ device }}"
 
     - name: "Gather specific absent device  mpio info"
-      ibm.power_aix.mpio:
+      mpio:
         device: "{{ absent_device }}"
 
     - name: Print the paths

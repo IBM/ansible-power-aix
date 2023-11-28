@@ -2,6 +2,8 @@
 - name: "Update all hosts -  x86, power"
   hosts: all
   gather_facts: yes
+  collections:
+    - ibm.power_aix
 
   tasks:
 
@@ -13,7 +15,7 @@
 
 
   - name: Check for, and install, system updates
-    ibm.power_aix.suma:
+    suma:
       oslevel: 'latest'
       download_only: False
     when: ansible_distribution == 'AIX'

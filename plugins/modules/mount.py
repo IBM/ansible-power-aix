@@ -122,6 +122,7 @@ EXAMPLES = r'''
     node: ansible-test1
     mount_dir: /mnt/servnfs
     mount_over_dir: /mnt/clientnfs
+    options: "vers=4"
 
 - name: Mount all filesystems from the 'local' mount group
   ibm.power_aix.mount:
@@ -259,7 +260,7 @@ def is_fspath_mounted(module):
         result['msg'] += ','.join(['mount_dir', 'mount_over_dir'])
         module.fail_json(**result)
 
-    cmd = "/usr/bin/df"
+    cmd = "/usr/sbin/mount"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
@@ -272,7 +273,7 @@ def is_fspath_mounted(module):
     fdirs = []
     if stdout:
         for ln in stdout.splitlines()[1:]:
-            fdirs.append(ln.split()[-1])
+            fdirs.append(ln.split()[-6])
     for fdir in fdirs:
         found = re.search('^' + fs_name + '$', fdir)
         if found:

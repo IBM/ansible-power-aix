@@ -2,17 +2,20 @@
 # PREREQUISITES:
 
 - name: "nim_master_migration demo"
-  hosts: all
+  hosts: "{{ hosts_val }}"
   gather_facts: false
+  vars:
+    hosts_val: all
+    log_file: "/tmp/ansible_mpio_debug.log"
   remote_user: root
   collections:
     - ibm.power_aix
   tasks:
     - import_role:
-        name: ibm.power_aix.nim_master_migration
+        name: nim_master_migration
       vars:
-        master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
-        master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        master_a: ansible-nim1
+        master_b: "fvtfleet1-lp1"
         alt_disk: "hdisk1"
         db_filename: "db_backupfile"
         lpp_source_v: "2317A_73D"

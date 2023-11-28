@@ -14,7 +14,7 @@
     - ibm.power_aix
   tasks:
     - name: "Show all tunable parameters excluding restricted parameters"
-      ibm.power_aix.tunables:
+      tunables:
         action: show
         component: "{{ component_name }}"
       register: tunables_result
@@ -23,7 +23,7 @@
       ansible.builtin.debug: var=tunables_result
 
     - name: "Show all tunable parameters including restricted parameters"
-      ibm.power_aix.tunables:
+      tunables:
         action: show
         component: "{{ component_name }}"
         restricted_tunables: "{{ bool_restricted_tunables }}"
@@ -33,7 +33,7 @@
       ansible.builtin.debug: var=tunables_result
 
     - name: "Show specific tunable parameters"
-      ibm.power_aix.tunables:
+      tunables:
         action: show
         component: "{{ component_name }}"
         tunable_params: "{{ var_tunable_params }}"
@@ -43,7 +43,7 @@
       ansible.builtin.debug: var=tunables_result
 
     - name: "show reboot value of lgpg_regions tunable"
-      ibm.power_aix.tunables:
+      tunables:
         action: show
         component: "{{ component_name }}"
       register: output
@@ -52,14 +52,14 @@
       ansible.builtin.debug: var=output.tunables_details.lgpg_regions.reboot_value
 
     - name: "Modify current value of dynamic vmo tunables"
-      ibm.power_aix.tunables:
+      tunables:
         action: modify
         component: "{{ component_name }}"
         tunable_params_with_value: "{{ var_tunable_params_dict }}"
       register: tunables_vm_result
 
     - name: "Modify reboot value of dynamic vmo tunables"
-      ibm.power_aix.tunables:
+      tunables:
         action: modify
         component: "{{ component_name }}"
         change_type: "{{ var_change_type }}"
@@ -73,7 +73,7 @@
       # and a reboot. After the bosboot and reboot both dynamic and bosboot tunables will be set to new values.
       # check for booleans "bosboot_required" and "reboot_required" in the message which should be true
       # once playbook runs.
-      ibm.power_aix.tunables:
+      tunables:
         action: reset
         component: "{{ component_name }}"
         change_type: reboot
@@ -83,7 +83,7 @@
 
     - name: "Reset given dynamic vmo tunables values to default"
       # any number of "dynamic tunables" could be provided and no bosboot or reboot is required
-      ibm.power_aix.tunables:
+      tunables:
         action: reset
         component: "{{ component_name }}"
         tunable_params: "{{ var_tunable_params }}"

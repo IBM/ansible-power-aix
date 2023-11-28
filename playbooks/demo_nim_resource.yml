@@ -15,7 +15,7 @@
 
     - name: Create/define an lpp_source NIM resource object from the
             software in the system.
-      ibm.power_aix.nim_resource:
+      nim_resource:
         action: create
         name: "{{ lpp_source_v }}"
         object_type: lpp_source
@@ -28,7 +28,7 @@
       debug: var=result
 
     - name: Create/define a spot object resource from an lpp_source nim object.
-      ibm.power_aix.nim_resource:
+      nim_resource:
         action: create
         name: "{{ spot_name_v }}"
         object_type: spot
@@ -41,7 +41,7 @@
       debug: var=result
 
     - name: Show a NIM resource object.
-      ibm.power_aix.nim_resource:
+      nim_resource:
         action: show
         name: "{{ spot_name_v }}"
       register: result
