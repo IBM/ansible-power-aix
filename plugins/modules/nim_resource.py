@@ -284,8 +284,9 @@ def res_show(module):
             results['rc'] = return_code
             module.fail_json(**results)
     else:
-        results['nim_resources'] = build_dic(stdout)
-        results['nim_resource_found'] = True
+        if stdout.strip():
+            results['nim_resources'] = build_dic(stdout)
+            results['nim_resource_found'] = True
 
     if module.params['showres']:
         # check if we need to fetch the filesets installed in a lpp_source or
@@ -415,20 +416,22 @@ def build_dic(stdout):
 
     info1 = {}
     info = {}
-
+    key = ""
     lines = stdout.splitlines()
 
     for line in lines:
-
-        key = (line.split('=')[0]).strip()
-        size = len(line.split('='))
-
-        if size > 1:
-            value = (line.split('=')[1]).strip()
-            info1[key] = value
+        if "=" not in line:
+            if key:
+                info[key] = info1
+                info1 = {}
+            key = line.strip()[:-1]
         else:
-            info[key[:-1]] = info1
-            info1.clear()
+            attr = (line.split("=")[0]).strip()
+            val = (line.split("=")[1]).strip()
+            info1 [attr] = val
+
+    if key:
+        info[key] = info1
 
     return info
 
