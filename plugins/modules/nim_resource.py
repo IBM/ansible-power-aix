@@ -428,7 +428,7 @@ def build_dic(stdout):
         else:
             attr = (line.split("=")[0]).strip()
             val = (line.split("=")[1]).strip()
-            info1 [attr] = val
+            info1[attr] = val
 
     if key:
         info[key] = info1
