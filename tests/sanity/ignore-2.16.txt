@@ -1,0 +1,2 @@
+plugins/modules/install_all_updates.py validate-modules:module-invalid-version-added
+plugins/modules/install_all_updates.py pylint:consider-using-f-string
