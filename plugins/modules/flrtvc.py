@@ -271,6 +271,7 @@ from ansible.module_utils.urls import open_url
 module = None
 results = None
 workdir = ""
+system_type = ""
 
 # Threading
 THRDS = []
@@ -321,6 +322,26 @@ def wait_all():
     Do nothing
     """
     pass
+
+
+def get_system_type(module):
+    """
+    Utility function to determine the type of system
+    args:
+        module: Ansible module
+    return:
+        Nothing
+    """
+    global system_type
+
+    cmd = "ls /usr/ios/cli/ioscli >/dev/null 2>&1"
+
+    rc = module.run_command(cmd, use_unsafe_shell=True)[0]
+
+    if not rc:
+        system_type = "VIOS"
+    else:
+        system_type = "AIX"
 
 
 def increase_fs(dest):
@@ -775,6 +796,34 @@ def run_lslpp(filename):
         return False
 
 
+def parse_stdout(stdout):
+    """
+    Utility function to parse the output in accordance with the system type
+    args:
+        stdout      (str): standard output obtained
+    return:
+        parsed_list (list): List of all the Fixes according to system type [AIX/VIOS]
+    """
+
+    # Fetch whether the system is AIX or VIOS
+    get_system_type(module)
+
+    stdout = stdout.splitlines()
+    parsed_list = [stdout[0]]
+
+    for line in stdout[1:]:
+        fixed_in_val = line.split("|")[-1]
+        if "See Bulletin" in fixed_in_val:
+            parsed_list.append(line)
+        else:
+            if "-" in fixed_in_val and system_type == "AIX":
+                parsed_list.append(line)
+            if "." in fixed_in_val and system_type == "VIOS":
+                parsed_list.append(line)
+
+    return parsed_list
+
+
 def parse_emgr():
     """
     Parse the emgr file and build a dictionary with efix data
@@ -925,7 +974,9 @@ def run_flrtvc(flrtvc_path, params, force):
         results['meta']['messages'].append(msg + " stderr: {0}".format(stderr))
         return False
 
-    results['meta'].update({'0.report': stdout.splitlines()})
+    parsed_out = parse_stdout(stdout)
+
+    results['meta'].update({'0.report': parsed_out})
 
     # Save to file
     if params['save_report']:
