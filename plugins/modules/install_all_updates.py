@@ -18,7 +18,9 @@ author:
 module: install_all_updates
 short_description: Updates installed software to the latest level on media and verifies the current recommended maintenance or technology level.
 description:
-- install_all_updates examines currently installed software and attempts to update it to the latest level that is available on the media. install_all_updates will not install any filesets that are present on the media, but not installed on the system except if the new filesets are installed as requisites of other filesets or the /var/adm/ras/bosinst.data filesets ALL_DEVICES_KERNELS to yes.
+- install_all_updates examines currently installed software and attempts to update it to the latest level that is available on the media.
+  install_all_updates will not install any filesets that are present on the media, but not installed on the system except if the new 
+  filesets are installed as requisites of other filesets or the /var/adm/ras/bosinst.data filesets ALL_DEVICES_KERNELS to yes.
 version_added: '1.7.1'
 requirements:
 - AIX >= 7.1 TL3
@@ -31,7 +33,7 @@ options:
     type: str
   utilities_only;
     description:
-    - Update install utilities only (bos.rte.install update).  
+    - Update install utilities only (bos.rte.install update).
     type: bool
     default: no
   commit:
@@ -76,7 +78,7 @@ options:
     type: bool
     default: no
 check_mode:
-  - Performs a preview of an action by running all preinstallation checks for the specified action. No software changes are made. 
+  - Performs a preview of an action by running all preinstallation checks for the specified action. No software changes are made.
 notes:
   - You can refer to the IBM documentation for additional information on the installp command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_73/i_commands/install_all_updates.html)
