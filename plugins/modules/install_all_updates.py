@@ -19,7 +19,6 @@ module: install_all_updates
 short_description: Updates installed software to the latest level on media and verifies the current recommended maintenance or technology level.
 description:
 - install_all_updates examines currently installed software and attempts to update it to the latest level that is available on the media. install_all_updates will not install any filesets that are present on the media, but not installed on the system except if the new filesets are installed as requisites of other filesets or the /var/adm/ras/bosinst.data filesets ALL_DEVICES_KERNELS to yes.
-- modified from installp module
 version_added: '1.7.1'
 requirements:
 - AIX >= 7.1 TL3
@@ -304,7 +303,7 @@ def main():
     cmd = ['install_all_updates']
     cmd += ['-d']
     cmd += [device]
-    
+
     if module.check_mode:
         cmd += ['-p']
 
