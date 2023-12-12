@@ -296,7 +296,7 @@ def load_pvs(module, name, LVM):
             if len(fields) > 3:
                 LVM['PVs'][pv]["VG_STATE"] = fields[3]
                 LVM['PVs'][pv]["vg_state"] = fields[3]
-            
+
             cmd = "lspv -L %s" % pv
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
