@@ -286,6 +286,17 @@ def load_pvs(module, name, LVM):
             pv = fields[0]
             if (name != 'all' and name != pv):
                 continue
+            LVM['PVs'][pv] = {
+                "PHYSICAL VOLUME": fields[0],
+                "PV IDENTIFIER": fields[1]
+            }
+            if len(fields) > 2:
+                LVM['PVs'][pv]["VOLUME GROUP"] = fields[2]
+                LVM['PVs'][pv]["vg"] = fields[2]
+            if len(fields) > 3:
+                LVM['PVs'][pv]["VG_STATE"] = fields[3]
+                LVM['PVs'][pv]["vg_state"] = fields[3]
+            
             cmd = "lspv -L %s" % pv
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
@@ -294,6 +305,15 @@ def load_pvs(module, name, LVM):
                     "stderr={stderr}"
                     .format(cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
                 )
+                if stderr.find('0516-320') > -1:
+                    if fields[2] == "None":
+                      del LVM['PVs'][pv]["VOLUME GROUP"]
+                      del LVM['PVs'][pv]["vg"]
+                elif stderr.find('0516-010') > -1:
+                    try:
+                        LVM['PVs'][pv] = parse_pvs(module, stdout, pv)
+                    except (IndexError, AssertionError) as err:
+                        warnings.append(str(err))
             else:
                 try:
                     LVM['PVs'][pv] = parse_pvs(module, stdout, pv)
@@ -350,12 +370,19 @@ def parse_pvs(module, lspv_output, pv_name):
     pv_data['vg'] = pv_data['VOLUME GROUP']
     pv_data['pv_state'] = pv_data['PV STATE']
     pv_data['pp_size'] = pv_data['PP SIZE']
-    pv_data['total_pps'] = pv_data['TOTAL PPs'].split()[0]
-    pv_data['free_pps'] = pv_data['FREE PPs'].split()[0]
-    pp_size_int = int(pv_data['pp_size'].split()[0])
-    pv_data['size_g'] = int(pv_data['total_pps']) * pp_size_int / 1024
-    pv_data['free_g'] = int(pv_data['free_pps']) * pp_size_int / 1024
-
+    for key in pv_data.copy():
+        if pv_data[key] == "???????":
+            del pv_data[key]
+    if pv_data.get('TOTAL PPs') != None:
+        pv_data['total_pps'] = pv_data['TOTAL PPs'].split()[0]
+    if pv_data.get('free_pps') != None:
+        pv_data['free_pps'] = pv_data['FREE PPs'].split()[0]
+    if pv_data.get('pp_size') != None:
+        pp_size_int = int(pv_data['pp_size'].split()[0])
+        if pv_data.get('total_pps') != None:
+            pv_data['size_g'] = int(pv_data['total_pps']) * pp_size_int / 1024
+        if pv_data.get('free_pps') != None:
+            pv_data['free_g'] = int(pv_data['free_pps']) * pp_size_int / 1024
     return pv_data
 
 
