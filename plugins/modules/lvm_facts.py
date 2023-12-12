@@ -373,15 +373,15 @@ def parse_pvs(module, lspv_output, pv_name):
     for key in pv_data.copy():
         if pv_data[key] == "???????":
             del pv_data[key]
-    if pv_data.get('TOTAL PPs') != None:
+    if pv_data.get('TOTAL PPs') is not None:
         pv_data['total_pps'] = pv_data['TOTAL PPs'].split()[0]
-    if pv_data.get('free_pps') != None:
+    if pv_data.get('free_pps') is not None:
         pv_data['free_pps'] = pv_data['FREE PPs'].split()[0]
-    if pv_data.get('pp_size') != None:
+    if pv_data.get('pp_size') is not None:
         pp_size_int = int(pv_data['pp_size'].split()[0])
-        if pv_data.get('total_pps') != None:
+        if pv_data.get('total_pps') is not None:
             pv_data['size_g'] = int(pv_data['total_pps']) * pp_size_int / 1024
-        if pv_data.get('free_pps') != None:
+        if pv_data.get('free_pps') is not None:
             pv_data['free_g'] = int(pv_data['free_pps']) * pp_size_int / 1024
     return pv_data
 
