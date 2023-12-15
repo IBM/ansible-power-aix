@@ -13,7 +13,8 @@ from ansible_collections.ibm.power_aix.plugins.modules import mount
 from .common.utils import (
     AnsibleExitJson, AnsibleFailJson, exit_json, fail_json,
     rootdir, lsfs_output_path2, lsfs_output_path3, lsfs_output_path4,
-    df_output_path1, df_output_path2, df_output_path3, mount_output_path1
+    df_output_path1, df_output_path2, df_output_path3, mount_output_path1,
+    mount_output_path2
 )
 
 
@@ -179,6 +180,8 @@ class TestIsFSPathMounted(unittest.TestCase):
             self.df_output2 = f.read().strip()
         with open(mount_output_path1, "r") as f:
             self.mount_output1 = f.read().strip()
+        with open(mount_output_path2, "r") as f:
+            self.mount_output2 = f.read().strip()
 
     def test_fail_missing_mount_dir_and_mount_over_dir(self):
         self.mount_dir = self.module.params["mount_dir"]
@@ -205,7 +208,7 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.mount_dir = self.module.params["mount_dir"]
         self.module.run_command.side_effect = [
             (0, self.lsfs_output2, "sample stderr"),
-            (0, self.mount_output1, "sample stderr")
+            (0, self.mount_output2, "sample stderr")
         ]
         self.assertFalse(
             mount.is_fspath_mounted(self.module)
