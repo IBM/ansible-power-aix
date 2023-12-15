@@ -52,6 +52,7 @@ mock_https_report = os.path.dirname(os.path.abspath(__file__)) + "/mock_https_re
 df_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_df_output1"
 df_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_df_output2"
 df_output_path3 = os.path.dirname(os.path.abspath(__file__)) + "/sample_df_output3"
+mount_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_mount_output1"
 lsvg_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_output1"
 lsvg_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_output2"
 lsvg_output_path3 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_output3"
