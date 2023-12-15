@@ -170,10 +170,6 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.module.run_command.return_value = (rc, stdout, stderr)
         mount.result = init_result
         # load sample output
-        with open(lsfs_output_path2, "r") as f:
-            self.lsfs_output2 = f.read().strip()
-        with open(lsfs_output_path3, "r") as f:
-            self.lsfs_output3 = f.read().strip()
         with open(df_output_path1, "r") as f:
             self.df_output1 = f.read().strip()
         with open(df_output_path2, "r") as f:
@@ -207,7 +203,6 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.module.params["mount_dir"] = "/tmp/testfs"
         self.mount_dir = self.module.params["mount_dir"]
         self.module.run_command.side_effect = [
-            (0, self.lsfs_output2, "sample stderr"),
             (0, self.mount_output2, "sample stderr")
         ]
         self.assertFalse(
@@ -218,7 +213,6 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.module.params["mount_dir"] = "/tmp/clientnfs"
         self.mount_dir = self.module.params["mount_dir"]
         self.module.run_command.side_effect = [
-            (0, self.lsfs_output3, "sample stderr"),
             (0, self.mount_output1, "sample stderr")
         ]
         self.assertFalse(
@@ -231,7 +225,6 @@ class TestIsFSPathMounted(unittest.TestCase):
         self.mount_dir = self.module.params["mount_dir"]
         self.mount_over_dir = self.module.params["mount_over_dir"]
         self.module.run_command.side_effect = [
-            (0, self.lsfs_output3, "sample stderr"),
             (0, self.mount_output1, "sample stderr")
         ]
         self.assertFalse(
