@@ -1,0 +1,12 @@
+  node       mounted        mounted over    vfs       date        options      
+-------- ---------------  ---------------  ------ ------------ --------------- 
+         /dev/hd4         /                jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /dev/hd2         /usr             jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /dev/hd3         /tmp             jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /dev/hd1         /home            jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /dev/hd11admin   /admin           jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /proc            /proc            procfs Nov 07 19:11 rw              
+         /dev/hd10opt     /opt             jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /dev/livedump    /var/adm/ras/livedump jfs2   Nov 07 19:11 rw,log=/dev/hd8 
+         /ahafs           /aha             ahafs  Nov 07 19:11 rw
+         carribean-lp4:/tmp/lp4nfs  /tmp/clientnfs   jfs2   Nov 07 19:11 rw,log=/dev/hd8 
