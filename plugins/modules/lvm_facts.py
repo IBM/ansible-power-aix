@@ -307,8 +307,8 @@ def load_pvs(module, name, LVM):
                 )
                 if stderr.find('0516-320') > -1:
                     if fields[2] == "None":
-                      del LVM['PVs'][pv]["VOLUME GROUP"]
-                      del LVM['PVs'][pv]["vg"]
+                        del LVM['PVs'][pv]["VOLUME GROUP"]
+                        del LVM['PVs'][pv]["vg"]
                 elif stderr.find('0516-010') > -1:
                     try:
                         LVM['PVs'][pv] = parse_pvs(module, stdout, pv)
