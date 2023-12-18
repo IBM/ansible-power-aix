@@ -9,4 +9,3 @@
          /proc            /proc            procfs Nov 07 19:11 rw              
          /dev/hd10opt     /opt             jfs2   Nov 07 19:11 rw,log=/dev/hd8 
          /dev/livedump    /var/adm/ras/livedump jfs2   Nov 07 19:11 rw,log=/dev/hd8 
-         /ahafs           /aha             ahafs  Nov 07 19:11 rw     
