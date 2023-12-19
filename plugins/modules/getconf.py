@@ -135,7 +135,7 @@ def main():
                 conf[key] = value
             else:
                 key = line.strip()
-                if conf[key] == None:
+                if conf[key] is None:
                     conf[key] = ""
 
     result['msg'] = 'getconf successful.'
