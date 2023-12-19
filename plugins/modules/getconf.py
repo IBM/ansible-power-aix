@@ -124,8 +124,10 @@ def main():
     if variable and path:
         conf[variable] = {}
         conf[variable][path] = stdout.strip()
+        result['value'] = conf[variable][path]
     elif variable:
         conf[variable] = stdout.strip()
+        result['value'] = conf[variable]
     else:
         for line in stdout.splitlines():
             if line.find(":") > -1:
