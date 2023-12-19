@@ -21,7 +21,7 @@ short_description: Reports system configuration variable values as facts.
 description:
 - List system configuration variable values.
 - Will not list PathConfiguration or DeviceVariable by default
-- Details URL: https://www.ibm.com/docs/en/aix/7.3\?topic=g-getconf-command
+- URL: https://www.ibm.com/docs/en/aix/7.3?topic=g-getconf-command
 version_added: '1.7.0'
 requirements:
 - AIX >= 7.1 TL3
