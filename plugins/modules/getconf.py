@@ -29,8 +29,8 @@ requirements:
 options:
   variable:
     description:
-    - Specifies a system configuration variable (SystemwideConfiguration), 
-      a system path configuration variable (PathConfiguration), 
+    - Specifies a system configuration variable (SystemwideConfiguration),
+      a system path configuration variable (PathConfiguration),
       or a device variable (DeviceVariable)
     type: str
     default: ''
@@ -71,9 +71,9 @@ ansible_facts:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-import re
 
 result = None
+
 
 def main():
     module = AnsibleModule(
@@ -120,7 +120,7 @@ def main():
         result['msg'] = 'getconf failed.'
         module.fail_json(**result)
 
-    conf={}
+    conf = {}
     if variable and path:
         conf[variable] = {}
         conf[variable][path] = stdout.strip()
