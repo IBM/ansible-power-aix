@@ -9,3 +9,4 @@
          /dev/hd10opt     /opt             jfs2   Nov 07 19:11 rw,log=/dev/hd8 
          /dev/livedump    /var/adm/ras/livedump jfs2   Nov 07 19:11 rw,log=/dev/hd8 
          /ahafs           /aha             ahafs  Nov 07 19:11 rw
+         carribean-lp4:/tmp/lp4nfs  /tmp/clientnfs   jfs2   Nov 07 19:11 rw,log=/dev/hd8 
