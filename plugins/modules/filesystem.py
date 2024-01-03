@@ -365,7 +365,6 @@ def mkfs(module, filesystem):
     """
 
     nfs_server = module.params['nfs_server']
-    perm = module.params['permissions']
     device = module.params['device']
     if device:
         device = "-d %s " % device
@@ -375,16 +374,12 @@ def mkfs(module, filesystem):
     if nfs_server:
         # Create NFS Filesystem
         opts = nfs_opts(module)
-        if perm is None:
-            opts += "-t rw"
 
         cmd = "mknfsmnt -f '%s' %s -h '%s' %s -w bg " % \
             (filesystem, device, nfs_server, opts)
     else:
         # Create a local filesystem
         opts = fs_opts(module)
-        if perm is None:
-            opts += "-p rw"
 
         fs_type = module.params['fs_type']
 
