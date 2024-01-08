@@ -78,6 +78,7 @@ options:
     default: 1
   size:
     description:
+    - If you do not specify its value when trying to create a logical volume, default value '1' is considered.
     - Specifies the number of logical partitions or the size of the
       the logical volume in terms of K, M, or G.
     - Can be used to create a logical volume, hence when I(state=present).
@@ -90,7 +91,6 @@ options:
     - Explicitly use quotations when using the "+" sign to denote string
       type.
     type: str
-    default: "1"
   pv_list:
     description:
     - List of pysical volumes.
@@ -128,53 +128,63 @@ EXAMPLES = r'''
     vg: test1vg
     lv: test1lv
     size: "64M"
+    state: present
 - name: Create a logical volume of 10 logical partitions with disks testdisk1 and testdisk2
   ibm.power_aix.lvol:
     vg: test2vg
     lv: test2lv
     size: "10"
     pv_list: testdisk1, testdisk2
+    state: present
 - name: Create a logical volume of 32M with a minimum placement policy
   ibm.power_aix.lvol:
     vg: rootvg
     lv: test4lv
     size: "32M"
     policy: minimum
+    state: present
 - name: Create a logical volume with extra options like mirror pool
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     size: "128M"
     extra_opts: -p copy1=poolA -p copy2=poolB
+    state: present
 - name: Extend a logical volume by 5G
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     size: "+5G"
+    state: present
 - name: Extend a logical volume to 10G
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     size: "10G"
+    state: present
 - name: Reduce the number of mirrors of a logical volume with three mirrors
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     copies: 2
+    state: present
 - name: Increase the number of mirrors of a logical volume with one mirror
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     copies: 3
+    state: present
 - name: Rename a logical volume
   ibm.power_aix.lvol:
     vg: testvg
     lv: testlv
     lv_new_name: renamedlv
+    state: present
 - name: Remove the logical volume
   ibm.power_aix.lvol:
     state: absent
     lv: test1lv
+    state: absent
 '''
 
 RETURN = r'''
@@ -230,6 +240,10 @@ def create_lv(module, name):
     policy = module.params['policy']
     vg = module.params['vg']
     num_log_part = module.params['size']
+
+    if not num_log_part:
+        num_log_part = '1'
+
     # -a position, -b badblocks, -C stripewidth, -d schedule
     # -R preferredRead, -L label, -m mapfile, -o y/n, -r relocate
     # -s strict, -T O, -u upperbound, -v verify, -w mirrorwriteconsistency
@@ -422,6 +436,13 @@ def modify_lv(module, name, init_props):
         lv_run_cmd(module, cmd, success_msg, fail_msg, None)
 
     if new_name:
+        cmd = 'lslv %s' % (new_name)
+        rc, stdout, stderr = module.run_command(cmd)
+        if not rc:
+            result['msg'] += f"Can not rename the logical volume to {new_name}, a logical volume with the same name already exists."
+            result['changed'] = False
+            module.exit_json(**result)
+
         cmd = 'chlv -n %s %s' % (new_name, name)
         success_msg = "\nLogical volume %s renamed into %s." % (name, new_name)
         fail_msg = "\nFailed to rename %s into %s. Command '%s' failed." % \
@@ -566,7 +587,7 @@ def main():
             strip_size=dict(type='str'),
             extra_opts=dict(type='str', default=''),
             copies=dict(type='int', default=1),
-            size=dict(type='str', default='1'),
+            size=dict(type='str'),
             pv_list=dict(type='list', elements='str'),
             policy=dict(type='str', default='maximum', choices=['maximum', 'minimum']),
             lv_new_name=dict(type='str'),
@@ -593,11 +614,12 @@ def main():
             # get initial lv properties to compare with the final
             # state to check if something has changed with the lv
             init_props = get_lv_props(module)
-            extend_lv(module, name, init_props)
-            # make sure the the new init props is passed to modify_lv
-            # in the case where the logical volume is extended
-            if result['changed']:
-                init_props = get_lv_props(module)
+            if module.params['size']:
+                extend_lv(module, name, init_props)
+                # make sure the the new init props is passed to modify_lv
+                # in the case where the logical volume is extended
+                if result['changed']:
+                    init_props = get_lv_props(module)
             modify_lv(module, name, init_props)
             if not result['changed']:
                 result['msg'] += "No changes were needed on logical volume %s." % name
