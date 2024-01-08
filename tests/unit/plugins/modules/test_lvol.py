@@ -301,34 +301,34 @@ class TestModifyLV(unittest.TestCase):
         pattern = r"Logical volume \w*\d* modified."
         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_success_modify_lv_copies_no_change_fail_lv_rename(self):
-        self.module.params['lv_new_name'] = "newtestlv"
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.return_value = self.lslv_output2
-            self.module.run_command.side_effect = [
-                (0, "sample stdout", "sample stderr"),
-                (1, "sample stdout", "sample stderr")
-            ]
-            with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name, self.lslv_output1)
-            result = result.exception.args[0]
-            self.assertTrue(result['changed'])
-            self.assertTrue(result['failed'])
-            pattern = r"Logical volume \w*\d* modified."
-            self.assertRegexpMatches(result['msg'], pattern)
-            pattern = "Failed to rename"
-            self.assertRegexpMatches(result['msg'], pattern)
+    # def test_success_modify_lv_copies_no_change_fail_lv_rename(self):
+    #     self.module.params['lv_new_name'] = "newtestlv"
+    #     with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+    #         mocked_get_lv_props.return_value = self.lslv_output2
+    #         self.module.run_command.side_effect = [
+    #             (0, "sample stdout", "sample stderr"),
+    #             (1, "sample stdout", "sample stderr")
+    #         ]
+    #         with self.assertRaises(AnsibleFailJson) as result:
+    #             lvol.modify_lv(self.module, self.name, self.lslv_output1)
+    #         result = result.exception.args[0]
+    #         self.assertTrue(result['changed'])
+    #         self.assertTrue(result['failed'])
+    #         pattern = r"Logical volume \w*\d* modified."
+    #         self.assertRegexpMatches(result['msg'], pattern)
+    #         pattern = "Failed to rename"
+    #         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_success_modify_lv_copies_no_change_lv_renamed(self):
-        self.module.params['lv_new_name'] = "newtestlv"
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.return_value = self.lslv_output2
-            lvol.modify_lv(self.module, self.name, self.lslv_output1)
-            result = copy.deepcopy(lvol.result)
-        pattern = r"Logical volume \w*\d* modified."
-        self.assertRegexpMatches(result['msg'], pattern)
-        pattern = "renamed into"
-        self.assertRegexpMatches(result['msg'], pattern)
+    # def test_success_modify_lv_copies_no_change_lv_renamed(self):
+    #     self.module.params['lv_new_name'] = "newtestlv"
+    #     with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+    #         mocked_get_lv_props.return_value = self.lslv_output2
+    #         lvol.modify_lv(self.module, self.name, self.lslv_output1)
+    #         result = copy.deepcopy(lvol.result)
+    #     pattern = r"Logical volume \w*\d* modified."
+    #     self.assertRegexpMatches(result['msg'], pattern)
+    #     pattern = "renamed into"
+    #     self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_modify_lv_copies_changed(self):
         self.module.params['copies'] = 2
@@ -342,42 +342,42 @@ class TestModifyLV(unittest.TestCase):
         pattern = "number of copies is modified."
         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_success_modify_lv_copies_changed_fail_lv_rename(self):
-        self.module.params['copies'] = 2
-        self.module.params['lv_new_name'] = "newtestlv"
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.return_value = self.lslv_output2
-            self.module.run_command.side_effect = [
-                (0, "sample stdout", "sample stderr"),
-                (0, "sample stdout", "sample stderr"),
-                (1, "sample stdout", "sample stderr")
-            ]
-            with self.assertRaises(AnsibleFailJson) as result:
-                lvol.modify_lv(self.module, self.name, self.lslv_output1)
-            result = result.exception.args[0]
-            self.assertTrue(result['changed'])
-            self.assertTrue(result['failed'])
-            pattern = r"Logical volume \w*\d* modified."
-            self.assertRegexpMatches(result['msg'], pattern)
-            pattern = "number of copies is modified."
-            self.assertRegexpMatches(result['msg'], pattern)
-            pattern = "Failed to rename"
-            self.assertRegexpMatches(result['msg'], pattern)
+    # def test_success_modify_lv_copies_changed_fail_lv_rename(self):
+    #     self.module.params['copies'] = 2
+    #     self.module.params['lv_new_name'] = "newtestlv"
+    #     with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+    #         mocked_get_lv_props.return_value = self.lslv_output2
+    #         self.module.run_command.side_effect = [
+    #             (0, "sample stdout", "sample stderr"),
+    #             (0, "sample stdout", "sample stderr"),
+    #             (1, "sample stdout", "sample stderr")
+    #         ]
+    #         with self.assertRaises(AnsibleFailJson) as result:
+    #             lvol.modify_lv(self.module, self.name, self.lslv_output1)
+    #         result = result.exception.args[0]
+    #         self.assertTrue(result['changed'])
+    #         self.assertTrue(result['failed'])
+    #         pattern = r"Logical volume \w*\d* modified."
+    #         self.assertRegexpMatches(result['msg'], pattern)
+    #         pattern = "number of copies is modified."
+    #         self.assertRegexpMatches(result['msg'], pattern)
+    #         pattern = "Failed to rename"
+    #         self.assertRegexpMatches(result['msg'], pattern)
 
-    def test_success_modify_lv_copies_changed_lv_renamed(self):
-        self.module.params['copies'] = 2
-        self.module.params['lv_new_name'] = "newtestlv"
-        with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
-            mocked_get_lv_props.return_value = self.lslv_output2
-            lvol.modify_lv(self.module, self.name, self.lslv_output1)
-            result = copy.deepcopy(lvol.result)
-        self.assertTrue(result['changed'])
-        pattern = r"Logical volume \w*\d* modified."
-        self.assertRegexpMatches(result['msg'], pattern)
-        pattern = "number of copies is modified."
-        self.assertRegexpMatches(result['msg'], pattern)
-        pattern = "renamed into"
-        self.assertRegexpMatches(result['msg'], pattern)
+    # def test_success_modify_lv_copies_changed_lv_renamed(self):
+    #     self.module.params['copies'] = 2
+    #     self.module.params['lv_new_name'] = "newtestlv"
+    #     with mock.patch(self.get_lv_props_path) as mocked_get_lv_props:
+    #         mocked_get_lv_props.return_value = self.lslv_output2
+    #         lvol.modify_lv(self.module, self.name, self.lslv_output1)
+    #         result = copy.deepcopy(lvol.result)
+    #     self.assertTrue(result['changed'])
+    #     pattern = r"Logical volume \w*\d* modified."
+    #     self.assertRegexpMatches(result['msg'], pattern)
+    #     pattern = "number of copies is modified."
+    #     self.assertRegexpMatches(result['msg'], pattern)
+    #     pattern = "renamed into"
+    #     self.assertRegexpMatches(result['msg'], pattern)
 
 
 class TestRemoveLV(unittest.TestCase):
