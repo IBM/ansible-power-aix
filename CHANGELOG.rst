@@ -5,6 +5,38 @@
 Releases
 ========
 
+Version 1.8.0
+-------------
+Notes
+   * New module: install_all_upates
+   * New Module: getconf to generate system configuration variable values as facts.
+   * Enhancement: Mount module is updated to use mount command instead of df.
+   * Enhancement: Enhanced parsing of nim_resource module stdout.
+   * Enhancement: Updated emgr module to remove ifix.
+   * Enhancement: Updated flrtvc module to list system specific fixes, AIX/VIOS.
+   * Enhancement: Updated lvm_facts module to include PVs without VG or unvaried VG.
+   * Enahncement: Updated documentations.
+   * Defect: Fix nim module to update from lpp source.
+   * Defect: Fix nim module fo unavail_targets.
+   * Defect: alt_disk module is fixed for alt_rootvg_op operation, install action.
+   * Defect: Group module is fixed for creating group with group id.
+   * Defect: Fix filesystem module which used to set "options=rw" when creating filesystem.
+   * Defect: Fix lvol module to allow renaming without specifying size.
+
+Availability
+  * `Automation Hub v1.8.0`_
+  * `Galaxy v1.8.0`_
+  * `GitHub v1.8.0`_
+
+.. _Automation Hub v1.8.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.8.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.8.0.tar.gz
+
+.. _GitHub v1.8.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.8.0.tar.gz
+
 Version 1.7.2
 -------------
 Notes
