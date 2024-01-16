@@ -21,7 +21,7 @@ description:
 - install_all_updates examines currently installed software and attempts to update it to the latest level that is available on the media.
   install_all_updates will not install any filesets that are present on the media, but not installed on the system except if the new
   filesets are installed as requisites of other filesets or the /var/adm/ras/bosinst.data filesets ALL_DEVICES_KERNELS to yes.
-version_added: '1.7.1'
+version_added: '1.8.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 2.7
@@ -31,7 +31,7 @@ options:
     description:
     - Specifies the device or directory that contains the installation images.
     type: str
-  utilities_only;
+  utilities_only:
     description:
     - Update install utilities only (bos.rte.install update).
     type: bool

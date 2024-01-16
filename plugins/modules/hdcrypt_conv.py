@@ -131,6 +131,27 @@ EXAMPLES = r'''
       vg: testvg
       except_lv: testlv3
     password: abc
+
+- name: "Convert PV to encrypted PV"
+  ibm.power_aix.hdcrypt_conv:
+    action: encrypt
+    device:
+      pv: hdisk2
+    password: abc
+
+- name: "Convert encrypted PV to unencrypted PV"
+  ibm.power_aix.hdcrypt_conv:
+    action: decrypt
+    device:
+      pv: hdisk2
+    password: abc
+
+- name: Encrypt multiple PVs
+  ibm.power_aix.hdcrypt_conv:
+    action: encrypt
+    device:
+      pv: hdisk2, hdisk3
+    password: abc
 '''
 
 RETURN = r'''

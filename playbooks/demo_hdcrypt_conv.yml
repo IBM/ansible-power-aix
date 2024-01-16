@@ -11,25 +11,25 @@
   - ibm.power_aix
 
   tasks:
-  - name: "convert LV (testlv1) to encrypted LV"
+  - name: "convert LV to encrypted LV"
     hdcrypt_conv:
       action: encrypt
       device:
         lv: "{{ lv_val }}"
-      password: Abc***__12345678
-  - name: "convert encrypted LV (testlv) to unencrypted LV"
+      password: abc123
+  - name: "convert encrypted LV to unencrypted LV"
     hdcrypt_conv:
       action: decrypt
       device:
         lv: "{{ lv_val }}"
       password: abc123
-  - name: "Encrypt all the lv's present in a vg"
+  - name: "Encrypt all the LVs present in a VG"
     hdcrypt_conv:
       action: encrypt
       device:
         vg: "{{ vg_val }}"
       password: abc123
-  - name: "Decrypt all the LV's present in a VG"
+  - name: "Decrypt all the LV present in a VG"
     hdcrypt_conv:
       action: decrypt
       device:
@@ -41,19 +41,19 @@
       device:
         lv: testlv1, testlv2
       password: abc
-  - name: "Convert PV (hdisk2) to encrypted PV"
+  - name: "Convert PV to encrypted PV"
     hdcrypt_conv:
       action: encrypt
       device:
         pv: "{{ pv_val }}"
-      password: Abc***__12345678
+      password: abc123
   - name: "Convert encrypted PV to unencrypted PV"
     hdcrypt_conv:
       action: decrypt
       device:
         pv: "{{ pv_val }}"
-      password: Abc***__12345678
-  - name: Encrypt multiple PV's
+      password: abc123
+  - name: Encrypt multiple PVs
     hdcrypt_conv:
       action: encrypt
       device:
