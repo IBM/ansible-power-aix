@@ -136,14 +136,14 @@ EXAMPLES = r'''
   ibm.power_aix.hdcrypt_conv:
     action: encrypt
     device:
-      pv: "{{ pv_val }}"
+      pv: hdisk2
     password: abc
 
 - name: "Convert encrypted PV to unencrypted PV"
   ibm.power_aix.hdcrypt_conv:
     action: decrypt
     device:
-      pv: "{{ pv_val }}"
+      pv: hdisk2
     password: abc
 
 - name: Encrypt multiple PVs
