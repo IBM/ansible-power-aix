@@ -5,6 +5,25 @@
 Releases
 ========
 
+Version 1.8.1
+-------------
+Notes
+   * Fixed documentation in install_all_updates
+
+Availability
+  * `Automation Hub v1.8.1`_
+  * `Galaxy v1.8.1`_
+  * `GitHub v1.8.1`_
+
+.. _Automation Hub v1.8.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.8.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.8.1.tar.gz
+
+.. _GitHub v1.8.1:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.8.1.tar.gz
+
 Version 1.8.0
 -------------
 Notes
