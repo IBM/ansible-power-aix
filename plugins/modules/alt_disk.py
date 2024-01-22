@@ -450,7 +450,7 @@ def check_mirrors(module):
         results['stderr'] = stderr
         results['stdout'] = stdout
         module.fail_json(**results)
-    
+
     default_lvs = ["hd5", "hd6", "hd8"]
 
     for line in stdout.splitlines()[1:]:
