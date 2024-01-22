@@ -453,16 +453,12 @@ def check_mirrors(module):
         results['stdout'] = stdout
         module.fail_json(**results)
 
-    default_lvs = ["hd5", "hd6", "hd8"]
-
     for line in stdout.splitlines()[1:]:
         line = list(filter(None, line.split(" ")))
-        lv = line[0]
-        if lv in default_lvs:
-            mirrors = int(line[3]) // int(line[2])
-            break
+        mirrors = max(mirrors, int(line[3]) // int(line[2]))
+
     if mirrors == -1:
-        results['msg'] = f"Could not find any of the following LVs in rootvg: {default_lvs}, could not identify if the rootvg is mirrored."
+        results['msg'] = f"Could not identify if the rootvg is mirrored or not."
         module.fail_json(**results)
     else:
         return mirrors
