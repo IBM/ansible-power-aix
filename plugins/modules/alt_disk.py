@@ -126,7 +126,7 @@ notes:
     disk even if the rootvg contains multiple disks.
   - In case of mirrored rootvg, If I(action=copy) and I(disk_size_policy) is provided, the number
     of copies should be equal to the number of disks on which mirrorvg has been performed (i.e.
-    for mirroring rootvg to two disks, this command should be used: mirrorvg -c 3 <disk1> <disk2>
+    for mirroring rootvg to two disks, this command should be used: mirrorvg -c 3 rootvg <disk1> <disk2>
     So that, three disks of total_rootvg_size/3 are used instead of two disks of total_rootvg_size/2)
     Otherwise, you can mention the disks in I(targets), that you want the alt_disk_copy command to use.
   - You can refer to the IBM documentation for additional information on the commands used at
