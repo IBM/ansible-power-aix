@@ -124,7 +124,7 @@ notes:
     systems that you want to back up.
   - When no target is specified, copy is performed to only one alternate
     disk even if the rootvg contains multiple disks.
-  - In case of mirrored rootvg, If I(action=copy) and I(disk_size_policy) is provided, the number 
+  - In case of mirrored rootvg, If I(action=copy) and I(disk_size_policy) is provided, the number
     of copies should be equal to the number of disks on which mirrorvg has been performed (i.e.
     for mirroring rootvg to two disks, this command should be used: mirrorvg -c 3 <disk1> <disk2>
     So that, three disks of total_rootvg_size/3 are used instead of two disks of total_rootvg_size/2)
@@ -179,6 +179,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 results = None
 mirrors = -1
+
 
 def get_pvs(module):
     """
@@ -352,7 +353,8 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             diffsize = 0
             prev_diffsize = 0
             if not pvs:
-                results['msg'] = f"Could not find the required number({mirrors}) of PVs as per the requirements. Found: {hdisks}, {mirrors - num_pv} more required"
+                results['msg'] = f"Could not find the required number({mirrors}) of PVs as per the requirements."
+                results['msg'] += f" Found: {hdisks}, {mirrors - num_pv} more required"
                 module.fail_json(**results)
             # parse free disks in increasing size order
             for key in sorted(pvs, key=lambda k: pvs[k]['size']):
@@ -403,7 +405,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                     selected_disk = prev_disk
                 else:
                     results['msg'] = 'No available alternate disk with size greater than {0} MB'\
-                                    ' found'.format(rootvg_size)
+                                     ' found'.format(rootvg_size)
                     module.fail_json(**results)
             hdisks.append(selected_disk)
             del pvs[selected_disk]
