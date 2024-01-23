@@ -458,7 +458,7 @@ def check_mirrors(module):
         mirrors = max(mirrors, int(line[3]) // int(line[2]))
 
     if mirrors == -1:
-        results['msg'] = f"Could not identify if the rootvg is mirrored or not."
+        results['msg'] = "Could not identify if the rootvg is mirrored or not."
         module.fail_json(**results)
     else:
         return mirrors
