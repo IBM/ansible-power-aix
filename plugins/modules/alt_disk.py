@@ -124,11 +124,6 @@ notes:
     systems that you want to back up.
   - When no target is specified, copy is performed to only one alternate
     disk even if the rootvg contains multiple disks.
-  - In case of mirrored rootvg, If I(action=copy) and I(disk_size_policy) is provided, the number
-    of copies should be equal to the number of disks on which mirrorvg has been performed (i.e.
-    for mirroring rootvg to two disks, this command should be used: mirrorvg -c 3 rootvg <disk1> <disk2>
-    So that, three disks of total_rootvg_size/3 are used instead of two disks of total_rootvg_size/2)
-    Otherwise, you can mention the disks in I(targets), that you want the alt_disk_copy command to use.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_copy.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_rootvg_op.html).
@@ -435,33 +430,38 @@ def check_mirrors(module):
     """
     Utility function to check if the rootvg is mirrored or not.
     arguments:
-        module - The ansible module
+        module - Ansible module argyment spec
     returns:
-        0 - In case of no default lv found (Error)
-        1 - In case the rootvg is not mirrored
-        2 - If rootvg is mirrored with two copies
-        3 - If rootvg is mirrored with three copies
+        copies (int) : Number of copies that exist for rootvg
     """
-    global mirrors
     cmd = "lsvg -l rootvg"
 
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc:
-        results['msg'] = "Could not check if the rootvg is mirrored."
+        results['msg'] = f"Could not run the following command: {cmd}."
         results['stderr'] = stderr
         results['stdout'] = stdout
         module.fail_json(**results)
 
-    for line in stdout.splitlines()[1:]:
-        line = list(filter(None, line.split(" ")))
-        mirrors = max(mirrors, int(line[3]) // int(line[2]))
+    lines = stdout.splitlines()
 
-    if mirrors == -1:
-        results['msg'] = "Could not identify if the rootvg is mirrored or not."
-        module.fail_json(**results)
-    else:
-        return mirrors
+    num_mirrors = 1
+
+    for line in lines[2:]:
+        line = re.split("\s+", line)
+        cmd = f"lslv -l {line[0]}"
+
+        rc, stdout, stderr = module.run_command(cmd)
+
+        if rc:
+            results['msg'] = f"Could not run the following command: {cmd}."
+            results['stderr'] = stderr
+            results['stdout'] = stdout
+            module.fail_json(**results)
+        num_mirrors = max(len(stdout.splitlines()) - 2, num_mirrors)
+
+    return num_mirrors
 
 
 def check_rootvg(module):
