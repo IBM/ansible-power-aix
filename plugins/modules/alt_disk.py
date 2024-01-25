@@ -449,7 +449,7 @@ def check_mirrors(module):
     num_mirrors = 1
 
     for line in lines[2:]:
-        line = re.split("\s+", line)
+        line = re.split(r"\s+", line)
         cmd = f"lslv -l {line[0]}"
 
         rc, stdout, stderr = module.run_command(cmd)
