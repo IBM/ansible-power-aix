@@ -127,11 +127,13 @@ notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_copy.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_rootvg_op.html).
-  - If rootvg has been mirrored onto two disks without -c 3 flag, two disks of size = total_rootvg_size/2
-    will be selected. If you want three disks to be selected, either mention the disks in the I(targets)
-    or use -c 3 flag while mirroring the rootvg.
-  - If rootvg contains an LV having two copies or three copies, the module will assume that the rootvg is mirrored,
-    and accordingly the disks will be selected in case of I(action=copy).
+  - For I(action=copy), If I(disk_size_policy) is provided and the rootvg has been mirrored onto
+    two disks without -c 3 flag, two disks of size similar to total_rootvg_size/2 will be selected.
+    If you want three disks to be selected, either mention the disks in the I(targets) or use -c 3
+    flag while mirroring the rootvg.
+  - If rootvg contains a LV having two or three copies, the module will assume that the
+    rootvg is mirrored, and accordingly the disks will be selected in case of I(action=copy),
+    when I(disk_size_policy) has been provided.
 '''
 
 EXAMPLES = r'''
@@ -437,7 +439,7 @@ def check_mirrors(module):
     arguments:
         module - Ansible module argyment spec
     returns:
-        copies (int) : Number of copies that exist for rootvg
+        num_mirrors (int) : Number of copies/mirrors that exist for rootvg
     """
     cmd = "lsvg -l rootvg"
 
