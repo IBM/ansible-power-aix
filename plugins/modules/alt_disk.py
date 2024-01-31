@@ -127,6 +127,13 @@ notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_copy.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_rootvg_op.html).
+  - For I(action=copy), If I(disk_size_policy) is provided and the rootvg has been mirrored onto
+    two disks without -c 3 flag, two disks of size similar to total_rootvg_size/2 will be selected.
+    If you want three disks to be selected, either mention the disks in the I(targets) or use -c 3
+    flag while mirroring the rootvg.
+  - If rootvg contains a LV having two or three copies, the module will assume that the
+    rootvg is mirrored, and accordingly the disks will be selected in case of I(action=copy),
+    when I(disk_size_policy) has been provided.
 '''
 
 EXAMPLES = r'''
@@ -173,6 +180,7 @@ import re
 from ansible.module_utils.basic import AnsibleModule
 
 results = None
+mirrors = -1
 
 
 def get_pvs(module):
@@ -250,7 +258,7 @@ def get_free_pvs(module):
             free_pvs[hdisk]['pvid'] = match_key.group(2)
             free_pvs[hdisk]['size'] = int(size)
 
-    module.debug('List of available PVs:')
+    module.debug('List of Free PVs:')
     for key in free_pvs.keys():
         module.debug('    free_pvs[{0}]: {1}'.format(key, free_pvs[key]))
 
@@ -333,74 +341,78 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
     pvs = get_free_pvs(module)
     if pvs is None:
         module.fail_json(**results)
-    if not pvs:
-        results['msg'] = 'No free disk available'
+    if not pvs or len(pvs) < mirrors:
+        results['msg'] = f'Not enough free disks available. At least {mirrors} are required but only {len(pvs)} are there.'
         module.fail_json(**results)
 
-    used_size = rootvg_info["used_size"]
-    rootvg_size = rootvg_info["rootvg_size"]
+    used_size = rootvg_info["used_size"] // mirrors
+    rootvg_size = rootvg_info["rootvg_size"] // mirrors
     # in auto mode, find the first alternate disk available
     if not hdisks:
-        selected_disk = ""
-        prev_disk = ""
-        diffsize = 0
-        prev_diffsize = 0
-        # parse free disks in increasing size order
-        for key in sorted(pvs, key=lambda k: pvs[k]['size']):
-            hdisk = key
-
-            # disk too small, skip
-            if pvs[hdisk]['size'] < used_size:
-                continue
-
-            # smallest disk that can be selected
-            if disk_size_policy == 'minimize':
-                selected_disk = hdisk
-                break
-
-            diffsize = pvs[hdisk]['size'] - rootvg_size
-            # matching disk size
-            if diffsize == 0:
-                selected_disk = hdisk
-                break
-
-            if diffsize > 0:
-                # diffsize > 0: first disk found bigger than the rootvg disk
-                if disk_size_policy == 'upper':
-                    selected_disk = hdisk
-                elif disk_size_policy == 'lower':
-                    if not prev_disk:
-                        # Best Can Do...
-                        selected_disk = hdisk
-                    else:
-                        selected_disk = prev_disk
-                else:
-                    # disk_size_policy == 'nearest'
-                    if prev_disk == "":
-                        selected_disk = hdisk
-                    elif abs(prev_diffsize) > diffsize:
-                        selected_disk = hdisk
-                    else:
-                        selected_disk = prev_disk
-                break
-            # disk size less than rootvg disk size
-            #   but big enough to contain the used PPs
-            prev_disk = hdisk
-            prev_diffsize = diffsize
-
-        if not selected_disk:
-            if prev_disk:
-                # Best Can Do...
-                selected_disk = prev_disk
-            else:
-                results['msg'] = 'No available alternate disk with size greater than {0} MB'\
-                                 ' found'.format(rootvg_size)
+        for num_pv in range(mirrors):
+            selected_disk = ""
+            prev_disk = ""
+            diffsize = 0
+            prev_diffsize = 0
+            if not pvs:
+                results['msg'] = f"Could not find the required number({mirrors}) of PVs as per the requirements."
+                results['msg'] += f" Found: {hdisks}, {mirrors - num_pv} more required"
                 module.fail_json(**results)
+            # parse free disks in increasing size order
+            for key in sorted(pvs, key=lambda k: pvs[k]['size']):
+                hdisk = key
 
-        module.debug('Selected disk is {0} (select mode: {1})'
-                     .format(selected_disk, disk_size_policy))
-        hdisks.append(selected_disk)
+                # disk too small, skip
+                if pvs[hdisk]['size'] < used_size:
+                    continue
 
+                # smallest disk that can be selected
+                if disk_size_policy == 'minimize':
+                    selected_disk = hdisk
+                    break
+
+                diffsize = pvs[hdisk]['size'] - rootvg_size
+                # matching disk size
+                if diffsize == 0:
+                    selected_disk = hdisk
+                    break
+
+                if diffsize > 0:
+                    # diffsize > 0: first disk found bigger than the rootvg disk
+                    if disk_size_policy == 'upper':
+                        selected_disk = hdisk
+                    elif disk_size_policy == 'lower':
+                        if not prev_disk:
+                            # Best Can Do...
+                            selected_disk = hdisk
+                        else:
+                            selected_disk = prev_disk
+                    else:
+                        # disk_size_policy == 'nearest'
+                        if prev_disk == "":
+                            selected_disk = hdisk
+                        elif abs(prev_diffsize) > diffsize:
+                            selected_disk = hdisk
+                        else:
+                            selected_disk = prev_disk
+                    break
+                # disk size less than rootvg disk size
+                #   but big enough to contain the used PPs
+                prev_disk = hdisk
+                prev_diffsize = diffsize
+
+            if not selected_disk:
+                if prev_disk:
+                    # Best Can Do...
+                    selected_disk = prev_disk
+                else:
+                    results['msg'] = 'No available alternate disk with size greater than {0} MB'\
+                                     ' found'.format(rootvg_size)
+                    module.fail_json(**results)
+            hdisks.append(selected_disk)
+            del pvs[selected_disk]
+
+        module.debug('Selected disks: {0} (select mode: {1})'.format(hdisks, disk_size_policy))
     # hdisks specified by the user
     else:
         tot_size = 0
@@ -419,6 +431,44 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                 results['msg'] = 'Alternate disks too small ({0} < {1}).'\
                                  .format(tot_size, rootvg_size)
                 module.fail_json(**results)
+
+
+def check_mirrors(module):
+    """
+    Utility function to check if the rootvg is mirrored or not.
+    arguments:
+        module - Ansible module argyment spec
+    returns:
+        num_mirrors (int) : Number of copies/mirrors that exist for rootvg
+    """
+    cmd = "lsvg -l rootvg"
+
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc:
+        results['msg'] = f"Could not run the following command: {cmd}."
+        results['stderr'] = stderr
+        results['stdout'] = stdout
+        module.fail_json(**results)
+
+    lines = stdout.splitlines()
+
+    num_mirrors = 1
+
+    for line in lines[2:]:
+        line = re.split(r"\s+", line)
+        cmd = f"lslv -l {line[0]}"
+
+        rc, stdout, stderr = module.run_command(cmd)
+
+        if rc:
+            results['msg'] = f"Could not run the following command: {cmd}."
+            results['stderr'] = stderr
+            results['stdout'] = stdout
+            module.fail_json(**results)
+        num_mirrors = max(len(stdout.splitlines()) - 2, num_mirrors)
+
+    return num_mirrors
 
 
 def check_rootvg(module):
@@ -494,6 +544,7 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
     - check the rootvg, find and validate the hdisks for the operation
     - perform the alt disk copy operation
     """
+    global mirrors
 
     # Either hdisks must be non-empty or disk_size_policy must be
     # explicitly set. This ensures the user knows what he is doing.
@@ -507,6 +558,9 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
 
     if hdisks is None:
         hdisks = []
+
+    mirrors = check_mirrors(module)
+
     find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'], params['force'], allow_old_rootvg)
 
     module.log('Using {0} as alternate disks'.format(hdisks))
