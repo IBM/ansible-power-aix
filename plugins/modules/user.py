@@ -203,6 +203,27 @@ def parse_lsuserf_output(stdout):
     return attrs
 
 
+def check_LDAP(module):
+    """
+    Utility function to check if LDAP has been configured
+
+    argument:
+        module (dict): The Ansible module
+    returns:
+        None: If LDAP is configured
+
+    Note: Fails if LDAP is not configured
+    """
+    cmd = "ls-secldapclntd"
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc:
+        msg = 'LDAP has not been configured, "load_module: LDAP" can not be used.'
+        module.fail_json(msg = msg, rc = rc, stdout = stdout, stderr = stderr)
+
+    return
+
+
 def get_user_attrs(module):
     '''
     get_user_attrs returns a dict with all attributes defined for the user.
@@ -431,6 +452,9 @@ def main():
 
     msg = ""
     changed = False
+
+    if module.params['load_module'] == "LDAP":
+        check_LDAP(module)
 
     if module.params['state'] == 'absent':
         if user_exists(module):
