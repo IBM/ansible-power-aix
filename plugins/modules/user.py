@@ -219,7 +219,7 @@ def check_LDAP(module):
 
     if rc:
         msg = 'LDAP has not been configured, "load_module: LDAP" can not be used.'
-        module.fail_json(msg = msg, rc = rc, stdout = stdout, stderr = stderr)
+        module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     return
 
