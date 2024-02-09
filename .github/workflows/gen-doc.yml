@@ -46,5 +46,5 @@ jobs:
     - name: publish documentation to GitHub Pages
       uses: softprops/action-gh-release@v1
       with:
-        file: docs/build
-        branch: gh-pages
+        files: docs/build
+        tartget_commitish: gh-pages
