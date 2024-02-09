@@ -44,7 +44,7 @@ jobs:
         bash devops/bin/gen_doc.sh
 
     - name: publish documentation to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
+      uses: softprops/action-gh-release@v1
       with:
         folder: docs/build
         branch: gh-pages
