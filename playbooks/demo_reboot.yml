@@ -13,7 +13,7 @@
   tasks:
       
     - name: "reboot the machine"
-      reboot:
+      ibm.power_aix.reboot:
               pre_reboot_delay: "{{ pre_reboot_delay_v }}"
               post_reboot_delay: "{{ post_reboot_delay_v }}"
               reboot_timeout: "{{ reboot_timeout_v }}"
@@ -21,3 +21,20 @@
       register: reboot_result
 
     - debug: var=reboot_result
+
+    - name: "Sleep for 5 mins"
+      ansible.builtin.pause:
+        minutes: 5
+
+    - name: "Validate reboot"
+      ansible.builtin.raw: "whoami"
+      register: validate_result
+      changed_when: false
+
+    - name: "Fail if reboot could not be validated"
+      ansible.builtin.fail:
+        msg: "Reboot could not be validated."
+      when: validate_result.rc != 0
+
+    - ansible.builtin.debug:
+        msg: "Reboot successful, machine is up now !"
