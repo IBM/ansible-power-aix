@@ -8,34 +8,22 @@
     post_reboot_delay_v: 0
     reboot_timeout_v: 0
     test_command_v: ""
-    sleep_time: 5 # This is the time that system will take for starting up.
+    original: 1
   collections:
     - ibm.power_aix
   tasks:
       
-    - name: "reboot the machine"
-      ibm.power_aix.reboot:
-              pre_reboot_delay: "{{ pre_reboot_delay_v }}"
-              post_reboot_delay: "{{ post_reboot_delay_v }}"
-              reboot_timeout: "{{ reboot_timeout_v }}"
-              test_command: "{{ test_command_v }}"
-      register: reboot_result
+    # - name: "reboot the machine"
+    #   reboot:
+    #           pre_reboot_delay: "{{ pre_reboot_delay_v }}"
+    #           post_reboot_delay: "{{ post_reboot_delay_v }}"
+    #           reboot_timeout: "{{ reboot_timeout_v }}"
+    #           test_command: "{{ test_command_v }}"
+    #   register: reboot_result
 
-    - debug: var=reboot_result
+    # - debug: var=reboot_result
 
-    - name: "Sleep for {{sleep_time}} minutes"
-      ansible.builtin.pause:
-        minutes: "{{sleep_time}}"
-
-    - name: "Validate reboot"
-      ansible.builtin.raw: "whoami"
-      register: validate_result
-      changed_when: false
-
-    - name: "Fail if reboot could not be validated"
+    - name: "Print statement to not use this playbook"
       ansible.builtin.fail:
-        msg: "Reboot could not be validated."
-      when: validate_result.rc != 0
-
-    - ansible.builtin.debug:
-        msg: "Reboot successful, machine is up now !"
+        msg: "Please use demo_reboot_workaround.yml"
+      when: "{{ original }}"
