@@ -37,6 +37,7 @@ options:
     - Specifies the action to be performed on the filesystem.
     - C(present) specifies to create a filesystem if it does not exist, otherwise it changes the
       attributes of the specified filesystem.
+    - C(modify) specifies to modify a filesystem.
     - C(absent) specifies to remove a filesystem.
     type: str
     choices: [ present, absent ]
@@ -122,7 +123,7 @@ EXAMPLES = r'''
 - name: Increase size of a filesystem
   ibm.power_aix.filesystem:
     filesystem: /mnt3
-    state: present
+    state: modify
     attributes: size=+5M
 - name: Remove a NFS filesystem
   ibm.power_aix.filesystem:
@@ -468,7 +469,7 @@ def main():
             mount_group=dict(type='str'),
             nfs_server=dict(type='str'),
             nfs_soft_mount=dict(type='bool', default='False'),
-            state=dict(type='str', default='present', choices=['absent', 'present']),
+            state=dict(type='str', default='present', choices=['absent', 'modify', 'present']),
             rm_mount_point=dict(type='bool', default='false'),
             filesystem=dict(type='str', required=True),
         ),
@@ -502,7 +503,14 @@ def main():
         if fs_state(module, filesystem) is None:
             mkfs(module, filesystem)
         else:
-            chfs(module, filesystem)
+            result['msg'] = "Provided filesystem already exists. If you want to modify, use state = modify"
+            module.exit_json(**result)
+    elif state == 'modify':
+        if fs_state(module, filesystem) is None:
+            result["msg"] = "The provided filesystem does not exist !"
+            module.fail_json(**result)
+        chfs(module, filesystem)
+
     elif state == 'absent':
         # Remove filesystem
         if fs_state(module, filesystem) is None:

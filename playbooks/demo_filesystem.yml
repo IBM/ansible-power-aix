@@ -8,7 +8,7 @@
     fs_type_v: jfs2
     mount_group_v: test
     permissions_v: rw
-    vg_v: rw
+    vg_v: vg00
   collections:
     ibm.power_aix
 
@@ -22,11 +22,13 @@
         mount_group: "{{mount_group_v}}"
         permissions: "{{permissions_v}}"
         vg: "{{vg_v}}"
+
     - name: Increase size of a filesystem
       filesystem:
         filesystem: "{{filesystem_name}}"
         state: present
         attributes: size=+5M
+
     - name: Remove a NFS filesystem
       filesystem:
         filesystem: "{{filesystem_name}}"
