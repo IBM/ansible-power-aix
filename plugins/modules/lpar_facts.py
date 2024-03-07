@@ -419,7 +419,7 @@ def main():
 
     cmd = [lsrsrc_path, 'IBM.MCP']
     ret2, stdout2, stderr2 = module.run_command(cmd, check_rc=True)
-    
+
     stdout = stdout + "\n" + stdout1
 
     lparstat = {}
