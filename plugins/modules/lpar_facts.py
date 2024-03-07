@@ -273,12 +273,38 @@ ansible_facts:
           type: dict
           elements: dict
           contains:
-           oslevel:
+            oslevel:
               description:
               - OperatingSystemBaseVersion TechnologyLevel ServicePack Build (vrmf).
               returned: always
               type: dict
               sample: '"oslevel": { "build": 2147, "sp": 3, "tl": 2, "base": "7.2.0.0" }'
+        IBM.MCP_info:
+          description: lsrsrc IBM.MCP command's output
+          returned: always
+          type: dict
+          elements: dict
+          contains:
+            resource list:
+              description: Resource Persistent Attributes for IBM.MCP
+              returned: always
+              type: dict
+              sample:
+                "resource 1": {
+                    "ActiveCommMode": "1",
+                    "ActivePeerDomain": "",
+                    "ConnectivityNames": "{127.0.0.1}",
+                    "HMCAddIPs": "",
+                    "HMCAddIPv6s": "",
+                    "HMCIPAddr": "127.0.0.1",
+                    "HMCName": "Va87f6d*XXXXXXX",
+                    "IPAddresses": "{127.0.0.1}",
+                    "KeyToken": "somehmc",
+                    "MNName": "127.0.0.1",
+                    "NodeID": "12622478031XXXXXX",
+                    "NodeNameList": "{somedomain.com}",
+                    "RMCKey": "64b686a1XXXXXXXX"
+                }
 '''
 
 from ansible.module_utils.basic import AnsibleModule
