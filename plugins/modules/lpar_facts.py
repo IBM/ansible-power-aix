@@ -365,7 +365,6 @@ def parse_MCP_info(stdout):
                 current_resource = line.strip()[:-1]
             else:
                 current_resource = line.strip()[:-1]
-                parsed_info[current_resource] = {}
         elif "=" in line:
             id, val = line.split("=")
             if id[:2] == "\t":
