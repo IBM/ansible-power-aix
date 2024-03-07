@@ -337,8 +337,51 @@ descr2key = {
     "NX Crypto Acceleration": ('nxcrypto_acc', 'bool'),
     "In-Core Crypto Acceleration": ('inc_core_crypto', 'bool'),
     "Full Core": ('full_coredump', 'bool'),
-    "oslevel": ('oslevel', 'str')
+    "oslevel": ('oslevel', 'str'),
+    "IBM.MCP_info": ('IBM.MCP_info', 'str')
 }
+
+
+def parse_MCP_info(stdout):
+    """
+    Utility function to parse the information retrieved from "lsrsrc IBM.MCP" command
+    arguments:
+      stdout - Standard output of the command
+    returns:
+      parsed_info (dict) - Parsed stdout in the form of a dictionary
+    """
+    parsed_info = {}
+    lines = stdout.splitlines()
+    current_resource = ""
+    resource_info = {}
+
+    for line in lines:
+        if ":" not in line and "=" not in line:
+            continue
+        if ":" in line:
+            if current_resource:
+                parsed_info[current_resource] = resource_info
+                resource_info = {}
+                current_resource = line.strip()[:-1]
+            else:
+                current_resource = line.strip()[:-1]
+                parsed_info[current_resource] = {}
+        elif "=" in line:
+            id, val = line.split("=")
+            if id[:2] == "\t":
+                id = id[2:]
+            id = id.strip()
+            val = val.strip()
+            if id in ["NodeID", "ActiveCommMode"]:
+                val = int(val)
+            else:
+                val = ''.join(val.split('\"'))
+            resource_info[id] = val
+
+    if current_resource not in parsed_info.keys():
+        parsed_info[current_resource] = resource_info
+
+    return parsed_info
 
 
 def main():
@@ -350,6 +393,8 @@ def main():
     lparstat_path = module.get_bin_path('lparstat', required=True)
     prtconf_path = module.get_bin_path('prtconf', required=True)
     oslevel_path = module.get_bin_path('oslevel', required=True)
+    lsrsrc_path = module.get_bin_path('lsrsrc', required=True)
+
     cmd = [lparstat_path, '-is']
     ret, stdout, stderr = module.run_command(cmd, check_rc=True)
     ''' prtconf to get the following:
@@ -373,8 +418,14 @@ def main():
     ret1, stdout1, stderr1 = module.run_command(cmd, check_rc=True)
     stdout1 = "oslevel: " + stdout1
 
+    cmd = [lsrsrc_path, 'IBM.MCP']
+    ret2, stdout2, stderr2 = module.run_command(cmd, check_rc=True)
+    
     stdout = stdout + "\n" + stdout1
+
     lparstat = {}
+    lparstat["IBM.MCP_info"] = parse_MCP_info(stdout2)
+
     for line in stdout.splitlines():
         if ':' not in line:
             continue
