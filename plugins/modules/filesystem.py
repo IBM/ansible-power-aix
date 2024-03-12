@@ -187,7 +187,7 @@ def validate_attributes(module):
     for attributes in attr:
         if attributes.split("=")[0] in crfs_specific_attributes:
             return False
-    
+
     return True
 
 
