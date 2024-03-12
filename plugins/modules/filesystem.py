@@ -156,6 +156,7 @@ from ansible.module_utils.basic import AnsibleModule
 result = None
 crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize"]
 
+
 def is_nfs(module, filesystem):
     """
     Determines if a filesystem is NFS or not
