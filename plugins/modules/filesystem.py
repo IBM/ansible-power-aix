@@ -154,7 +154,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 result = None
-
+crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize"]
 
 def is_nfs(module, filesystem):
     """
@@ -175,6 +175,20 @@ def is_nfs(module, filesystem):
         return True
     else:
         return False
+
+
+def validate_attributes(module):
+    """
+    Determines if valid attributes are provided for "chfs" command.
+    param module: Ansible module argument spec.
+    return: True - Attributes are valid / False - Invalid attributes provided.
+    """
+    attr = module.params['attributes']
+    for attributes in attr:
+        if attributes.split("=")[0] in crfs_specific_attributes:
+            return False
+    
+    return True
 
 
 def fs_state(module, filesystem):
@@ -502,6 +516,10 @@ def main():
         if fs_state(module, filesystem) is None:
             mkfs(module, filesystem)
         else:
+            if not validate_attributes(module):
+                result['msg'] = "The following attributes can not be changed once set: "
+                result['msg'] += ', '. join(crfs_specific_attributes) + "."
+                module.fail_json(**result)
             chfs(module, filesystem)
     elif state == 'absent':
         # Remove filesystem
