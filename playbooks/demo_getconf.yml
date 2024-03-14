@@ -15,7 +15,7 @@
     - name: List system configuration values
       getconf:
 
-# #Get the specific harddisk size 
+# Get the specific harddisk size 
     - name: Get hdisk0 size
       vars:
         disk_var: DISK_SIZE
@@ -23,7 +23,7 @@
         variable: "{{disk_var}}"
         path: "{{path}}"
 
-# #Get device name or location
+# Get device name or location
     - name: Get device name or location
       vars: 
         disk_name: DISK_DEVNAME
@@ -31,7 +31,7 @@
         variable: "{{disk_name}}"
         path: "{{path}}"
 
-#Get the Physical partition size of the disk 
+# Get the Physical partition size of the disk 
     - name: Get physical partition size
       vars:
          disk_par: DISK_PARTITION  
@@ -39,22 +39,22 @@
          variable: "{{disk_par}}" 
          path: "{{path}}" 
 
-# #Get the real memory size of the system
+# Get the real memory size of the system
     - name: Memory size
       getconf:
         variable: REAL_MEMORY
       
-# #Get the maximum length in bytes
+# Get the maximum length in bytes
     - name: Get ARG_MAX values
       getconf:
         variable: ARG_MAX
     
-# #Get the info if the machine is 32/64 bit 
+# Get the info if the machine is 32/64 bit 
     - name: Get the hardware bitmode
       getconf:
         variable: HARDWARE_BITMODE 
     
-# #Get the kernel bitmode
+# Get the kernel bitmode
     - name: Get the kernel bitmode
       getconf:
        variable: KERNEL_BITMODE 
