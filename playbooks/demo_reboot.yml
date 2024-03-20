@@ -8,22 +8,16 @@
     post_reboot_delay_v: 0
     reboot_timeout_v: 0
     test_command_v: ""
-    original: 1
   collections:
     - ibm.power_aix
   tasks:
       
-    # - name: "reboot the machine"
-    #   reboot:
-    #           pre_reboot_delay: "{{ pre_reboot_delay_v }}"
-    #           post_reboot_delay: "{{ post_reboot_delay_v }}"
-    #           reboot_timeout: "{{ reboot_timeout_v }}"
-    #           test_command: "{{ test_command_v }}"
-    #   register: reboot_result
+    - name: "reboot the machine"
+      reboot:
+              pre_reboot_delay: "{{ pre_reboot_delay_v }}"
+              post_reboot_delay: "{{ post_reboot_delay_v }}"
+              reboot_timeout: "{{ reboot_timeout_v }}"
+              test_command: "{{ test_command_v }}"
+      register: reboot_result
 
-    # - debug: var=reboot_result
-
-    - name: "Print statement to not use this playbook"
-      ansible.builtin.fail:
-        msg: "Please use demo_reboot_workaround.yml"
-      when: "{{ original }}"
+    - debug: var=reboot_result
