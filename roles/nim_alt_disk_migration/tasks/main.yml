@@ -231,7 +231,7 @@
         - nimadm_premig_script  | default("N/A") == "N/A"
         - nimadm_postmig_script | default("N/A") == "N/A"
         - nimadm_phases_to_run  | default("N/A") == "N/A"
- 
+
 ## Add above here
     - name: "Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured"
       set_fact:
