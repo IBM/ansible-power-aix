@@ -52,7 +52,7 @@
 ## Line 40 here same indent as - debug above
 
     - name: "Confirm eFix bundle resource '{{ nimadm_bundle }}' defined"
-      command: "nim -o showres {{ nimadm_bundle }}
+      command: "nim -o showres {{ nimadm_bundle }}"
       changed_when: false
       register: reg_bundle
       failed_when:
