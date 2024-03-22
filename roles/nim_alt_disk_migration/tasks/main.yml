@@ -11,7 +11,7 @@
 ## Line 11 here
 
 - name: "Check if CacheVG '{{ nimadm_cache_vg }}' exists"
-  shell: lsvg | grep {{ nimadm_cache_vg }}
+  shell: set -o pipefail && lsvg | grep {{ nimadm_cache_vg }}
   register: reg_nimadm_cache_vg_valid
   changed_when: false
   failed_when: reg_nimadm_cache_vg_valid.rc == 2
@@ -52,7 +52,7 @@
 ## Line 40 here same indent as - debug above
 
     - name: "Confirm eFix bundle resource '{{ nimadm_bundle }}' defined"
-      shell: "nim -o showres {{ nimadm_bundle }}
+      command: "nim -o showres {{ nimadm_bundle }}
       changed_when: false
       register: reg_bundle
       failed_when:
@@ -61,7 +61,7 @@
       when: nimadm_bundle | default("N/A") != "N/A"
 
     - name: "Confirm Pre-migration script resource '{{ nimadm_premig_script }}' defined"
-      shell: "nim -o showres {{ nimadm_premig_script }}"
+      command: "nim -o showres {{ nimadm_premig_script }}"
       changed_when: false
       register: reg_premig_script
       failed_when:
@@ -70,7 +70,7 @@
       when: nimadm_premig_script | default("N/A") != "N/A"
 
     - name: "Confirm Post-migration script resource '{{ nimadm_postmig_script }}' defined"
-      shell: "nim -o showres {{ nimadm_postmig_script }}"
+      command: "nim -o showres {{ nimadm_postmig_script }}"
       changed_when: false
       register: reg_postmig_script
       failed_when:
@@ -231,7 +231,7 @@
         - nimadm_premig_script  | default("N/A") == "N/A"
         - nimadm_postmig_script | default("N/A") == "N/A"
         - nimadm_phases_to_run  | default("N/A") == "N/A"
-        
+ 
 ## Add above here
     - name: "Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured"
       set_fact:

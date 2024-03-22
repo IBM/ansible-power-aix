@@ -184,7 +184,6 @@ EXAMPLES = r'''
   ibm.power_aix.lvol:
     state: absent
     lv: test1lv
-    state: absent
 '''
 
 RETURN = r'''
