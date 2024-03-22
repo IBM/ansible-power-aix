@@ -5,6 +5,32 @@
 Releases
 ========
 
+Version 1.8.2
+-------------
+Notes
+   * Enhancement to handle mirrored rootvg in case of alt_disk_copy.
+   * Fixed LDAP check before running mkuser.
+   * Enhancements in nim_adm role: check for CacheVG, eFix bundle, pre/post migration.
+   * Expanded nimadm_options to include Pre-,Post-, and Phases_to_run and set_fact for them.
+   * Add output from "lsrsrc IBM.MCP" to lpar_facts to make the controlling HMC details readily
+     available from within a playbook.
+   * Fixed idempotency issue for specific attributes in filesystem module.
+   * New demo_getconf.py playbook.
+
+Availability
+  * `Automation Hub v1.8.2`_
+  * `Galaxy v1.8.2`_
+  * `GitHub v1.8.2`_
+
+.. _Automation Hub v1.8.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.8.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.8.2.tar.gz
+
+.. _GitHub v1.8.2:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.8.2.tar.gz
+
 Version 1.8.1
 -------------
 Notes
