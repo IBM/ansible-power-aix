@@ -5,6 +5,26 @@
 Releases
 ========
 
+Version 1.8.3
+-------------
+Notes
+   * Fixed linting issue reported by Red Hat Automation Hub.
+
+
+Availability
+  * `Automation Hub v1.8.3`_
+  * `Galaxy v1.8.3`_
+  * `GitHub v1.8.3`_
+
+.. _Automation Hub v1.8.3:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.8.3:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.8.3.tar.gz
+
+.. _GitHub v1.8.3:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.8.3.tar.gz
+
 Version 1.8.2
 -------------
 Notes
