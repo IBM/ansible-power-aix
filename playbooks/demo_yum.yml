@@ -1,18 +1,19 @@
 ---
-- name: "YuM Check-Update"
+- name: YuM Check-Update
   hosts: all
-  gather_facts: yes
+  gather_facts: true
   vars:
-    name: '*'
+    name: "*"
     state: latest
     exclude: kernel*
   tasks:
+    - name: Upgrade packages, excluding kernel related packages
+      ansible.builtin.yum:
+        name: "{{ name }}"
+        state: "{{ state }}"
+        exclude: "{{ exclude }}"
 
-  - name: Upgrade packages, excluding kernel related packages
-    yum:
-      name: "{{ name }}"
-      state: "{{ state }}"
-      exclude: "{{ exclude }}"
-
-    register: output
-  - debug: var=output
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""

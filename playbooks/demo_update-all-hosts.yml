@@ -1,46 +1,47 @@
 ---
-- name: "Update all hosts -  x86, power"
+- name: Update all hosts -  x86, power
   hosts: all
-  gather_facts: yes
+  gather_facts: true
   collections:
     - ibm.power_aix
 
   tasks:
-
-  - name: Check oslevel of AIX system
-    shell: "oslevel -s"
-    when: ansible_distribution == 'AIX'
-    register: output
-  - debug: var=output
-
-
-  - name: Check for, and install, system updates
-    suma:
-      oslevel: 'latest'
-      download_only: False
-    when: ansible_distribution == 'AIX'
-    ignore_errors: True
-    register: output
-  - debug: var=output
-
-
-  - name: Check for new oslevel
-    shell: "oslevel -s"
-    when: ansible_distribution == 'AIX'
-    register: output
-  - debug: var=output
-
-
-  - name: Perform YuM check-updates
-    yum:
-      name: '*'
-      state: latest
-    when: ansible_distribution == 'CentOS'
-    register: output
-  - debug: var=output
-
-
-  - name: Restart with newest kernel
-    reboot:
-    register: output
-  - debug: var=output
+    - name: Check oslevel of AIX system
+      ansible.builtin.command: oslevel -s
+      when: ansible_distribution == 'AIX'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Check for, and install, system updates
+      suma:
+        oslevel: latest
+        download_only: false
+      when: ansible_distribution == 'AIX'
+      ignore_errors: true
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Check for new oslevel
+      ansible.builtin.command: oslevel -s
+      when: ansible_distribution == 'AIX'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Perform YuM check-updates
+      ansible.builtin.yum:
+        name: "*"
+        state: latest
+      when: ansible_distribution == 'CentOS'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Restart with newest kernel
+      ansible.builtin.reboot:
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""

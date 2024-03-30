@@ -1,41 +1,40 @@
 ---
-- name: "BOSBOOT on AIX"
+- name: BOSBOOT on AIX
   hosts: "{{host_name}}"
-  gather_facts: no
+  gather_facts: false
   vars:
     host_name: all
-    proto_file: "usr/lib/boot/chrp.cd.proto"
+    proto_file: usr/lib/boot/chrp.cd.proto
     directory_name: /home
     image_name_val: test1234
     disk_device_val: hd5
-  collections:
-    ibm.power_aix
+  collections: ibm.power_aix
 
   tasks:
     - name: Only Verify
       bosboot:
         only_verify: true
-        disk_device: "{{disk_device_val}}"
-        prototype_file: "{{proto_file}}"
+        disk_device: "{{ disk_device_val }}"
+        prototype_file: "{{ proto_file }}"
     - name: Table Entry
       bosboot:
         only_verify: true
         table_entry: primary
-        directory: "{{directory_name}}"
-        prototype_file: "{{proto_file}}"
+        directory: "{{ directory_name }}"
+        prototype_file: "{{ proto_file }}"
     - name: Create Image
       bosboot:
         increase_space: true
-        disk_device: "{{disk_device_val}}"
-        prototype_file: "{{proto_file}}"
-        table_entry: "both"
-        directory: "{{directory_name}}"
-        image_name: "{{image_name_val}}"
+        disk_device: "{{ disk_device_val }}"
+        prototype_file: "{{ proto_file }}"
+        table_entry: both
+        directory: "{{ directory_name }}"
+        image_name: "{{ image_name_val }}"
         create_image: true
     - name: Create the Image with default directory and name
       bosboot:
         increase_space: true
-        disk_device: "{{disk_device_val}}"
-        prototype_file: "{{proto_file}}"
-        table_entry: "both"
+        disk_device: "{{ disk_device_val }}"
+        prototype_file: "{{ proto_file }}"
+        table_entry: both
         create_image: true

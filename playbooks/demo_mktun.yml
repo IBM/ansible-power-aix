@@ -1,40 +1,40 @@
 ---
-- name: "Demo for mktun module"
+- name: Demo for mktun module
   hosts: "{{ hosts_val }}"
-  gather_facts: yes
+  gather_facts: true
   vars:
     hosts_val: all
-    log_file: "/tmp/ansible_mktun_debug.log"
+    log_file: /tmp/ansible_mktun_debug.log
   collections:
-  - ibm.power_aix
+    - ibm.power_aix
 
   tasks:
     - name: Create and activate a manual IPv4 tunnel
       mktun:
         manual:
           ipv4:
-          - src:
-              address: 10.10.11.72
-              ah_algo: HMAC_MD5
-              esp_algo: DES_CBC_8
-            dst:
-              address: 10.10.11.98
-              esp_spi: 12345
+            - src:
+                address: 10.10.11.72
+                ah_algo: HMAC_MD5
+                esp_algo: DES_CBC_8
+              dst:
+                address: 10.10.11.98
+                esp_spi: 12345
 
     - name: Export IPv4 tunnel definition for tunnel id 3 on srchost
       mktun:
         manual:
           ipv4:
             - id: 3
-              export: yes
+              export: true
       register: export_result
-      when: 'inventory_hostname == srchost'
+      when: inventory_hostname == srchost
 
     - name: Import IPv4 tunnel definition on dsthost
       mktun:
         manual:
-          import_ipv4: '{{ export_result.export_ipv4 }}'
-      when: 'inventory_hostname == dsthost'
+          import_ipv4: "{{ export_result.export_ipv4 }}"
+      when: inventory_hostname == dsthost
 
     - name: Remove manual IPv4 tunnel with id 3 from tunnel database
       mktun:
@@ -68,5 +68,5 @@
       mktun:
 
     - name: Print the tunnel facts
-      debug:
+      ansible.builtin.debug:
         var: ansible_facts.tunnels

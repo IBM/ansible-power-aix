@@ -1,7 +1,7 @@
 ---
-- name: "FILESYSTEM on AIX"
+- name: FILESYSTEM on AIX
   hosts: "{{host_name}}"
-  gather_facts: no
+  gather_facts: false
   vars:
     host_name: all
     filesystem_name: /mnt4
@@ -9,26 +9,25 @@
     mount_group_v: test
     permissions_v: rw
     vg_v: rw
-  collections:
-    ibm.power_aix
+  collections: ibm.power_aix
 
   tasks:
     - name: Creation of a JFS2 filesystem
-      filesystem:
+      community.general.filesystem:
         state: present
-        filesystem: "{{filesystem_name}}"
-        fs_type: "{{fs_type_v}}"
+        filesystem: "{{ filesystem_name }}"
+        fs_type: "{{ fs_type_v }}"
         attributes: size=32768,isnapshot='no'
-        mount_group: "{{mount_group_v}}"
-        permissions: "{{permissions_v}}"
-        vg: "{{vg_v}}"
+        mount_group: "{{ mount_group_v }}"
+        permissions: "{{ permissions_v }}"
+        vg: "{{ vg_v }}"
     - name: Increase size of a filesystem
-      filesystem:
-        filesystem: "{{filesystem_name}}"
+      community.general.filesystem:
+        filesystem: "{{ filesystem_name }}"
         state: present
         attributes: size=+5M
     - name: Remove a NFS filesystem
-      filesystem:
-        filesystem: "{{filesystem_name}}"
+      community.general.filesystem:
+        filesystem: "{{ filesystem_name }}"
         state: absent
         rm_mount_point: true

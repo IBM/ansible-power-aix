@@ -1,73 +1,52 @@
 ---
-- name: "SUMA on AIX"
+- name: SUMA on AIX
   hosts: all
-  gather_facts: yes
+  gather_facts: true
   vars:
     download_dir: /usr/sys/inst.images
-    download_only: False
-#    action download will download and install the fixes.
+    download_only: false
+    #    action download will download and install the fixes.
     action_v: list
   collections:
     - ibm.power_aix
 
   tasks:
+    - name: Check oslevel of system
+      ansible.builtin.command: oslevel -s
+      when: ansible_distribution == 'AIX'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Create file system for system updates
+      community.general.filesystem:
+        filesystem: "{{ download_dir }}"
+        attributes: size=1G
+        state: present
+        vg: rootvg
+      when: ansible_distribution == 'AIX'
 
-  - name: Check oslevel of system
-    shell: "oslevel -s"
-    when: ansible_distribution == 'AIX'
-    register: output
-  - debug: var=output
+    - name: Mount the file system (if necessary)
+      ansible.posix.mount:
+        state: mount
+        mount_dir: "{{ download_dir }}"
+      when: ansible_distribution == 'AIX'
 
-  - name: Create file system for system updates
-    filesystem:
-      filesystem: "{{ download_dir }}"
-      attributes: size=1G
-      state: present
-      vg: rootvg
-    when: ansible_distribution == 'AIX'
-
-  - name: Mount the file system (if necessary)
-    mount:
-      state: mount
-      mount_dir: "{{ download_dir }}"
-    when: ansible_distribution == 'AIX'
-
-  - name: Check for, and install, system updates
-    suma:
-      action: "{{ action_v }}"
-      oslevel: 'latest'
-      download_dir: "{{ download_dir }}"
-      download_only: "{{ download_only }}"
-    when: ansible_distribution == 'AIX'
-    register: output
-  - debug: var=output
-
-  - name: Check for new oslevel
-    shell: "oslevel -s"
-    when: ansible_distribution == 'AIX'
-    register: output
-  - debug: var=output
-
-# - name: Restart with newest kernel
-#   shell: "sleep 5 && shutdown -Fr"
-#   async: 1
-#   poll: 0
-#   register: output
-# - debug: var=output
-
-# - name: Restart with newest kernel
-#   reboot:
-#   when: ansible_distribution == 'AIX'
-#   register: output
-# - debug: var=output
-
-#  - name: Wait for 10 seconds
-#    pause:
-#      seconds: 10
-
-#  - name: Wait for the system to reboot
-#    wait_for_connection:
-#      connect_timeout: 20
-#      sleep: 5
-#      delay: 5
-#      timeout: 600
+    - name: Check for, and install, system updates
+      suma:
+        action: "{{ action_v }}"
+        oslevel: latest
+        download_dir: "{{ download_dir }}"
+        download_only: "{{ download_only }}"
+      when: ansible_distribution == 'AIX'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""
+    - name: Check for new oslevel
+      ansible.builtin.command: oslevel -s
+      when: ansible_distribution == 'AIX'
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        cmd: ""

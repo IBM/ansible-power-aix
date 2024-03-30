@@ -1,47 +1,46 @@
 ---
-- name: "MKFILT on AIX"
+- name: MKFILT on AIX
   hosts: "{{host_name}}"
-  gather_facts: no
+  gather_facts: false
   vars:
     host_name: all
     interface_v: en0
     import_directory: /root
     export_directory: /root
-  collections:
-    ibm.power_aix
+  collections: ibm.power_aix
   tasks:
     - name: Allow SSH activity through interface
       mkfilt:
         ipv4:
-          log: yes
+          log: true
           default: deny
           rules:
-          - action: permit
-            direction: inbound
-            d_opr: eq
-            d_port: 22
-            interface: "{{interface_v}}"
-            description: permit SSH requests from any clients
-          - action: permit
-            direction: outbound
-            s_opr: eq
-            s_port: 22
-            interface: "{{interface_v}}"
-            description: permit SSH answers to any clients
+            - action: permit
+              direction: inbound
+              d_opr: eq
+              d_port: 22
+              interface: "{{ interface_v }}"
+              description: permit SSH requests from any clients
+            - action: permit
+              direction: outbound
+              s_opr: eq
+              s_port: 22
+              interface: "{{ interface_v }}"
+              description: permit SSH answers to any clients
     - name: Remove all user-defined and auto-generated filter rules
       mkfilt:
         ipv4:
           default: permit
-          force: yes
+          force: true
           rules:
-          - action: remove
-            id: all
+            - action: remove
+              id: all
     - name: Export filter rules as is into export text files
       mkfilt:
         action: export
-        directory: "{{export_directory}}"
-        rawexport: yes
+        directory: "{{ export_directory }}"
+        rawexport: true
     - name: Import Filter rules
       mkfilt:
         action: import
-        directory: "{{import_directory}}"
+        directory: "{{ import_directory }}"
