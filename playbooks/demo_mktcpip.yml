@@ -1,21 +1,19 @@
 ---
-- name: "MKTCPIP on AIX"
-  hosts: "{{host_name}}"
-  gather_facts: no
+- name: MKTCPIP on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
   vars:
     host_name: all
     address_v: 192.9.200.4
     nameserver_v: 192.9.200.1
     interface_v: en0
     domain_v: austin.century.com
-  collections:
-    ibm.power_aix
   tasks:
     - name: Set the required values for starting TCP/IP
-      mktcpip:
+      ibm.power_aix.mktcpip:
         hostname: fred.austin.century.com
-        address: "{{address_v}}"
-        interface: "{{interface_v}}"
-        nameserver: "{{nameserver_v}}"
-        domain: "{{domain_v}}"
-        start_daemons: yes
+        address: "{{ address_v }}"
+        interface: "{{ interface_v }}"
+        nameserver: "{{ nameserver_v }}"
+        domain: "{{ domain_v }}"
+        start_daemons: true

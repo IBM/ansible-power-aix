@@ -1,72 +1,66 @@
 ---
-- name: "Print the fileset related information"
+- name: Print the fileset related information
   hosts: "{{ hosts_val }}"
-  gather_facts: yes
+  gather_facts: true
   vars:
     hosts_val: all
-    log_file: "/tmp/ansible_lpp_debug.log"
-  collections:
-  - ibm.power_aix
-
+    log_file: /tmp/ansible_lpp_debug.log
   tasks:
-    - name: "Gather the fileset facts"
+    - name: Gather the fileset facts
       lpp_facts:
 
     - name: Check whether a fileset called 'openssh.base.client' is installed
-      debug:
+      ansible.builtin.debug:
         msg: Fileset 'openssh.base.client' is installed
       when: "'openssh.base.client' in ansible_facts.filesets"
 
     - name: Check whether a fileset called 'test.base.xyz' is installed
-      debug:
+      ansible.builtin.debug:
         msg: Fileset 'test.base.xyz' is installed
       when: "'test.base.xyz' in ansible_facts.filesets"
 
-    - name: "Gather the fileset facts"
-      lpp_facts:
+    - name: Gather the fileset facts
+      ibm.power_aix.lpp_facts:
         filesets: openssh.base.client
 
-    - name: "Gather the fileset facts"
-      lpp_facts:
+    - name: Gather the fileset facts
+      ibm.power_aix.lpp_facts:
         filesets: test.base.xyz
 
-    - name: Populate fileset facts with the installation state for the most recent
-            level of installed filesets for all of the bos.rte filesets
-      lpp_facts:
+    - name: Populate fileset facts with the installation state for the most recent level of installed filesets for all of the bos.rte filesets
+      ibm.power_aix.lpp_facts:
         filesets: bos.rte.*
 
     - name: Print the fileset facts
-      debug:
+      ansible.builtin.debug:
         var: ansible_facts.filesets
 
-    - name: Populate fileset facts with the installation state for all the filesets
-            contained in the Server bundle
-      lpp_facts:
+    - name: Populate fileset facts with the installation state for all the filesets contained in the Server bundle
+      ibm.power_aix.lpp_facts:
         bundle: Server
 
     - name: Print the fileset facts
-      debug:
+      ansible.builtin.debug:
         var: ansible_facts.filesets
 
     - name: Print the filesets in a lists
-      set_fact:
+      ansible.builtin.set_fact:
         fileset_list: "{{ ansible_facts.filesets.keys() | list }}"
-    - debug:
+    - ansible.builtin.debug:
         var: fileset_list
 
-    - name: Populate fileset facts with the installation state for the most recent
-           level of installed filesets for all of the bos.rte filesets and also with
-           the requisites details
-      lpp_facts:
-         filesets: bos.rte.*
-         reqs: True     
+    - name: Populate fileset facts with the installation state for the most recent level of installed filesets
+            for all of the bos.rte filesets and also with the requisites details
+      ibm.power_aix.lpp_facts:
+        filesets: bos.rte.*
+        reqs: true
     - name: Print the fileset facts
-      debug:
-         var: ansible_facts.filesets
+      ansible.builtin.debug:
+        var: ansible_facts.filesets
 
     - name: Populate fixes facts with the status of APAR fixes installed on the system
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
         fix_type: apar
     - name: Print the fixes facts
-      debug:
+      ansible.builtin.debug:
         var: ansible_facts.fixes
