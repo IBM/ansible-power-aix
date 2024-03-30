@@ -1,61 +1,59 @@
 ---
 - name: "Demo hdcrypt conv"
   hosts: "{{ hosts_val }}"
-  gather_facts: no
+  gather_facts: false
   vars:
     hosts_val: all
     vg_val: vg00
     lv_val: testlv1
     pv_val: hdisk2
-  collections:
-  - ibm.power_aix
 
   tasks:
-  - name: "convert LV to encrypted LV"
-    hdcrypt_conv:
-      action: encrypt
-      device:
-        lv: "{{ lv_val }}"
-      password: abc123
-  - name: "convert encrypted LV to unencrypted LV"
-    hdcrypt_conv:
-      action: decrypt
-      device:
-        lv: "{{ lv_val }}"
-      password: abc123
-  - name: "Encrypt all the LVs present in a VG"
-    hdcrypt_conv:
-      action: encrypt
-      device:
-        vg: "{{ vg_val }}"
-      password: abc123
-  - name: "Decrypt all the LV present in a VG"
-    hdcrypt_conv:
-      action: decrypt
-      device:
-        vg: "vg00"
-      password: abc123
-  - name: "convert multiple LVs to encrypted LV"
-    hdcrypt_conv:
-      action: encrypt
-      device:
-        lv: testlv1, testlv2
-      password: abc
-  - name: "Convert PV to encrypted PV"
-    hdcrypt_conv:
-      action: encrypt
-      device:
-        pv: "{{ pv_val }}"
-      password: abc123
-  - name: "Convert encrypted PV to unencrypted PV"
-    hdcrypt_conv:
-      action: decrypt
-      device:
-        pv: "{{ pv_val }}"
-      password: abc123
-  - name: Encrypt multiple PVs
-    hdcrypt_conv:
-      action: encrypt
-      device:
-        pv: hdisk2, hdisk3
-      password: abc123
+    - name: "Convert LV to encrypted LV"
+      ibm.power_aix.hdcrypt_conv:
+        action: encrypt
+        device:
+          lv: "{{ lv_val }}"
+        password: abc123
+    - name: "Convert encrypted LV to unencrypted LV"
+      ibm.power_aix.hdcrypt_conv:
+        action: decrypt
+        device:
+          lv: "{{ lv_val }}"
+        password: abc123
+    - name: "Encrypt all the LVs present in a VG"
+      ibm.power_aix.hdcrypt_conv:
+        action: encrypt
+        device:
+          vg: "{{ vg_val }}"
+        password: abc123
+    - name: "Decrypt all the LV present in a VG"
+      ibm.power_aix.hdcrypt_conv:
+        action: decrypt
+        device:
+          vg: "vg00"
+        password: abc123
+    - name: "Convert multiple LVs to encrypted LV"
+      ibm.power_aix.hdcrypt_conv:
+        action: encrypt
+        device:
+          lv: testlv1, testlv2
+        password: abc
+    - name: "Convert PV to encrypted PV"
+      ibm.power_aix.hdcrypt_conv:
+        action: encrypt
+        device:
+          pv: "{{ pv_val }}"
+        password: abc123
+    - name: "Convert encrypted PV to unencrypted PV"
+      ibm.power_aix.hdcrypt_conv:
+        action: decrypt
+        device:
+          pv: "{{ pv_val }}"
+        password: abc123
+    - name: Encrypt multiple PVs
+      ibm.power_aix.hdcrypt_conv:
+        action: encrypt
+        device:
+          pv: hdisk2, hdisk3
+        password: abc123
