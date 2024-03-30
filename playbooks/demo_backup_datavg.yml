@@ -2,107 +2,113 @@
 - name: "Backup operations on datavg using savevg and restvg for AIX"
   hosts: ansible-test1
   remote_user: root
-  gather_facts: no
+  gather_facts: false
   vars:
-    type_v:                 "savevg"
-    vg_name_v:              "datavg"
-    lv_name_v:              "testlv"
-    lv_size_v:              5
-    lv_type_v:              "jfs2"
-    mnt_pt_v:               "/tmp/testfs"
-    fs_type_v:              "jfs2"
-    disk_name_v:            "hdisk1"
-    location_v:             "/tmp/datavg_backup"
-    exclude_data_v:         False
-    create_data_file_v:     False
-    exclude_fs_v:           "/tmp/eclude_fs_list"
-    force_v:                True
-    extend_fs_v:            True
-    verbose_v:              True
-    minimize_lv_size_v:     True
-    data_file_orig_v:       "/tmp/vgdata/datavg/datavg.data"
-    data_file_v:            "/tmp/datavg.mydata"    # a copy of /tmp/vgdata/datavg/datavg.data
-    restvg_flags_v:         "-n"                    # ignore existing MAP files
+    type_v: "savevg"
+    vg_name_v: "datavg"
+    lv_name_v: "testlv"
+    lv_size_v: 5
+    lv_type_v: "jfs2"
+    mnt_pt_v: "/tmp/testfs"
+    fs_type_v: "jfs2"
+    disk_name_v: "hdisk1"
+    location_v: "/tmp/datavg_backup"
+    exclude_data_v: false
+    create_data_file_v: false
+    exclude_fs_v: "/tmp/eclude_fs_list"
+    force_v: true
+    extend_fs_v: true
+    verbose_v: true
+    minimize_lv_size_v: true
+    data_file_orig_v: "/tmp/vgdata/datavg/datavg.data"
+    data_file_v: "/tmp/datavg.mydata"    # a copy of /tmp/vgdata/datavg/datavg.data
+    restvg_flags_v: "-n"                    # ignore existing MAP files
 
   tasks:
-  - name: create volume group
-    lvg:
-      state: present
-      vg_name: "{{ vg_name_v }}"
-      pvs: "{{ disk_name_v }}"
+    - name: Create volume group
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: "{{ vg_name_v }}"
+        pvs: "{{ disk_name_v }}"
 
-  - name: create logical volume
-    lvol:
-      state: present
-      lv: "{{ lv_name_v }}"
-      lv_type: "{{ lv_type_v }}"
-      vg: "{{ vg_name_v }}"
-      size: "{{ lv_size_v }}"
+    - name: Create logical volume
+      ibm.power_aix.lvol:
+        state: present
+        lv: "{{ lv_name_v }}"
+        lv_type: "{{ lv_type_v }}"
+        vg: "{{ vg_name_v }}"
+        size: "{{ lv_size_v }}"
 
+    - name: Create filesystem
+      ibm.power_aix.filesystem:
+        state: present
+        filesystem: "{{ mnt_pt_v }}"
+        fs_type: "{{ lv_type_v }}"
+        device: "{{ lv_name_v }}"
 
-  - name: create filesystem
-    filesystem:
-      state: present
-      filesystem: "{{ mnt_pt_v }}"
-      fs_type: "{{ lv_type_v }}"
-      device: "{{ lv_name_v }}"
-      
-  - name: mount filesystem
-    mount:
-      state: mount
-      mount_dir: "{{ mnt_pt_v }}"
+    - name: Mount filesystem
+      ibm.power_aix.mount:
+        state: mount
+        mount_dir: "{{ mnt_pt_v }}"
 
-  - name: check if file exists
-    shell: ls "{{ mnt_pt_v }}"/newfile || echo "create file"
-    register: output
+    - name: Check if file exists
+      ansible.builtin.shell: ls "{{ mnt_pt_v }}"/newfile || echo "create file"
+      register: output
+      changed_when: false
 
-  - name: create files in filesystem
-    shell: touch "{{ mnt_pt_v }}"/newfile
-    when: "'create file' in output.stdout"
+    - name: Create files in filesystem
+      ansible.builtin.command: touch "{{ mnt_pt_v }}"/newfile
+      when: "'create file' in output.stdout"
+      changed_when: true
 
-  - name: savevg to create a vg backup image
-    backup:
-      action: create
-      type: "{{ type_v }}"
-      name: "{{ vg_name_v }}"
-      location: "{{ location_v }}"
-      exclude_data: "{{ exclude_data_v }}"
-      create_data_file: "{{ create_data_file_v }}"
-      extend_fs: "{{ extend_fs_v }}"
-      force: "{{ force_v }}"
-      verbose: "{{ verbose_v }}"
-    register: results
-  - debug: var=results
+    - name: Savevg to create a vg backup image
+      ibm.power_aix.backup:
+        action: create
+        type: "{{ type_v }}"
+        name: "{{ vg_name_v }}"
+        location: "{{ location_v }}"
+        exclude_data: "{{ exclude_data_v }}"
+        create_data_file: "{{ create_data_file_v }}"
+        extend_fs: "{{ extend_fs_v }}"
+        force: "{{ force_v }}"
+        verbose: "{{ verbose_v }}"
+      register: results
+    - ansible.builtin.debug:
+        var: results
+        verbosity: 4
 
-  - name: unmount filesystem
-    mount:
-      state: umount
-      mount_dir: "{{ mnt_pt_v }}"
+    - name: Unmount filesystem
+      ibm.power_aix.mount:
+        state: umount
+        mount_dir: "{{ mnt_pt_v }}"
 
-  - name: remove the volume group
-    lvg:
-      state: absent
-      vg_name: "{{ vg_name_v }}"
-      delete_lvs: yes
+    - name: Remove the volume group
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: "{{ vg_name_v }}"
+        delete_lvs: true
 
-  - name: restvg to view the backup image information
-    backup:
-      action: view
-      type: "{{ type_v }}"
-      location: "{{ location_v }}"
-    register: results
-  - debug: var=results
+    - name: Restvg to view the backup image information
+      backup:
+        action: view
+        type: "{{ type_v }}"
+        location: "{{ location_v }}"
+      register: results
+    - ansible.builtin.debug:
+        var: results
+        verbosity: 4
 
-  - name: mv original vgname.data file
-    command: mv "{{ data_file_orig_v }}" "{{ data_file_v }}"
+    - name: Move original vgname.data file
+      ansible.builtin.command: mv "{{ data_file_orig_v }}" "{{ data_file_v }}"
+      changed_when: true
 
-  - name: restvg to restore the backup image
-    backup:
-      action: restore
-      type: "{{ type_v }}"
-      name: "{{ disk_name_v }}"
-      location: "{{ location_v }}"
-      data_file: "{{ data_file_v }}"
-      exclude_data: "{{ exclude_data_v }}"
-      minimize_lv_size: "{{ minimize_lv_size_v }}"
-      flags: "{{ restvg_flags_v }}"
+    - name: Restvg to restore the backup image
+      ibm.power_aix.backup:
+        action: restore
+        type: "{{ type_v }}"
+        name: "{{ disk_name_v }}"
+        location: "{{ location_v }}"
+        data_file: "{{ data_file_v }}"
+        exclude_data: "{{ exclude_data_v }}"
+        minimize_lv_size: "{{ minimize_lv_size_v }}"
+        flags: "{{ restvg_flags_v }}"

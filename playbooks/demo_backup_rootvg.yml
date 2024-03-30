@@ -2,127 +2,126 @@
 - name: "Backup operations on rootvg using mksysb and alt_disk_mksysb for AIX"
   hosts: ansible-test1
   remote_user: root
-  gather_facts: no
+  gather_facts: false
   vars:
-    type:                     "mksysb"
-    location_create:          "/tmp/backupfs/rootvg_sysb"
-    exclude_fs:               ""
-    extend_fs:                True
-    exclude_files:            False
-    exclude_packing_files:    False
-    verbose:                  True
-    mksysb_flags:             "-G"    # Excludes WPAR file systems
-    force:                    True
-    #data_file:               "/tmp/image.data"
-    alt_disk_mksysb_flags:    ""
-    script:                   ""
-    resolv_conf:              ""
-    phase:                    "all"
-    remain_nim_client:        True
-    import_vg:                False
-    debug:                    False
-    bootlist:                 True
-    vg_name:                  "backupvg"
-    pv_list:                  hdisk1 hdisk2 hdisk3
-    lv_name:                  "backuplv"
-    lv_type:                  "jfs2"
-    lv_size:                  "5G"
-    fs_mnt:                   "/tmp/backupfs"
-    fs_type:                  "jfs2"
-    delete_lvs:               True
-    restore_fs:               "/tmp"
-    restore_fs_size:          "5G"
-    location_restore:         "/tmp/rootvg_sysb"
+    type: "mksysb"
+    location_create: "/tmp/backupfs/rootvg_sysb"
+    exclude_fs: ""
+    extend_fs: true
+    exclude_files: false
+    exclude_packing_files: false
+    verbose: true
+    mksysb_flags: "-G"    # Excludes WPAR file systems
+    force: true
+    alt_disk_mksysb_flags: ""
+    script: ""
+    resolv_conf: ""
+    phase: "all"
+    remain_nim_client: true
+    import_vg: false
+    debug: false
+    bootlist: true
+    vg_name: "backupvg"
+    pv_list: hdisk1 hdisk2 hdisk3
+    lv_name: "backuplv"
+    lv_type: "jfs2"
+    lv_size: "5G"
+    fs_mnt: "/tmp/backupfs"
+    fs_type: "jfs2"
+    delete_lvs: true
+    restore_fs: "/tmp"
+    restore_fs_size: "5G"
+    location_restore: "/tmp/rootvg_sysb"
 
   tasks:
-  - name: "create volume group or backup image"
-    lvg:
-      state: present
-      vg_name: "{{ vg_name }}"
-      pvs: "{{ pv_list }}"
+    - name: "Create volume group or backup image"
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: "{{ vg_name }}"
+        pvs: "{{ pv_list }}"
 
-  - name: "create logical volume for backup image"
-    lvol:
-      state: present
-      vg: "{{ vg_name }}"
-      lv: "{{ lv_name }}"
-      lv_type: "{{ lv_type }}"
-      size: "{{ lv_size }}"
+    - name: "Create logical volume for backup image"
+      ibm.power_aix.lvol:
+        state: present
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name }}"
+        lv_type: "{{ lv_type }}"
+        size: "{{ lv_size }}"
 
-  - name: "create filesystem for backup image"
-    filesystem:
-      state: present
-      filesystem: "{{ fs_mnt }}"
-      fs_type: "{{ fs_type }}"
-      device: "{{ lv_name }}"
+    - name: "Create filesystem for backup image"
+      ibm.power_aix.filesystem:
+        state: present
+        filesystem: "{{ fs_mnt }}"
+        fs_type: "{{ fs_type }}"
+        device: "{{ lv_name }}"
 
-  - name: "mount filesystem"
-    mount:
-      state: mount
-      mount_dir: "{{ fs_mnt }}"
+    - name: "Mount filesystem"
+      ibm.power_aix.mount:
+        state: mount
+        mount_dir: "{{ fs_mnt }}"
 
-  - name: create a mksysb image of rootvg
-    backup:
-      action: create
-      type: "{{ type }}"
-      location: "{{ location_create }}"
-      # exclude_fs: "{{ exclude_fs }}"
-      exclude_files: "{{ exclude_files }}"
-      extend_fs: "{{ extend_fs }}"
-      exclude_packing_files: "{{ exclude_packing_files }}"
-      # verbose: "{{ verbose }}"
-      flags: "{{ mksysb_flags }}"
-      force: "{{ force }}"
-    register: result
-  - debug: var=result
+    - name: Create a mksysb image of rootvg
+      ibm.power_aix.backup:
+        action: create
+        type: "{{ type }}"
+        location: "{{ location_create }}"
+        exclude_files: "{{ exclude_files }}"
+        extend_fs: "{{ extend_fs }}"
+        exclude_packing_files: "{{ exclude_packing_files }}"
+        flags: "{{ mksysb_flags }}"
+        force: "{{ force }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        verbosity: 4
 
-  - name: view the mksysb image
-    backup:
-      action: view
-      type: "{{ type }}"
-      location: "{{ location_create }}"
-    register: result
-  - debug: var=result
+    - name: View the mksysb image
+      ibm.power_aix.backup:
+        action: view
+        type: "{{ type }}"
+        location: "{{ location_create }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        verbosity: 4
 
-  - name: increase filesystem to move mksysb image
-    filesystem:
-      state: present
-      filesystem: "{{ restore_fs }}"
-      attributes: size="{{ restore_fs_size }}"
+    - name: Increase filesystem to move mksysb image
+      ibm.power_aix.filesystem:
+        state: present
+        filesystem: "{{ restore_fs }}"
+        attributes: size="{{ restore_fs_size }}"
 
-  # ulimit for fsize and data must be unlimited
-  - name: move mksysb image to /tmp
-    copy:
-      remote_src: yes
-      src: "{{ location_create }}"
-      dest: "{{ location_restore }}"
+    # ulimit for fsize and data must be unlimited
+    - name: Move mksysb image to /tmp
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ location_create }}"
+        dest: "{{ location_restore }}"
+        mode: '0777'
 
-  - name: "unmount the filesystem"
-    mount:
-      state: umount
-      mount_dir: "{{ fs_mnt }}"
+    - name: "Unmount the filesystem"
+      ibm.power_aix.mount:
+        state: umount
+        mount_dir: "{{ fs_mnt }}"
 
-  - name: "delete volume group"
-    lvg:
-      state: absent
-      vg_name: "{{ vg_name }}"
-      delete_lvs: "{{ delete_lvs }}"
+    - name: "Delete volume group"
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: "{{ vg_name }}"
+        delete_lvs: "{{ delete_lvs }}"
 
-  - name: install the mksysb image to disk
-    backup:
-      action: restore
-      type: "{{ type }}"
-      location: "{{ location_restore }}"
-      # data_file: "{{ data_file }}"
-      disk: "{{ pv_list }}"
-      # script: "{{ script }}"
-      # resolv_conf: "{{ resolv_conf }}"
-      phase: "{{ phase }}"
-      remain_nim_client: "{{ remain_nim_client }}"
-      import_vg: "{{ import_vg }}"
-      debug: "{{ debug }}"
-      bootlist: "{{ bootlist }}"
-      # verbose: "{{ verbose }}"
-      # flags: "{{ alt_disk_mksysb_flags }}"
-    register: result
-  - debug: var=result
+    - name: Install the mksysb image to disk
+      ibm.power_aix.backup:
+        action: restore
+        type: "{{ type }}"
+        location: "{{ location_restore }}"
+        disk: "{{ pv_list }}"
+        phase: "{{ phase }}"
+        remain_nim_client: "{{ remain_nim_client }}"
+        import_vg: "{{ import_vg }}"
+        debug: "{{ debug }}"
+        bootlist: "{{ bootlist }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        verbosity: 4
