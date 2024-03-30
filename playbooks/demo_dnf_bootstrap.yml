@@ -1,16 +1,14 @@
 ---
-- name: "Bootstrap Yum on AIX"
+- name: Bootstrap Yum on AIX
   hosts: all
-  gather_facts: no
+  gather_facts: false
   user: root
-  collections:
-  - ibm.power_aix
+    - ibm.power_aix
   tasks:
-
-# CHECK for Yum on inventory host
-  - import_role:
-      name: power_aix_bootstrap
-    vars:
-      pkgtype: "dnf"
-      download_dir: "~"
-      target_dir: "/tmp/.ansible.cpdir"
+    # CHECK for Yum on inventory host
+    - ansible.builtin.import_role:
+        name: power_aix_bootstrap
+      vars:
+        pkgtype: dnf
+        download_dir: "~"
+        target_dir: /tmp/.ansible.cpdir
