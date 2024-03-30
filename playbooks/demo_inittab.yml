@@ -1,33 +1,31 @@
 ---
-- name: "INITTAB on AIX"
+- name: INITTAB on AIX
   hosts: "{{host_name}}"
-  gather_facts: no
+  gather_facts: false
   vars:
     host_name: all
-    cmd: '/usr/sbin/uprintfd'
+    cmd: /usr/sbin/uprintfd
     inittab_v: uprintfd
-  collections:
-    ibm.power_aix
   tasks:
     - name: Create new entry for uprintfd
-      inittab:
+      ibm.power_aix.inittab:
         state: present
-        name: "{{inittab_v}}"
-        runlevel: '23456789'
-        action: 'respawn'
-        command: "{{cmd}}"
-        insertafter: 'perfstat'
+        name: "{{ inittab_v }}"
+        runlevel: "23456789"
+        action: respawn
+        command: "{{ cmd }}"
+        insertafter: perfstat
     - name: Change entry for uprintfd
-      inittab:
+      ibm.power_aix.inittab:
         state: modify
-        name: "{{inittab_v}}"
-        runlevel: '1234567'
-        action: 'respawn'
-        command: "{{cmd}}"
+        name: "{{ inittab_v }}"
+        runlevel: "1234567"
+        action: respawn
+        command: "{{ cmd }}"
     - name: Remove entry for uprintfd
-      inittab:
+      ibm.power_aix.inittab:
         state: absent
-        name: "{{inittab_v}}"
-        runlevel: '1234567'
-        action: 'respawn'
-        command: "{{cmd}}"
+        name: "{{ inittab_v }}"
+        runlevel: "1234567"
+        action: respawn
+        command: "{{ cmd }}"
