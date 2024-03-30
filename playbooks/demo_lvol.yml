@@ -1,57 +1,54 @@
 ---
-- name: "LVOL on AIX"
-  hosts: "{{host_name}}"
-  gather_facts: no
+- name: LVOL on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
   vars:
     host_name: all
     vg_name: rootvg
     lv_name: testlv
-    size_val: "64M"
-    increase_size_val: 
-
-  collections:
-    ibm.power_aix
+    size_val: 64M
+    increase_size_val:
   tasks:
     - name: Create a logical volume of 64M
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
+        vg: "{{ vg_name }}"
         lv: testrootlv
-        size: "{{size_val}}"
+        size: "{{ size_val }}"
     - name: Create a logical volume of 10 logical partitions with disks hdisk0 and hdisk1
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
+        vg: "{{ vg_name }}"
         lv: test2lv
-        size: "{{size_val}}"
+        size: "{{ size_val }}"
         pv_list: hdisk0, hdisk1
     - name: Create a logical volume of 32M with a minimum placement policy
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
+        vg: "{{ vg_name }}"
         lv: test4lv
-        size: "32M"
+        size: 32M
         policy: minimum
     - name: Create a logical volume with extra options like mirror pool
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
-        lv: "{{lv_name}}"
-        size: "{{size_val}}"
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name }}"
+        size: "{{ size_val }}"
         extra_opts: -m copy1=poolA -m copy2=poolB
     - name: Extend a logical volume by 1G
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
-        lv: "{{lv_name}}"
-        size: "+1G"
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name }}"
+        size: +1G
     - name: Rename a logical volume
-      lvol:
+      ibm.power_aix.lvol:
         state: present
-        vg: "{{vg_name}}"
-        lv: "{{lv_name}}"
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name }}"
         lv_new_name: renamedlv
     - name: Remove the logical volume
-      lvol:
+      ibm.power_aix.lvol:
         state: absent
         lv: testrootlv
