@@ -1,6 +1,6 @@
 ---
-- name: "NIM check on AIX playbook"
-  hosts: "{{host_name}}"
+- name: NIM check on AIX playbook
+  hosts: "{{ host_name }}"
   user: root
   vars:
     host_name: nimserver
@@ -9,14 +9,14 @@
   gather_facts: false
   become: true
 
-  collections:
-  - ibm.power_aix
   tasks:
-    - name: "Check, download and create the NIM resource to install latest updates"
-      nim_suma:
+    - name: Check, download and create the NIM resource to install latest updates
+      ibm.power_aix.nim_suma:
         action: download
-        targets: "{{ nim_clients |default(omit) }}"
+        targets: "{{ nim_clients | default(omit) }}"
         oslevel: "{{ oslevel_val }}"
         download_dir: "{{ download_dir_val }}"
       register: result
-    - debug: var=result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""

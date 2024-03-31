@@ -1,31 +1,33 @@
 ---
-- name: "VIOS alternate disk copy on AIX"
+- name: VIOS alternate disk copy on AIX
   hosts: nimserver
-  gather_facts: no
+  gather_facts: false
   vars:
-#    time_limit_v:  "mm/dd/yyyy hh:mm"
-#VIOSes and the disks associated to it to do alt_disk_copy or alt_disk_clean.
-    target_vios_disks_v: 
-      - "vios1": ["hdisk1"] 
-      - "vios2": ["hdisk2"]
-    
+    # time_limit_v:  "mm/dd/yyyy hh:mm"
+    # VIOSes and the disks associated to it to do alt_disk_copy or alt_disk_clean.
+    target_vios_disks_v:
+      - vios1: [hdisk1]
+      - vios2: [hdisk2]
+
   tasks:
-    - name: "Perform an alternate disk copy on VIOS"
-      nim_vios_alt_disk:
+    - name: Perform an alternate disk copy on VIOS
+      ibm.power_aix.nim_vios_alt_disk:
         action: alt_disk_copy
-        targets: "{{ target_vios_disks_v }}"        
-#       time_limit: "{{ time_limit_v }}"
+        targets: "{{ target_vios_disks_v }}"
       register: altdisk_copy_result
 
-    - debug: var=altdisk_copy_result
-
-    - name: "Perform an alternate disk cleanup on VIOS"
-      nim_vios_alt_disk:
-        targets: "{{target_vios_disks_v}}"
+    - ansible.builtin.debug:
+        var: altdisk_copy_result
+        cmd: ""
+    - name: Perform an alternate disk cleanup on VIOS
+      ibm.power_aix.nim_vios_alt_disk:
+        targets: "{{ target_vios_disks_v }}"
         action: alt_disk_clean
         vios_status: "{{ altdisk_copy_result.status }}"
         nim_node: "{{ altdisk_copy_result.nim_node }}"
 
       register: altdisk_result
 
-    - debug: var=altdisk_result
+    - ansible.builtin.debug:
+        var: altdisk_result
+        cmd: ""
