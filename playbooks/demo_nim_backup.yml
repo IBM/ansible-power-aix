@@ -1,183 +1,131 @@
 ---
-- name: "Backup operation using NIM for on AIX/VIOS"
+- name: Backup operation using NIM for on AIX/VIOS
   hosts: nimserver
-  gather_facts: no
+  gather_facts: false
   vars:
-    preview_v:              True
-    flags_v:                ""
-    other_attributes_v:     ""
+    preview_v: true
+    flags_v: ""
+    other_attributes_v: ""
     # for savevg/restvg operation
-    svg_type_v:             "savevg"
-    svg_location_v:         "/export/nim/savevg"
-    svg_name_v:             ""
-    svg_name_prefix_v:      ""
-    svg_name_postfix_v:     ""
-    svg_volume_group_v:     "datavg"
-    svg_other_attributes_v: "-a disk=hdisk1 -a verbose=yes"
-    svg_shrink_fs_v:        False
+    svg_type_v: savevg
+    svg_location_v: /export/nim/savevg
+    svg_name_v: ""
+    svg_name_prefix_v: ""
+    svg_name_postfix_v: ""
+    svg_volume_group_v: datavg
+    svg_other_attributes_v: -a disk=hdisk1 -a verbose=yes
+    svg_shrink_fs_v: false
     # for Standalone LPAR
     # lpar_nim_node_v:        {}
-    lpar_targets_v:         "quimby06"
-    sysb_location_v:        "/export/nim/mksysb"
-    sysb_name_v:            "ansible_img"
-    sysb_name_prefix_v:     "ansible"
-    sysb_name_postfix_v:    "_sysb"
-    sysb_group_v:           ""
-    sysb_spot_name_v:       ""
-    sysb_spot_prefix_v:     ""
-    sysb_spot_postfix_v:    ""
-    sysb_spot_location_v:   "/export/nim/spot"
-    sysb_remove_spot_v:     False
-    sysb_remove_backup_v:   False
-    sysb_boot_target_v:     True
+    lpar_targets_v: quimby06
+    sysb_location_v: /export/nim/mksysb
+    sysb_name_v: ansible_img
+    sysb_name_prefix_v: ansible
+    sysb_name_postfix_v: _sysb
+    sysb_group_v: ""
+    sysb_spot_name_v: ""
+    sysb_spot_prefix_v: ""
+    sysb_spot_postfix_v: ""
+    sysb_spot_location_v: /export/nim/spot
+    sysb_remove_spot_v: false
+    sysb_remove_backup_v: false
+    sysb_boot_target_v: true
     # for VIOS
     # vios_nim_node_v:        {}
-    vios_targets_v:         "quimby-vios2"
-    iossysb_type_v:         "ios_mksysb"
-    iossysb_location_v:     "/export/nim/ios_mksysb"
-    iossysb_name_v:         ""
-    iossysb_name_prefix_v:  ""
-    iossysb_name_postfix_v: "_iossysb"
-    iosb_type_v:            "ios_backup"
-    iosb_name_v:            ""
-    iosb_name_prefix_v:     ""
-    iosb_name_postfix_v:    "_iosb"
-    iosb_location_v:        "/export/nim/ios_backup"
+    vios_targets_v: quimby-vios2
+    iossysb_type_v: ios_mksysb
+    iossysb_location_v: /export/nim/ios_mksysb
+    iossysb_name_v: ""
+    iossysb_name_prefix_v: ""
+    iossysb_name_postfix_v: _iossysb
+    iosb_type_v: ios_backup
+    iosb_name_v: ""
+    iosb_name_prefix_v: ""
+    iosb_name_postfix_v: _iosb
+    iosb_location_v: /export/nim/ios_backup
     # for backup list
-    oslevel_v:              "7200-03-02"
+    oslevel_v: "7200-03-02"
 
   tasks:
-
-  - name: List backup on the NIM Master
-    nim_backup:
-      action: list
-      targets: "ALL"
-      oslevel: "{{ oslevel_v }}"
-      name: "{{ sysb_name_v }}"
+    - name: List backup on the NIM Master
+      ibm.power_aix.nim_backup:
+        action: list
+        targets: ALL
+        oslevel: "{{ oslevel_v }}"
+        name: "{{ sysb_name_v }}"
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
-    register: result
-  - debug: var=result
-
-  - name: Create a mksysb backup of a LPAR
-    nim_backup:
-      action: create
-      targets: "{{ lpar_targets_v }}"
-      location: "{{ sysb_location_v }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""
+    - name: Create a mksysb backup of a LPAR
+      ibm.power_aix.nim_backup:
+        action: create
+        targets: "{{ lpar_targets_v }}"
+        location: "{{ sysb_location_v }}"
       # name: "{{ sysb_name_v }}"
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
-    register: result
-  - debug: var=result
-
-#  - name: Restore a mksysb on a LPAR
-#    nim_backup:
-#      action: restore
-#      targets: "{{ lpar_targets_v }}"
-#      name: "{{ sysb_name_v }}"
-#      location: "{{ sysb_location_v }}"
-#      spot_location: "{{ sysb_spot_location_v }}"
-#      boot_target: "{{ sysb_boot_target_v }}"
-#      remove_spot: "{{ sysb_remove_spot_v }}"
-#      remove_backup: "{{ sysb_remove_backup_v }}"
-#    register: result
-#  - debug: var=result
-
-
-  - name: Create an ios mksysb
-    nim_backup:
-      action: create
-      type: "{{ iossysb_type_v }}"
-      targets: "{{ vios_targets_v }}"
-      location: "{{ iossysb_location_v }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""
+    - name: Create an ios mksysb
+      ibm.power_aix.nim_backup:
+        action: create
+        type: "{{ iossysb_type_v }}"
+        targets: "{{ vios_targets_v }}"
+        location: "{{ iossysb_location_v }}"
       # name: "{{ iossysb_name_v }}"
-    register: result
-  - debug: var=result
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""
+    - name: Create an ios backup ( save vios config )
+      ibm.power_aix.nim_backup:
+        action: create
+        type: "{{ iosb_type_v }}"
+        targets: "{{ vios_targets_v }}"
+        location: "{{ iosb_location_v }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""
+    - name: Display an ios backup
+      ibm.power_aix.nim_backup:
+        action: view
+        type: "{{ iosb_type_v }}"
+        #  targets: "{{ vios_targets_v }}"
+        name: quimby-vios2_iosb
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""
+    - name: Create a savevg backup of a LPAR VG
+      ibm.power_aix.nim_backup:
+        action: create
+        type: "{{ svg_type_v }}"
+        targets: "{{ lpar_targets_v }}"
+        volume_group: "{{ svg_volume_group_v }}"
+        location: "{{ svg_location_v }}"
+        shrink_fs: "{{ svg_shrink_fs_v }}"
+      # check_mode: "{{ preview_v }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
 
-#  - name: Restore a mksysb on a vios
-#    nim_backup:
-#      action: restore
-#      targets: "{{ vios_targets_v }}"
-#      type: "{{ iossysb_type_v }}"
-#      bosinst_data: 7200-03bid_ow
-#      spot_postfix: "{{ iossysb_spot_postfix_v }}"
-#      remove_spot: "{{ iossysb_remove_spot_v }}"
-#      accept_licenses: "{{ iossysb_accept_licenses_v }}"
-#    check_mode: "{{ preview_v }}"
-#    register: result
-#  - debug: var=result
-
-
-  - name: Create an ios backup ( save vios config )
-    nim_backup:
-      action: create
-      type: "{{ iosb_type_v }}"
-      targets: "{{ vios_targets_v }}"
-      location: "{{ iosb_location_v }}"
-    register: result
-  - debug: var=result
-
-  - name: Display an ios backup
-    nim_backup:
-      action: view
-      type: "{{ iosb_type_v }}"
-    #  targets: "{{ vios_targets_v }}"
-      name: quimby-vios2_iosb
-    register: result
-  - debug: var=result
-
-#  - name: Restore an ios backup ( restore vios config )
-#    nim_backup:
-#      action: restore
-#      type: "{{ iosb_type_v }}"
-#      targets: "{{ vios_targets_v }}"
-#      name_postfix: "{{ iosb_name_postfix_v }}"
-#    register: result
-#  - debug: var=result
-
-
-  - name: Create a savevg backup of a LPAR VG
-    nim_backup:
-      action: create
-      type: "{{ svg_type_v }}"
-      targets: "{{ lpar_targets_v }}"
-      volume_group: "{{ svg_volume_group_v }}"
-      location: "{{ svg_location_v }}"
-      shrink_fs: "{{ svg_shrink_fs_v }}"
-    #check_mode: "{{ preview_v }}"
-    register: result
-  - debug: var=result
-
-#   - name: Restore a savevg backup of a LPAR VG
-#     nim_backup:
-#       action: restore
-#       type: "{{ svg_type_v }}"
-#       targets: "{{ lpar_targets_v }}"
-#       #other_attributes: "{{ svg_other_attributes_v }}"
-#       shrink_fs: "{{ svg_shrink_fs_v }}"
-#     register: result
-#   - debug: var=result
-
-
-  - name: Create a savevg backup of a VIOS VG
-    nim_backup:
-      action: create
-      type: "{{ svg_type_v }}"
-      targets: "{{ vios_targets_v }}"
-      volume_group: "{{ svg_volume_group_v }}"
-      location: "{{ svg_location_v }}"
-      other_attributes: "{{ svg_other_attributes_v }}"
-      shrink_fs: "{{ svg_shrink_fs_v }}"
-    check_mode: "{{ preview_v }}"
-    register: result
-  - debug: var=result
-
-#   - name: Restore a savevg backup of a VIOS VG
-#     nim_backup:
-#       action: restore
-#       type: "{{ svg_type_v }}"
-#       targets: "{{ vios_targets_v }}"
-#       #other_attributes: "{{ svg_other_attributes_v }}"
-#       shrink_fs: "{{ svg_shrink_fs_v }}"
-#     register: result
-#   - debug: var=result
+    - name: Create a savevg backup of a VIOS VG
+      ibm.power_aix.nim_backup:
+        action: create
+        type: "{{ svg_type_v }}"
+        targets: "{{ vios_targets_v }}"
+        volume_group: "{{ svg_volume_group_v }}"
+        location: "{{ svg_location_v }}"
+        other_attributes: "{{ svg_other_attributes_v }}"
+        shrink_fs: "{{ svg_shrink_fs_v }}"
+      check_mode: "{{ preview_v }}"
+      register: result
+    - ansible.builtin.debug:
+        var: result
+        cmd: ""

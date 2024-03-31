@@ -1,106 +1,100 @@
 # Copyright (c) IBM Corporation 2021
 ---
-
 #   Verify the AIX level is 7.1 or above. Bootstrap dnf is only supported in AIX 7.1 and up.
 - name: Verify the host is at least aix 7.1, if not, exit host
-  raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+  ansible.builtin.raw: /usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'
   register: output
   changed_when: false
 
 # Fail if version is less than 7.1
 - name: Fail if AIX version is less than 7.1
-  fail:
-    msg: "Bootstrap for AIX version {{ output.stdout_lines[0] }} is not supported."
+  ansible.builtin.fail:
+    msg: Bootstrap for AIX version {{ output.stdout_lines[0] }} is not supported.
   when: (output.stdout_lines[0] | int) < 71
 
 #   CHECK for DNF on inventory host
 - block:
-
     - name: Check for existence of dnf
-      raw: "/usr/bin/rpm -q --quiet dnf && echo true || echo false"
+      ansible.builtin.raw: /usr/bin/rpm -q --quiet dnf && echo true || echo false
       register: dnf_exists
       changed_when: false
 
     - name: Print if dnf is installed
-      debug:
-        msg: "Exiting the playbook. dnf is already installed"
+      ansible.builtin.debug:
+        msg: Exiting the playbook. dnf is already installed
       when: dnf_exists.stdout is search("true")
 
     - name: Check for existence of yum
-      raw: "/usr/bin/rpm -q --quiet yum && echo true || echo false"
+      ansible.builtin.raw: /usr/bin/rpm -q --quiet yum && echo true || echo false
       register: yum_exists
       changed_when: false
       when: dnf_exists.stdout is search("false")
 
 # Execute this block if DNF doesn't exist and AIX version is either 7.1 or 7.2
-- block:
+- when: dnf_exists.stdout is search("false") and ((output.stdout_lines[0] | int) == 71 or (output.stdout_lines[0] | int) == 72)
 
+  # Execute this block if DNF doesn't exist and AIX version is 7.3
+  block:
     - name: Create target filesystem for image transfer
-      raw: "crfs -v jfs2 -g rootvg -a size=530M -m {{ target_dir }} -A yes -p rw"
-
+      ansible.builtin.raw: crfs -v jfs2 -g rootvg -a size=530M -m {{ target_dir }} -A yes -p rw
     - name: Mount target filesystem
-      raw: "mount {{ target_dir }}"
+      ansible.builtin.raw: mount {{ target_dir }}
+- when: (output.stdout_lines[0] | int) == 73 and dnf_exists.stdout is search("false")
 
-  when: dnf_exists.stdout is search("false") and ((output.stdout_lines[0] | int) == 71 or (output.stdout_lines[0] | int) == 72)
-
-# Execute this block if DNF doesn't exist and AIX version is 7.3
-- block:
-
+  # Excute this block if dnf is not installed
+  block:
     - name: Set the python interpreter to python3
-      set_fact:
+      ansible.builtin.set_fact:
         ansible_python_interpreter: /usr/bin/python3
 
     - name: Create target filesystem "{{ target_dir }}" for image transfer if it does not exist.
-      filesystem:
+      community.general.filesystem:
         state: present
         filesystem: "{{ target_dir }}"
         fs_type: jfs2
-        auto_mount: yes  # noqa yaml
+        auto_mount: true # noqa yaml
         attributes: size=530M
-        permissions: 'rw'
+        permissions: rw
         vg: rootvg
 
     - name: Mount target filesystem "{{ target_dir }}"
-      mount:
+      ansible.posix.mount:
         mount_dir: "{{ target_dir }}"
 
-  when: (output.stdout_lines[0] | int) == 73 and dnf_exists.stdout is search("false")
+- when: dnf_exists.stdout is search("false")
 
-# Excute this block if dnf is not installed
-- block:
-
+  # { Execute this block if dnf has been installed and proxy needs to be set
+  block:
     - name: Copy dnf install script to "{{ aix_host }}:{{ target_dir }}"
-      copy:
+      ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ target_dir }}"
-        mode: 0755
+        mode: "0755"
       with_items:
-        - "files/{{ dnf_install_script }}"
+        - files/{{ dnf_install_script }}
 
     - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
-      command: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
-#      failed_when: false
+      ansible.builtin.command: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
       when:
         - yum_exists.stdout is search("true")
 
     - name: Restore dnf bundle at the target if yum is not installed.
-      command: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
-#      failed_when: false
+      ansible.builtin.command: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
       when:
         - yum_exists.stdout is not search("true")
 
     - name: Check if dnf was installed at /opt/freeware/bin
-      stat:
-        path: "/opt/freeware/bin/dnf"
+      ansible.builtin.stat:
+        path: /opt/freeware/bin/dnf
       register: dnf_installed
 
     - name: Check if yum link was installed at /opt/freeware/bin
-      stat:
-        path: "/opt/freeware/bin/yum"
+      ansible.builtin.stat:
+        path: /opt/freeware/bin/yum
       register: yum_link_installed
 
     - name: Update "{{ ansible_python_interpreter }}"
-      shell: "/usr/bin/yes | /opt/freeware/bin/dnf upgrade python3"
+      ansible.builtin.shell: /usr/bin/yes | /opt/freeware/bin/dnf upgrade python3
       failed_when: false
       vars:
         ansible_python_interpreter: "{{ interpreter_name }}"
@@ -108,36 +102,32 @@
         - dnf_installed.stat.exists
 
     - name: Unmount target filesystem "{{ target_dir }}"
-      mount:
+      ansible.posix.mount:
         state: umount
         mount_over_dir: "{{ target_dir }}"
 
     - name: Remove target filesystem "{{ target_dir }}"
-      filesystem:
+      community.general.filesystem:
         state: absent
         filesystem: "{{ target_dir }}"
 
     - name: Print status
-      debug:
-        msg: "Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed"
+      ansible.builtin.debug:
+        msg: Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed
       when: yum_link_installed.stat.exists
 
     - name: Print status
-      debug:
-        msg: "Bootstrap attempt of dnf on {{ aix_host }} has completed"
+      ansible.builtin.debug:
+        msg: Bootstrap attempt of dnf on {{ aix_host }} has completed
       when: dnf_installed.stat.exists
 
-  #    Block to install dnf }
-  when: dnf_exists.stdout is search("false")
-
-# { Execute this block if dnf has been installed and proxy needs to be set
-- block:
-
+#    Block to install dnf }
+- when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists) and "proxy" is defined
+  block:
     - name: Add proxy to /opt/freeware/etc/dnf/dnf.conf
       ansible.builtin.lineinfile:
         path: /opt/freeware/etc/dnf/dnf.conf
         line: proxy={{ proxy }}
-        insertafter: "best=True"
+        insertafter: best=True
 
   #     Block to set proxy }
-  when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists) and "{{ proxy }}" is defined

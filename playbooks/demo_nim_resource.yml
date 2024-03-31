@@ -1,5 +1,5 @@
 ---
-- name: "NIM operations to create, delete or show NIM resource objects"
+- name: NIM operations to create, delete or show NIM resource objects
   hosts: nim1
   gather_facts: false
   vars:
@@ -9,13 +9,9 @@
     software_lpp_source: /nim1/lpp_source
     lpp_source_location: /nim1/lpp_source_test4
 
-  collections:
-    - ibm.power_aix
   tasks:
-
-    - name: Create/define an lpp_source NIM resource object from the
-            software in the system.
-      nim_resource:
+    - name: Create/define an lpp_source NIM resource object from the software in the system.
+      ibm.power_aix.nim_resource:
         action: create
         name: "{{ lpp_source_v }}"
         object_type: lpp_source
@@ -25,10 +21,11 @@
       register: result
 
     - name: Display result
-      debug: var=result
+      ansible.builtin.debug:
+        var: result
 
     - name: Create/define a spot object resource from an lpp_source nim object.
-      nim_resource:
+      ibm.power_aix.nim_resource:
         action: create
         name: "{{ spot_name_v }}"
         object_type: spot
@@ -38,36 +35,21 @@
       register: result
 
     - name: Display result
-      debug: var=result
+      ansible.builtin.debug:
+        var: result
 
     - name: Show a NIM resource object.
-      nim_resource:
+      ibm.power_aix.nim_resource:
         action: show
         name: "{{ spot_name_v }}"
       register: result
 
     - name: Display result
-      debug: var=result
-
+      ansible.builtin.debug:
+        var: result
+        cmd: ""
     - name: Verify the resource is exist.
-      assert:
+      ansible.builtin.assert:
         that:
           - "{{ result.nim_resource_found }}"
         fail_msg: "Problem: No lpp_source object types found."
-
-#    - name: Show only the type lpp_source NIM resource objects.
-#      ibm.power_aix.nim_resource:
-#        action: show
-#        object_type: lpp_source
-#
-#    - name: Remove a NIM spot object resource.
-#      ibm.power_aix.nim_resource:
-#        action: delete
-#        name: "{{ spot_name_v }}"
-#
-#    - name: Show a NIM resource object with check_mode set
-#           (show command but will not execute the action).
-#      ibm.power_aix.nim_resource:
-#        action: show
-#        name: "{{ spot_name_v }}"
-#      check_mode: true
