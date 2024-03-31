@@ -32,7 +32,7 @@
 - name: Check if 'bos.mp64 is in {{ nim_alt_disk_migration_lpp_source }}
   ansible.builtin.fail:
     msg: Fileset 'bos.mp64' not in in {{ nim_alt_disk_migration_lpp_source }}
-  when: lpp_source_query.stdout == '' # noqa empty-string-compare
+  when: lpp_source_query.stdout == ''  # noqa empty-string-compare
 
 - block:
     - ansible.builtin.set_fact:
@@ -54,7 +54,7 @@
         nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_major_num + lpp_source_minor_num + '00' }}"
 
 - name: Save bos.mp version on file, last task in retrieve_lpp_source_oslevel.
-  ansible.builtin.copy: # noqa risky-file-permissions
+  ansible.builtin.copy:  # noqa risky-file-permissions
     dest: "{{ nim_alt_disk_migration_nim_info_file_path }}_{{ nim_alt_disk_migration_lpp_source }}"
     content: bos.mp64:{{ nim_alt_disk_migration_lpp_source_fileset_level }}
     force: true

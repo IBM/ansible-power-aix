@@ -127,7 +127,7 @@
 - name: Validate client master hostname from niminfo
   ansible.builtin.fail:
     msg: client {{ nim_alt_disk_migration_nim_client }} connects to a different NIM master
-  when: master_match == "" # noqa empty-string-compare
+  when: master_match == ""  # noqa empty-string-compare
 
 #####################################################
 #####################################################
