@@ -1,21 +1,24 @@
+---
 # Copyright (c) IBM Corporation 2022
 # maximum time to wait for NIMADM to complete in hours
-wait_nimadm_timeout_hours: 4
+nim_alt_disk_migration_wait_nimadm_timeout_hours: 4
 
 # Maximum time to wait for NIMADM to complete in seconds
-wait_nimadm_timeout_secs: "{{ (wait_nimadm_timeout_hours * 60 * 60) | int }}"
+nim_alt_disk_migration_wait_nimadm_timeout_secs: "{{ (nim_alt_disk_migration_wait_nimadm_timeout_hours * 60 * 60) | int }}"
 
 # Retry times
-retry_chk_nimadm_comp: "{{ (wait_nimadm_timeout_secs | int / 60) | int + 1 }}"
+nim_alt_disk_migration_retry_chk_nimadm_comp: "{{ (nim_alt_disk_migration_wait_nimadm_timeout_secs | int / 60) | int + 1 }}"
 
 # Retry interval time in seconds to wait before checking the status to the NIMADM operation.
-interval: 60
+nim_alt_disk_migration_interval: 60
 
 # For nim_resource show showres operation.
 # Maximum time to retry to read a resource (lpp_source or spot) if the resource is busy.
-dflt_max_retries: 10
+nim_alt_disk_migration_dflt_max_retries: 10
+
 # Retry interval time in seconds to wait before retrying accessing a busy lpp_resource or spot.
-dflt_retry_wait_time: 1
-# Location of the nim information file to store the lpp_source AIX level.
-# /var/adm/ras/ansible_nim_info_file_{{ lpp_source }}
-nim_info_file_path: /var/adm/ras/ansible_nim_info_file
+nim_alt_disk_migration_dflt_retry_wait_time: 1
+
+# Location of the nim information file to store the nim_alt_disk_migration_lpp_source AIX level.
+# /var/adm/ras/ansible_nim_info_file_{{ nim_alt_disk_migration_lpp_source }}
+nim_alt_disk_migration_nim_info_file_path: /var/adm/ras/ansible_nim_info_file

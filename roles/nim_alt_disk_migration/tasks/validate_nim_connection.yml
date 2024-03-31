@@ -4,7 +4,7 @@
 # the following cases are validated
 #
 # make sure machine is defined on master
-# 1. lsnim -l {{ nim_client }}
+# 1. lsnim -l {{ nim_alt_disk_migration_nim_client }}
 #
 # make sure nimsh active on both master/client
 # 2. lssrc -s nimsh | grep active
@@ -25,10 +25,8 @@
 # 7. cat /etc/niminfo | grep NIM_MASTER_HOSTNAME
 #
 ###################################################
-
-
-- name: "check if client is defined on master"
-  command: "/usr/sbin/lsnim -l {{ nim_client }}"
+- name: Check if client is defined on master
+  ansible.builtin.command: /usr/sbin/lsnim -l {{ nim_alt_disk_migration_nim_client }}
   changed_when: false
   register: chk_client_output
   failed_when:
@@ -37,109 +35,99 @@
     - chk_client_output.stderr.find( "0042-053" ) != -1
 # - debug: var=chk_client_output
 
-
 #####################################################
 #####################################################
 
-
-- name: "get nimsh status on master"
-  shell: "/usr/bin/lssrc -s nimsh | /usr/bin/grep nimsh | /usr/bin/awk '{print $4}'"  # noqa risky-shell-pipe
+- name: Get nimsh status on master
+  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -s nimsh | /usr/bin/grep nimsh | /usr/bin/awk '{print $4}'
   changed_when: false
   register: nimsh_output
 
-- name: "validate nimsh state"
-  fail:
-    msg: "nimsh is not active on NIM master"
+- name: Validate nimsh state
+  ansible.builtin.fail:
+    msg: nimsh is not active on NIM master
   when: nimsh_output.stdout != "active"
 
-
 ######################################################
 ######################################################
 
-- name: "check if c_rsh is up and running"
-  command: "/usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }} /usr/bin/hostname"
+- name: Check if c_rsh is up and running
+  ansible.builtin.command: /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_alt_disk_migration_nim_client }} /usr/bin/hostname
   changed_when: false
   register: c_rsh_output
   failed_when:
     - c_rsh_output is failed
 
-
 ######################################################
 ######################################################
 
-- name: "get tftp status on master"
-  shell: "/usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'"  # noqa risky-shell-pipe
+- name: Get tftp status on master
+  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'
   changed_when: false
   register: tftp_output
 
-- name: "validate tftp status"
-  fail:
-    msg: "tftp is not active on NIM master"
+- name: Validate tftp status
+  ansible.builtin.fail:
+    msg: tftp is not active on NIM master
   when: tftp_output.stdout != "active"
-
 
 #####################################################
 ####################################################
 
-
-- name: "get bootpd status on master"
-  shell: "/usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'"  # noqa risky-shell-pipe
+- name: Get bootpd status on master
+  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'
   changed_when: false
   register: bootpd_output
 
-- name: "validate bootpd status"
-  fail:
-    msg: "bootpd is not active on NIM master"
+- name: Validate bootpd status
+  ansible.builtin.fail:
+    msg: bootpd is not active on NIM master
   when: bootpd_output.stdout != "active"
 
-
 #####################################################
 #####################################################
 
-
-- name: "get nimsh status on client"
-  command: >
-    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
+- name: Get nimsh status on client
+  ansible.builtin.command: >
+    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_alt_disk_migration_nim_client }}
     '/usr/bin/lssrc -s nimsh'
   changed_when: false
   register: nimsh_client_output
 
-- name: "Parse and nimsh status"
+- name: Parse and nimsh status
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         nimsh_status: "{{ nimsh_client_output.stdout | regex_search('active') }}"
 
-- name: "validate nimsh status on client"
-  fail:
-    msg: "nimsh status is not active on NIM client {{ nim_client }}"
+- name: Validate nimsh status on client
+  ansible.builtin.fail:
+    msg: nimsh status is not active on NIM client {{ nim_alt_disk_migration_nim_client }}
   when: nimsh_status != "active"
 
-
 ######################################################
 ######################################################
 
-- name: "get niminfo from client"
-  command: >
+- name: Get niminfo from client
+  ansible.builtin.command: >
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
     '/usr/bin/cat /etc/niminfo | /usr/bin/grep NIM_MASTER_HOSTNAME'
   changed_when: false
   register: niminfo_output
 
-- name: "get nim master host name"
-  command: "/usr/bin/hostname"
+- name: Get nim master host name
+  ansible.builtin.command: /usr/bin/hostname
   changed_when: false
   register: hostname_output
 
-- name: "Parse and get niminfo"
+- name: Parse and get niminfo
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         master_match: "{{ niminfo_output.stdout | regex_search(hostname_output.stdout) }}"
 
-- name: "validate client master hostname from niminfo"
-  fail:
-    msg: "client {{ nim_client }} connects to a different NIM master"
-  when: master_match == ""  # noqa empty-string-compare
-
+- name: Validate client master hostname from niminfo
+  ansible.builtin.fail:
+    msg: client {{ nim_alt_disk_migration_nim_client }} connects to a different NIM master
+  when: master_match == "" # noqa empty-string-compare
 
 #####################################################
 #####################################################

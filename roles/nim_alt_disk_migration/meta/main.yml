@@ -10,16 +10,14 @@ galaxy_info:
 
   license: GPL-3.0-only
 
-  min_ansible_version: 2.9
+  min_ansible_version: "2.9"
 
   platforms:
     - name: AIX
       versions:
-        - 7.2
-        - 7.3
+        - "7.2"
 
   galaxy_tags:
     - aix
     - migration
     - nim
-  dependencies: []
