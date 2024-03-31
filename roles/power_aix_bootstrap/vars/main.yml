@@ -1,6 +1,7 @@
+---
 # Copyright (c) IBM Corporation 2021
 download_dir: "~"
-target_dir: "/tmp/.ansible.cpdir"
+target_dir: /tmp/.ansible.cpdir
 aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
 interpreter_name: /opt/freeware/bin/python3
 ansible_remote_tmp: /tmp/.ansible.cpdir/.ansible/tmp

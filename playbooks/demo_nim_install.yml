@@ -1,18 +1,17 @@
 ---
-- name: "BOS install using mksysb image"
+- name: BOS install using mksysb image
   hosts: nimserver
-  gather_facts: no
+  gather_facts: false
   vars:
     vm_targets: quimby01
     res_group: basic_res_grp
-  collections:
-  - ibm.power_aix
-  tasks:
 
+  tasks:
     - name: Install using group resource
-      nim:
-        action: 'bos_inst'
+      ibm.power_aix.nim:
+        action: bos_inst
         targets: "{{ vm_targets }}"
         group: "{{ res_group }}"
       register: result
-    - debug: var=result
+    - ansible.builtin.debug:
+        var: result

@@ -1,45 +1,45 @@
 # Copyright (c) IBM Corporation 2020
 ---
 - name: Fail if pkgtype is defined as yum
-  fail:
+  ansible.builtin.fail:
     msg: yum is not supported anymore, please try dnf
   when:
     - (pkgtype == "yum")
     - download_dir is not defined
 
 - name: Fail if pkgtype not specified
-  fail:
+  ansible.builtin.fail:
     msg: pkgtype not specified
   when: not pkgtype is defined
 
 - name: Fail if download_dir not specified
-  fail:
+  ansible.builtin.fail:
     msg: download_dir not specified
   when:
     - (pkgtype == "dnf")
     - download_dir is not defined
 
 - name: Fail if target_dir not specified
-  fail:
+  ansible.builtin.fail:
     msg: target_dir not specified
   when:
     - (pkgtype == "dnf")
     - not target_dir is defined
 
 - name: Fail if rpm_src not specified
-  fail:
+  ansible.builtin.fail:
     msg: rpm_src not specified
   when:
     - (pkgtype == "dnf")
     - not rpm_src is defined
 
 - name: Fail if dnf_src not specified
-  fail:
+  ansible.builtin.fail:
     msg: dnf_src_71_72 or dnf_src_73 not specified
   when:
     - pkgtype == "dnf"
     - (dnf_src_71_72 is not defined) or ( dnf_src_73 is not defined)
 
 - name: Bootstrap dnf
-  include_tasks: "dnf_install.yml"
+  ansible.builtin.include_tasks: dnf_install.yml
   when: pkgtype == "dnf"
