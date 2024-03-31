@@ -5,89 +5,89 @@ argument_specs:
       This role is used to migrate a client OS levels from
       AIX 7.1/7.2 to AIX 7.3.
     author:
-      - "Joseph de Joya"
-      - "Rae Yang"
-      - "Pedro V Torres"
+      - Joseph de Joya
+      - Rae Yang
+      - Pedro V Torres
     options:
-      nim_client:
-        type: "str"
+      nim_alt_disk_migration_nim_client:
+        type: str
         required: true
         description: >
           Specifies a NIM object name that is associated to
           the NIM client LPAR to be migrated.
 
-      target_disk:
-        type: "dict"
+      nim_alt_disk_migration_target_disk:
+        type: dict
         required: true
         description: >
           Specifies the physical volume or a disk size policy
           used to automatically determine a valid physical volume
           where the alternate disk will be created.
-        suboptions:
+        options:
           disk_name:
-            type: "str"
+            type: str
             description: >
               Specifies the physical volume by name where the
               alternate disk will be created.
           disk_size_policy:
-            type: "str"
+            type: str
             description: >
               Specifies the disk size policy to automatically
               determine a valid physical volume that fits the
               policy where the alternate disk will be created.
               If an alternate disk named 'altinst_rootvg' or
               'old_rootvg' exists, the role will fail unless
-              I(target_disk.force=true) is used.
-            choices: ['minimize', 'upper', 'lower', 'nearest']
+              I(nim_alt_disk_migration_target_disk.force=true) is used.
+            choices: [minimize, upper, lower, nearest]
           force:
-            type: "bool"
+            type: bool
             description: >
-              If physical volume specified by I(target_disk.disk_name)
+              If physical volume specified by I(nim_alt_disk_migration_target_disk.disk_name)
               belongs to 'altinst_rootvg', 'old_rootvg', or a varied
               on volume group then that physical volume will be
-              cleanedup. If I(target_disk.disk_size_policy) is specified
+              cleanedup. If I(nim_alt_disk_migration_target_disk.disk_size_policy) is specified
               and an alternate disk named 'altinst_rootvg' or 'old_rootvg'
               already exists, then it will clean up the physical volume
               it occupies.
             default: false
 
-      lpp_source:
-        type: "str"
+      nim_alt_disk_migration_lpp_source:
+        type: str
         required: true
         description: >
           Specifies a NIM object name associated to a LPP
           resource for the desired level of migration.
 
-      spot:
-        type: "str"
+      nim_alt_disk_migration_spot:
+        type: str
         required: false
         description: >
           Specifies a NIM object name associated to a SPOT
-          resource associated to the specified I(lpp_source).
+          resource associated to the specified I(nim_alt_disk_migration_lpp_source).
 
-      reboot_client:
-        type: "bool"
+      nim_alt_disk_migration_reboot_client:
+        type: bool
         required: false
         default: false
         description: >
           Specifies if the NIM client LPAR will be automatically
           rebooted after successfully creating the alternate disk.
 
-      control_phases:
-        type: "dict"
+      nim_alt_disk_migration_control_phases:
+        type: dict
         required: true
         description: >
           Allows skipping or stopping at certain validations of
           the nim_alt_disk_migration role.
-        suboptions:
+        options:
           validate_nim_resources:
-            type: "bool"
+            type: bool
             description: >
               If set to false, then it will skip validation of
               NIM resources.
             default: true
           perform_migration:
-            type: "bool"
+            type: bool
             description: >
               If set to false, then it will skip the actual
               migration task.

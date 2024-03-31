@@ -1,20 +1,19 @@
 ---
-- name: "Fetch Processor Type of {{ nim_client }} LPAR"
-  command: >
-    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
+- name: Fetch Processor Type of {{ nim_alt_disk_migration_nim_client }}
+  ansible.builtin.command: >
+    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_alt_disk_migration_nim_client }}
     '/usr/sbin/prtconf'
   changed_when: false
   register: prtconf_output
 
-- name: "Parse and Processor Type"
+- name: Parse and Processor Type
   block:
-    - set_fact:
+    - ansible.builtin.set_fact:
         processor_type_pattern: "(?<=Processor Type: PowerPC_POWER)([0-9]+)"
-    - set_fact:
-        processor_type: "{{ prtconf_output.stdout |
-          regex_search(processor_type_pattern, '\\1') | join('\n') }}"
+    - ansible.builtin.set_fact:
+        processor_type: "{{ prtconf_output.stdout | regex_search(processor_type_pattern, '\\1') | join('\n') }}"
 
-- name: "Validate Processor Type Level"
-  fail:
-    msg: "{{ nim_client }} LPAR Processor Type must be at least PowerPC_POWER8 or higher"
+- name: Validate Processor Type Level
+  ansible.builtin.fail:
+    msg: LPAR Processor Type must be at least PowerPC_POWER8 or higher
   when: processor_type | int < 8

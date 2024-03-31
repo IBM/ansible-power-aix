@@ -3,27 +3,26 @@
 # DISCUSSION:
 # 1. Add force option
 # - if 'true' then it will delete an existing 'dflt_spot'
-# and create a new one from the specified lpp_source
+# and create a new one from the specified nim_alt_disk_migration_lpp_source
 # - if 'false then it will skip the automatic creation
-# of a SPOT resource from a lpp_source if 'dflt_spot'
+# of a SPOT resource from a nim_alt_disk_migration_lpp_source if 'dflt_spot'
 # already exists
 # 2. Add feature to specify an existin SPOT resource
 ############################################################
 
-- name: "Fetch the location of the lpp_source"
+- name: Fetch the location of the nim_alt_disk_migration_lpp_source
   block:
     - ibm.power_aix.nim_resource:
         action: show
-        name: "{{ lpp_source }}"
+        name: "{{ lnim_alt_disk_migration_pp_source }}"
       register: lpp_source_query
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         lpp_source_info: "{{ lpp_source_query.nim_resources.values() | first }}"
-        location_pattern: "(/\\S+)(?=/)"
+        location_pattern: (/\S+)(?=/)
 
-    - set_fact:
-        lpp_source_location: "{{ lpp_source_info.location |
-          regex_search(location_pattern, '\\0') | join('\n') }}"
+    - ansible.builtin.set_fact:
+        lpp_source_location: "{{ lpp_source_info.location | regex_search(location_pattern, '\\0') | join('\n') }}"
 
 ############################################################
 # NOTE: if SPOT is not specified then create a SPOT
@@ -38,39 +37,39 @@
 #   new location "/nim1/dflt_spot/usr" may not be used
 ############################################################
 
-- name: "create SPOT resource from {{ lpp_source }}"
+- name: Create SPOT resource from {{ nim_alt_disk_migration_lpp_source }}
   ibm.power_aix.nim_resource:
     action: create
-    name: "dflt_{{ lpp_source }}_spot"
+    name: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
     object_type: spot
     attributes:
-      source: "{{ lpp_source }}"
+      source: "{{ nim_alt_disk_migration_lpp_source }}"
       location: "{{ lpp_source_location }}"
   register: result
 
-- name: "if SPOT resource already exists then query if 'bos.alt_disk_install.rte is installed'"
+- name: If SPOT resource already exists then query if 'bos.alt_disk_install.rte is installed'
+  when: result.stderr.find( "0042-081" ) != -1
+
   block:
-    - debug:
-        msg: "SPOT resource 'dflt_{{ lpp_source }}_spot' already exists."
+    - ansible.builtin.debug:
+        msg: SPOT resource 'dflt_{{ nim_alt_disk_migration_lpp_source }}_spot' already exists.
 
     - ibm.power_aix.nim_resource:
         action: show
-        name: "dflt_{{ lpp_source }}_spot"
+        name: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
         showres:
           fetch_contents: true
-          max_retries: "{{ dflt_max_retries }}"
-          retry_wait_time: "{{ dflt_retry_wait_time }}"
+          max_retries: "{{ nim_alt_disk_migration_dflt_max_retries }}"
+          retry_wait_time: "{{ nim_alt_disk_migration_dflt_retry_wait_time }}"
       register: spot_query
-  when: result.stderr.find( "0042-081" ) != -1
-
-- name: "Set SPOT resource to be used"
+- name: Set SPOT resource to be used
   block:
-    - set_fact:
-        spot: "dflt_{{ lpp_source }}_spot"
-    - set_fact:
+    - ansible.builtin.set_fact:
+        spot: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
+    - ansible.builtin.set_fact:
         spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
 
-- include_tasks: "add_alt_disk_install_fileset.yml"
+- ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
   when: >
     result.stderr.find( "0042-081" ) == -1 or
     spot_fileset['bos.alt_disk_install.rte'] is not defined

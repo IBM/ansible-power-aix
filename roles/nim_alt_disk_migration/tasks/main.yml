@@ -3,56 +3,50 @@
 #############################################################
 #############################################################
 
-- name: "Fail if a NIM LPP resource is not specified"
-  fail:
-    msg: "NIM LPP resource not specified"
-  when: lpp_source == ""  # noqa empty-string-compare
-- debug: msg="LPP resource {{ lpp_source }} specified for migration"
-## Line 11 here
-
-- name: "Check if CacheVG '{{ nimadm_cache_vg }}' exists"
-  shell: set -o pipefail && lsvg | grep {{ nimadm_cache_vg }}
+- name: Fail if a NIM LPP resource is not specified
+  ansible.builtin.fail:
+    msg: NIM LPP resource not specified
+  when: nim_alt_disk_migration_lpp_source == "" # noqa empty-string-compare
+- ansible.builtin.debug:
+    msg: '"LPP resource {{ nim_alt_disk_migration_lpp_source }} specified for migration"'
+- name: Check if CacheVG exists '{{ nimadm_cache_vg }}'
+  ansible.builtin.shell: set -o pipefail && lsvg | grep {{ nimadm_cache_vg }}
   register: reg_nimadm_cache_vg_valid
   changed_when: false
   failed_when: reg_nimadm_cache_vg_valid.rc == 2
   when: nimadm_cache_vg | default("N/A") != "N/A"
 
-- name: "Fail when '{{ nimadm_phases_to_run }}' contains invalid characters"
-  fail:
+- name: Fail when contains invalid characters '{{ nimadm_phases_to_run }}'
+  ansible.builtin.fail:
     msg: "{{ nimadm_phases_to_run }} contains alpha charcaters or a trailing comma, exiting"
   when: nimadm_phases_to_run is regex("[^0-9,]") or nimadm_phases_to_run[-1] == ','
 
 #############################################################
 #############################################################
 
-- name: "Perform resources validations (if control_phases.validate_nim_resources)"
+- name: Perform resources validations (if nim_alt_disk_migration_control_phases.validate_nim_resources)
+  when: >
+    nim_alt_disk_migration_control_phases is defined and
+    nim_alt_disk_migration_control_phases.validate_nim_resources is defined and
+    nim_alt_disk_migration_control_phases.validate_nim_resources
+
+
   block:
-    - name: "Retrieve {{ lpp_source }} AIX release level"
-      include_tasks: "retrieve_lpp_source_os_level.yml"
-
-    #############################################################
-    #############################################################
-
-    - name: "Verify if alt_disk_install.rte fileset is present"
-      include_tasks: "validate_alt_disk_install_fileset.yml"
-    - debug: msg="Fileset alt_disk_install.rte presence validation passed"
-
-    ############################################################
-    # NOTE: specifying SPOT resource is optional, if not given
-    # then NIM master will generate corresponding SPOT resource
-    # from the specified LPP resource.
-    ############################################################
-
-    - name: "Create SPOT resource if not specified"
-      include_tasks: "create_spot.yml"
-      when: spot == ""  # noqa empty-string-compare
-    - debug: msg="SPOT resource {{ spot }} specified for migration"
-
-    - debug: msg=" Resources {{ lpp_source and spot }} are valid and ready."
-## Line 40 here same indent as - debug above
-
-    - name: "Confirm eFix bundle resource '{{ nimadm_bundle }}' defined"
-      command: "nim -o showres {{ nimadm_bundle }}"
+    - name: Retrieve AIX release level {{ nim_alt_disk_migration_lpp_source }}
+      ansible.builtin.include_tasks: retrieve_lpp_source_os_level.yml
+    - name: Verify if alt_disk_install.rte fileset is present
+      ansible.builtin.include_tasks: validate_alt_disk_install_fileset.yml
+    - ansible.builtin.debug:
+        msg: '"Fileset alt_disk_install.rte presence validation passed"'
+    - name: Create SPOT resource if not specified
+      ansible.builtin.include_tasks: create_spot.yml
+      when: nim_alt_disk_migration_spot == "" # noqa empty-string-compare
+    - ansible.builtin.debug:
+        msg: '"SPOT resource {{ nim_alt_disk_migration_spot }} specified for migration"'
+    - ansible.builtin.debug:
+        msg: '" Resources {{ nim_alt_disk_migration_lpp_source and nim_alt_disk_migration_spot }} are valid and ready."'
+    - name: Confirm eFix bundle resource defined '{{ nimadm_bundle }}'
+      ansible.builtin.command: nim -o showres {{ nimadm_bundle }}
       changed_when: false
       register: reg_bundle
       failed_when:
@@ -60,8 +54,8 @@
         - reg_bundle.stderr != ''
       when: nimadm_bundle | default("N/A") != "N/A"
 
-    - name: "Confirm Pre-migration script resource '{{ nimadm_premig_script }}' defined"
-      command: "nim -o showres {{ nimadm_premig_script }}"
+    - name: Confirm Pre-migration script resource defined '{{ nimadm_premig_script }}'
+      ansible.builtin.command: nim -o showres {{ nimadm_premig_script }}
       changed_when: false
       register: reg_premig_script
       failed_when:
@@ -69,8 +63,8 @@
         - reg_premig_script.stderr != ''
       when: nimadm_premig_script | default("N/A") != "N/A"
 
-    - name: "Confirm Post-migration script resource '{{ nimadm_postmig_script }}' defined"
-      command: "nim -o showres {{ nimadm_postmig_script }}"
+    - name: Confirm Post-migration script resource defined '{{ nimadm_postmig_script }}'
+      ansible.builtin.command: nim -o showres {{ nimadm_postmig_script }}
       changed_when: false
       register: reg_postmig_script
       failed_when:
@@ -78,152 +72,142 @@
         - reg_postmig_script.stderr != ''
       when: nimadm_postmig_script | default("N/A") != "N/A"
 
-  #  when: control_phases.validate_nim_resources
+#  when: nim_alt_disk_migration_control_phases.validate_nim_resources
+- name: Perform migration if nim_alt_disk_migration_control_phases.perform_migration
   when: >
-     control_phases is defined and
-     control_phases.validate_nim_resources is defined and
-     control_phases.validate_nim_resources
+    nim_alt_disk_migration_control_phases is defined and
+    nim_alt_disk_migration_control_phases.perform_migration is defined and
+    nim_alt_disk_migration_control_phases.perform_migration
 
+  # Print a summary of what was executed.
 
-- name: "Perform migration if control_phases.perform_migration"
   block:
     #############################################################
     #############################################################
 
-    - name: "Fail if a NIM client LPAR is not specified"
-      fail:
-        msg: "NIM client LPAR to be migrated is not specified"
-      when: nim_client == ""  # noqa empty-string-compare
-    - debug: msg="{{ nim_client }} specified to be migrated"
-
-    #############################################################
-    #############################################################
-
-    - name: "Assert if the user does not input at least one target_disk option."
-      assert:
+    - name: Fail if a NIM client LPAR is not specified
+      ansible.builtin.fail:
+        msg: NIM client LPAR to be migrated is not specified
+      when: nim_alt_disk_migration_nim_client == "" # noqa empty-string-compare
+    - ansible.builtin.debug:
+        msg: '"{{ nim_alt_disk_migration_nim_client }} specified to be migrated"'
+    - name: Assert if the user does not input at least one nim_alt_disk_migration_target_disk option.
+      ansible.builtin.assert:
         fail_msg: >
-          Error: target_disk input is required with at least disk_name or disk_size_policy
+          Error: nim_alt_disk_migration_target_disk input is required with at least disk_name or disk_size_policy
         that:
-          - target_disk is defined
-          - target_disk | type_debug == "dict"
+          - nim_alt_disk_migration_target_disk is defined
+          - nim_alt_disk_migration_target_disk | type_debug == "dict"
 
-    - name: "Fail if the user inputs the target_disk with both: disk_size_policy and disk_name"
-      fail:  # noqa empty-string-compare
-        msg: "Error: target_disk input is required with at least disk_name or disk_size_policy"
+    - name: "Fail if the user inputs the nim_alt_disk_migration_target_disk with both: disk_size_policy and disk_name"
+      ansible.builtin.fail: # noqa empty-string-compare
+        msg: "Error: nim_alt_disk_migration_target_disk input is required with at least disk_name or disk_size_policy"
       when: >
-        target_disk.disk_size_policy is defined and
-        target_disk.disk_size_policy != "" and
-        target_disk.disk_name is defined and
-        target_disk.disk_name != ""
+        nim_alt_disk_migration_target_disk.disk_size_policy is defined and
+        nim_alt_disk_migration_target_disk.disk_size_policy != "" and
+        nim_alt_disk_migration_target_disk.disk_name is defined and
+        nim_alt_disk_migration_target_disk.disk_name != ""
 
-    - name: "Fail if both target_disk disk_size_policy and disk_name have no value"
-      fail:  # noqa empty-string-compare
-        msg: "Error: target_disk input is required with at least disk_name or disk_size_policy"
+    - name: Fail if both nim_alt_disk_migration_target_disk disk_size_policy and disk_name have no value
+      ansible.builtin.fail: # noqa empty-string-compare
+        msg: "Error: nim_alt_disk_migration_target_disk input is required with at least disk_name or disk_size_policy"
       when: >
-        target_disk.disk_size_policy is defined and
-        target_disk.disk_size_policy == "" and
-        target_disk.disk_name is defined and
-        target_disk.disk_name == ""
+        nim_alt_disk_migration_target_disk.disk_size_policy is defined and
+        nim_alt_disk_migration_target_disk.disk_size_policy == "" and
+        nim_alt_disk_migration_target_disk.disk_name is defined and
+        nim_alt_disk_migration_target_disk.disk_name == ""
 
     #############################################################
     #############################################################
 
-    - name: "Verify NIM master and client connection"
-      include_tasks: "validate_nim_connection.yml"
-    - debug: msg="NIM master and clients connection validation complete"
-
-    #############################################################
-    #############################################################
-
-    - name: "Fetch client oslevel"
-      include_tasks: "get_oslevel.yml"
-
-    #############################################################
-    #############################################################
-    # IDEMPOTENCY: Read the <LPP_RESOURCE_FILE> section of OS_LEVEL to
-    # verify if S is already at migration level.
-
-    # Read the nim file created during the verification of resources.
-    - name: "Read bos.mp64 version from file {{ nim_info_file_path }}_{{ lpp_source }}"
-      slurp:
-        src: "{{ nim_info_file_path }}_{{ lpp_source }}"
+    - name: Verify NIM master and client connection
+      ansible.builtin.include_tasks: validate_nim_connection.yml
+    - ansible.builtin.debug:
+        msg: '"NIM master and clients connection validation complete"'
+    - name: Fetch client oslevel
+      ansible.builtin.include_tasks: get_oslevel.yml
+    - name: Read bos.mp64 version from nim_info_file_path {{ nim_alt_disk_migration_lpp_source }}
+      ansible.builtin.slurp:
+        src: "{{ nim_alt_disk_migration_nim_info_file_path }}_{{ nim_alt_disk_migration_lpp_source }}"
       register: output
 
-    - name: "Retrieve lpp_source bos.mp64 level"
-      set_fact:
+    - name: Retrieve nim_alt_disk_migration_lpp_source bos.mp64 level
+      ansible.builtin.set_fact:
         variable: "{{ output['content'] | b64decode }}"
 
     #  Example bos.mp64:7300
-    - set_fact:
-        lpp_source_fileset_level: "{{ variable.split(':')[1] }}"
-    - debug: var=lpp_source_fileset_level
+    - ansible.builtin.set_fact:
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ variable.split(':')[1] }}"
+    - ansible.builtin.debug:
+        var: nim_alt_disk_migration_lpp_source_fileset_level
+        cmd: ""
+    - name: "Determine if we need to migrate {{ nim_alt_disk_migration_nim_client }} "
+      when: client_oslevel | int >= nim_alt_disk_migration_lpp_source_fileset_level | int
 
-    - name: "Determine if we need to migrate {{ nim_client }} "
+      ############################################################
+      ############################################################
+
       block:
-        - debug:
-            msg: "{{ nim_client }} is already at {{ lpp_source_fileset_level }} or higher"
+        - ansible.builtin.debug:
+            msg: "{{ nim_alt_disk_migration_nim_client }} is already at {{ nim_alt_disk_migration_lpp_source_fileset_level }} or higher"
         - name: No need to migreate
-          set_fact:
-            no_need_to_migrate: true
-      when: client_oslevel | int >= lpp_source_fileset_level | int
+          ansible.builtin.set_fact:
+            nim_alt_disk_migration_no_need_to_migrate: true
+    - when: not nim_alt_disk_migration_no_need_to_migrate and (nim_alt_disk_migration_lpp_source_fileset_level | int >= 7300)
 
-    ############################################################
-    ############################################################
+      ############################################################
+      ############################################################
 
-    - block:
-        - name: "Verify that the client LPAR is at least a Power8 machine"
-          include_tasks: "validate_min_power_level.yml"
-        - debug: msg="{{ nim_client }} has at least a PowerPC_Power8 processor"
-      when: not no_need_to_migrate and (lpp_source_fileset_level | int >= 7300)
-
-    ############################################################
-    ############################################################
-
-    - set_fact:
-        target_disk_force: true
-      when: target_disk.force is defined and target_disk.force
-
-    - name: "Verify and select target disk used for alternate disk migration"
       block:
-        - block:
+        - name: Verify that the client LPAR is at least a Power8 machine
+          ansible.builtin.include_tasks: validate_min_power_level.yml
+        - ansible.builtin.debug:
+            msg: '"{{ nim_alt_disk_migration_nim_client }} has at least a PowerPC_Power8 processor"'
+    - ansible.builtin.set_fact:
+        nim_alt_disk_migration_target_disk_force: true
+      when: nim_alt_disk_migration_target_disk.force is defined and nim_alt_disk_migration_target_disk.force
+
+    - name: Verify and select target disk used for alternate disk migration
+      when: not nim_alt_disk_migration_no_need_to_migrate # nim_select_target_disk block
+
+      #############################################################
+      #############################################################
+
+      block:
+        - when: nim_alt_disk_migration_target_disk.disk_name is defined and nim_alt_disk_migration_target_disk.disk_name != ""
+
+          block:
             - ibm.power_aix.internal.nim_select_target_disk:
-                nim_client: "{{ nim_client }}"
-                target_disk: "{{ target_disk.disk_name }}"
-                force: "{{ target_disk_force }}"
+                nim_client: "{{ nim_alt_disk_migration_nim_client }}"
+                target_disk: "{{ nim_alt_disk_migration_target_disk.disk_name }}"
+                force: "{{ nim_alt_disk_migration_target_disk_force }}"
               register: target_disk_selection
 
-            - set_fact:
+            - ansible.builtin.set_fact:
                 client_target_disk: "{{ target_disk_selection.target_disk }}"
                 target_disk_valid: "{{ target_disk_selection.valid }}"
                 err_msg: "{{ target_disk_selection.msg }}"
-          when: target_disk.disk_name is defined and target_disk.disk_name != ""
+        - when: nim_alt_disk_migration_target_disk.disk_size_policy is defined and nim_alt_disk_migration_target_disk.disk_size_policy != ""
 
-        - block:
+          block:
             - ibm.power_aix.internal.nim_select_target_disk:
-                nim_client: "{{ nim_client }}"
+                nim_client: "{{ nim_alt_disk_migration_nim_client }}"
                 target_disk_policy: "{{ target_disk.disk_size_policy }}"
-                force: "{{ target_disk_force }}"
+                force: "{{ nim_alt_disk_migration_target_disk_force }}"
               register: target_disk_selection
 
-            - set_fact:
+            - ansible.builtin.set_fact:
                 client_target_disk: "{{ target_disk_selection.target_disk }}"
                 target_disk_valid: "{{ target_disk_selection.valid }}"
                 err_msg: "{{ target_disk_selection.msg }}"
-          when: target_disk.disk_size_policy is defined and target_disk.disk_size_policy != ""
-
-        - fail:
+        - ansible.builtin.fail:
             msg: "{{ err_msg }}"
           when: not target_disk_valid
 
-        - debug: msg="{{ client_target_disk }} of {{ nim_client }} will be used to
-                      create an alternate disk copy"
-      when: not no_need_to_migrate  # nim_select_target_disk block
-
-    #############################################################
-    #############################################################
-
-    - name: "Clear nimadm_options variable when CacheVG and Bundle not defined"
-      set_fact:
+        - ansible.builtin.debug:
+            msg: '"{{ client_target_disk }} of {{ nim_alt_disk_migration_nim_client }} will be used to create an alternate disk copy"'
+    - name: Clear nimadm_options variable when CacheVG and Bundle not defined
+      ansible.builtin.set_fact:
         nimadm_options: ""
       when:
         - nimadm_cache_vg       | default("N/A") == "N/A"
@@ -232,30 +216,30 @@
         - nimadm_postmig_script | default("N/A") == "N/A"
         - nimadm_phases_to_run  | default("N/A") == "N/A"
 
-## Add above here
-    - name: "Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured"
-      set_fact:
-        nimadm_options: "-j {{ nimadm_cache_vg }}"
+    ## Add above here
+    - name: Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured
+      ansible.builtin.set_fact:
+        nimadm_options: -j {{ nimadm_cache_vg }}
       when: nimadm_cache_vg | default("N/A")  != "N/A"
 
-    - name: "Add eFix Bundle to 'nimadm_options' when nimadm_bundle configured"
-      set_fact:
+    - name: Add eFix Bundle to 'nimadm_options' when nimadm_bundle configured
+      ansible.builtin.set_fact:
         nimadm_options: "{{ nimadm_options | default('') }} -b {{ nimadm_bundle }}"
       when: nimadm_bundle | default("N/A")  != "N/A"
-## Add in here
+    ## Add in here
 
-    - name: "Add Pre-migration script to 'nimadm_options'"
-      set_fact:
+    - name: Add Pre-migration script to 'nimadm_options'
+      ansible.builtin.set_fact:
         nimadm_options: "{{ nimadm_options | default('') }} -a {{ nimadm_premig_script }}"
       when: nimadm_premig_script | default("N/A") != "N/A"
 
-    - name: "Add Post-migration script to 'nimadm_options'"
-      set_fact:
+    - name: Add Post-migration script to 'nimadm_options'
+      ansible.builtin.set_fact:
         nimadm_options: "{{ nimadm_options | default('') }} -z {{ nimadm_postmig_script }}"
       when: nimadm_postmig_script | default("N/A") != "N/A"
 
-    - name: "Add Phases-to-run to 'nimadm_options'"
-      set_fact:
+    - name: Add Phases-to-run to 'nimadm_options'
+      ansible.builtin.set_fact:
         nimadm_options: "{{ nimadm_options | default('') }} -P{{ nimadm_phases_to_run }}"
       when: nimadm_phases_to_run | default("N/A") != "N/A"
 
@@ -272,108 +256,101 @@
     #   task will run until it either complete, fail or timeout.
     ############################################################
 
-    - name: "Execute nimadm and wait for migration completion."
+    - name: Execute nimadm and wait for migration completion.
+      when: not nim_alt_disk_migration_debug_skip_nimadm and not nim_alt_disk_migration_no_need_to_migrate
+
+      # Perform migration block
+      # when: nim_alt_disk_migration_control_phases.perform_migration
       block:
+        - name: Display nimadm command
+          ansible.builtin.debug:
+            msg: >
+              /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }}
+              -s {{ nim_alt_disk_migration_spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}
 
-        - name: "Display nimadm command"
-          debug:
-            msg: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
-
-        - name: "Migrate to alternate disk"  # noqa no-changed-when
-          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
-          # command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
-          command: "/usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
+        - name: Migrate to alternate disk # noqa no-changed-when
+          # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
+          # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
+          ansible.builtin.command: >
+            /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }} -s {{ nim_alt_disk_migration_spot }}
+            {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}
           register: results
-          async: "{{ wait_nimadm_timeout_secs }}"
+          async: "{{ nim_alt_disk_migration_wait_nimadm_timeout_secs }}"
           poll: 0
-        - debug:  # var=results
+        - ansible.builtin.debug: # var=results
             msg:
-              - "timeout = {{ wait_nimadm_timeout_secs }} seconds or
-                {{ wait_nimadm_timeout_hours }} hours "
-              - "Maximum retries: {{ retry_chk_nimadm_comp }} of {{ interval }} seconds"
-        - debug: var=results
-        ############################################################
-        # check on async task later
-        # perform a task to check on nimadm task via its registered
-        # job ID
-        ############################################################
-
+              - "timeout = {{ nim_alt_disk_migration_wait_nimadm_timeout_secs }} seconds or {{ nim_alt_disk_migration_wait_nimadm_timeout_hours }} hours "
+              - "Maximum retries: {{ nim_alt_disk_migration_retry_chk_nimadm_comp }} of {{ nim_alt_disk_migration_interval }} seconds"
+        - ansible.builtin.debug:
+            var: results
+            cmd: ""
         - name: "Polling until migration finishes (ignore FAILED RETRING messages) "
-          async_status:
+          ansible.builtin.async_status:
             jid: "{{ results.ansible_job_id }}"
           register: async_poll_results
           until: async_poll_results.finished
-          retries: "{{ retry_chk_nimadm_comp }}"
-          delay: "{{ interval }}"
-        - debug:  # var=async_poll_results
-            msg: "retry = {{ retry_chk_nimadm_comp }}"
+          retries: "{{ nim_alt_disk_migration_retry_chk_nimadm_comp }}"
+          delay: "{{ nim_alt_disk_migration_interval }}"
+        - ansible.builtin.debug: # var=async_poll_results
+            msg: retry = {{ nim_alt_disk_migration_retry_chk_nimadm_comp }}
 
         #############################################################
         #############################################################
 
-        - block:
-            - name: "Rebooting {{ nim_client }}"
+        - when: nim_alt_disk_migration_reboot_client
+
+          block:
+            - name: Rebooting {{ nim_alt_disk_migration_nim_client }}
               ibm.power_aix.nim:
                 action: reboot
-                targets: "{{ nim_client }}"
+                targets: "{{ nim_alt_disk_migration_nim_client }}"
               register: results
-            - debug: var=results
-          when: reboot_client
-
-        - debug:
+            - ansible.builtin.debug:
+                var: results
+                cmd: ""
+        - ansible.builtin.debug:
             msg: >
-              'altinst_rootvg' successfully created in '{{ nim_client }}'.
-              Reboot '{{ nim_client }}' to boot into the alterate disk.
-          when: not reboot_client
+              'altinst_rootvg' successfully created in '{{ nim_alt_disk_migration_nim_client }}'.
+              Reboot '{{ nim_alt_disk_migration_nim_client }}' to boot into the alterate disk.
+          when: not nim_alt_disk_migration_reboot_client
 
         ############################################################
         ############################################################
 
-        - debug: msg="MIGRATION COMPLETE!!!"
-      # run nimadm and wait for completion block
-      when: not debug_skip_nimadm and not no_need_to_migrate
-
-
-  # Perform migration block
-  # when: control_phases.perform_migration
-  when: >
-     control_phases is defined and
-     control_phases.perform_migration is defined and
-     control_phases.perform_migration
-
-# Print a summary of what was executed.
-
-- set_fact:
+        - ansible.builtin.debug:
+            msg: '"MIGRATION COMPLETE!!!"'
+- ansible.builtin.set_fact:
     msg1: ""
 
-- set_fact:
+- ansible.builtin.set_fact:
     msg1: "- Validation of resources: Completed!"
-  when: control_phases.validate_nim_resources
+  when: nim_alt_disk_migration_control_phases.validate_nim_resources
 
-- set_fact:
+- ansible.builtin.set_fact:
     msg1: >
-      "{{ msg1 }} \n- {{ nim_client }} is already at {{ lpp_source_fileset_level }}
+      "{{ msg1 }} \n- {{ nim_alt_disk_migration_nim_client }} is already at {{ nim_alt_disk_migration_lpp_source_fileset_level }}
       or higher. Skipping migration."
-  when: control_phases.perform_migration and not debug_skip_nimadm and no_need_to_migrate
+  when: nim_alt_disk_migration_control_phases.perform_migration and not nim_alt_disk_migration_debug_skip_nimadm and nim_alt_disk_migration_no_need_to_migrate
 
-- set_fact:
+- ansible.builtin.set_fact:
     msg1: >
-      " {{ msg1 }} \n- Migration of {{ nim_client }} to {{ lpp_source_fileset_level }}
+      " {{ msg1 }} \n- Migration of {{ nim_alt_disk_migration_nim_client }} to {{ nim_alt_disk_migration_lpp_source_fileset_level }}
       Completed."
-  when: control_phases.perform_migration and not debug_skip_nimadm and not no_need_to_migrate
+  when: >
+    nim_alt_disk_migration_control_phases.perform_migration and not nim_alt_disk_migration_debug_skip_nimadm and nim_alt_disk_migration_not no_need_to_migrate
 
-- set_fact:
+- ansible.builtin.set_fact:
     msg1:
-      - "{{ msg1 }} \n- Migration of {{ nim_client }} to {{ lpp_source_fileset_level }}
-         NOT Completed"
-      - "    Skipping call to nimadm due to debug_skip_nimadm (debug preview action only)"
-      - "    /usr/sbin/nimadm -c {{ nim_client }} -l {{ lpp_source }} -s {{ spot }} {{ nimadm_options }}
-        -Y -d {{ client_target_disk | quote }} "
-  when: debug_skip_nimadm and control_phases.perform_migration and not no_need_to_migrate
+      - "{{ msg1 }} \n- Migration of {{ nim_alt_disk_migration_nim_client }} to {{ nim_alt_disk_migration_lpp_source_fileset_level }} NOT Completed"
+      - "    Skipping call to nimadm due to nim_alt_disk_migration_debug_skip_nimadm (debug preview action only)"
+      - "    /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }}"
+      - " -s {{ nim_alt_disk_migration_spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}"
+  when: nim_alt_disk_migration_debug_skip_nimadm and nim_alt_disk_migration_control_phases.perform_migration and not nim_alt_disk_migration_no_need_to_migrate
 
-- debug:
-    msg: "The role did not perform any actions."
-  when: msg1 == ""  # noqa empty-string-compare
+- ansible.builtin.debug:
+    msg: The role did not perform any actions.
+  when: msg1 == "" # noqa empty-string-compare
 
-- debug: var=msg1
-  when: msg1 != ""  # noqa empty-string-compare
+- ansible.builtin.debug:
+    var: msg1
+  when: msg1 != "" # noqa empty-string-compare

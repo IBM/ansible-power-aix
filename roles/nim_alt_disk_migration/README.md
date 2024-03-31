@@ -24,14 +24,14 @@ Available variables are listed below, along with default values:
     <tbody>
         <tr>
             <td><b> Variable </b></td>
-            <td><b> Suboptions </b></td>
+            <td><b> Options </b></td>
             <td><b> Required </b></td>
             <td><b> Default </b></td>
             <td><b> Choices </b></td>
             <td><b> Comments </b></td>
         </tr>
         <tr>
-            <td><b> nim_client </b></td>
+            <td><b> nim_alt_disk_migration_nim_client </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -42,7 +42,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> target_disk </b></td>
+            <td><b> nim_alt_disk_migration_target_disk </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -87,18 +87,18 @@ Available variables are listed below, along with default values:
             <td> false </td>
             <td>  </td>
             <td> 
-                If physical volume specified by <b>target_disk.disk_name</b> 
+                If physical volume specified by <b>nim_alt_disk_migration_target_disk.disk_name</b> 
                 belongs to '<i>altinst_rootvg</i>', '<i>old_rootvg</i>', or a 
                 varied on volume group then that physical volume will be 
                 cleaned up. 
-                If <b>target_disk.disk_size_policy</b> is specified and an 
+                If <b>nim_alt_disk_migration_target_disk.disk_size_policy</b> is specified and an 
                 alternate disk named '<i>altinst_rootvg</i>' or '<i>old_rootvg</i>'
                 already exists, then it will clean up the physical volume 
                 it occupies.
             </td>
         </tr>
         <tr>
-            <td><b> lpp_source  </b></td>
+            <td><b> nim_alt_disk_migration_lpp_source  </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -109,7 +109,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> spot  </b></td>
+            <td><b> nim_alt_disk_migration_spot  </b></td>
             <td>  </td>
             <td> false </td>
             <td>  </td>
@@ -120,7 +120,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> reboot_client </b></td>
+            <td><b> nim_alt_disk_migration_reboot_client </b></td>
             <td>  </td>
             <td> false </td>
             <td> false </td>
@@ -132,7 +132,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> control_phases </b></td>
+            <td><b> nim_alt_disk_migration_control_phases </b></td>
             <td>  </td>
             <td> false </td>
             <td>  </td>
@@ -171,10 +171,10 @@ Available variables are listed below, along with default values:
 enough to contain the used PPs.
 - ***nearest*** disk size policy chooses a disk closest to the rootvg disk in terms of size.
 - if ***upper*** or ***lower*** cannot be satisfied, it will default to *minimize*.
-- if you are using the role to ONLY validate the NIM resources then the **nim_client**
+- if you are using the role to ONLY validate the NIM resources then the **nim_alt_disk_migration_nim_client**
 variable is not required.
-- if a **spot** is not specified, one will be automatically created using the specified
-**lpp_source**.
+- if a **nim_alt_disk_migration_spot** is not specified, one will be automatically created using the specified
+**nim_alt_disk_migration_lpp_source**.
 
 ## Dependencies
 
@@ -190,10 +190,10 @@ None.
       - include_role:
           name: nim_alt_disk_migration
         vars:
-          nim_client: p9zpa-ansible-test1
-          target_disk:
+          nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+          nim_alt_disk_migration_target_disk:
             disk_name: hdisk1
-          lpp_source: lpp_2134A_730
+          nim_alt_disk_migration_lpp_source: lpp_2134A_730
 ```
 
 ```
@@ -204,11 +204,11 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_client: p9zpa-ansible-test1
-        target_disk:
+        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
-        lpp_source: lpp_2134A_730
-        spot: spot_2134A_730
+        nim_alt_disk_migration_lpp_source: lpp_2134A_730
+        nim_alt_disk_migration_spot: spot_2134A_730
 ```
 
 ```
@@ -222,9 +222,9 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        lpp_source: lpp_2134A_730
-        spot: spot_2134A_730
-        control_phases:
+        nim_alt_disk_migration_lpp_source: lpp_2134A_730
+        nim_alt_disk_migration_spot: spot_2134A_730
+        nim_alt_disk_migration_control_phases:
           validate_nim_resources: true
           perform_nim_migration: false
 ```
@@ -242,18 +242,18 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_client: p9zpa-ansible-test1
-        target_disk:
+        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
-        lpp_source: lpp_2134A_730
-        spot: spot_2134A_730
-        control_phases:
+        nim_alt_disk_migration_lpp_source: lpp_2134A_730
+        nim_alt_disk_migration_spot: spot_2134A_730
+        nim_alt_disk_migration_control_phases:
           validate_nim_resources: false
           perform_nim_migration: true
 ```
 
 ```
-# For debugging purposes: debug_skip_nimadm: true
+# For debugging purposes: nim_alt_disk_migration_debug_skip_nimadm: true
 # Similar to modules "check_mode". Useful to execute all the validations and just exit before
 # performing the migration. 
 
@@ -264,15 +264,15 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_client: p9zpa-ansible-test1
-        target_disk:
+        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
-        lpp_source: lpp_2134A_730
-        spot: spot_2134A_730
-        control_phases:
+        nim_alt_disk_migration_lpp_source: lpp_2134A_730
+        nim_alt_disk_migration_spot: spot_2134A_730
+        nim_alt_disk_migration_control_phases:
           validate_nim_resources: true
           perform_nim_migration: true
-        debug_skip_nimadm: true
+        nim_alt_disk_migration_debug_skip_nimadm: true
 ```
 
 ## Copyright

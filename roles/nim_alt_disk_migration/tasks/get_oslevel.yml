@@ -1,33 +1,20 @@
 ---
-- name: "NIM check for client OS level"
+- name: NIM check for client OS level
   ibm.power_aix.nim:
     action: check
-    targets: "{{ nim_client }}"
+    targets: "{{ nim_alt_disk_migration_nim_client }}"
   register: nim_check
-- debug: var=nim_check.nim_node.standalone[nim_client]
-
-############################################################
-# NOTE: steps on parsing
-# - [nim_client] | map('extract', nim_check...) will fetch
-# only the info related to 'nim_client' from the NIM check
-# action output
-# - map(attribute='oslevel') | list | join('\n') will fetch
-# the value of the key 'oslevel' from the client info extacted
-# from the previous step
-# - regex_search([0-9]) extract the OS level from the 'oslevel'
-# string.
-# e.g. 'oslevel': '7200-05-03-2135', the regex above will
-# extract only '7200'
-############################################################
-- name: "Parse OS level"
-  set_fact:
-    full_client_oslevel: "{{ [nim_client] |
-      map('extract', nim_check.nim_node.standalone) |
-      map(attribute='oslevel') | list | join('\n') }}"
-    client_oslevel: "{{ [nim_client] |
-      map('extract', nim_check.nim_node.standalone) |
-      map(attribute='oslevel') | list | join('\n') |
-      regex_search('[0-9]+') }}"
+- ansible.builtin.debug:
+    var: nim_check.nim_node.standalone[nim_alt_disk_migration_nim_client]
+    cmd: ""
+- name: Parse OS level
+  ansible.builtin.set_fact:
+    full_client_oslevel: >
+      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_check.nim_node.standalone) |
+      map(attribute='oslevel') | list | join('\n') }}`
+    client_oslevel: >
+      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_check.nim_node.standalone) |
+      map(attribute='oslevel') | list | join('\n') | regex_search('[0-9]+') }}`
 
 ############################################################
 # NOTE: when receiving a value of 'timedout' for the oslevel
@@ -37,10 +24,9 @@
 # You can check the /etc/niminfo file on the NIM cient to
 # see which NIM master it is registered to.
 ############################################################
-- name: "Determine if OS level was successfully fetched"
-  fail:
-    msg: "OS level not successfully fetched, make sure NIM
-          master/client is properly setup"
+- name: Determine if OS level was successfully fetched
+  ansible.builtin.fail:
+    msg: OS level not successfully fetched, make sure NIM master/client is properly setup
   when: full_client_oslevel == "timedout"
 
 ############################################################
@@ -48,8 +34,9 @@
 # compared to 7100 to check if the client OS level
 # is lower than 7.1
 ############################################################
-- name: "Determine if OS level is 7.1>"
-  fail:
-    msg: "Client LPAR must be AIX 7.1 or higher."
+- name: Determine if OS level is 7.1>
+  ansible.builtin.fail:
+    msg: Client LPAR must be AIX 7.1 or higher.
   when: client_oslevel | int < 7100
-- debug: msg="Client LPAR '{{ nim_client }}' is at AIX level '{{ full_client_oslevel }}'"
+- ansible.builtin.debug:
+    msg: Client LPAR '{{ nim_alt_disk_migration_nim_client }}' is at AIX level '{{ full_client_oslevel }}'

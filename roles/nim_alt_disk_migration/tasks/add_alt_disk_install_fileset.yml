@@ -4,18 +4,19 @@
 #
 # IF a SPOT resource is NOT specified and will be automatically created
 # THEN this task will automatically install the 'alt_disk_install' fileset
-- name: "Add 'bos.alt_disk_install.rte fileset to {{ spot }}"
+- name: Add 'bos.alt_disk_install.rte fileset to {{ nim_alt_disk_migration_spot }}
   block:
-    - command: >
-        nim -o cust -a lpp_source={{ nim_mast_lpp | default(lpp_source) }}
+    - ansible.builtin.command: >
+        nim -o cust -a lpp_source={{ nim_mast_lpp | default(nim_alt_disk_migration_lpp_source) }}
         -a filesets=bos.alt_disk_install.rte {{ spot }}
       register: spot_fileset_install
+      changed_when: spot_fileset_install.rc == 0
 
-    - fail:
+    - ansible.builtin.fail:
         msg: >
-          Installation of 'bos.alt_disk_install.rte' on {{ spot }} failed
-      when: "spot_fileset_install is failed"
+          Installation of 'bos.alt_disk_install.rte' on {{ nim_alt_disk_migration_spot }} failed
+      when: spot_fileset_install is failed
 
-    - debug:
+    - ansible.builtin.debug:
         msg: >
-          'bos.alt_disk_install.rte' fileset installed in {{ spot }}
+          'bos.alt_disk_install.rte' fileset installed in {{ nim_alt_disk_migration_spot }}

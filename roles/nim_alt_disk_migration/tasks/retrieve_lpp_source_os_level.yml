@@ -3,7 +3,7 @@
 # NOTE: idempotency check
 # 1. make sure that the OS level of the target LPAR is not
 # higher or equal to the fileset level of the specified
-# lpp_source. IF IT IS then we should not go any further in
+# nim_alt_disk_migration_lpp_source. IF IT IS then we should not go any further in
 # the role as there is no need, the client LPAR is already
 # at the desired release level or higher
 # 2. make sure that there is already no alt_inst_rootg created
@@ -19,45 +19,46 @@
 ############################################################
 # NOTE: this check will be using the kernel fileset
 # bos.mp64 version to represent the release level of the
-# lpp_source
+# nim_alt_disk_migration_lpp_source
 ############################################################
-- name: "Query bos.mp64.rte fileset {{ lpp_source }}"
-  shell: "nim -o showres {{ lpp_source }} | grep 'bos.mp64'"  # noqa risky-shell-pipe
+- name: Query bos.mp64.rte fileset {{ nim_alt_disk_migration_lpp_source }}
+  ansible.builtin.shell: set -o pipefail && nim -o showres {{ nim_alt_disk_migration_lpp_source }} | grep 'bos.mp64'
   changed_when: false
   register: lpp_source_query
   failed_when:
     - lpp_source_query.rc != 0
     - lpp_source_query.stderr != ''
 
-- name: "Check if 'bos.mp64 is in {{ lpp_source }}"
-  fail:
-    msg: "Fileset 'bos.mp64' not in in {{ lpp_source }}"
-  when: "lpp_source_query.stdout == ''"  # noqa empty-string-compare
+- name: Check if 'bos.mp64 is in {{ nim_alt_disk_migration_lpp_source }}
+  ansible.builtin.fail:
+    msg: Fileset 'bos.mp64' not in in {{ nim_alt_disk_migration_lpp_source }}
+  when: lpp_source_query.stdout == '' # noqa empty-string-compare
 
 - block:
-    - set_fact:
-        lpp_source_fileset_level_pattern: "(\\s+bos\\.mp64\\s+)([0-9\\.]+)"
-    - set_fact:
-        lpp_source_fileset_level: "{{ lpp_source_query.stdout |
-          regex_search(lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
+    - ansible.builtin.set_fact:
+        nim_alt_disk_migration_lpp_source_fileset_level_pattern: (\s+bos\.mp64\s+)([0-9\.]+)
+    - ansible.builtin.set_fact:
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_query.stdout | regex_search(lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: >
-     '{{ lpp_source }} is at level '{{ lpp_source_fileset_level }}'
+      '{{ nim_alt_disk_migration_lpp_source }} is at level '{{ nim_alt_disk_migration_lpp_source_fileset_level }}'
 
 
-- name: "Preprocess 'bos.mp64' fileset release level"
+- name: Preprocess 'bos.mp64' fileset release level
   block:
-    - set_fact:
-        lpp_source_major_num: "{{ lpp_source_fileset_level.split('.')[0] }}"
-        lpp_source_minor_num: "{{ lpp_source_fileset_level.split('.')[1] }}"
-    - set_fact:
-        lpp_source_fileset_level: "{{ lpp_source_major_num + lpp_source_minor_num + '00' }}"
+    - ansible.builtin.set_fact:
+        lpp_source_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
+        lpp_source_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
+    - ansible.builtin.set_fact:
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_major_num + lpp_source_minor_num + '00' }}"
 
-- name: "Save bos.mp version on file {{ nim_info_file_path }}_{{ lpp_source }}"
-  copy:  # noqa risky-file-permissions
-    dest: "{{ nim_info_file_path }}_{{ lpp_source }}"
-    content: bos.mp64:{{ lpp_source_fileset_level }}
+- name: Save bos.mp version on file, last task in retrieve_lpp_source_oslevel.
+  ansible.builtin.copy: # noqa risky-file-permissions
+    dest: "{{ nim_alt_disk_migration_nim_info_file_path }}_{{ nim_alt_disk_migration_lpp_source }}"
+    content: bos.mp64:{{ nim_alt_disk_migration_lpp_source_fileset_level }}
     force: true
 
-- debug: var=nim_file_info
+- ansible.builtin.debug:
+    var: nim_file_info
+    cmd: ""
