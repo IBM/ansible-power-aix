@@ -6,7 +6,7 @@
 - name: Fail if a NIM LPP resource is not specified
   ansible.builtin.fail:
     msg: NIM LPP resource not specified
-  when: nim_alt_disk_migration_lpp_source == "" # noqa empty-string-compare
+  when: nim_alt_disk_migration_lpp_source == ""  # noqa empty-string-compare
 - ansible.builtin.debug:
     msg: '"LPP resource {{ nim_alt_disk_migration_lpp_source }} specified for migration"'
 - name: Check if CacheVG exists '{{ nimadm_cache_vg }}'
@@ -40,7 +40,7 @@
         msg: '"Fileset alt_disk_install.rte presence validation passed"'
     - name: Create SPOT resource if not specified
       ansible.builtin.include_tasks: create_spot.yml
-      when: nim_alt_disk_migration_spot == "" # noqa empty-string-compare
+      when: nim_alt_disk_migration_spot == ""  # noqa empty-string-compare
     - ansible.builtin.debug:
         msg: '"SPOT resource {{ nim_alt_disk_migration_spot }} specified for migration"'
     - ansible.builtin.debug:
@@ -88,7 +88,7 @@
     - name: Fail if a NIM client LPAR is not specified
       ansible.builtin.fail:
         msg: NIM client LPAR to be migrated is not specified
-      when: nim_alt_disk_migration_nim_client == "" # noqa empty-string-compare
+      when: nim_alt_disk_migration_nim_client == ""  # noqa empty-string-compare
     - ansible.builtin.debug:
         msg: '"{{ nim_alt_disk_migration_nim_client }} specified to be migrated"'
     - name: Assert if the user does not input at least one nim_alt_disk_migration_target_disk option.
@@ -100,7 +100,7 @@
           - nim_alt_disk_migration_target_disk | type_debug == "dict"
 
     - name: "Fail if the user inputs the nim_alt_disk_migration_target_disk with both: disk_size_policy and disk_name"
-      ansible.builtin.fail: # noqa empty-string-compare
+      ansible.builtin.fail:  # noqa empty-string-compare
         msg: "Error: nim_alt_disk_migration_target_disk input is required with at least disk_name or disk_size_policy"
       when: >
         nim_alt_disk_migration_target_disk.disk_size_policy is defined and
@@ -109,7 +109,7 @@
         nim_alt_disk_migration_target_disk.disk_name != ""
 
     - name: Fail if both nim_alt_disk_migration_target_disk disk_size_policy and disk_name have no value
-      ansible.builtin.fail: # noqa empty-string-compare
+      ansible.builtin.fail:  # noqa empty-string-compare
         msg: "Error: nim_alt_disk_migration_target_disk input is required with at least disk_name or disk_size_policy"
       when: >
         nim_alt_disk_migration_target_disk.disk_size_policy is defined and
@@ -168,7 +168,7 @@
       when: nim_alt_disk_migration_target_disk.force is defined and nim_alt_disk_migration_target_disk.force
 
     - name: Verify and select target disk used for alternate disk migration
-      when: not nim_alt_disk_migration_no_need_to_migrate # nim_select_target_disk block
+      when: not nim_alt_disk_migration_no_need_to_migrate  # nim_select_target_disk block
 
       #############################################################
       #############################################################
@@ -268,7 +268,7 @@
               /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }}
               -s {{ nim_alt_disk_migration_spot }} {{ nimadm_options }} -Y -d {{ client_target_disk | quote }}
 
-        - name: Migrate to alternate disk # noqa no-changed-when
+        - name: Migrate to alternate disk  # noqa no-changed-when
           # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ client_target_disk }} -Y"
           # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ client_target_disk | quote }}"
           ansible.builtin.command: >
@@ -277,7 +277,7 @@
           register: results
           async: "{{ nim_alt_disk_migration_wait_nimadm_timeout_secs }}"
           poll: 0
-        - ansible.builtin.debug: # var=results
+        - ansible.builtin.debug:  # var=results
             msg:
               - "timeout = {{ nim_alt_disk_migration_wait_nimadm_timeout_secs }} seconds or {{ nim_alt_disk_migration_wait_nimadm_timeout_hours }} hours "
               - "Maximum retries: {{ nim_alt_disk_migration_retry_chk_nimadm_comp }} of {{ nim_alt_disk_migration_interval }} seconds"
@@ -291,7 +291,7 @@
           until: async_poll_results.finished
           retries: "{{ nim_alt_disk_migration_retry_chk_nimadm_comp }}"
           delay: "{{ nim_alt_disk_migration_interval }}"
-        - ansible.builtin.debug: # var=async_poll_results
+        - ansible.builtin.debug:  # var=async_poll_results
             msg: retry = {{ nim_alt_disk_migration_retry_chk_nimadm_comp }}
 
         #############################################################
@@ -349,8 +349,8 @@
 
 - ansible.builtin.debug:
     msg: The role did not perform any actions.
-  when: msg1 == "" # noqa empty-string-compare
+  when: msg1 == ""  # noqa empty-string-compare
 
 - ansible.builtin.debug:
     var: msg1
-  when: msg1 != "" # noqa empty-string-compare
+  when: msg1 != ""  # noqa empty-string-compare
