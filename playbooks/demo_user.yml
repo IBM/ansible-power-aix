@@ -1,60 +1,59 @@
 ---
-- name: "USER on AIX"
+- name: USER on AIX
   hosts: "{{host_name}}"
-  gather_facts: no
+  gather_facts: false
   vars:
     host_name: all
     user_name: aixguest
     password_val: abc12345
     attribute_home: /home/test/aixguest
-  collections:
-    ibm.power_aix
+
   tasks:
     - name: Create user in LDAP
-      user:
+      ibm.power_aix.user:
         state: present
-        name: "{{user_name}}"
-        change_passwd_on_login: False
-        password: "{{password_val}}"
+        name: "{{ user_name }}"
+        change_passwd_on_login: false
+        password: "{{ password_val }}"
         load_module: LDAP
         attributes:
-          home: "{{attribute_home}}"
+          home: "{{ attribute_home }}"
           data: 1272
     - name: Create local user
-      user:
+      ibm.power_aix.user:
         state: present
         name: testuser
-        change_passwd_on_login: False
-        password: "{{password_val}}"
+        change_passwd_on_login: false
+        password: "{{ password_val }}"
         load_module: files
         attributes:
-          home: "{{attribute_home}}"
+          home: "{{ attribute_home }}"
           data: 1272
     - name: Create a local user even if it is present in LDAP
-      user:
+      ibm.power_aix.user:
         state: present
-        name: "{{user_name}}"
-        change_passwd_on_login: False
-        password: "{{password_val}}"
+        name: "{{ user_name }}"
+        change_passwd_on_login: false
+        password: "{{ password_val }}"
         load_module: files
         attributes:
-          home: "{{attribute_home}}"
+          home: "{{ attribute_home }}"
           data: 1272
     - name: Modify locally present user
-      user:
+      ibm.power_aix.user:
         state: modify
-        name: "{{user_name}}"
+        name: "{{ user_name }}"
         attributes:
           admin: true
     - name: Modify User present in LDAP
-      user:
+      ibm.power_aix.user:
         state: modify
-        name: "{{user_name}}"
+        name: "{{ user_name }}"
         load_module: LDAP
         attributes:
           admin: true
     - name: Delete Local user
-      user:
+      ibm.power_aix.user:
         state: absent
-        name: "{{user_name}}"
-        remove_homedir: False
+        name: "{{ user_name }}"
+        remove_homedir: false
