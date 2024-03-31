@@ -1,16 +1,16 @@
 # Copyright (c) IBM Corporation 2020
 ---
 - name: Verify the host is at least aix 7.3, to install dependent tools.
-  raw: "/usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'"
+  ansible.builtin.raw: /usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'
   register: output
   changed_when: false
 
 - name: Install dependent tools for vioshc
-  include_tasks: "vioshc_dep_install.yml"
+  ansible.builtin.include_tasks: vioshc_dep_install.yml
   when: (output.stdout_lines[0] | int) >= 73
 
 - name: Install vioshc.py onto target
-  copy:
+  ansible.builtin.copy:
     src: vioshc.py
     dest: /usr/sbin/vioshc.py
-    mode: '0755'
+    mode: "0755"
