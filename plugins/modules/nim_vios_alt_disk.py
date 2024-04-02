@@ -94,22 +94,22 @@ EXAMPLES = r'''
   nim_vios_alt_disk:
     action: alt_disk_copy
     targets:
-    - nimvios01: [hdisk1]
+      - nimvios01: [hdisk1]
 
 - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
   nim_vios_alt_disk:
     action: alt_disk_copy
     disk_size_policy: minimize
     targets:
-    - nimvios01: []
-      nimvios02: []
-    - nimvios03: []
+      - nimvios01: []
+      - nimvios02: []
+      - nimvios03: []
 
 - name: Perform a cleanup of any existing alternate disk copy on nimvios01
   nim_vios_alt_disk:
     action: alt_disk_clean
     targets:
-    - nimvios01: []
+      - nimvios01: []
 '''
 
 RETURN = r'''

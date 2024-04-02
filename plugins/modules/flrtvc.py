@@ -123,16 +123,16 @@ EXAMPLES = r'''
   flrtvc:
     apar: sec
     path: /usr/sys/inst.images
-    download_only: yes
+    download_only: true
 
 - name: Install both sec and hyper patches for all filesets starting with devices.fcp
   flrtvc:
     filesets: devices.fcp.*
     path: /usr/sys/inst
-    save_report: yes
-    verbose: yes
-    force: no
-    clean: no
+    save_report: true
+    verbose: true
+    force: false
+    clean: false
 '''
 
 RETURN = r'''

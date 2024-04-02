@@ -228,7 +228,7 @@ EXAMPLES = r'''
     type: mksysb
     location: /tmp/backup_rootvg
     exclude_files: false
-    extend_fs: yes
+    extend_fs: true
 
 - name: install the mksysb image to /dev/hdisk1 using the 64 bits kernel if possible
   backup:
@@ -244,12 +244,12 @@ EXAMPLES = r'''
     type: savevg
     name: rootvg
     location: /dev/rmt1
-    exclude_data: no
-    exclude_files: no
+    exclude_data: false
+    exclude_files: false
     exclude_fs: /tmp/exclude_fs_list
-    create_data_file: yes
-    extend_fs: yes
-    verbose: yes
+    create_data_file: true
+    extend_fs: true
+    verbose: true
 
 - name: savevg of datavg structure to /dev/backup_datavg
   backup:
@@ -257,9 +257,9 @@ EXAMPLES = r'''
     type: savevg
     name: datavg
     location: /tmp/backup_datavg
-    exclude_data: yes
-    exclude_files: yes
-    create_data_file: yes
+    exclude_data: true
+    exclude_files: true
+    create_data_file: true
 
 - name: view the vg backup image stored on /dev/hdisk1 with savevg
   backup:
@@ -274,8 +274,8 @@ EXAMPLES = r'''
     name: datavg
     location: /tmp/backup_datavg
     data_file: /tmp/datavg.mydata
-    exclude_data: yes
-    minimize_lv_size: yes
+    exclude_data: true
+    minimize_lv_size: true
     flags: '-n'
 '''
 

@@ -183,20 +183,20 @@ EXAMPLES = r'''
   mktun:
     manual:
       ipv4:
-      - src:
-          address: 10.10.11.72
-          ah_algo: HMAC_MD5
-          esp_algo: DES_CBC_8
-        dst:
-          address: 10.10.11.98
-          esp_spi: 12345
+        - src:
+            address: 10.10.11.72
+            ah_algo: HMAC_MD5
+            esp_algo: DES_CBC_8
+          dst:
+            address: 10.10.11.98
+            esp_spi: 12345
 
 - name: Export IPv4 tunnel definition for tunnel id 3 on srchost
   mktun:
     manual:
       ipv4:
         - id: 3
-          export: yes
+          export: true
   register: export_result
   when: 'inventory_hostname == srchost'
 - name: Import IPv4 tunnel definition on dsthost

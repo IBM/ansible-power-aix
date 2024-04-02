@@ -149,7 +149,7 @@ EXAMPLES = r'''
   suma:
     action: download
     oslevel: '7200-03-02'
-    download_only: yes
+    download_only: true
     download_dir: /tmp/dl_updt_7200-03-02
   when: ansible_distribution == 'AIX'
 
@@ -157,8 +157,8 @@ EXAMPLES = r'''
   suma:
     action: download
     oslevel: '7200-04'
-    last_sp: yes
-    extend_fs: no
+    last_sp: true
+    extend_fs: false
 
 - name: Check, download and install to TL 7.2.3
   suma:

@@ -188,8 +188,8 @@ EXAMPLES = r'''
     action: install
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
     working_dir: /usr/sys/inst.images
-    from_epkg: yes
-    extend_fs: yes
+    from_epkg: true
+    extend_fs: true
 
 - name: List a specific ifix data in details
   emgr:
@@ -206,8 +206,8 @@ EXAMPLES = r'''
   emgr:
     action: commit
     ifix_label: IJ22714s1a
-    preview: True
-    quiet: True
+    preview: true
+    quiet: true
 
 - name: Remove an installed ifix based on its VUID
   emgr:

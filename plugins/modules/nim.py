@@ -149,7 +149,7 @@ EXAMPLES = r'''
   nim:
     action: script
     script: myscript
-    asynchronous: no
+    asynchronous: false
     targets: all
 
 - name: Query all standalone objects defined in a NIM master
