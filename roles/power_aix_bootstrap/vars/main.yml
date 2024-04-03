@@ -1,8 +1,8 @@
 ---
 # Copyright (c) IBM Corporation 2021
-download_dir: "~"
-target_dir: /tmp/.ansible.cpdir
-aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
-interpreter_name: /opt/freeware/bin/python3
-ansible_remote_tmp: /tmp/.ansible.cpdir/.ansible/tmp
-aix73: false
+power_aix_bootstrap_download_dir: "~"
+power_aix_bootstrap_target_dir: /tmp/.ansible.cpdir
+power_aix_bootstrap_aix_host: "{{ hostvars[inventory_hostname].inventory_hostname }}"
+power_aix_bootstrap_interpreter_name: /opt/freeware/bin/python3
+power_aix_bootstrap_ansible_remote_tmp: /tmp/.ansible.cpdir/.ansible/tmp
+power_aix_bootstrap_aix73: false
