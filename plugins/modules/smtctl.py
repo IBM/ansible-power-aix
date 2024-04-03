@@ -67,13 +67,13 @@ EXAMPLES = r'''
 - name: Enable the SMT value to 8 and value needs to be persist across subsequent reboot
   ibm.power_aix.smtctl:
     smt_value: 8
-    bos_boot: yes
+    bos_boot: true
 
 - name: Enable the SMT value to 8 to next boot if bos_boot set to yes
   ibm.power_aix.smtctl:
     smt_value: 8
     chtype: boot
-    bos_boot: yes
+    bos_boot: true
 
 - name: Limit the SMT value to 4
   ibm.power_aix.smtctl:

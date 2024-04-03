@@ -154,7 +154,7 @@ EXAMPLES = r'''
 - name: Perform a cleanup of any existing alternate disk copy and old rootvg
   alt_disk:
     action: clean
-    allow_old_rootvg: yes
+    allow_old_rootvg: true
 '''
 
 RETURN = r'''

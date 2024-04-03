@@ -101,7 +101,7 @@ EXAMPLES = r'''
         requisites
   lpp_facts:
     filesets: bos.rte.*
-    req: True
+    req: true
 - name: Print the fileset facts
   debug:
     var: ansible_facts.filesets

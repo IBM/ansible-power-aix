@@ -160,14 +160,14 @@ EXAMPLES = r'''
 
 - name: Install all filesets within the bos.net software package and expand file systems if necessary
   ibm.power_aix.installp:
-    extend_fs: yes
+    extend_fs: true
     device: /usr/sys/inst.images
     install_list: bos.net
 
 - name: Reinstall and commit the NFS software product option that is already installed on the system at the same level
   ibm.power_aix.installp:
-    commit: yes
-    force: yes
+    commit: true
+    force: true
     device: /dev/rmt0.1
     install_list: bos.net.nfs.client:4.1.0.0
 

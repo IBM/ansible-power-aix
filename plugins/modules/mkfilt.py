@@ -237,36 +237,36 @@ EXAMPLES = r'''
 - name: Allow SSH activity through interface en0
   mkfilt:
     ipv4:
-      log: yes
+      log: true
       default: deny
       rules:
-      - action: permit
-        direction: inbound
-        d_opr: eq
-        d_port: 22
-        interface: en0
-        description: permit SSH requests from any clients
-      - action: permit
-        direction: outbound
-        s_opr: eq
-        s_port: 22
-        interface: en0
-        description: permit SSH answers to any clients
+        - action: permit
+          direction: inbound
+          d_opr: eq
+          d_port: 22
+          interface: en0
+          description: permit SSH requests from any clients
+        - action: permit
+          direction: outbound
+          s_opr: eq
+          s_port: 22
+          interface: en0
+          description: permit SSH answers to any clients
 
 - name: Remove all user-defined and auto-generated filter rules
   mkfilt:
     ipv4:
       default: permit
-      force: yes
+      force: true
       rules:
-      - action: remove
-        id: all
+        - action: remove
+          id: all
 
 - name: Export filter rules as is into export text files
   mkfilt:
     action: export
     directory: /root/export
-    rawexport: yes
+    rawexport: true
 '''
 
 RETURN = r'''

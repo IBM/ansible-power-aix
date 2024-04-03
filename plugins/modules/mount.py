@@ -138,7 +138,7 @@ EXAMPLES = r'''
   ibm.power_aix.mount:
     state: umount
     mount_all: remote
-    force: True
+    force: true
 
 - name: Unmount all remote fileystems from a node
   ibm.power_aix.mount:

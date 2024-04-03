@@ -79,7 +79,7 @@ EXAMPLES = r'''
     interface: en0
     nameserver: 192.9.200.1
     domain: austin.century.com
-    start_daemons: yes
+    start_daemons: true
 '''
 
 RETURN = r'''

@@ -145,13 +145,13 @@ EXAMPLES = r'''
     targets: nimvios01
     viosupgrade_params:
       all:
-        resources:              master_net_conf:logdir
-        manage_cluster:         False
-        preview:                True
+        resources: master_net_conf:logdir
+        manage_cluster: false
+        preview: true
       nimvios01:
-        ios_mksysb:             vios-3-1-1-0_sysb
-        rootvg_clone_disk:      hdisk1
-        backup_file_resource:   nimvios01_iosb
+        ios_mksysb: vios-3-1-1-0_sysb
+        rootvg_clone_disk: hdisk1
+        backup_file_resource: nimvios01_iosb
 
 - name: Perform an altdisk viosupgrade
   nim_viosupgrade:
@@ -159,13 +159,13 @@ EXAMPLES = r'''
     targets: nimvios01
     viosupgrade_params:
       all:
-        resources:              master_net_conf:logdir
-        manage_cluster:         False
-        preview:                False
+        resources: master_net_conf:logdir
+        manage_cluster: false
+        preview: false
       nimvios01:
-        ios_mksysb:             vios-3-1-1-0_sysb
-        rootvg_clone_disk:      hdisk1
-        backup_file_resource:   nimvios01_iosb
+        ios_mksysb: vios-3-1-1-0_sysb
+        rootvg_clone_disk: hdisk1
+        backup_file_resource: nimvios01_iosb
 
 - name: Wait for up to an hour for the viosupgrade status to complete
   nim_viosupgrade:
@@ -182,15 +182,15 @@ EXAMPLES = r'''
     targets: nimvios02
     viosupgrade_params:
       all:
-        resources:              master_net_conf:logdir:my_filebackup_res
-        manage_cluster:         False
-        preview:                True
+        resources: master_net_conf:logdir:my_filebackup_res
+        manage_cluster: false
+        preview: true
       nimvios02:
-        ios_mksysb:             vios-3-1-1-0_sysb
-        spotname:               vios-3-1-1-0_spot
-        rootvg_install_disk:    "hdisk1:hdisk2"
-        skip_rootvg_cloning:    False
-        backup_file_resource:   nimvios02_iosb
+        ios_mksysb: vios-3-1-1-0_sysb
+        spotname: vios-3-1-1-0_spot
+        rootvg_install_disk: "hdisk1:hdisk2"
+        skip_rootvg_cloning: false
+        backup_file_resource: nimvios02_iosb
 '''
 
 RETURN = r'''

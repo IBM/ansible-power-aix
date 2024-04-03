@@ -112,23 +112,23 @@ EXAMPLES = r'''
     targets: 'nimvios01, nimvios02'
     action: install
     lpp_source: 723lpp_res
-    preview: yes
+    preview: true
 - name: Update VIOSes as a pair and a VIOS alone discarding cluster
   nim_updateios:
     targets:
-    - nimvios01,nimvios02
-    - nimvios03
+      - nimvios01,nimvios02
+      - nimvios03
     action: install
     lpp_source: 723lpp_res
     time_limit: '07/21/2020 17:02'
-    manage_cluster: no
-    preview: no
+    manage_cluster: false
+    preview: false
 - name: Remove a fileset of a VIOS
   nim_updateios:
     targets: 'nimvios01'
     action: remove
     filesets: openssh.base.server
-    preview: yes
+    preview: true
 '''
 
 RETURN = r'''

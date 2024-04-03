@@ -80,42 +80,42 @@ options:
 '''
 
 EXAMPLES = r'''
-    - name: "Save all tunables to a file"
-      tunfile_mgmt:
-        action: save
-        filename: /tunfile_mgmt_test
-      register: tunfile_result
-    - debug: var=tunfile_result
+- name: "Save all tunables to a file"
+  tunfile_mgmt:
+  action: save
+  filename: /tunfile_mgmt_test
+  register: tunfile_result
+- debug: var=tunfile_result
 
-    - name: "Validate a tunable file in current context"
-      tunfile_mgmt:
-        action: validate
-        filename: /tunfile_mgmt_test
-      register: tunfile_result
-    - debug: var=tunfile_result
+- name: "Validate a tunable file in current context"
+  tunfile_mgmt:
+  action: validate
+  filename: /tunfile_mgmt_test
+  register: tunfile_result
+- debug: var=tunfile_result
 
-    - name: "Modify all tunables of given component as default to a file"
-      tunfile_mgmt:
-        action: modify
-        filename: /tunfile_mgmt_test
-        set_default: True
-        component_to_set_dflt: schedo
-      register: tunfile_result
-    - debug: var=tunfile_result
+- name: "Modify all tunables of given component as default to a file"
+  tunfile_mgmt:
+  action: modify
+  filename: /tunfile_mgmt_test
+  set_default: true
+  component_to_set_dflt: schedo
+  register: tunfile_result
+- debug: var=tunfile_result
 
-    - name: "Modify multiple tunables for multiple components"
-      tunfile_mgmt:
-        action: modify
-        filename: /tunfile_mgmt_test
-        tunables_with_values:
-          vmo:
-            ame_mpsize_support: 1
-            ame_min_ucpool_size: 10
-          aso:
-            abc: 1
-            xyz: 2
-      register: tunfile_result
-    - debug: var=tunfile_result
+- name: "Modify multiple tunables for multiple components"
+  tunfile_mgmt:
+  action: modify
+  filename: /tunfile_mgmt_test
+  tunables_with_values:
+    vmo:
+    ame_mpsize_support: 1
+    ame_min_ucpool_size: 10
+    aso:
+    abc: 1
+    xyz: 2
+  register: tunfile_result
+- debug: var=tunfile_result
 '''
 
 RETURN = r'''

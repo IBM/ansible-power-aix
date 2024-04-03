@@ -96,7 +96,7 @@ EXAMPLES = r'''
   ibm.power_aix.user:
     state: present
     name: aixguest1010
-    change_passwd_on_login: False
+    change_passwd_on_login: false
     password: as$12ndhkfjk$1c
     attributes:
       home: /home/test/aixguest1010

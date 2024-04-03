@@ -243,10 +243,10 @@ EXAMPLES = r'''
     targets: nimclient1
     name_postfix: _mksysb
     spot_postfix: _spot
-    remove_backup: yes
-    remove_spot: yes
-    boot_target: no
-    accept_licenses: yes
+    remove_backup: true
+    remove_spot: true
+    boot_target: false
+    accept_licenses: true
 
 - name: Backup a VIOS configuration
   nim_backup:
@@ -276,7 +276,7 @@ EXAMPLES = r'''
     volume_group: datavg
     exclude_files: my_exclude_file_res
     other_attributes: '-a comments="datavg savevg" -a verbose=yes'
-  check_mode: yes
+  check_mode: true
 
 - name: Restore a savevg image to a different disk on a LPAR
   nim_backup:
@@ -284,8 +284,8 @@ EXAMPLES = r'''
     type: savevg
     targets: nimclient1
     name: nimclient1_savevg
-    remove_backup: yes
-    shrink_fs: yes
+    remove_backup: true
+    shrink_fs: true
     other_attributes: '-a disk=hdisk1 -a verbose=yes'
 '''
 

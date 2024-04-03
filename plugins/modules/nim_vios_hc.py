@@ -55,8 +55,8 @@ EXAMPLES = r'''
 - name: Perform a health check on dual VIOSes vios1,vios2 and on VIOS vios3
   nim_vios_hc:
     targets:
-    - vios1,vios2
-    - vios3
+      - vios1,vios2
+      - vios3
     action: health_check
 '''
 

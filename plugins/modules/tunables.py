@@ -94,7 +94,7 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: modify
     component: vmo
-    bosboot_tunables: True
+    bosboot_tunables: true
     tunable_params_with_value:
       ame_mpsize_support: 1
 
@@ -107,7 +107,7 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: show
     component: vmo
-    restricted_tunables: True
+    restricted_tunables: true
 
 - name: "Display information of given tunable parameters"
   ibm.power_aix.tunables:
@@ -129,7 +129,7 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: modify
     component: vmo
-    restricted_tunables: True # in case of restricted tunables otherwise default is false
+    restricted_tunables: true # in case of restricted tunables otherwise default is false
     tunable_params_with_value:
       lgpg_regions: 10   # dynamic tunable
       lgpg_size: 16777216 # dynamic tunables
@@ -141,7 +141,7 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: modify
     component: vmo
-    bosboot_tunables: True # mandatory
+    bosboot_tunables: true # mandatory
     restricted_tunables: true # if restricted tunable to be changed
     tunable_params_with_value:
       kernel_heap_psize: 16777216 # bosboot tunable
@@ -158,8 +158,8 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: modify
     component: vmo
-    restricted_tunables: True # because of restricted tunables otherwise default is false
-    bosboot_tunables: True # because of bosboot tunables otherwise default is false
+    restricted_tunables: true # because of restricted tunables otherwise default is false
+    bosboot_tunables: true # because of bosboot tunables otherwise default is false
     # if restricted tunable to be changed also then restricted_tunable: True
     tunable_params_with_value:
       lgpg_regions: 10   # dynamic tunable
@@ -177,8 +177,8 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: reset
     component: vmo
-    restricted_tunables: True # because of restricted tunables otherwise default is false
-    bosboot_tunables: True # because of bosboot tunables otherwise default is false
+    restricted_tunables: true # because of restricted tunables otherwise default is false
+    bosboot_tunables: true # because of bosboot tunables otherwise default is false
     tunable_params: ['kernel_heap_psize', 'batch_tlb']
 
   register: result
@@ -192,15 +192,14 @@ EXAMPLES = r'''
   ibm.power_aix.tunables:
     action: modify
     component: vmo
-    restricted_tunables: True # because of restricted tunables otherwise default is false
-    bosboot_tunables: True # # because of bosboot tunables otherwise default is false
+    restricted_tunables: true # because of restricted tunables otherwise default is false
+    bosboot_tunables: true # # because of bosboot tunables otherwise default is false
     tunable_params: ['kernel_heap_psize', 'lgpg_regions', 'kernel_heap_psize', 'enhanced_affinity_balance']
 
   register: result
   # check for:
   # result.bosboot_required == True
   # result.reboot_required == True
-
 '''
 
 RETURN = r'''
