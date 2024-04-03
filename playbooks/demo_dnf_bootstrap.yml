@@ -3,12 +3,11 @@
   hosts: all
   gather_facts: false
   user: root
-    - ibm.power_aix
   tasks:
     # CHECK for Yum on inventory host
     - ansible.builtin.import_role:
         name: power_aix_bootstrap
       vars:
-        pkgtype: dnf
-        download_dir: "~"
-        target_dir: /tmp/.ansible.cpdir
+        power_aix_bootstrap_pkgtype: dnf
+        power_aix_bootstrap_download_dir: "~"
+        power_aix_bootstrap_target_dir: /tmp/.ansible.cpdir
