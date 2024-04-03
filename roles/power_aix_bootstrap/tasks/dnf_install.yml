@@ -36,9 +36,11 @@
   # Execute this block if DNF doesn't exist and AIX version is 7.3
   block:
     - name: Create target filesystem for image transfer
-      ansible.builtin.raw: crfs -v jfs2 -g rootvg -a size=530M -m {{ target_dir }} -A yes -p rw
+      ansible.builtin.raw: crfs -v jfs2 -g rootvg -a size=530M -m {{ power_aix_bootstrap_target_dir }} -A yes -p rw
+      changed_when: true
     - name: Mount target filesystem
-      ansible.builtin.raw: mount {{ target_dir }}
+      ansible.builtin.raw: mount {{ power_aix_bootstrap_target_dir }}
+      changed_when: true
 - when: (output.stdout_lines[0] | int) == 73 and dnf_exists.stdout is search("false")
 
   # Excute this block if dnf is not installed
@@ -47,39 +49,41 @@
       ansible.builtin.set_fact:
         ansible_python_interpreter: /usr/bin/python3
 
-    - name: Create target filesystem "{{ target_dir }}" for image transfer if it does not exist.
-      community.general.filesystem:
+    - name: Create target filesystem for image transfer if it does not exist "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.filesystem:
         state: present
-        filesystem: "{{ target_dir }}"
+        filesystem: "{{ power_aix_bootstrap_target_dir }}"
         fs_type: jfs2
         auto_mount: true # noqa yaml
         attributes: size=530M
         permissions: rw
         vg: rootvg
 
-    - name: Mount target filesystem "{{ target_dir }}"
-      ansible.posix.mount:
-        mount_dir: "{{ target_dir }}"
+    - name: Mount target filesystem "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.mount:
+        mount_dir: "{{ power_aix_bootstrap_target_dir }}"
 
 - when: dnf_exists.stdout is search("false")
 
   # { Execute this block if dnf has been installed and proxy needs to be set
   block:
-    - name: Copy dnf install script to "{{ aix_host }}:{{ target_dir }}"
+    - name: Copy dnf install script to "{{ power_aix_bootstrap_target_dir }}"
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: "{{ target_dir }}"
+        dest: "{{ power_aix_bootstrap_target_dir }}"
         mode: "0755"
       with_items:
-        - files/{{ dnf_install_script }}
+        - files/{{ power_aix_bootstrap_dnf_install_script }}
 
     - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
-      ansible.builtin.command: "{{ target_dir }}/{{ dnf_install_script }} -y {{ target_dir }}"
+      ansible.builtin.command: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -y {{ power_aix_bootstrap_target_dir }}"
+      changed_when: true
       when:
         - yum_exists.stdout is search("true")
 
     - name: Restore dnf bundle at the target if yum is not installed.
-      ansible.builtin.command: "{{ target_dir }}/{{ dnf_install_script }} -d {{ target_dir }}"
+      ansible.builtin.command: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -d {{ power_aix_bootstrap_target_dir }}"
+      changed_when: true
       when:
         - yum_exists.stdout is not search("true")
 
@@ -94,31 +98,35 @@
       register: yum_link_installed
 
     - name: Update "{{ ansible_python_interpreter }}"
-      ansible.builtin.shell: /usr/bin/yes | /opt/freeware/bin/dnf upgrade python3
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          /usr/bin/yes | /opt/freeware/bin/dnf upgrade python3
       failed_when: false
+      changed_when: false
       vars:
-        ansible_python_interpreter: "{{ interpreter_name }}"
+        ansible_python_interpreter: "{{ power_aix_bootstrap_interpreter_name }}"
       when:
         - dnf_installed.stat.exists
 
-    - name: Unmount target filesystem "{{ target_dir }}"
-      ansible.posix.mount:
+    - name: Unmount target filesystem "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.mount:
         state: umount
-        mount_over_dir: "{{ target_dir }}"
+        mount_over_dir: "{{ power_aix_bootstrap_target_dir }}"
 
-    - name: Remove target filesystem "{{ target_dir }}"
-      community.general.filesystem:
+    - name: Remove target filesystem "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.filesystem:
         state: absent
-        filesystem: "{{ target_dir }}"
+        filesystem: "{{ power_aix_bootstrap_target_dir }}"
 
     - name: Print status
       ansible.builtin.debug:
-        msg: Bootstrap attempt of yum upgrade to dnf on {{ aix_host }} has completed
+        msg: Bootstrap attempt of yum upgrade to dnf on {{ power_aix_bootstrap_aix_host }} has completed
       when: yum_link_installed.stat.exists
 
     - name: Print status
       ansible.builtin.debug:
-        msg: Bootstrap attempt of dnf on {{ aix_host }} has completed
+        msg: Bootstrap attempt of dnf on {{ power_aix_bootstrap_aix_host }} has completed
       when: dnf_installed.stat.exists
 
 #    Block to install dnf }
@@ -127,7 +135,7 @@
     - name: Add proxy to /opt/freeware/etc/dnf/dnf.conf
       ansible.builtin.lineinfile:
         path: /opt/freeware/etc/dnf/dnf.conf
-        line: proxy={{ proxy }}
+        line: proxy={{ power_aix_bootstrap_proxy }}
         insertafter: best=True
 
   #     Block to set proxy }

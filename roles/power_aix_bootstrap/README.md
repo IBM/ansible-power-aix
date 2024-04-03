@@ -23,13 +23,13 @@ yum is not supported now on any AIX version.
 
 Specifies the free space in megabytes needed in the /var folder.
 
-    download_dir (optional, str, ~)
+    power_aix_bootstrap_download_dir (optional, str, ~)
 
 Specifies the temporary download location for install scripts and packages. The location resides on the Ansbile control node.
 
-    target_dir (optional, str, /tmp/.ansible.cpdir)
+    power_aix_bootstrap_target_dir (optional, str, /tmp/.ansible.cpdir)
 
-Specifies the target location (per inventory host) for copying and restoring package files and metadata. If the target location does not exist, then a temporary filesystem is created using the target_dir as the mount point.  Upon role completion, the target location is removed.
+Specifies the target location (per inventory host) for copying and restoring package files and metadata. If the target location does not exist, then a temporary filesystem is created using the power_aix_bootstrap_target_dir as the mount point.  Upon role completion, the target location is removed.
 
 ## Dependencies
 
