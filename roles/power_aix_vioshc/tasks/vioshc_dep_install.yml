@@ -4,14 +4,14 @@
   ansible.builtin.include_role:
     name: power_aix_bootstrap
   vars:
-    pkgtype: dnf
-    download_dir: "~"
-    target_dir: /tmp/.ansible.cpdir
+    power_aix_bootstrap_pkgtype: dnf
+    power_aix_bootstrap_download_dir: "~"
+    power_aix_bootstrap_target_dir: /tmp/.ansible.cpdir
 
 # Install pycurl if it doesn't exist.
 - name: Install pycurl
   ansible.builtin.include_role:
     name: power_aix_bootstrap
   vars:
-    pkgtype: pycurl
-    opt_free_size: "{{ vioshc_opt_free_size }}"
+    power_aix_bootstrap_pkgtype: pycurl
+    power_aix_bootstrap_opt_free_size: "{{ vioshc_opt_free_size }}"
