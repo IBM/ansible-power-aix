@@ -120,6 +120,56 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
+            <td><b> nim_alt_disk_migration_nimadm_cache_vg </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the volume group(on the NIM master) on which file systems are created and streams are used to cache all of the data from the client to these file systems
+            </td>
+        </tr>
+        <tr>
+            <td><b> nim_alt_disk_migration_nimadm_bundle </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the installp_bundle NIM resource.
+            </td>
+        </tr>
+        <tr>
+            <td><b> nim_alt_disk_migration_nimadm_premig_script </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the pre-migration NIM script resource.
+            </td>
+        </tr>
+        <tr>
+            <td><b> nim_alt_disk_migration_nimadm_postmig_script </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the post-migration NIM script resource.
+            </td>
+        </tr>
+        <tr>
+            <td><b> nim_alt_disk_migration_nimadm_phases_to_run </b></td>
+            <td>  </td>
+            <td> false </td>
+            <td>  </td>
+            <td>  </td>
+            <td> 
+                Specifies the phase to execute during the invocation of the nimadm command.
+            </td>
+        </tr>
+        <tr>
             <td><b> nim_alt_disk_migration_reboot_client </b></td>
             <td>  </td>
             <td> false </td>

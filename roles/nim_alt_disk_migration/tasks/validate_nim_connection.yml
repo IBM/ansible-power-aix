@@ -39,7 +39,9 @@
 #####################################################
 
 - name: Get nimsh status on master
-  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -s nimsh | /usr/bin/grep nimsh | /usr/bin/awk '{print $4}'
+  ansible.builtin.shell: |
+    set -o pipefail
+    /usr/bin/lssrc -s nimsh | /usr/bin/grep nimsh | /usr/bin/awk '{print $4}'
   changed_when: false
   register: nimsh_output
 
@@ -62,7 +64,9 @@
 ######################################################
 
 - name: Get tftp status on master
-  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'
+  ansible.builtin.shell: |
+    set -o pipefail
+    /usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'
   changed_when: false
   register: tftp_output
 
@@ -75,7 +79,9 @@
 ####################################################
 
 - name: Get bootpd status on master
-  ansible.builtin.shell: set -o pipefail && /usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'
+  ansible.builtin.shell: |
+    set -o pipefail
+    /usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'
   changed_when: false
   register: bootpd_output
 
@@ -109,7 +115,7 @@
 
 - name: Get niminfo from client
   ansible.builtin.command: >
-    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_client }}
+    /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_alt_disk_migration_nim_client }}
     '/usr/bin/cat /etc/niminfo | /usr/bin/grep NIM_MASTER_HOSTNAME'
   changed_when: false
   register: niminfo_output

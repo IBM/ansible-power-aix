@@ -9,17 +9,21 @@
   when: nim_alt_disk_migration_lpp_source == ""  # noqa empty-string-compare
 - ansible.builtin.debug:
     msg: '"LPP resource {{ nim_alt_disk_migration_lpp_source }} specified for migration"'
-- name: Check if CacheVG exists '{{ nimadm_cache_vg }}'
-  ansible.builtin.shell: set -o pipefail && lsvg | grep {{ nimadm_cache_vg }}
-  register: reg_nimadm_cache_vg_valid
+- name: Check if CacheVG exists '{{ nim_alt_disk_migration_nimadm_cache_vg }}'
+  ansible.builtin.shell: |
+    set -o pipefail
+    lsvg | grep {{ nim_alt_disk_migration_nimadm_cache_vg }}
+  register: reg_nim_alt_disk_migration_nimadm_cache_vg_valid
   changed_when: false
-  failed_when: reg_nimadm_cache_vg_valid.rc == 2
-  when: nimadm_cache_vg | default("N/A") != "N/A"
+  failed_when: reg_nim_alt_disk_migration_nimadm_cache_vg_valid.rc == 2
+  when: nim_alt_disk_migration_nimadm_cache_vg | default("N/A") != "N/A"
 
-- name: Fail when contains invalid characters '{{ nimadm_phases_to_run }}'
+- name: Check for out of range in '{{ nim_alt_disk_migration_nimadm_phases_to_run }}'
   ansible.builtin.fail:
-    msg: "{{ nimadm_phases_to_run }} contains alpha charcaters or a trailing comma, exiting"
-  when: nimadm_phases_to_run is regex("[^0-9,]") or nimadm_phases_to_run[-1] == ','
+    msg: "{{ nim_alt_disk_migration_nimadm_phases_to_run }} contains alpha numeric charcaters, exiting"
+  when: >
+    nim_alt_disk_migration_nimadm_phases_to_run is defined and
+    nim_alt_disk_migration_nimadm_phases_to_run is not regex("\b([1-9]|1[0-2])\b")
 
 #############################################################
 #############################################################
@@ -45,32 +49,32 @@
         msg: '"SPOT resource {{ nim_alt_disk_migration_spot }} specified for migration"'
     - ansible.builtin.debug:
         msg: '" Resources {{ nim_alt_disk_migration_lpp_source and nim_alt_disk_migration_spot }} are valid and ready."'
-    - name: Confirm eFix bundle resource defined '{{ nimadm_bundle }}'
-      ansible.builtin.command: nim -o showres {{ nimadm_bundle }}
+    - name: Confirm eFix bundle resource defined '{{ nim_alt_disk_migration_nimadm_bundle }}'
+      ansible.builtin.command: nim -o showres {{ nim_alt_disk_migration_nimadm_bundle }}
       changed_when: false
       register: reg_bundle
       failed_when:
         - reg_bundle.rc != 0
         - reg_bundle.stderr != ''
-      when: nimadm_bundle | default("N/A") != "N/A"
+      when: nim_alt_disk_migration_nimadm_bundle | default("N/A") != "N/A"
 
-    - name: Confirm Pre-migration script resource defined '{{ nimadm_premig_script }}'
-      ansible.builtin.command: nim -o showres {{ nimadm_premig_script }}
+    - name: Confirm Pre-migration script resource defined '{{ nim_alt_disk_migration_nimadm_premig_script }}'
+      ansible.builtin.command: nim -o showres {{ nim_alt_disk_migration_nimadm_premig_script }}
       changed_when: false
       register: reg_premig_script
       failed_when:
         - reg_premig_script.rc != 0
         - reg_premig_script.stderr != ''
-      when: nimadm_premig_script | default("N/A") != "N/A"
+      when: nim_alt_disk_migration_nimadm_premig_script | default("N/A") != "N/A"
 
-    - name: Confirm Post-migration script resource defined '{{ nimadm_postmig_script }}'
-      ansible.builtin.command: nim -o showres {{ nimadm_postmig_script }}
+    - name: Confirm Post-migration script resource defined '{{ nim_alt_disk_migration_nimadm_postmig_script }}'
+      ansible.builtin.command: nim -o showres {{ nim_alt_disk_migration_nimadm_postmig_script }}
       changed_when: false
       register: reg_postmig_script
       failed_when:
         - reg_postmig_script.rc != 0
         - reg_postmig_script.stderr != ''
-      when: nimadm_postmig_script | default("N/A") != "N/A"
+      when: nim_alt_disk_migration_nimadm_postmig_script | default("N/A") != "N/A"
 
 #  when: nim_alt_disk_migration_control_phases.validate_nim_resources
 - name: Perform migration if nim_alt_disk_migration_control_phases.perform_migration
@@ -117,8 +121,8 @@
         nim_alt_disk_migration_target_disk.disk_name is defined and
         nim_alt_disk_migration_target_disk.disk_name == ""
 
-    #############################################################
-    #############################################################
+    # #############################################################
+    # #############################################################
 
     - name: Verify NIM master and client connection
       ansible.builtin.include_tasks: validate_nim_connection.yml
@@ -140,7 +144,6 @@
         nim_alt_disk_migration_lpp_source_fileset_level: "{{ variable.split(':')[1] }}"
     - ansible.builtin.debug:
         var: nim_alt_disk_migration_lpp_source_fileset_level
-        cmd: ""
     - name: "Determine if we need to migrate {{ nim_alt_disk_migration_nim_client }} "
       when: client_oslevel | int >= nim_alt_disk_migration_lpp_source_fileset_level | int
 
@@ -150,7 +153,7 @@
       block:
         - ansible.builtin.debug:
             msg: "{{ nim_alt_disk_migration_nim_client }} is already at {{ nim_alt_disk_migration_lpp_source_fileset_level }} or higher"
-        - name: No need to migreate
+        - name: No need to migrate
           ansible.builtin.set_fact:
             nim_alt_disk_migration_no_need_to_migrate: true
     - when: not nim_alt_disk_migration_no_need_to_migrate and (nim_alt_disk_migration_lpp_source_fileset_level | int >= 7300)
@@ -192,7 +195,7 @@
           block:
             - ibm.power_aix.internal.nim_select_target_disk:
                 nim_client: "{{ nim_alt_disk_migration_nim_client }}"
-                target_disk_policy: "{{ target_disk.disk_size_policy }}"
+                target_disk_policy: "{{ nim_alt_disk_migration_target_disk.disk_size_policy }}"
                 force: "{{ nim_alt_disk_migration_target_disk_force }}"
               register: target_disk_selection
 
@@ -206,42 +209,42 @@
 
         - ansible.builtin.debug:
             msg: '"{{ client_target_disk }} of {{ nim_alt_disk_migration_nim_client }} will be used to create an alternate disk copy"'
-    - name: Clear nimadm_options variable when CacheVG and Bundle not defined
+    - name: Clear nimadm_options variable when options are not defined
       ansible.builtin.set_fact:
         nimadm_options: ""
       when:
-        - nimadm_cache_vg       | default("N/A") == "N/A"
-        - nimadm_bundle         | default("N/A") == "N/A"
-        - nimadm_premig_script  | default("N/A") == "N/A"
-        - nimadm_postmig_script | default("N/A") == "N/A"
-        - nimadm_phases_to_run  | default("N/A") == "N/A"
+        - nim_alt_disk_migration_nimadm_cache_vg       | default("N/A") == "N/A"
+        - nim_alt_disk_migration_nimadm_bundle         | default("N/A") == "N/A"
+        - nim_alt_disk_migration_nimadm_premig_script  | default("N/A") == "N/A"
+        - nim_alt_disk_migration_nimadm_postmig_script | default("N/A") == "N/A"
+        - nim_alt_disk_migration_nimadm_phases_to_run  | default("N/A") == "N/A"
 
     ## Add above here
-    - name: Add CacheVG to 'nimadm_options' when nimadm_cache_vg configured
+    - name: Add CacheVG to 'nimadm_options' when nim_alt_disk_migration_nimadm_cache_vg configured
       ansible.builtin.set_fact:
-        nimadm_options: -j {{ nimadm_cache_vg }}
-      when: nimadm_cache_vg | default("N/A")  != "N/A"
+        nimadm_options: -j {{ nim_alt_disk_migration_nimadm_cache_vg }}
+      when: nim_alt_disk_migration_nimadm_cache_vg | default("N/A")  != "N/A"
 
-    - name: Add eFix Bundle to 'nimadm_options' when nimadm_bundle configured
+    - name: Add eFix Bundle to 'nimadm_options' when nim_alt_disk_migration_nimadm_bundle configured
       ansible.builtin.set_fact:
-        nimadm_options: "{{ nimadm_options | default('') }} -b {{ nimadm_bundle }}"
-      when: nimadm_bundle | default("N/A")  != "N/A"
+        nimadm_options: "{{ nimadm_options | default('') }} -b {{ nim_alt_disk_migration_nimadm_bundle }}"
+      when: nim_alt_disk_migration_nimadm_bundle | default("N/A")  != "N/A"
     ## Add in here
 
     - name: Add Pre-migration script to 'nimadm_options'
       ansible.builtin.set_fact:
-        nimadm_options: "{{ nimadm_options | default('') }} -a {{ nimadm_premig_script }}"
-      when: nimadm_premig_script | default("N/A") != "N/A"
+        nimadm_options: "{{ nimadm_options | default('') }} -a {{ nim_alt_disk_migration_nimadm_premig_script }}"
+      when: nim_alt_disk_migration_nimadm_premig_script | default("N/A") != "N/A"
 
     - name: Add Post-migration script to 'nimadm_options'
       ansible.builtin.set_fact:
-        nimadm_options: "{{ nimadm_options | default('') }} -z {{ nimadm_postmig_script }}"
-      when: nimadm_postmig_script | default("N/A") != "N/A"
+        nimadm_options: "{{ nimadm_options | default('') }} -z {{ nim_alt_disk_migration_nimadm_postmig_script }}"
+      when: nim_alt_disk_migration_nimadm_postmig_script | default("N/A") != "N/A"
 
     - name: Add Phases-to-run to 'nimadm_options'
       ansible.builtin.set_fact:
-        nimadm_options: "{{ nimadm_options | default('') }} -P{{ nimadm_phases_to_run }}"
-      when: nimadm_phases_to_run | default("N/A") != "N/A"
+        nimadm_options: "{{ nimadm_options | default('') }} -P{{ nim_alt_disk_migration_nimadm_phases_to_run }}"
+      when: nim_alt_disk_migration_nimadm_phases_to_run | default("N/A") != "N/A"
 
     ############################################################
     # - asynchronous action and polling
@@ -283,7 +286,6 @@
               - "Maximum retries: {{ nim_alt_disk_migration_retry_chk_nimadm_comp }} of {{ nim_alt_disk_migration_interval }} seconds"
         - ansible.builtin.debug:
             var: results
-            cmd: ""
         - name: "Polling until migration finishes (ignore FAILED RETRING messages) "
           ansible.builtin.async_status:
             jid: "{{ results.ansible_job_id }}"
@@ -307,7 +309,6 @@
               register: results
             - ansible.builtin.debug:
                 var: results
-                cmd: ""
         - ansible.builtin.debug:
             msg: >
               'altinst_rootvg' successfully created in '{{ nim_alt_disk_migration_nim_client }}'.
@@ -336,8 +337,10 @@
     msg1: >
       " {{ msg1 }} \n- Migration of {{ nim_alt_disk_migration_nim_client }} to {{ nim_alt_disk_migration_lpp_source_fileset_level }}
       Completed."
-  when: >
-    nim_alt_disk_migration_control_phases.perform_migration and not nim_alt_disk_migration_debug_skip_nimadm and nim_alt_disk_migration_not no_need_to_migrate
+  when:
+    nim_alt_disk_migration_control_phases.perform_migration and
+    not nim_alt_disk_migration_debug_skip_nimadm and
+    not nim_alt_disk_migration_no_need_to_migrate
 
 - ansible.builtin.set_fact:
     msg1:
