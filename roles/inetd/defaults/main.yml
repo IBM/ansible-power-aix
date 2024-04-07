@@ -1,5 +1,5 @@
 # Copyright (c) IBM Corporation 2020
 ---
-services: []
-state: enabled
-backup: no  # noqa truthy
+inetd_services: []
+inetd_state: enabled
+inetd_backup: false  # noqa truthy
