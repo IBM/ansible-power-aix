@@ -13,68 +13,71 @@
 
 ###############################################################################
 
-- name: Fail if master_a is not specified
+- name: Fail if nim_master_migration_master_a is not specified
   ansible.builtin.fail:
-    msg: "NIM Master machine(master_a) is not specified"
-  when: master_a  | length > 0
+    msg: "NIM Master machine(nim_master_migration_master_a) is not specified"
+  when: nim_master_migration_master_a  == ""  # noqa empty-string-compare
 
-- name: Fail if master_b is not specified
+- name: Fail if nim_master_migration_master_b is not specified
   ansible.builtin.fail:
-    msg: "NIM Master machine(master_b) is not specified"
-  when: master_b | length > 0
+    msg: "NIM Master machine(nim_master_migration_master_b) is not specified"
+  when: nim_master_migration_master_b  == ""  # noqa empty-string-compare
 
 - name: "Fail if Alternate disk has not been specified"
   ansible.builtin.fail:
-    msg: "No alternate disk (alt_disk) provided."
-  when: alt_disk | length > 0
+    msg: "No alternate disk (nim_master_migration_alt_disk) provided."
+  when: nim_master_migration_alt_disk  == ""  # noqa empty-string-compare
 
 - name: "Fail if a NIM LPP resource is not specified"
   ansible.builtin.fail:
     msg: "NIM LPP resource not specified"
-  when: lpp_source_v | length > 0
+  when: nim_master_migration_lpp_source_v  == ""  # noqa empty-string-compare
 
 - name: "Fail if spot is not provided"
   ansible.builtin.fail:
     msg: "Spot was not provided"
-  when: spot_v | length > 0
+  when: nim_master_migration_spot_v  == ""  # noqa empty-string-compare
 
 - name: "Fail if NIM Master fileset's source has not been provided"
   ansible.builtin.fail:
-    msg: "nim_master_fileset_src was not provided"
-  when: nim_master_fileset_src | length > 0
+    msg: "nim_master_migration_nim_master_fileset_src was not provided"
+  when: nim_master_migration_nim_master_fileset_src  == ""  # noqa empty-string-compare
 
-- name: "Fail if phase was not provided"
+- name: "Fail if nim_master_migration_phase was not provided"
   ansible.builtin.fail:
-    msg: "You did not specify the phase"
-  when: phase | length > 0
+    msg: "You did not specify nim_master_migration_phase"
+  when: nim_master_migration_phase  == ""  # noqa empty-string-compare
 
 ###############################################################################
 
-- block:
+- name: Run the following tasks if phase is "backup_and_migration"
+  when: nim_master_migration_phase == "backup_and_migration"
+  block:
     - name: "Create database backup file"
       ansible.builtin.import_tasks: create_backup.yml
-      delegate_to: "{{ master_b }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
 
     - name: Transfer the backup file to Controller machine
       ansible.builtin.import_tasks: fetch_to_controller.yml
 
-    - name: Unconfigure the NIM database on "{{ master_b }}"
+    - name: Unconfigure the NIM database on "{{ nim_master_migration_master_b }}"
       ansible.builtin.raw: "nim -o unconfig master"
-      delegate_to: "{{ master_b }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
       register: command
+      changed_when: command.rc == 0
 
-    - name: Check for failure in Unconfiguring database on "{{ master_b }}"
+    - name: Check for failure in Unconfiguring database on "{{ nim_master_migration_master_b }}"
       ansible.builtin.fail:
         msg: "Could not unconfigure database"
       when: command.rc != 0
 
-    - name: Remove Master filesets from "{{ master_b }}"
+    - name: Remove Master filesets from "{{ nim_master_migration_master_b }}"
       installp:
         action: "deinstall"
         install_list: bos.sysmgt.nim.master
-      delegate_to: "{{ master_b }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
 
-    - name: Add the NIM "{{ master_b }}" as a "standalone" client to "{{ master_a }}"
+    - name: Add the NIM 'nim_master_migration_master_b' as a "standalone" client to "{{ nim_master_migration_master_a }}"
       ansible.builtin.import_tasks: client_master_setup.yml
 
     - name: Perform Alt Disk Migration of Master using NIM
@@ -86,36 +89,36 @@
 
     - name: "Next Steps"
       ansible.builtin.debug:
-        msg: "Migration has been done. Please run the role again with phase = db_restore to get the machine to previous state."
-
-  when: phase == "backup_and_migration"
+        msg: "Migration has been done. Please run the role again with nim_master_migration_phase = db_restore to get the machine to previous state."
 
 ###############################################################################
 
-- block:
-    - name: Copy the NIM master fileset to "{{ master_b }}"
+- name: Run the following tasks if the phase is "db_restore"
+  when: nim_master_migration_phase == "db_restore"
+  block:
+    - name: Copy the NIM master fileset to "{{ nim_master_migration_master_b }}"
       ansible.builtin.import_tasks: copy_fileset.yml
 
-    - name: Install NIM master filesets to "{{ master_b }}"
+    - name: Install NIM master filesets to "{{ nim_master_migration_master_b }}"
       installp:
         extend_fs: true
-        device: "{{ nim_master_fileset_dest }}"
+        device: "{{ nim_master_migration_nim_master_fileset_dest }}"
         install_list: bos.sysmgt.nim.master
-      delegate_to: "{{ master_b }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
 
-    - name: Transfer the backup file to "{{ master_b }}"
+    - name: Transfer the backup file to "{{ nim_master_migration_master_b }}"
       ansible.builtin.import_tasks: copy_to_b.yml
 
     - name: Restore the database
-      ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_restore_db {{ db_filename }}
-      delegate_to: "{{ master_b }}"
+      ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_restore_db {{ nim_master_migration_db_filename }}
+      delegate_to: "{{ nim_master_migration_master_b }}"
       register: command
+      changed_when: command.rc == 0
 
-    - name: Check for failure in restoring database on "{{ master_b }}"
+    - name: Check for failure in restoring database on "{{ nim_master_migration_master_b }}"
       ansible.builtin.fail:
         msg: "Could not restore database"
       when: command.rc != 0
 
-    - ansible.builtin.debug: msg="Database restored, NIM Master - {{ master_b }} has been migrated and restored!!!"
-
-  when: phase == "db_restore"
+    - ansible.builtin.debug:
+        msg: "Database restored, NIM Master - {{ nim_master_migration_master_b }} has been migrated and restored!!!"
