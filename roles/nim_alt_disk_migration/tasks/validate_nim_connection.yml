@@ -66,7 +66,7 @@
 - name: Get tftp status on master
   ansible.builtin.shell: |
     set -o pipefail
-    /usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $5}'
+    /usr/bin/lssrc -ls inetd | /usr/bin/grep tftp | /usr/bin/awk '{print $NF}'
   changed_when: false
   register: tftp_output
 
@@ -81,7 +81,7 @@
 - name: Get bootpd status on master
   ansible.builtin.shell: |
     set -o pipefail
-    /usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $5}'
+    /usr/bin/lssrc -ls inetd | /usr/bin/grep bootpd | /usr/bin/awk '{print $NF}'
   changed_when: false
   register: bootpd_output
 
