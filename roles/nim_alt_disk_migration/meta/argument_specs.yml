@@ -65,6 +65,38 @@ argument_specs:
           Specifies a NIM object name associated to a SPOT
           resource associated to the specified I(nim_alt_disk_migration_lpp_source).
 
+      nim_alt_disk_migration_nimadm_cache_vg:
+        type: str
+        required: false
+        description: >
+          Specifies the volume group(on the NIM master) on
+          which file systems are created and streams are used
+          to cache all of the data from the client to these file systems
+
+      nim_alt_disk_migration_nimadm_bundle:
+        type: str
+        required: false
+        description: >
+          Specifies the installp_bundle NIM resource.
+
+      nim_alt_disk_migration_nimadm_premig_script:
+        type: str
+        required: false
+        description: >
+          Specifies the pre-migration NIM script resource.
+
+      nim_alt_disk_migration_nimadm_postmig_script:
+        type: str
+        required: false
+        description: >
+          Specifies the post-migration NIM script resource.
+
+      nim_alt_disk_migration_nimadm_phases_to_run:
+        type: str
+        required: false
+        description: >
+          Specifies the phase to execute during the invocation of the nimadm command.
+
       nim_alt_disk_migration_reboot_client:
         type: bool
         required: false

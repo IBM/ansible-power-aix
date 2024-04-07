@@ -22,7 +22,9 @@
 # nim_alt_disk_migration_lpp_source
 ############################################################
 - name: Query bos.mp64.rte fileset {{ nim_alt_disk_migration_lpp_source }}
-  ansible.builtin.shell: set -o pipefail && nim -o showres {{ nim_alt_disk_migration_lpp_source }} | grep 'bos.mp64'
+  ansible.builtin.shell: |
+    set -o pipefail
+    nim -o showres {{ nim_alt_disk_migration_lpp_source }} | grep 'bos.mp64'
   changed_when: false
   register: lpp_source_query
   failed_when:
@@ -38,7 +40,8 @@
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level_pattern: (\s+bos\.mp64\s+)([0-9\.]+)
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_query.stdout | regex_search(lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
+        nim_alt_disk_migration_lpp_source_fileset_level:
+          "{{ lpp_source_query.stdout | regex_search(nim_alt_disk_migration_lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
 
 - ansible.builtin.debug:
     msg: >
@@ -61,4 +64,3 @@
 
 - ansible.builtin.debug:
     var: nim_file_info
-    cmd: ""

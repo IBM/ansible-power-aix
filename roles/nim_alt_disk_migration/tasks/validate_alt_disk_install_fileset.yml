@@ -49,7 +49,7 @@
 - name: Check if 'bos.alt_disk_install.rte is in in {{ nim_alt_disk_migration_lpp_source }}
   block:
     - ansible.builtin.set_fact:
-        lpp_source_fileset: "{{ lpp_source_query['nim_resources'][lpp_source]['contents'] }}"
+        lpp_source_fileset: "{{ lpp_source_query['nim_resources'][nim_alt_disk_migration_lpp_source]['contents'] }}"
 
     - ansible.builtin.fail:
         msg: Fileset 'bos.alt_disk_install.rte' not in in {{ nim_alt_disk_migration_lpp_source }}
@@ -62,7 +62,7 @@
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_fileset['bos.alt_disk_install.rte'] }}"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_fileset_level['level'] | first }}"
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ nim_alt_disk_migration_lpp_source_fileset_level['level'] | first }}"
 
     - ansible.builtin.debug:
         msg: >
@@ -88,7 +88,7 @@
 
     # if 'bos.alt_disk_install.rte' is not installed in SPOT then install it
     - ansible.builtin.set_fact:
-        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
+        spot_fileset: "{{ spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
 
     - ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
       when: spot_fileset['bos.alt_disk_install.rte'] is not defined
@@ -101,7 +101,7 @@
       register: spot_query
 
     - ansible.builtin.set_fact:
-        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
+        spot_fileset: "{{ spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
     - ansible.builtin.set_fact:
         spot_fileset_level: "{{ spot_fileset['bos.alt_disk_install.rte']['level'] | first }}"
 
