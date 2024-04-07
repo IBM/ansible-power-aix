@@ -15,7 +15,7 @@
         mode: '0777'
       register: syncfile
 
-    - name: Check status # noqa: no-handler
+    - name: Check nimsh_status  # noqa: no-handler
       ansible.builtin.debug:
         msg: Backup file transferred successfully
       when: syncfile.changed

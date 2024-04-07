@@ -15,7 +15,7 @@
       delegate_to: "{{ nim_master_migration_master_b }}"
       register: syncfile
 
-    - name: Check status # noqa: no-handler
+    - name: Check status    # noqa: no-handler
       ansible.builtin.debug:
         msg: Backup file transferred successfully
       when: syncfile.changed
