@@ -2,59 +2,59 @@
 # Always required
 # NIM Master that will be used in migrating the required Master machine
 
-master_a: ""
+nim_master_migration_master_a: ""
 
 # Always Required
 # NIM master that needs to be migrated
 
-master_b: ""
+nim_master_migration_master_b: ""
 
 # Always required
 # NIM Master A's hostname
 
-master_a_hostname: ""
+nim_master_migration_master_a_hostname: ""
 
 # Always required
 # NIM Master B's hostname
 
-master_b_hostname: ""
+nim_master_migration_master_b_hostname: ""
 
 # Always required
 # Location where lpp_source is present.
 
-lpp_source: ""
+nim_master_migration_lpp_source: ""
 
 # Always required
 # Location where spot is located.
 
-spot: ""
+nim_master_migration_spot: ""
 
 # Always required
 # Specifies the Alternate disk that would be used for migration
 
-alt_disk: ""
+nim_master_migration_alt_disk: ""
 
 # Always required
 # Specifies the location where NIM master fileset is located on the controller node.
 
-nim_master_fileset_src: ""
+nim_master_migration_nim_master_fileset_src: ""
 
 # Always required
-# Specifies the location where NIM master fileset is located on the master_b machine
+# Specifies the location where NIM master fileset is located on the nim_master_migration_master_b machine
 
-nim_master_fileset_dest: ""
+nim_master_migration_nim_master_fileset_dest: ""
 
 # Always required
 # Specifies the location where Alt_disk_install fileset is located
 
-alt_disk_install_fileset: ""
+nim_master_migration_alt_disk_install_fileset: ""
 
 # Optional
 # Name and location of the file where database backup will be stored
 
-db_filename: ~/db_backup
+nim_master_migration_db_filename: ~/db_backup
 
 # Always required
-# SPecifies the phase of operations that will take place.
+# Specifies the phase of operations that will take place.
 
-phase: ""
+nim_master_migration_phase: ""

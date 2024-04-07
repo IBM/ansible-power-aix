@@ -6,61 +6,61 @@ argument_specs:
     author:
       - Shreyansh Chamola (schamola)
     options:
-      master_a:
+      nim_master_migration_master_a:
         type: "str"
         required: true
         description: >
           Specifies a NIM Master, that will be used for migrating the desired
-          machine (master_b).
-      master_b:
+          machine (nim_master_migration_master_b).
+      nim_master_migration_master_b:
         type: "str"
         required: true
         description: >
           Specifies the NIM Master machine that is supposed to be migrated using
-          another NIM Master (master_a) as its master.
-      alt_disk:
+          another NIM Master (nim_master_migration_master_a) as its master.
+      nim_master_migration_alt_disk:
         type: "str"
         required: true
         description: >
           Specifies the alternate disk on which nim alt disk migration
           will take place.
-      db_filename:
+      nim_master_migration_db_filename:
         type: "str"
         required: false
         description: >
           Specifies the filename, where the database
-          backup will be created on master_b machine.
-      lpp_source_v:
+          backup will be created on nim_master_migration_master_b machine.
+      nim_master_migration_lpp_source_v:
         type: "str"
         required: true
         description: >
           Specifies a NIM object name associated to a LPP
           resource for the desired level of migration.
-      spot_v:
+      nim_master_migration_spot_v:
         type: "str"
         required: true
         description: >
           Specifies a NIM object name associated to a spot
           resource for the desired level of migration.
-      nim_master_fileset_src:
+      nim_master_migration_nim_master_fileset_src:
         type: "str"
         required: true
         description: >
           Specifies the location and filename, where the
           nim master fileset (bos.sysmgt) is located.
-      nim_master_fileset_dest:
+      nim_master_migration_nim_master_fileset_dest:
         type: "str"
         required: true
         description: >
           Specifies the location where nim master fileset will be located
-          on the NIM master machine (master_b)
-      db_file_controller:
+          on the NIM master machine (nim_master_migration_master_b)
+      nim_master_migration_db_file_controller:
         type: "str"
         required: false
         description: >
           Specifies the location where the database backup file will be copied to
-          from the NIM master machine (master_b)
-      phase:
+          from the NIM master machine (nim_master_migration_master_b)
+      nim_master_migration_phase:
         type: "str"
         required: true
         description: >

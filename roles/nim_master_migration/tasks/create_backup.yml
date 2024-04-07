@@ -1,9 +1,9 @@
 ---
-- name: Retrieve path from {{ db_filename }}
+- name: Retrieve path from {{ nim_master_migration_db_filename }}
   ansible.builtin.set_fact:
-    db_backup_path: "{{ db_filename | dirname }}"
+    db_backup_path: "{{ nim_master_migration_db_filename | dirname }}"
 
-- name: "Verify '{{ db_backup_path }}' has atleast 10Mb of space."
+- name: "Verify atleast 10Mb of space is available in '{{ db_backup_path }}'"
   ansible.builtin.raw: "/usr/bin/df -m {{ db_backup_path }}"
   register: output
   changed_when: false
@@ -22,8 +22,8 @@
     msg: Not enough space to take a backup
   when: (free_space | int) < 10
 
-- name: Take backup of Database present on "{{ master_b }}"
-  ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_backup_db "{{ db_filename }}"
+- name: Take backup of Database present on "{{ nim_master_migration_master_b }}"
+  ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_backup_db "{{ nim_master_migration_db_filename }}"
   register: command
   changed_when: command.rc == 0
 

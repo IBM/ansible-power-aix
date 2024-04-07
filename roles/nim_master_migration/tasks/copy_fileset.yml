@@ -1,25 +1,26 @@
 ---
-- name: Check if NIM master fileset is present on "{{ master_b }}"
+- name: Check if NIM master fileset is present on "{{ nim_master_migration_master_b }}"
   ansible.builtin.stat:
-    path: "{{ nim_master_fileset_dest }}"
+    path: "{{ nim_master_migration_nim_master_fileset_dest }}"
   register: master_fileset
-  delegate_to: "{{ master_b }}"
+  delegate_to: "{{ nim_master_migration_master_b }}"
 
-- block:
-    - name: Copy NIM master fileset to "{{ master_b }}"
+- name: If NIM master fileset does not exist, run the following tasks
+  when: not master_fileset.stat.exists
+  block:
+    - name: Copy NIM master fileset to "{{ nim_master_migration_master_b }}"
       ansible.builtin.copy:
-        src: "{{ nim_master_fileset_src }}"
-        dest: "{{ nim_master_fileset_dest }}"
+        src: "{{ nim_master_migration_nim_master_fileset_src }}"
+        dest: "{{ nim_master_migration_nim_master_fileset_dest }}"
         mode: '0777'
-      delegate_to: "{{ master_b }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
     - name: Check if file has been moved
       ansible.builtin.stat:
-        path: "{{ nim_master_fileset_dest }}"
-      delegate_to: "{{ master_b }}"
+        path: "{{ nim_master_migration_nim_master_fileset_dest }}"
+      delegate_to: "{{ nim_master_migration_master_b }}"
       register: file_present
 
     - name: Fail if transfer was not successful
       ansible.builtin.fail:
-        msg: File could not be copied to "{{ master_b }}"
+        msg: File could not be copied to "{{ nim_master_migration_master_b }}"
       when: not file_present.stat.exists
-  when: not master_fileset.stat.exists

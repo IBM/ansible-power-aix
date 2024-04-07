@@ -1,6 +1,6 @@
 ---
 - name: "Install the required fileset for performing NIM ADM operation"
-  ansible.builtin.raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ lpp_source_v }} {{ spot_v }}
+  ansible.builtin.raw: nim -o cust -a filesets=bos.alt_disk_install.rte -a lpp_source={{ nim_master_migration_lpp_source_v }} {{ nim_master_migration_spot_v }}
   register: command
   changed_when: command.rc == 0
 
@@ -9,21 +9,21 @@
     msg: "The following fileset was not installed: bos.alt_disk_install.rte"
   when: command.rc != 0
 
-- name: Extract hostname from "{{ master_b }}"
+- name: Extract hostname from "{{ nim_master_migration_master_b }}"
   ansible.builtin.set_fact:
-    master_b_hostname: "{{ master_b.split('.')[0] | lower }}"
+    nim_master_migration_master_b_hostname: "{{ nim_master_migration_master_b.split('.')[0] | lower }}"
 
 - name: Perform NIM ADM migration
   ansible.builtin.include_role:
     name: ibm.power_aix.nim_alt_disk_migration
   vars:
-    nim_client: "{{ master_b_hostname }}"
-    target_disk:
-      disk_name: "{{ alt_disk }}"
+    nim_alt_disk_migration_nim_client: "{{ nim_master_migration_master_b_hostname }}"
+    nim_alt_disk_migration_target_disk:
+      disk_name: "{{ nim_master_migration_alt_disk }}"
       force: true
-    lpp_source: "{{ lpp_source_v }}"
-    reboot_client: true
-    spot: "{{ spot_v }}"
-    control_phases:
+    nim_alt_disk_migration_lpp_source: "{{ nim_master_migration_lpp_source_v }}"
+    nim_alt_disk_migration_reboot_client: true
+    nim_alt_disk_migration_spot: "{{ nim_master_migration_spot_v }}"
+    nim_alt_disk_migration_control_phases:
       validate_nim_resources: true
       perform_migration: true

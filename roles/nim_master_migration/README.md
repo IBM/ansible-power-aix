@@ -30,7 +30,7 @@ Available variables are listed below, along with default values:
             <td><b> Comments </b></td>
         </tr>
         <tr>
-            <td><b> master_a </b></td>
+            <td><b> nim_master_migration_master_a </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -40,18 +40,18 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> master_b </b></td>
+            <td><b> nim_master_migration_master_b </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
             <td>  </td>
             <td>
                 Specifies the NIM Master machine that is supposed to be migrated using
-                another NIM Master (master_a) as its master.
+                another NIM Master (nim_master_migration_master_a) as its master.
             </td>
         </tr>
         <tr>
-            <td><b> alt_disk </b></td>
+            <td><b> nim_master_migration_alt_disk </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -61,17 +61,17 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> db_filename </b></td>
+            <td><b> nim_master_migration_db_filename </b></td>
             <td>  </td>
             <td> false </td>
             <td>  </td>
             <td>  </td>
             <td> 
-                Specifies the filename, where the database backup will be created on master_b machine.
+                Specifies the filename, where the database backup will be created on nim_master_migration_master_b machine.
             </td>
         </tr>
         <tr>
-            <td><b> lpp_source_v </b></td>
+            <td><b> nim_master_migration_lpp_source_v </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -81,7 +81,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> spot_v </b></td>
+            <td><b> nim_master_migration_spot_v </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -91,7 +91,7 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> nim_master_fileset_src </b></td>
+            <td><b> nim_master_migration_nim_master_fileset_src </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -101,27 +101,27 @@ Available variables are listed below, along with default values:
             </td>
         </tr>
         <tr>
-            <td><b> nim_master_fileset_dest </b></td>
+            <td><b> nim_master_migration_nim_master_fileset_dest </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
             <td>  </td>
             <td> 
-                Specifies the location wher NIM master fileset will be copied to/located on the NIM master mahine (master_b)
+                Specifies the location wher NIM master fileset will be copied to/located on the NIM master mahine (nim_master_migration_master_b)
             </td>
         </tr>
         <tr>
-            <td><b> db_file_controller </b></td>
+            <td><b> nim_master_migration_db_file_controller </b></td>
             <td>  </td>
             <td> false </td>
             <td>  </td>
             <td>  </td>
             <td> 
-                Specifies the location where the database backup file will be copied to from the NIM master machine (master_b)
+                Specifies the location where the database backup file will be copied to from the NIM master machine (nim_master_migration_master_b)
             </td>
         </tr>
         <tr>
-            <td><b> phase </b></td>
+            <td><b> nim_master_migration_phase </b></td>
             <td>  </td>
             <td> true </td>
             <td>  </td>
@@ -134,12 +134,12 @@ Available variables are listed below, along with default values:
 </table>
 
 **NOTES**: 
-- This role requires another machine having NIM master setup (***master_a***), master_a should be able to establish SSH connection with the master machine that needs to be migrated.
-- This machine (master_a) should be on the level to which you want your master machine (***master_b***) to be migrated.
-- Controller node's primary target is master_a, but It should be able to establish SSH connection with master_b (The machine that needs to be migrated) as well.
-- To completely migrate the required machine and bring it back to the original state, you need to run the role twice. Once, with phase = "backup_and_migration" and second time with phase = "db_restore"
-- ***backup_and_migration*** will initialise the setup required and perform the migration of master_b using master_a as master.
-- ***db_restore*** will restore the database and bring the machine (master_b) to previous state.
+- This role requires another machine having NIM master setup (***nim_master_migration_master_a***), nim_master_migration_master_a should be able to establish SSH connection with the master machine that needs to be migrated.
+- This machine (nim_master_migration_master_a) should be on the level to which you want your master machine (***nim_master_migration_master_b***) to be migrated.
+- Controller node's primary target is nim_master_migration_master_a, but It should be able to establish SSH connection with nim_master_migration_master_b (The machine that needs to be migrated) as well.
+- To completely migrate the required machine and bring it back to the original state, you need to run the role twice. Once, with nim_master_migration_phase = "backup_and_migration" and second time with nim_master_migration_phase = "db_restore"
+- ***backup_and_migration*** will initialise the setup required and perform the migration of nim_master_migration_master_b using nim_master_migration_master_a as master.
+- ***db_restore*** will restore the database and bring the machine (nim_master_migration_master_b) to previous state.
 
 ## Dependencies
 
@@ -148,12 +148,12 @@ Available variables are listed below, along with default values:
 ## Example Playbook
 
 ```
-# Use C(phase) = backup_and_migration to perform the following tasks:
+# Use C(nim_master_migration_phase) = backup_and_migration to perform the following tasks:
 # Creating database backup file
-# Unconfiguring master_b (NIM master machine that needs to be migrated)
-# Setting up master_b as client of master_a
+# Unconfiguring nim_master_migration_master_b (NIM master machine that needs to be migrated)
+# Setting up nim_master_migration_master_b as client of nim_master_migration_master_a
 # Perform Nim Alt disk migration operation
-# Rebooting the machine (master_b)
+# Rebooting the machine (nim_master_migration_master_b)
 
 - name: "nim_master_migration demo"
   hosts: all
@@ -165,21 +165,21 @@ Available variables are listed below, along with default values:
     - import_role:
         name: ibm.power_aix.nim_master_migration
       vars:
-        master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
-        master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
-        alt_disk: "hdisk1"
-        db_filename: "db_backupfile"
-        lpp_source_v: "2317A_73D"
-        spot_v: "2317A_73D_spot"
-        nim_master_fileset_src: "~/bos.sysmgt"
-        nim_master_fileset_dest: "~/bos.sysmgt"
-        phase: backup_and_migration
+        nim_master_migration_master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
+        nim_master_migration_master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        nim_master_migration_alt_disk: "hdisk1"
+        nim_master_migration_db_filename: "db_backupfile"
+        nim_master_migration_lpp_source_v: "2317A_73D"
+        nim_master_migration_spot_v: "2317A_73D_spot"
+        nim_master_migration_nim_master_fileset_src: "~/bos.sysmgt"
+        nim_master_migration_nim_master_fileset_dest: "~/bos.sysmgt"
+        nim_master_migration_phase: backup_and_migration
 ```
 
 ```
-# Use C(phase) = db_restore to perform the following tasks:
-# Copy and install nim master fileset (bos.sysmgt.nim.master) on NIM master (master_b)
-# Transfer and restore database backup on NIM master (master_b)
+# Use C(nim_master_migration_phase) = db_restore to perform the following tasks:
+# Copy and install nim master fileset (bos.sysmgt.nim.master) on NIM master (nim_master_migration_master_b)
+# Transfer and restore database backup on NIM master (nim_master_migration_master_b)
 - name: "nim_master_migration demo"
   hosts: all
   gather_facts: false
@@ -190,16 +190,16 @@ Available variables are listed below, along with default values:
     - import_role:
         name: ibm.power_aix.nim_master_migration
       vars:
-        master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
-        master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
-        alt_disk: "hdisk1"
-        db_filename: "db_backupfile"
-        lpp_source_v: "2317A_73D"
-        spot_v: "2317A_73D_spot"
-        nim_master_fileset_src: "~/bos.sysmgt"
-        nim_master_fileset_dest: "~/bos.sysmgt"
-        phase: db_restore
-        db_file_controller: "~/db_backupfile"
+        nim_master_migration_master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
+        nim_master_migration_master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        nim_master_migration_alt_disk: "hdisk1"
+        nim_master_migration_db_filename: "db_backupfile"
+        nim_master_migration_lpp_source_v: "2317A_73D"
+        nim_master_migration_spot_v: "2317A_73D_spot"
+        nim_master_migration_nim_master_fileset_src: "~/bos.sysmgt"
+        nim_master_migration_nim_master_fileset_dest: "~/bos.sysmgt"
+        nim_master_migration_phase: db_restore
+        nim_master_migration_db_file_controller: "~/db_backupfile"
 ```
 ## Copyright
 © Copyright IBM Corporation 2022
