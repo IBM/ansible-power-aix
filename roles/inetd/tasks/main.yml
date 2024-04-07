@@ -1,25 +1,25 @@
 # Copyright (c) IBM Corporation 2020
 ---
-- name: enable inetd services
+- name: Enable inetd services
   ansible.builtin.replace:
     path: /etc/inetd.conf
-    regexp: '^#({{ services | join("\s|") }}\s)'
+    regexp: '^#({{ inetd_services | join("\s|") }}\s)'
     replace: '\1'
-    backup: "{{ backup | bool }}"
+    backup: "{{ inetd_backup | bool }}"
     owner: root
     group: system
-    mode: 0664
-  when: state == 'enabled' and services
+    mode: "0664"
+  when: inetd_state == 'enabled' and inetd_services
   notify: restart inetd
 
-- name: disable inetd services
+- name: Disable inetd services
   ansible.builtin.replace:
     path: /etc/inetd.conf
-    regexp: '^({{ services | join("\s|") }}\s)'
+    regexp: '^({{ inetd_services | join("\s|") }}\s)'
     replace: '#\1'
-    backup: "{{ backup | bool }}"
+    backup: "{{ inetd_backup | bool }}"
     owner: root
     group: system
-    mode: 0664
-  when: state == 'disabled' and services
+    mode: "0664"
+  when: inetd_state == 'disabled' and inetd_services
   notify: restart inetd
