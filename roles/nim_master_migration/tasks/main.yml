@@ -72,7 +72,7 @@
       when: command.rc != 0
 
     - name: Remove Master filesets from "{{ nim_master_migration_master_b }}"
-      installp:
+      ibm.power_aix.installp:
         action: "deinstall"
         install_list: bos.sysmgt.nim.master
       delegate_to: "{{ nim_master_migration_master_b }}"
@@ -100,7 +100,7 @@
       ansible.builtin.import_tasks: copy_fileset.yml
 
     - name: Install NIM master filesets to "{{ nim_master_migration_master_b }}"
-      installp:
+      ibm.power_aix.installp:
         extend_fs: true
         device: "{{ nim_master_migration_nim_master_fileset_dest }}"
         install_list: bos.sysmgt.nim.master
