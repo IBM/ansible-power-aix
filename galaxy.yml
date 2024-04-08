@@ -15,20 +15,20 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Paul B. Finley (@pbfinley1911)
-- Pedro Torres (@pvtorres)
-- Nitish Mishra (@nitismis)
-- Joseph de Joya (@jdejoya17)
-- Rae Yang (@raeyacld)
-- Gomathi Mohan (@MGomathi)
-- Shreyansh Chamola (@schamola)
-- Syahrul Aiman Shaharuddin (@syahrul-aiman)
+ - Paul B. Finley (@pbfinley1911)
+ - Pedro Torres (@pvtorres)
+ - Nitish Mishra (@nitismis)
+ - Joseph de Joya (@jdejoya17)
+ - Rae Yang (@raeyacld)
+ - Gomathi Mohan (@MGomathi)
+ - Shreyansh Chamola (@schamola)
+ - Syahrul Aiman Shaharuddin (@syahrul-aiman)
 # Collection Description
 description: Ansible Content for IBM Power Systems - AIX provides a collection of content used to manage and deploy Power Systems AIX.
 
 # Collection License
 license:
-- GPL-3.0-only
+ - GPL-3.0-only
 
 # Collection Tags
 tags: [infrastructure, ibm, power, aix]
@@ -50,10 +50,8 @@ issues: https://github.com/IBM/ansible-power-aix/issues
 
 # Files to ignore when building power_aix collection
 build_ignore:
-- builds
-- devops
-- 'docs/_pdf'
-- 'tests/unit'
-- '*.tar.gz'
-
-
+ - builds
+ - devops
+ - 'docs/_pdf'
+ - 'tests/unit'
+ - '*.tar.gz'

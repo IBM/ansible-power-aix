@@ -1,4 +1,0 @@
-plugins/modules/internal/nim_select_target_disk.py ansible-doc!skip
-plugins/modules/internal/nim_select_target_disk.py pylint:global-variable-not-assigned
-plugins/modules/alt_disk.py validate-modules:invalid-documentation-markup
-plugins/modules/backup.py validate-modules:invalid-documentation-markup

@@ -11,9 +11,7 @@ galaxy_info:
   platforms:
     - name: AIX
       versions:
-        - 7.1
-        - 7.2
-        - 7.3
+        - all
 
   galaxy_tags:
     - aix
