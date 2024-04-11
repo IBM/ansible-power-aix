@@ -1,10 +1,15 @@
+"""Module providing system security settings management automation."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+import os
+import re
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -119,11 +124,6 @@ stderr:
     type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import os
-import re
-
-
 def check_settings(module):
     """
     Checks the security settings against the previously applied set of rules
@@ -134,11 +134,11 @@ def check_settings(module):
     cmd = "aixpert -c "
     profile = module.params["profile"]
     if profile:
-        cmd += "-P %s " % profile
+        cmd += f"-P { profile }"
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "aixpert security check failed. Command in failure '%s'" % cmd
+        msg = f"aixpert security check failed. Command in failure { cmd }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -156,7 +156,7 @@ def undo_settings(module):
     cmd = "aixpert -u "
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Unable to undo aixpert settings. Command in failure '%s' " % cmd
+        msg = f"Unable to undo aixpert settings. Command in failure { cmd } "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -178,7 +178,7 @@ def apply_settings(module, mode):
     profile = module.params["profile"]
 
     if profile and not os.path.isfile(profile):
-        msg = "Specified profile '%s' doesn't exist" % profile
+        msg = f"Specified profile { profile } doesn't exist"
         return False, msg
 
     if mode == 'apply' and not level and not profile:
@@ -195,18 +195,18 @@ def apply_settings(module, mode):
 
     cmd = "aixpert "
     if level:
-        cmd += "-l %s " % level
+        cmd += f"-l { level } "
         if norm_fmt_file:
-            cmd += "-n -o %s " % norm_fmt_file
+            cmd += f"-n -o { norm_fmt_file } "
     elif profile:
-        cmd += "-f %s " % profile
+        cmd += f"-f { profile } "
 
     if abbr_fmt_file:
-        cmd += " -a -o %s " % abbr_fmt_file
+        cmd += f" -a -o { abbr_fmt_file } "
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Unable to apply or save aixpert settings. Command in failure '%s' " % cmd
+        msg = f"Unable to apply or save aixpert settings. Command in failure { cmd } "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     # The aixpert can fail if file path is invalid  but still return 0"
@@ -214,7 +214,7 @@ def apply_settings(module, mode):
     pattern = "errno=2"
     found = re.search(pattern, stderr)
     if found:
-        msg = "Unable to access the file from command: '%s' " % cmd
+        msg = f"Unable to access the file from command: { cmd } "
         module.fail_json(msg=msg, rc=1, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -231,19 +231,19 @@ def query_settings(module):
     cmd = "aixpert -t"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Unable to query aixpert settings. Command in failure '%s' " % cmd
+        msg = f"Unable to query aixpert settings. Command in failure { cmd } "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     msg = stdout
     return msg
-
 
 def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
             level=dict(type='str', choices=['high', 'medium', 'low', 'default', 'sox-cobit']),
-            mode=dict(type='str', required=True, choices=['check', 'undo', 'apply', 'save', 'query']),
+            mode=dict(type='str', required=True, choices=['check', 'undo', 'apply', 'save',\
+                                                          'query']),
             abbr_fmt_file=dict(type='str'),
             norm_fmt_file=dict(type='str'),
             profile=dict(type='str'),
@@ -266,7 +266,7 @@ def main():
         changed, msg = apply_settings(module, mode)
     else:
         changed = False
-        msg = "Invalid state '%s'" % mode
+        msg = f"Invalid state { mode }"
 
     module.exit_json(changed=changed, msg=msg)
 
