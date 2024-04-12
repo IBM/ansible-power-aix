@@ -1,3 +1,4 @@
+"""Module to manage groups on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -143,9 +146,6 @@ stderr':
     type: str
 '''
 
-import re
-from ansible.module_utils.basic import AnsibleModule
-
 result = None
 
 
@@ -164,16 +164,18 @@ def modify_group(module):
 
     opts = ""
     load_module_opts = None
+    name = module.params['name']
+    user_list_type = module.params['user_list_type']
 
     if module.params['group_attributes']:
         for attr, val in module.params['group_attributes'].items():
             if attr == 'load_module':
-                load_module_opts = "-R %s " % val
+                load_module_opts = f"-R { val } "
             else:
-                opts += "%s=%s " % (attr, val)
+                opts += f"{ attr }={ val } " % (attr, val)
         if load_module_opts is not None:
             opts = load_module_opts + opts
-        cmd = "chgroup %s %s" % (opts, module.params['name'])
+        cmd = f"chgroup { opts } { name }"
 
         init_props = get_group_attributes(module)
 
@@ -184,25 +186,25 @@ def modify_group(module):
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            result['msg'] += "\nFailed to modify attributes for group: %s." % module.params['name']
+            result['msg'] += f"\nFailed to modify attributes for group: { name }."
             module.fail_json(**result)
 
         if init_props != get_group_attributes(module):
             result['changed'] = True
-            msg = "\nGroup: %s attributes SUCCESSFULLY set." % module.params['name']
+            msg = f"\nGroup: { name } attributes SUCCESSFULLY set."
         else:
-            msg = "\nGroup: %s attributes were not changed." % module.params['name']
+            msg = f"\nGroup: { name } attributes were not changed."
             result['changed'] = False
 
     if module.params['user_list_action']:
         cmd = "chgrpmem "
 
         if not module.params['user_list_type']:
-            result['msg'] += "\nuser_list_type is '%s' but 'user_list_type' is missing." % module.params['user_list_type']
+            result['msg'] += "\nAttribute 'user_list_type' is missing."
             module.fail_json(**result)
 
         if not module.params['users_list']:
-            result['msg'] += "\nuser_list_type is '%s' but 'users_list' is missing." % module.params['user_list_type']
+            result['msg'] += f"\nuser_list_type is { user_list_type } but 'users_list' is missing."
             module.fail_json(**result)
 
         if module.params['user_list_type'] == 'members':
@@ -233,16 +235,16 @@ def modify_group(module):
             found = re.search(pattern, stderr)
 
             if not found:
-                result['msg'] += "\nFailed to modify %s list for group: %s." % (module.params['user_list_type'], module.params['name'])
+                result['msg'] += f"\nFailed to modify { user_list_type } list for group: { name }."
                 module.fail_json(**result)
             else:
                 result['rc'] = 0
 
         if init_props != get_group_attributes(module):
             result['changed'] = True
-            msg += "\n%s list for group: %s SUCCESSFULLY modified." % (module.params['user_list_type'], module.params['name'])
+            msg += f"\n { user_list_type } list for group: { name } SUCCESSFULLY modified."
         else:
-            msg += "\n%s list for group: %s was not modified." % (module.params['user_list_type'], module.params['name'])
+            msg += f"\n { user_list_type } list for group: { name } was not modified."
 
     return msg
 
@@ -260,6 +262,7 @@ def create_group(module):
 
     msg = ""
 
+    name = module.params['name']
     cmd = "mkgroup"
 
     if module.params['group_attributes']:
@@ -275,10 +278,10 @@ def create_group(module):
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = "Failed to create group: %s." % module.params['name']
+        result['msg'] = f"Failed to create group: { name }."
         module.fail_json(**result)
     else:
-        msg = "Group: %s SUCCESSFULLY created." % module.params['name']
+        msg = f"Group: { name } SUCCESSFULLY created."
         result['changed'] = True
 
     return msg
@@ -297,6 +300,7 @@ def remove_group(module):
 
     msg = ""
     cmd = ['rmgroup']
+    name = module.params['name']
 
     if module.params['remove_keystore']:
         cmd += ['-p']
@@ -309,11 +313,10 @@ def remove_group(module):
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = "Unable to remove the group: %s." % module.params['name']
+        result['msg'] = f"Unable to remove the group: { name }."
         module.fail_json(**result)
     else:
-        msg = "Group: %s SUCCESSFULLY removed" % module.params['name']
-
+        msg = f"Group: { name } SUCCESSFULLY removed"
     return msg
 
 
@@ -337,8 +340,7 @@ def group_exists(module):
 
     if rc == 0:
         return True
-    else:
-        return False
+    return False
 
 
 def get_group_attributes(module):
@@ -382,32 +384,34 @@ def main():
         stdout='',
         stderr='',
     )
+    name = module.params['name']
+    state = module.params['state']
 
     if module.params['state'] == 'absent':
         if group_exists(module):
             result['msg'] = remove_group(module)
             result['changed'] = True
         else:
-            result['msg'] = "Group name is NOT FOUND : %s" % module.params['name']
+            result['msg'] = f"Group name is NOT FOUND : { name }"
 
     elif module.params['state'] == 'present':
         if not group_exists(module):
             result['msg'] = create_group(module)
         else:
-            result['msg'] = "Group %s already exists." % module.params['name']
+            result['msg'] = f"Group { name } already exists."
 
     elif module.params['state'] == 'modify':
         if not module.params['group_attributes'] and not module.params['user_list_action']:
-            result['msg'] = "State is '%s'. Please provide attributes to set or action to be taken for the group." % module.params['state']
+            result['msg'] = f"State is { state }. Please provide attributes or action."
         else:
             if group_exists(module):
                 result['msg'] = modify_group(module)
             else:
-                result['msg'] = "No group found in the system to modify the attributes: %s" % module.params['name']
+                result['msg'] = f"No group found in the system to modify the attributes: { name }"
                 module.fail_json(**result)
     else:
         # should not happen
-        result['msg'] = "Invalid state. The state provided is not supported: %s" % module.params['state']
+        result['msg'] = f"Invalid state. The state provided is not supported: { state }"
         module.fail_json(**result)
 
     module.exit_json(**result)
