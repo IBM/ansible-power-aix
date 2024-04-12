@@ -1,3 +1,4 @@
+"""Module to create boot image."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -117,8 +119,6 @@ stderr:
   type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 module = None
 results = None
 
@@ -182,14 +182,16 @@ def validate_space(module):
             if space != "":
                 count += 1
 
-        # If required space is less than the present space and user has set the value of increase_space
-        #  attribute to true, increase_disk_space function is called to increase the disk.
+        # If required space is less than the present space and user
+        # has set the value of increase_space
+        # attribute to true, increase_disk_space function is called
+        # to increase the disk.
 
         if present_space < val:
             if module.params['increase_space']:
                 increase_disk_space(val - present_space + 1, key)
             else:
-                results['msg'] += "Not enought space in the " + key + " directory, increase the space and try again."
+                results['msg'] += "Not enought space in the " + key + " directory"
                 results['cmd'] = cmd
                 results['stdout'] = stdout
                 results['stderr'] = stderr
@@ -201,10 +203,11 @@ def determine_required_space(module):
     Determines the required space in various directories.
     param module: Ansible module argument spec.
     returns:
-        file_systems - A dictionary containing information about space needed in various directories.
+        file_systems - Dictionary containing information about space needed in various directories.
                      - It contains directory as keys and space required as values.
     """
-    cmd = "/usr/sbin/bosboot -vq -b " + module.params['directory'] + "/" + module.params['image_name']
+    cmd = "/usr/sbin/bosboot -vq -b " + module.params['directory'] + "/"
+    cmd += module.params['image_name']
     rc, stdout, stderr = module.run_command(cmd)
     stdout_lines = stdout.split("\n")
 
@@ -379,14 +382,16 @@ def main():
 
     # Check for verifying that both the create_image and only_verify are not set at the same time.
 
-    if (module.params['create_image'] and module.params['only_verify']) or (not module.params['create_image'] and not module.params['only_verify']):
-        results['msg'] = "Both create_image and only_verify attribute can not have the same boolean value (True/False)"
+    if (module.params['create_image'] and module.params['only_verify']) or\
+        (not module.params['create_image'] and not module.params['only_verify']):
+        results['msg'] = "create_image and only_verify attribute can not have same boolean value"
         module.fail_json(**results)
 
     # Check if the provided disk device is valid or not.
 
     if not validate_disk_device(module.params['disk_device']):
-        results['msg'] = "The provided disk device " + module.params['disk_device'] + " doesn't exist in the machine."
+        results['msg'] = "The provided disk device " + module.params['disk_device']
+        results['msg'] += " doesn't exist in the machine."
         module.fail_json(**results)
 
     if module.params['create_image']:
