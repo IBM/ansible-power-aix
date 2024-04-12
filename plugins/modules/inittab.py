@@ -1,3 +1,4 @@
+"""Module to manage inittab entries on AIX."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -114,10 +116,6 @@ stderr':
     type: str
 '''
 
-
-from ansible.module_utils.basic import AnsibleModule
-
-
 def modify_entry(module):
     """
     Modifies the entry in the /etc/inittab file.
@@ -143,10 +141,10 @@ def modify_entry(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = "\nFailed to change the entry in inittab file: %s" % module.params['name']
+        msg = f"\nFailed to change the entry in inittab file: { name }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = "\nEntry for: %s is changed SUCCESSFULLY in inittab file" % module.params['name']
+        msg = f"\nEntry for: { name } is changed SUCCESSFULLY in inittab file"
 
     return msg
 
@@ -182,10 +180,10 @@ def create_entry(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg += "\nFailed to create entry in inittab file: %s" % module.params['name']
+        msg += f"\nFailed to create entry in inittab file: { name }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg += "\nEntry is created in inittab file SUCCESSFULLY: %s" % module.params['name']
+        msg += f"\nEntry is created in inittab file SUCCESSFULLY: { name }"
 
     return msg
 
@@ -200,16 +198,17 @@ def remove_entry(module):
     return:
         msg      (srt): success message.
     """
+    name = module.params['name']
     cmd = ['rmitab']
-    cmd.append(module.params['name'])
+    cmd.append(name)
 
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = "Unable to remove the entry from inittab file: %s" % module.params['name']
+        msg = f"Unable to remove the entry from inittab file: { name }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = "Entry is REMOVED SUCCESSFULLY from inittab file: %s" % module.params['name']
+        msg = f"Entry is REMOVED SUCCESSFULLY from inittab file: { name }"
 
     return msg
 
@@ -226,12 +225,11 @@ def entry_exists(module):
     cmd = ["lsitab"]
     cmd.append(module.params['name'])
 
-    rc, out, err = module.run_command(cmd)
+    rc = module.run_command(cmd)
 
-    if (rc == 0):
+    if not rc:
         return True
-    else:
-        return False
+    return False
 
 
 def main():
@@ -265,27 +263,28 @@ def main():
 
     msg = ""
     changed = False
+    name = module.params['name']
 
     if module.params['state'] == 'absent':
         if entry_exists(module):
             msg = remove_entry(module)
             changed = True
         else:
-            msg = "Entry is NOT FOUND in inittab file: %s" % module.params['name']
+            msg = f"Entry is NOT FOUND in inittab file: { name }"
     elif module.params['state'] == 'present':
         if not entry_exists(module):
             msg = create_entry(module)
             changed = True
         else:
-            msg = "Entry %s already exists. If you want to change the entry, please use modify state." % module.params['name']
+            msg = f"Entry { name } already exists. If you want modification, use modify state."
     elif module.params['state'] == 'modify':
         if entry_exists(module):
             msg = modify_entry(module)
             changed = True
         else:
-            msg = "Entry does NOT exists in inittab file: %s" % module.params['name']
+            msg = f"Entry does NOT exists in inittab file: { name }"
     else:
-        msg = "Invalid state. The state provided is not supported: %s" % module.params['state']
+        msg = "Invalid state. The state provided is not supported"
 
     module.exit_json(changed=changed, msg=msg)
 
