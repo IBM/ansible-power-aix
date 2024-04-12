@@ -1,3 +1,4 @@
+"""Module to modify AIX stanza files"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -12,6 +13,7 @@
 # AIX 6.1 PDF: https://public.dhe.ibm.com/systems/power/docs/aix/61/aixcmds1_pdf.pdf
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 DOCUMENTATION = r'''
@@ -151,9 +153,6 @@ attrs:
       returned: only when cmd is run
       type: int
 '''
-
-from ansible.module_utils.basic import AnsibleModule
-
 
 def set_attr_value(module, filename, stanza, attr, target_value):
     # -> dict:
