@@ -1,3 +1,4 @@
+"""Module for system interim fixes management"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import os
+import re
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -266,11 +270,6 @@ stderr:
     sample: 'There is no efix data on this system.'
 '''
 
-import os
-import re
-
-from ansible.module_utils.basic import AnsibleModule
-
 module = None
 results = None
 
@@ -289,16 +288,19 @@ def param_one_of(one_of_list, required=True, exclusive=True):
     """
 
     count = 0
+    action = module.params['action']
     for param in one_of_list:
         if module.params[param] is not None and module.params[param]:
             count += 1
             break
     if count == 0 and required:
-        results['msg'] = 'Missing parameter: action is {0} but one of the following is missing: '.format(module.params['action'])
+        results['msg'] = f'Missing parameter: action is { action } but\
+                           one of the following is missing: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
     if count > 1 and exclusive:
-        results['msg'] = 'Invalid parameter: action is {0} supports only one of the following: '.format(module.params['action'])
+        results['msg'] = f'Invalid parameter: action is { action } supports\
+                           only one of the following: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
 
@@ -323,7 +325,7 @@ def parse_ifix_details(output):
     info_list = ["ID", "STATE", "LABEL", "INSTALL TIME", "UPDATED BY", "ABSTRACT"]
 
     ind = 3
-    while (output[ind] != ""):
+    while output[ind] != "":
         line = output[ind]
         current_index = 0
         ifix_info = {}
@@ -346,7 +348,7 @@ def is_ifix_installed(module, ifix_package):
     ifix_label = ifix_package.split('/')[-1].split('.')[0]
     cmd = 'emgr -c -L' + ifix_label
 
-    rc, stdout, stderr = module.run_command(cmd)
+    rc = module.run_command(cmd)
 
     if rc == 0:
         return True
@@ -361,7 +363,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            action=dict(type='str', default='list', choices=['install', 'commit', 'check', 'mount', 'unmount',
+            action=dict(type='str', default='list', choices=['install', 'commit', 'check', 'mount', 'unmount', 
                                                              'remove', 'view_package', 'display_ifix', 'list']),
             ifix_package=dict(type='path'),
             ifix_label=dict(type='str'),
@@ -397,6 +399,7 @@ def main():
     bosboot_flags = {'skip': '-b', 'load_debugger': '-k', 'invoke_debugger': '-I'}
 
     action = module.params['action']
+    verbose = module.params['verbose']
 
     cmd = ['emgr']
     if action == 'install':
@@ -419,7 +422,7 @@ def main():
                 cmd += ['-e', module.params['ifix_package']]
             else:
                 if module.params['bosboot'] and module.params['bosboot'] == 'skip':
-                    results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to {0}'.format(module.params['bosboot'])
+                    results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to skip'
                     module.fail_json(**results)
                 if module.params['ifix_package']:   # this test is optional thanks to param_one_of check.
                     cmd += ['-i', module.params['ifix_package']]
@@ -447,7 +450,7 @@ def main():
         # Usage: emgr -C -i <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-kpIqX]
         param_one_of(['ifix_label', 'ifix_package', 'list_file'])
         if module.params['bosboot'] == 'skip':
-            results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to {0}'.format(module.params['bosboot'])
+            results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to skip'
             module.fail_json(**results)
 
         cmd += ['-C']
@@ -495,8 +498,8 @@ def main():
             cmd += ['-a', module.params['alternate_dir']]
         if module.params['extend_fs']:
             cmd += ['-X']
-        if action == 'check' and module.params['verbose'] is not None:
-            cmd += ['-v', '{0}'.format(module.params['verbose'])]
+        if action == 'check' and verbose is not None:
+            cmd += ['-v', f'{ verbose }']
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
@@ -564,8 +567,8 @@ def main():
             cmd += ['-f', module.params['list_file']]
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
-        if module.params['verbose'] is not None:
-            cmd += ['-v', '{0}'.format(module.params['verbose'])]
+        if verbose is not None:
+            cmd += ['-v', f'{ verbose }']
         if module.params['extend_fs']:
             cmd += ['-X']
 
@@ -579,8 +582,8 @@ def main():
             cmd += ['-n', module.params['ifix_number']]
         elif module.params['ifix_vuid']:
             cmd += ['-u', module.params['ifix_vuid']]
-        if module.params['verbose'] is not None:
-            cmd += ['-v', '{0}'.format(module.params['verbose'])]
+        if verbose is not None:
+            cmd += ['-v', f'{ verbose }']
         if module.params['extend_fs']:
             cmd += ['-X']
         if module.params['alternate_dir']:
@@ -617,17 +620,17 @@ def main():
             results['changed'] = False
 
             if not found:
-                results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+                results['msg'] = f'Command { cmd } failed with return code { rc }.'
 
             module.fail_json(**results)
 
-        results['msg'] = 'Command \'{0}\' successful.'.format(' '.join(cmd))
+        results['msg'] = f'Command { cmd } successful.'
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
         elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['ifix_details'] = parse_ifix_details(stdout)
     else:
-        results['msg'] = 'Command \'{0}\' has no preview mode, execution skipped.'.format(' '.join(cmd))
+        results['msg'] = f'Command { cmd } has no preview mode, execution skipped.'
         results['stdout'] = 'No stdout as execution has been skipped.'
 
     for i in results['ifix_details']:
