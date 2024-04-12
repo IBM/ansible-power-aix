@@ -1,3 +1,4 @@
+"""Module to Report LPAR related information as facts."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -307,8 +309,6 @@ ansible_facts:
                 }
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 
 descr2key = {
     "Node Name": ('nodename', 'str'),
@@ -423,15 +423,17 @@ def main():
     cmd = [lparstat_path, '-is']
     ret, stdout, stderr = module.run_command(cmd, check_rc=True)
     ''' prtconf to get the following:
-     "NX Crypto Acceleration"
-     "In-Core Crypto Acceleration"
-     "Processor Implementation Mode"
-     "Processor Type"
-     "Full Core"'
+     NX Crypto Acceleration
+     In-Core Crypto Acceleration
+     Processor Implementation Mode
+     Processor Type
+     Full Core
     '''
     cmd = [prtconf_path]
     ret1, stdout1, stderr1 = module.run_command(cmd, check_rc=True)
-    stdout = stdout + "\n" + stdout1
+
+    if not ret and not ret1:
+        stdout = stdout + "\n" + stdout1
 
     '''Get oslevel and print in the format of
         base level,
@@ -446,7 +448,8 @@ def main():
     cmd = [lsrsrc_path, 'IBM.MCP']
     ret2, stdout2, stderr2 = module.run_command(cmd, check_rc=True)
 
-    stdout = stdout + "\n" + stdout1
+    if not ret2:
+        stdout = stdout + "\n" + stdout1
 
     lparstat = {}
     lparstat["IBM.MCP_info"] = parse_MCP_info(stdout2)
@@ -462,7 +465,7 @@ def main():
                 continue
             id, vtype = key
             if vtype == 'str':
-                if (id == "oslevel"):
+                if id == "oslevel":
                     vrmf = val.split('-')
                     if len(vrmf) == 4:
                         # formatting the base level in the format 7.2.0.0
@@ -489,7 +492,7 @@ def main():
                 lparstat[id] = float(val.strip().rstrip('%'))
             elif vtype == 'bool':
                 if id == "full_coredump":
-                    if (val.strip() == "false"):
+                    if val.strip() == "false":
                         lparstat[id] = False
                     else:
                         lparstat[id] = True
