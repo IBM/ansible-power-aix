@@ -1,3 +1,4 @@
+"""Module to manage filesystem on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -150,9 +152,6 @@ stderr:
     type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
-
 result = None
 crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize"]
 
@@ -164,8 +163,8 @@ def is_nfs(module, filesystem):
     param filesystem: filesystem name.
     return: True - filesystem is NFS type / False - filesystem is not NFS type
     """
-    cmd = "lsfs -l %s" % filesystem
-    rc, stdout, stderr = module.run_command(cmd)
+    cmd = f"lsfs -l { filesystem }"
+    rc, stdout = module.run_command(cmd)
     if rc != 0:
         return None
 
@@ -174,8 +173,7 @@ def is_nfs(module, filesystem):
 
     if type == "nfs":
         return True
-    else:
-        return False
+    return False
 
 
 def validate_attributes(module):
@@ -201,15 +199,15 @@ def fs_state(module, filesystem):
              None - filesystem does not exist
     """
 
-    cmd = "lsfs -l %s" % filesystem
-    rc, stdout, stderr = module.run_command(cmd)
+    cmd = f"lsfs -l { filesystem }"
+    rc, stdout = module.run_command(cmd)
     if rc != 0:
         return None
 
     cmd = "df"
-    rc, stdout, stderr = module.run_command(cmd)
+    rc, stdout = module.run_command(cmd)
     if rc != 0:
-        module.fail_json("Command '%s' failed." % cmd)
+        module.fail_json(f"Command { cmd } failed.")
 
     if stdout:
         mdirs = []
@@ -240,10 +238,10 @@ def nfs_opts(module):
         opts += "-S "
 
     if perms:
-        opts += "-t %s " % perms
+        opts += f"-t { perms } "
 
     if mgroup:
-        opts += "-m %s " % mgroup
+        opts += f"-m { mgroup } " % mgroup
 
     return opts
 
@@ -270,10 +268,10 @@ def fs_opts(module):
         opts += ""
 
     if mgroup:
-        opts += "-u %s " % mgroup
+        opts += f"-u { mgroup } "
 
     if perms:
-        opts += "-p %s " % perms
+        opts += f"-p { perms } "
 
     if acct_sub_sys:
         opts += "-t yes "
@@ -292,10 +290,10 @@ def get_fs_props(module, filesystem):
     return: fs_props - output of lsfs -cq <fs>
     """
 
-    cmd = "lsfs -cq %s" % filesystem
+    cmd = f"lsfs -cq { filesystem }"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Failed to fetch current attributes of '%s'. cmd - '%s'" % (filesystem, cmd)
+        msg = f"Failed to fetch current attributes of { filesystem }. cmd - { cmd }"
         result["rc"] = rc
         result["msg"] = msg
         result["stdout"] = stdout
@@ -313,7 +311,7 @@ def get_fs_props(module, filesystem):
     mnt_grp = props[4]
     perms = "rw" if "rw" in props[6].split(",") else "ro"
     amount = props[7]
-    nfs_props = "%s:%s:%s" % (mnt_grp, perms, amount)
+    nfs_props = f"{ mnt_grp }:{ perms }:{ amount }"
     return fs_props, nfs_props
 
 
@@ -337,12 +335,12 @@ def chfs(module, filesystem):
         opts = nfs_opts(module)
         device = module.params["device"]
         nfs_server = module.params["nfs_server"]
-        cmd = "chnfsmnt %s -f %s -d %s -h %s" % (opts, filesystem, device, nfs_server)
+        cmd = f"chnfsmnt { opts } -f { filesystem } -d { device } -h { nfs_server }"
     else:
         # Modify Local Filesystem
         init_props = init_props_fs
         opts = fs_opts(module)
-        cmd = "chfs %s %s" % (opts, filesystem)
+        cmd = f"chfs { opts } { filesystem }"
 
     result["cmd"] = cmd
     rc, stdout, stderr = module.run_command(cmd)
@@ -356,16 +354,16 @@ def chfs(module, filesystem):
         final_props = final_props_fs
 
     if init_props == final_props and rc == 0:
-        result["msg"] = "No changes needed in %s" % filesystem
+        result["msg"] = f"No changes needed in { filesystem }"
         return
-    elif rc != 0:
-        msg = "Modification of filesystem '%s' failed. cmd - '%s'" % (filesystem, cmd)
+    if rc != 0:
+        msg = f"Modification of filesystem { filesystem } failed. cmd - { cmd }" % (filesystem, cmd)
         result["msg"] = msg
         result["stdout"] = stdout
         result["stderr"] = stderr
         module.fail_json(**result)
 
-    msg = "Modification of filesystem '%s' completed" % filesystem
+    msg = f"Modification of filesystem { filesystem } completed"
     result["msg"] = msg
     result["changed"] = True
 
@@ -382,7 +380,7 @@ def mkfs(module, filesystem):
     nfs_server = module.params['nfs_server']
     device = module.params['device']
     if device:
-        device = "-d %s " % device
+        device = f"-d { device } "
     else:
         device = ""
 
@@ -390,8 +388,7 @@ def mkfs(module, filesystem):
         # Create NFS Filesystem
         opts = nfs_opts(module)
 
-        cmd = "mknfsmnt -f '%s' %s -h '%s' %s -w bg " % \
-            (filesystem, device, nfs_server, opts)
+        cmd = f"mknfsmnt -f { filesystem } { device } -h { nfs_server } { opts } -w bg "
     else:
         # Create a local filesystem
         opts = fs_opts(module)
@@ -400,12 +397,11 @@ def mkfs(module, filesystem):
 
         vg = module.params['vg']
         if vg:
-            vg = "-g %s " % vg
+            vg = f"-g { vg } "
         else:
             vg = ""
 
-        cmd = "crfs -v %s %s%s-m %s %s" % \
-            (fs_type, vg, device, filesystem, opts)
+        cmd = f"crfs -v { fs_type } { vg }{ device }-m {filesystem } { opts }"
 
     result["cmd"] = cmd
 
@@ -413,17 +409,17 @@ def mkfs(module, filesystem):
     result["rc"] = rc
     if rc != 0:
         if nfs_server:
-            msg = "Creation of NFS filesystem %s failed. cmd - '%s'" % (filesystem, cmd)
+            msg = f"Creation of NFS filesystem { filesystem } failed. cmd - { cmd }"
         else:
-            msg = "Creation of filesystem %s failed. cmd - '%s'" % (filesystem, cmd)
+            msg = f"Creation of filesystem { filesystem } failed. cmd - { cmd }" % (filesystem, cmd)
         result["stdout"] = stdout
         result["stderr"] = stderr
         module.fail_json(**result)
     else:
         if nfs_server:
-            msg = "Creation of NFS filesystem '%s' succeeded" % filesystem
+            msg = f"Creation of NFS filesystem { filesystem } succeeded"
         else:
-            msg = "Creation of filesystem '%s' succeeded" % filesystem
+            msg = f"Creation of filesystem { filesystem } succeeded"
         result["msg"] = msg
     result["changed"] = True
 
@@ -456,13 +452,13 @@ def rmfs(module, filesystem):
     rc, stdout, stderr = module.run_command(cmd)
     result["rc"] = rc
     if rc != 0:
-        msg = "Filesystem Removal for '%s' failed. cmd - '%s'" % (filesystem, cmd)
+        msg = f"Filesystem Removal for { filesystem } failed. cmd - { cmd }"
         result["msg"] = msg
         result["stdout"] = stdout
         result["stderr"] = stderr
         module.fail_json(**result)
 
-    msg = "Filesystem '%s' has been removed." % filesystem
+    msg = f"Filesystem { filesystem } has been removed."
     result["changed"] = True
     result["msg"] = msg
 
@@ -530,7 +526,7 @@ def main():
         else:
             rmfs(module, filesystem)
     else:
-        result["msg"] = "Invalid state '%s'" % state
+        result["msg"] = f"Invalid state { state }"
 
     module.exit_json(**result)
 
