@@ -1,3 +1,4 @@
+"""Module to Install and update software"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -243,9 +247,6 @@ stderr:
     sample: 'installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name.'
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import re
-
 
 def main():
     module = AnsibleModule(
@@ -367,15 +368,16 @@ def main():
     result['stderr'] = stderr
 
     if rc != 0:
-        result['msg'] = 'installp \'{0}\' failed.'.format(action)
+        result['msg'] = f'installp { action } failed.'
         module.fail_json(**result)
 
-    result['msg'] = 'installp \'{0}\' successful.'.format(action)
+    result['msg'] = f'installp { action } successful.'
     if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
         result['changed'] = True
 
     # check if anything changed
-    pattern = r"(Already Installed|Not Installed|Not Committable|Not Rejectable|Nothing to Commit|0503-439)"
+    pattern = r"(Already Installed|Not Installed|Not Committable|\
+      Not Rejectable|Nothing to Commit|0503-439)"
     if not re.search(r"SUCCESSES", stdout) and\
             not re.search(r"SUCCESS", stderr) and\
             (re.search(pattern, stdout) or re.search(pattern, stderr)):
