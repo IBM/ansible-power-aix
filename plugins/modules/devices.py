@@ -1,3 +1,4 @@
+"""Module for device management"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -178,9 +182,6 @@ stderr:
     type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import re
-
 results = None
 
 
@@ -200,7 +201,7 @@ def str_to_dict(init_props, attributes):
             val = ""
 
             for i in range(key[1] + 1, len(init_props)):
-                if (init_props[i] != ' '):
+                if init_props[i] != ' ':
                     val += init_props[i]
                 elif init_props[i - 1] != ' ':
                     break
@@ -254,11 +255,11 @@ def get_device_state(module, device):
     return: True - device in available state / False - device in defined state /
              None - device does not exist
     """
-    cmd = "lsdev -l %s" % device
+    cmd = f"lsdev -l { device }"
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Command '%s' failed." % cmd
+        msg = f"Command { cmd } failed."
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if stdout:
@@ -267,9 +268,7 @@ def get_device_state(module, device):
         if device_state == 'Available':
             # Device is in Available state
             return True
-        else:
-            # Device is in Defined state
-            return False
+        return False
 
     return None
 
@@ -289,15 +288,15 @@ def get_device_attributes(module, device):
         stderr='',
     )
 
-    cmd = "lsattr -El  %s" % device
+    cmd = f"lsattr -El  { device }"
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = cmd
     results['rc'] = rc
     results['stdout'] = stdout
     results['stderr'] = stderr
     if rc != 0:
-        results['msg'] = "Failed to fetch attributes from device %s. \
-                        Command '%s' failed." % (device, cmd)
+        results['msg'] = f"Failed to fetch attributes from device { device }. \
+                        Command { cmd } failed."
         module.fail_json(**results)
     return stdout
 
@@ -325,7 +324,7 @@ def chdev(module, device):
     opts = ""
 
     if parent_device:
-        opts += "-p %s " % parent_device
+        opts += f"-p { parent_device } "
 
     if attributes:
         opts += "-a '"
@@ -342,15 +341,15 @@ def chdev(module, device):
                     skip_attr = True
 
             if not skip_attr:
-                opts += "%s=%s " % (attr, val)
+                opts += f"{ attr }={ val } "
         opts += "' "
 
     if opts == "-a '' ":
-        msg = "Nothing was modified for device '%s'" % device
+        msg = f"Nothing was modified for device { device }"
         return False, msg
 
     if not opts:
-        msg = "No changes specified for the device '%s'" % device
+        msg = f"No changes specified for the device { device }"
         return False, msg
     else:
         if force:
@@ -365,14 +364,14 @@ def chdev(module, device):
 
         opts += chtype_opt[chtype]
 
-        cmd = "%s %s -l %s" % ("chdev", opts, device)
+        cmd = f"chdev { opts } -l { device }"
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
-            msg = "Modification of Device attributes failed for device '%s'. cmd - '%s'" % (device, cmd)
+            msg = f"Modification of Device attributes failed for device { device }. cmd - { cmd }"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if init_props != get_device_attributes(module, device):
-        msg += "Modification of Device attributes completed for device '%s'" % device
+        msg += f"Modification of Device attributes completed for device { device }"
         rc = True
 
     return rc, msg
@@ -391,22 +390,22 @@ def cfgdev(module, device):
     if device != 'all':
         current_state = get_device_state(module, device)
         if current_state is True:
-            msg = "Device %s is already in Available state." % device
+            msg = f"Device { device } is already in Available state."
             return False, msg
 
         if current_state is None:
-            msg = "Device %s does not exist." % device
+            msg = f"Device { device } does not exist."
             module.fail_json(msg=msg)
 
-        cmd += "-l %s " % device
+        cmd += f"-l { device } "
 
     rc, out, err = module.run_command(cmd)
 
     if rc != 0:
-        msg = "Device configuration failed for '%s'." % device
+        msg = f"Device configuration failed for { device }."
         module.fail_json(msg=msg, rc=rc, stdout=out, stderr=err)
 
-    msg = "Device configuration completed for '%s'." % device
+    msg = f"Device configuration completed for { device }."
     return True, msg
 
 
@@ -417,8 +416,9 @@ def rmdev(module, device, state):
     param module: Ansible module argument spec.
     param device: device name.
     param state: state of the device
-    return: changed - True/False(device state modified or not or device definition is removed or not),
-            msg - message
+    return: changed - True/False(device state modified or not or device definition
+                      is removed or not),
+    msg - message
     """
     parent_device = module.params["parent_device"]
     force = module.params["force"]
@@ -430,7 +430,7 @@ def rmdev(module, device, state):
     if device != 'all':
         current_state = get_device_state(module, device)
         if current_state is None:
-            msg = "Device %s does not exist." % device
+            msg = f"Device { device } does not exist."
             return False, msg
 
     if force:
@@ -444,14 +444,15 @@ def rmdev(module, device, state):
             module.fail_json(msg=msg)
         else:
 
-            opts += "-d -l %s" % device
-            cmd = "rmdev %s" % opts
+            opts += f"-d -l { device }"
+            cmd = f"rmdev { opts }"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                msg = "Operation to remove definition for device %s failed. cmd - '%s'" % (device, cmd)
+                msg = f"Operation to remove definition for device { device } failed. cmd - { cmd }"
                 module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
-            msg = "Successfully removed definition in Customized Devices object class for device %s" % device
+            msg = "Successfully removed definition in Customized Devices object"
+            msg += f" class for device { device }"
             return True, msg
 
     if device == 'all':
@@ -460,7 +461,7 @@ def rmdev(module, device, state):
     # If the device is already defined, do nothing.
     if device is not None:
         if (state == 'defined') and (current_state is False):
-            msg = "Device %s is already in defined state." % device
+            msg = f"Device { device } is already in defined state."
             return False, msg
 
     rmtype_opt = {
@@ -472,23 +473,23 @@ def rmdev(module, device, state):
         opts += rmtype_opt[rmtype]
 
     if parent_device:
-        opts += "-p %s " % parent_device
+        opts += f"-p { parent_device } "
     if device:
-        opts += "-l %s " % device
+        opts += f"-l { device } "
 
-    cmd = "rmdev %s" % opts
+    cmd = f"rmdev { opts }"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         if device is not None:
-            msg = "Operation '%s' for device %s failed. cmd - '%s'" % (rmtype, device, cmd)
+            msg = f"Operation { rmtype } for device { device } failed. cmd - { cmd }"
         else:
-            msg = "Operation '%s' for children of parent device '%s' failed. cmd - '%s'" % (rmtype, parent_device, cmd)
+            msg = f"Operation { rmtype } for parent device { parent_device } failed. cmd - { cmd }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if device:
-        msg = "Operation '%s' for device '%s' completed." % (rmtype, device)
+        msg = f"Operation { rmtype } for device { device } completed."
     else:
-        msg = "Operation '%s' for children of parent device '%s' completed." % (rmtype, parent_device)
+        msg = f"Operation { rmtype } for children of parent device { parent_device } completed."
     return True, msg
 
 
@@ -500,7 +501,8 @@ def main():
             device=dict(type='str', default='all'),
             force=dict(type='bool', default=False),
             recursive=dict(type='bool', default=False),
-            state=dict(type='str', default='available', choices=['available', 'defined', 'removed', 'present', 'absent']),
+            state=dict(type='str', default='available',\
+                       choices=['available', 'defined', 'removed', 'present', 'absent']),
             chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both', 'reset']),
             parent_device=dict(type='str'),
             rmtype=dict(type='str', default='unconfigure', choices=['unconfigure', 'stop']),
@@ -532,7 +534,7 @@ def main():
 
     else:
         changed = False
-        msg = "Invalid state '%s'" % state
+        msg = f"Invalid state { state }"
 
     module.exit_json(changed=changed, msg=msg)
 
