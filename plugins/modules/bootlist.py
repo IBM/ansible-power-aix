@@ -1,3 +1,4 @@
+"""Module to alter the list of boot devices available to the system."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -202,9 +204,6 @@ ansible_facts:
           elements: dict
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
-
 def main():
     # Options common to "normal", "service" and "both" dictionary keys
     attrs = dict(
@@ -260,6 +259,7 @@ def main():
         ret, stdout, stderr = module.run_command(cmd, check_rc=True)
         results['stdout'] += stdout  # Save verbose output
         results['changed'] = True
+        results ['stderr'] = stderr
 
     # Retrieve boot lists
     bootlists = {}
