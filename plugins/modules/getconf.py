@@ -1,3 +1,4 @@
+"""Module to report system configuration variable values as facts."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -69,8 +71,6 @@ ansible_facts:
       type: dict
       elements: dict
 '''
-
-from ansible.module_utils.basic import AnsibleModule
 
 result = None
 
