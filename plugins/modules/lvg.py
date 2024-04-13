@@ -1,3 +1,4 @@
+"""Module to configure AIX LVM volume groups"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -269,10 +273,6 @@ stderr:
              0516-862 mkvg: Unable to create volume group.'
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
-import re
-
 result = None
 MAX_PP_PER_SMALL_VG = 32512
 MAX_PP_PER_BIG_VG = 130048
@@ -311,24 +311,23 @@ def make_vg(module, vg_name):
     # this option is ignored in small and big VG
     mirror_pool = module.params["mirror_pool"]
     if mirror_pool:
-        opt += "-p %s " % mirror_pool
+        opt += f"-p { mirror_pool } "
 
     # specify the PP size of the VG
     pp_size = module.params["pp_size"]
     if pp_size:
-        opt += "-s %s " % pp_size
+        opt += f"-s { pp_size } "
 
     # specify the major number of the VG
     major_num = module.params["major_num"]
     if major_num:
-        opt += "-V %s " % major_num
+        opt += f"-V { major_num } "
 
-    cmd = "mkvg %s -y %s %s" % (opt, vg_name, ' '.join(pvs))
-    success_msg = "Volume group %s created." % vg_name
-    fail_msg = "Failed to create volume group %s. Command '%s' failed." % \
-        (vg_name, cmd)
+    pvs_option = ' '.join(pvs)
+    cmd = f"mkvg { opt } -y { vg_name } { pvs_option }"
+    success_msg = f"Volume group { vg_name } created."
+    fail_msg = f"Failed to create volume group { vg_name }. Command { cmd } failed."
     run_cmd(module, cmd, success_msg, fail_msg)
-    return
 
 
 def extend_vg(module, vg_name, vg_state, init_props):
@@ -349,8 +348,7 @@ def extend_vg(module, vg_name, vg_state, init_props):
     varied_on = vg_state
     if not varied_on:
         result['rc'] = 1
-        result['msg'] = "Unable to extend volume group %s because it is not varied on." \
-            % (vg_name)
+        result['msg'] = f"Unable to extend volume group { vg_name } because it is not varied on."
         module.fail_json(**result)
 
     # fetch initial properties of the volume group, include
@@ -374,11 +372,12 @@ def extend_vg(module, vg_name, vg_state, init_props):
         opt += "-f "
     mirror_pool = module.params['mirror_pool']
     if mirror_pool:
-        opt += "-p %s " % mirror_pool
+        opt += f"-p { mirror_pool } "
 
-    cmd = "extendvg %s %s %s" % (opt, vg_name, ' '.join(pv_list))
-    success_msg = "Volume group %s extended.\n" % vg_name
-    fail_msg = "Failed to extend volume group %s. Command '%s' failed." % (vg_name, cmd)
+    pv_list_option = ' '.join(pv_list)
+    cmd = f"extendvg { opt } { vg_name } { pv_list_option }"
+    success_msg = f"Volume group { vg_name } extended.\n"
+    fail_msg = f"Failed to extend volume group { vg_name }. Command { cmd } failed."
     run_cmd(module, cmd, success_msg, fail_msg, init_props=init_props)
     return
 
@@ -401,7 +400,7 @@ def change_vg(module, vg_name, init_props):
     mirror_pool = module.params["mirror_pool"]
     if major_num or pp_size or mirror_pool:
         result['msg'] += "Attributes major_num, pp_size or mirror_pool "
-        result['msg'] += "are not supported while changing volume group %s.\n" % vg_name
+        result['msg'] += f"are not supported while changing volume group { vg_name }\n"
 
     # get initial vg type
     pattern = r"^(MAX PPs per VG:)\s+(\d+)"
@@ -419,19 +418,17 @@ def change_vg(module, vg_name, init_props):
     # determine if vg type needs to be changed
     vg_type = module.params["vg_type"]
     if init_vg_type == vg_type:
-        result['msg'] += "Volume group is already %s VG type." % vg_type
+        result['msg'] += f"Volume group is already { vg_type } VG type."
     elif vg_type == "big":
         opt += '-B '
     elif vg_type == "scalable":
         opt += '-G '
 
     if opt:
-        cmd = "chvg %s%s " % (opt, vg_name)
-        success_msg = "Volume group %s modified.\n" % vg_name
-        fail_msg = "Failed to modify volume group %s attributes. Command '%s' failed." \
-            % (vg_name, cmd)
+        cmd = f"chvg {opt}{vg_name} "
+        success_msg = f"Volume group {vg_name} modified.\n"
+        fail_msg = f"Failed to modify volume group {vg_name} attributes. Command {cmd} failed."
         run_cmd(module, cmd, success_msg, fail_msg, init_props=init_props)
-    return
 
 
 def reduce_vg(module, vg_name, vg_state):
@@ -450,13 +447,11 @@ def reduce_vg(module, vg_name, vg_state):
     pvs = module.params['pvs']
 
     if vg_state is False:
-        result['msg'] = "Volume group %s is deactivated. Unable to reduce volume group." \
-            % vg_name
+        result['msg'] = f"Volume group {vg_name} is deactivated. Unable to reduce volume group."
         module.fail_json(**result)
 
     elif vg_state is None:
-        result['msg'] = "Volume group '%s' does not exist. Unable to reduce volume group." \
-            % vg_name
+        result['msg'] = f"Volume group {vg_name} does not exist. Unable to reduce volume group."
         module.fail_json(**result)
 
     # check all pvs in the vg
@@ -484,7 +479,7 @@ def reduce_vg(module, vg_name, vg_state):
         if len(pv_list) == 0:
             # no pvs to remove
             return
-        elif len(pv_list) < len(pvs_in_vg):
+        if len(pv_list) < len(pvs_in_vg):
             # not all pvs in the vg will be removed
             success_msg = "Physical volume(s) '%s' removed from Volume group '%s'." \
                 % (' '.join(pv_list), vg_name)
@@ -493,16 +488,17 @@ def reduce_vg(module, vg_name, vg_state):
 
     # the pvs that will be removed is all the pvs in the vg
     if success_msg is None:
-        success_msg = "Volume group %s removed." % vg_name
+        success_msg = f"Volume group {vg_name} removed."
     if fail_msg is None:
-        fail_msg = "Unable to remove '%s'." % (vg_name)
+        fail_msg = f"Unable to remove {vg_name}."
 
     delete_lvs = module.params["delete_lvs"]
     opt = ""
     if delete_lvs:
         opt += "-d -f "
 
-    cmd = "reducevg %s %s %s" % (opt, vg_name, ' '.join(pv_list))
+    pv_list_option = ' '.join(pv_list)
+    cmd = f"reducevg {opt} {vg_name} {pv_list_option}"
     run_cmd(module, cmd, success_msg, fail_msg)
 
     return
@@ -523,29 +519,27 @@ def vary_vg(module, state, vg_name, vg_state):
     """
 
     if vg_state is None:
-        result['msg'] = "Volume group %s does not exist." % vg_name
+        result['msg'] = f"Volume group {vg_name} does not exist."
         module.fail_json(**result)
 
     if state == 'varyon':
         if vg_state is True:
-            result['msg'] += "Volume group %s is already active. " % vg_name
+            result['msg'] += f"Volume group {vg_name} is already active. "
             return
 
-        cmd = "varyonvg %s" % vg_name
-        success_msg = "Volume group %s activated." % vg_name
-        fail_msg = "Failed to activate volume group %s. Command '%s' failed." \
-            % (vg_name, cmd)
+        cmd = f"varyonvg {vg_name}"
+        success_msg = f"Volume group {vg_name} activated."
+        fail_msg = f"Failed to activate volume group {vg_name}. Command {cmd} failed."
         run_cmd(module, cmd, success_msg, fail_msg)
 
     elif state == 'varyoff':
         if vg_state is False:
-            result['msg'] += "Volume group %s is already deactivated. " % vg_name
+            result['msg'] += f"Volume group {vg_name} is already deactivated. "
             return
 
-        cmd = "varyoffvg %s" % vg_name
-        success_msg = "Volume group %s deactivated." % vg_name
-        fail_msg = "Failed to deactivate volume group %s. Command '%s' failed." % \
-            (vg_name, cmd)
+        cmd = f"varyoffvg {vg_name}"
+        success_msg = f"Volume group {vg_name} deactivated."
+        fail_msg = f"Failed to deactivate volume group {vg_name}. Command {cmd} failed."
         run_cmd(module, cmd, success_msg, fail_msg)
 
     return
@@ -593,21 +587,21 @@ def get_vg_props(module, just_pvs=False):
     init_props = ''
 
     if not just_pvs:
-        cmd = "lsvg %s" % vg_name
+        cmd = f"lsvg {vg_name}"
         fail_msg = "Failed to fetch volume group properties."
         run_cmd(module, cmd, None, fail_msg, fetch=True)
         init_props = result['stdout']
 
-    cmd = "lsvg -p %s" % vg_name
-    fail_msg = "Failed to fetch the list of physical volumes associated to \
-        volume group %s." % vg_name
+    cmd = f"lsvg -p {vg_name}"
+    fail_msg = f"Failed to fetch the list of physical volumes associated to \
+        volume group {vg_name}."
     run_cmd(module, cmd, None, fail_msg, fetch=True)
     init_props += result['stdout']
 
     if not just_pvs:
-        cmd = "lsvg -P %s" % vg_name
-        fail_msg = "Failed to fetch information regarding mirror pools of volume \
-            group %s" % vg_name
+        cmd = f"lsvg -P {vg_name}" % vg_name
+        fail_msg = f"Failed to fetch information regarding mirror pools of volume \
+            group {vg_name}"
         run_cmd(module, cmd, None, fail_msg, fetch=True)
         init_props += result['stdout']
 
@@ -629,12 +623,12 @@ def find_vg_state(module, vg_name):
     """
 
     cmd = 'lsvg -o'
-    fail_msg = "Command '%s' failed." % cmd
+    fail_msg = f"Command {cmd} failed."
     run_cmd(module, cmd, None, fail_msg, fetch=True)
     active_vgs = result['stdout']
 
     cmd = 'lsvg'
-    fail_msg = "Command '%s' failed." % cmd
+    fail_msg = f"Command {cmd} failed." % cmd
     run_cmd(module, cmd, None, fail_msg, fetch=True)
     all_vgs = result['stdout']
 
@@ -720,7 +714,7 @@ def build_vg_opts(module, modify=False):
     # NOTE: this is only available for scalable VG
     num_partitions = module.params["num_partitions"]
     if num_partitions:
-        opt += "-P %s " % num_partitions
+        opt += f"-P {num_partitions} "
 
     # specify the critical VG option
     critical_vg = module.params["critical_vg"]
@@ -732,13 +726,13 @@ def build_vg_opts(module, modify=False):
     # specify the PP limit per PV factor
     pp_limit = module.params["pp_limit"]
     if pp_limit:
-        opt += "-t %s " % pp_limit
+        opt += f"-t {pp_limit} "
 
     # specify the number of LVs that can be
     # created in the VG
     num_lvs = module.params["num_lvs"]
     if num_lvs:
-        opt += "-v %s " % num_lvs
+        opt += f"-v {num_lvs} "
 
     return opt
 
@@ -752,7 +746,8 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'], default='present'),
+            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'],\
+                       default='present'),
             vg_name=dict(type='str', required=True),
             vg_type=dict(type='str', choices=['none', 'big', 'scalable']),
             enhanced_concurrent_vg=dict(type='bool'),
@@ -794,7 +789,8 @@ def main():
             # Creating VG does not support quorum option
             quorum = module.params['quorum']
             if quorum:
-                result['msg'] += "Attribute quorom is not supported while changing volume group %s.\n" % vg_name
+                result['msg'] += f"Attribute quorom is not supported while \
+                    changing volume group {vg_name}.\n"
                 module.fail_json(**result)
 
             # VG doesn't exist. Create it
@@ -820,7 +816,7 @@ def main():
         vary_vg(module, state, vg_name, vg_state)
 
     if (result['msg'] == '') or (not result['changed']):
-        result['msg'] += "No changes were needed on volume group %s." % vg_name
+        result['msg'] += f"No changes were needed on volume group {vg_name}."
 
     module.exit_json(**result)
 
