@@ -1,3 +1,4 @@
+"""Module to return installed software products or fixes as facts"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -288,10 +291,6 @@ ansible_facts:
 
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import re
-
-
 LPP_TYPE = {
     'I': 'install',
     'M': 'maintenance',
@@ -323,9 +322,10 @@ def list_fixes(module):
     }
 
     instfix_path = module.get_bin_path('instfix', required=True)
-    '''instfix sample output:
-    ##Keyword:Fileset:ReqLevel:InstLevel:Status:Abstract
-     IV82292:bos.net.tcp.ftp:7.2.1.0:7.2.5.1:+:FTP LEAKS MEMORY AND MAY DUMP CORE WITH TLS
+    '''
+    instfix sample output:
+    Keyword:Fileset:ReqLevel:InstLevel:Status:Abstract
+    IV82292:bos.net.tcp.ftp:7.2.1.0:7.2.5.1:+:FTP LEAKS MEMORY AND MAY DUMP CORE WITH TLS
     '''
     cmd = [instfix_path, '-icq']
     if module.params['fix_type']:
@@ -339,7 +339,7 @@ def list_fixes(module):
             cmdstr.strip()
             cmd += ['-k', cmdstr]
 
-    ret, stdout, stderr = module.run_command(cmd)
+    stdout = module.run_command(cmd)[1]
 
     instfix_stdout = stdout.splitlines()
     for line in instfix_stdout:
@@ -385,7 +385,8 @@ def list_reqs(name, module):
     i = 0
 
     lslpp_path = module.get_bin_path('lslpp', required=True)
-    ''' sample command output
+    ''' 
+    sample command output
     lslpp -pcq bos.perf.tools
     /usr/lib/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30
     *coreq bos.perf.perfstat 5.3.0.30 *coreq perfagent.tools 5.3.0.50 *coreq bos.perf.pmaix
@@ -398,11 +399,12 @@ def list_reqs(name, module):
     '''
     cmd = [lslpp_path, '-cpq', name]
 
-    ret, stdout, stderr = module.run_command(cmd)
+    stdout = module.run_command(cmd)[1]
 
     for line in stdout.splitlines():
         raw_fields = line.split(':')
-        ''' In cases where requisites are not present, then the length of the raw fields from
+        ''' 
+        In cases where requisites are not present, then the length of the raw fields from
         the output line will be less than 3. Hence continue to the next line as this would not
         need any processing.
         '''
@@ -410,7 +412,8 @@ def list_reqs(name, module):
             continue
         fields = [field.strip() for field in raw_fields]
 
-        ''' 3rd field contains the requisites separated by spaces.
+        ''' 
+        3rd field contains the requisites separated by spaces.
         Parse the requisites and categorize it as coreqs, prereqs, ifreqs.
         Sample 3rd field from lslpp -cpq
         *coreq bos.sysmgt.trace 5.3.0.30 *coreq bos.perf.perfstat 5.3.0.30 *coreq
@@ -419,7 +422,8 @@ def list_reqs(name, module):
         5.3.0.10 *prereq bos.rte.libc 7.1.3.0
         '''
 
-        '''Some of the filesets might have no requisites.
+        '''
+        Some of the filesets might have no requisites.
         Example:
         /usr/lib/objrepos:udapl.rte 7.2.5.100:NONE
         /etc/objrepos:udapl.rte 7.2.5.100:NONE
@@ -430,7 +434,8 @@ def list_reqs(name, module):
         reqs = re.split(r"\s+|{", fields[2])
         num_reqs = len(reqs)
 
-        ''' Requisites has 3 fields : req_type, fileset name, level.
+        '''
+        Requisites has 3 fields : req_type, fileset name, level.
         Minimum 1st 2 fields should be present.
         Sample
         *coreq bos.sysmgt.trace 5.3.0.30
@@ -441,11 +446,11 @@ def list_reqs(name, module):
                 req_type = ''
                 fileset = ''
                 level = ''
-                ''' Get the type of requisite, fileset name and the level
+                ''' 
+                Get the type of requisite, fileset name and the level
                 The values are in order and hence parse through the list
                 and assign the values to the corresponding field names.
-                '''
-                ''' If the requisites is not one of the types :
+                If the requisites is not one of the types :
                 instreq, ifreq, coreq, prereq then we don't need to process further.
                 We continue to next requisite
                 '''
@@ -457,27 +462,32 @@ def list_reqs(name, module):
                 req_type = reqs[i][1:]
                 i = i + 1
 
-                '''2nd field will be fileset name.
-                 This is to fill the fileset name which will be followed by level
+                '''
+                2nd field will be fileset name.
+                This is to fill the fileset name which will be followed by level
                 *coreq bos.sysmgt.trace 5.3.0.30
                 In  this fileset will "bos.sysmgt.trace "
                 '''
                 fileset = reqs[i]
                 i = i + 1
-                ''' level field may not be present in some cases. Hence
+                '''
+                level field may not be present in some cases. Hence
                 only if level field is present update the value.
                 Increment the iterator if the next field doesn't start with
                 the next requisite set of fields and has only level information.
                 (Example: *coreq bos.perf.perfstat)
                 '''
                 if i < num_reqs:
-                    ''' 3rd field will be fileset level. Sometimes this might be some additional
+                    ''' 
+                    3rd field will be fileset level. Sometimes this might be some additional
                     text followed by the level. So process the additional texts here and get the
                     level .
                     '''
                     if reqs[i] not in req_type_list:
-                        ''' In some cases, prerequisites might be listed in brackets like below:
-                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1
+                        '''
+                        In some cases, prerequisites might be listed in brackets like below:
+                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 
+                        *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1
                         In this case, both will be listed as part of levels.
                         '''
                         if '(' in reqs[i] or ')' in reqs[i]:
@@ -511,9 +521,9 @@ def fileset_consistency_check(module, name):
             'NOT OK', if failure
     """
     lppchk_path = module.get_bin_path('lppchk', required=True)
-    cmd = "%s -v %s" % (lppchk_path, name)
+    cmd = f"{ lppchk_path } -v { name }"
     cons_check = 'UNKNOWN'
-    ret, stdout, stderr = module.run_command(cmd)
+    ret = module.run_command(cmd)[0]
     if ret == 0:
         cons_check = "OK"
     else:
@@ -530,7 +540,8 @@ def main():
             all_updates=dict(type='bool', default=False),
             base_levels_only=dict(type='bool', default=False),
             fixes=dict(type='list', elements='str'),
-            fix_type=dict(type='str', choices=['apar', 'technology_level', 'service_pack', 'sp', 'tl', 'all']),
+            fix_type=dict(type='str', choices=['apar', 'technology_level',\
+                                               'service_pack', 'sp', 'tl', 'all']),
             reqs=dict(type='bool', default=False)
         ),
         mutually_exclusive=[
@@ -557,7 +568,7 @@ def main():
     else:
         cmd += ['all']
 
-    ret, stdout, stderr = module.run_command(cmd)
+    stdout = module.run_command(cmd)[1]
 
     # Ignore errors as lslpp might return 1 with -b
     # List of fields returned by lslpp -lc:

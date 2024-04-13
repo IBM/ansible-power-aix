@@ -348,7 +348,7 @@ def is_ifix_installed(module, ifix_package):
     ifix_label = ifix_package.split('/')[-1].split('.')[0]
     cmd = 'emgr -c -L' + ifix_label
 
-    rc = module.run_command(cmd)
+    rc = module.run_command(cmd)[0]
 
     if rc == 0:
         return True
