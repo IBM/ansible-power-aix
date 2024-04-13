@@ -1,3 +1,4 @@
+"""Module to enable and disable Simultaneous MultiThreading Mode"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -98,15 +100,12 @@ msg:
 
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
-
 def get_smt_state(module):
     """ Determines the current SMT status and return the present smtvalue else none"""
     cmd = "smtctl"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = "Command '%s' failed." % cmd
+        msg = f"Command { cmd } failed."
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if stdout:
@@ -125,7 +124,12 @@ def get_smt_state(module):
 
 
 def smt_set(module):
-    """ Set the smt value to enable or disable or set the threads value as per the default smt_value"""
+    """
+
+    Set the smt value to enable or disable or set the
+    threads value as per the default smt_value
+
+    """
 
     smt_value = module.params["smt_value"]
     smt_extra = module.params["smt_extra"]
@@ -138,16 +142,16 @@ def smt_set(module):
     opts = ""
 
     if smt_value and chtype and not smt_limit:
-        opts += "-t %s -w %s" % (smt_value, chtype)
+        opts += f"-t { smt_value } -w { chtype }"
 
     elif smt_value and smt_limit:
-        opts += "-m %s -t %s" % (smt_limit, smt_value)
+        opts += f"-m { smt_limit } -t { smt_value }"
 
     elif smt_value:
-        opts += "-t %s" % (smt_value)
+        opts += f"-t { smt_value }"
 
     elif smt_extra:
-        opts += "-m %s" % (smt_extra)
+        opts += f"-m { smt_extra }"
 
     elif smt_state == "enabled":
         opts += "-m on"
@@ -158,15 +162,15 @@ def smt_set(module):
     else:
         opts = ""
 
-    cmd = "smtctl %s" % opts
+    cmd = f"smtctl { opts }"
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = "Command Execution Failure cmd: %s" % cmd
+        msg = f"Command Execution Failure cmd: { cmd }"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     else:
-        msg = "Command Executed Successfully cmd: %s" % cmd
+        msg = f"Command Executed Successfully cmd: { cmd }"
         return True, msg
 
 
@@ -180,14 +184,14 @@ def run_bosboot(module):
     if bos_boot:
         opts += "-a"
 
-        cmd = "bosboot %s " % opts
+        cmd = f"bosboot { opts } "
         rc, stdout, stderr = module.run_command(cmd)
 
         if rc != 0:
-            msg = "Command Execution Failed cmd -   '%s'" % (cmd)
+            msg = f"Command Execution Failed cmd - { cmd }"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            msg = "Command Executed Successfully output- '%s'" % (stdout)
+            msg = f"Command Executed Successfully output- { stdout }"
             return True, msg
 
     return None
