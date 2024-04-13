@@ -816,7 +816,7 @@ def main():
         vary_vg(module, state, vg_name, vg_state)
 
     if (result['msg'] == '') or (not result['changed']):
-        result['msg'] += f"No changes were needed on volume group {vg_name}." % vg_name
+        result['msg'] += f"No changes were needed on volume group {vg_name}."
 
     module.exit_json(**result)
 
