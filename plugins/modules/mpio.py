@@ -1,3 +1,4 @@
+"""Module for mpio on AIX"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -111,9 +113,6 @@ ansible_facts:
             }
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
-
 def gather_facts(module):
     paths = {}
     drivers = {}
@@ -124,7 +123,7 @@ def gather_facts(module):
         cmd += ['-l', module.params['device']]
     if module.params['parent']:
         cmd += ['-p', module.params['parent']]
-    ret, stdout, stderr = module.run_command(cmd)
+    stdout = module.run_command(cmd)[1]
     for line in stdout.splitlines():
         fields = line.split(':')
         if len(fields) != 6:
@@ -147,7 +146,7 @@ def gather_facts(module):
         return dict(paths=paths, drivers=drivers)
 
     cmd = [manage_disk_drivers_path, '-l']
-    ret, stdout, stderr = module.run_command(cmd)
+    stdout = module.run_command(cmd)[1]
     for line in stdout.splitlines():
         fields = line.split()
         if len(fields) != 3:

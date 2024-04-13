@@ -1,3 +1,4 @@
+"""Module to reboot AIX machines"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
