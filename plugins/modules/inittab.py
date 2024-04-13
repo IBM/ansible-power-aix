@@ -225,7 +225,7 @@ def entry_exists(module):
     cmd = ["lsitab"]
     cmd.append(module.params['name'])
 
-    rc = module.run_command(cmd)
+    rc = module.run_command(cmd)[0]
 
     if not rc:
         return True
