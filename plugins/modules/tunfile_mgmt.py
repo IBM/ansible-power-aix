@@ -1,3 +1,4 @@
+"""Module to manage tunables configuration file"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = r'''
 ---
@@ -149,8 +151,6 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
-from ansible.module_utils.basic import AnsibleModule
-
 results = {}
 
 
@@ -180,7 +180,8 @@ def tunchange(module):
         msg_failed = '\nPlease provide tunable_with_values, component_to_set_dflt or both.'
         module.fail_json(msg=msg_failed)
 
-    # iterate through tunables_with_values to get stanzas and parameters and form the tunchange command for multiple commands.
+    # iterate through tunables_with_values to get stanzas and parameters
+    # and form the tunchange command for multiple commands.
     if tunables_with_values:
         for stanza, tunables in tunables_with_values.items():
             if stanza == "false":
@@ -195,10 +196,10 @@ def tunchange(module):
             results['cmd' + stanza] = cmd
             if rc != 0:
                 # In case command returns non zero return code, fail case
-                results['msg' + stanza] = "\nFailed to modify file for %s component." % stanza
+                results['msg' + stanza] = f"\nFailed to modify file for { stanza } component."
                 module.fail_json(**results)
             else:
-                results['msg' + stanza] = '\nFile is modified SUCCESSFULLY for %s component.\n' % stanza
+                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY for { stanza }.\n'
                 results['msg' + stanza] += std_out
 
     if set_default:
@@ -211,13 +212,11 @@ def tunchange(module):
             results['cmd' + stanza] = cmd
             if rc != 0:
                 # In case command returns non zero return code, fail case
-                results['msg' + stanza] = "\nFailed to modify file for %s component" % stanza
+                results['msg' + stanza] = f"\nFailed to modify file: { stanza }"
                 module.fail_json(**results)
             else:
-                results['msg' + stanza] = '\nFile is modified SUCCESSFULLY for %s component\n' % stanza
+                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY: { stanza }\n'
                 results['msg' + stanza] += std_out
-
-    return
 
 
 def tuncheck(module):
@@ -251,12 +250,10 @@ def tuncheck(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = "File provided is INVALID. Check the message for more details: %s" % filename
+        results['msg'] = f"File { filename } is INVALID. Check the message for more details."
         module.fail_json(**results)
     else:
-        results['msg'] = "File provided is VALID. Check the message for more details: %s" % filename
-
-    return
+        results['msg'] = f"File provided is VALID: { filename }"
 
 
 def tunrestore(module):
@@ -290,19 +287,17 @@ def tunrestore(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = "\nFailed to restore tunable parameter from file: %s" % filename
+        results['msg'] = f"\nFailed to restore tunable parameter from file: { filename }"
         module.fail_json(**results)
     else:
-        results['msg'] = '\nTunables have been restored SUCCESSFULLY from file: %s' % filename
+        results['msg'] = f'\nTunables have been restored SUCCESSFULLY from file: { filename }'
         results['msg'] += std_out
 
     if make_nextboot:
         results['Reboot_required'] = 'True'
         results['Bosboot_required'] = 'True'
-        results['msg'] += '\nSome tunables requires bosboot and reboot for the changes to take place.'
-        results['msg'] += '\nPlease run bosboot and reboot.'
-
-    return
+        results['msg'] += '\nSome tunables require bosboot/reboot for the changes to take place.'
+        results['msg'] += '\nPlease perform bosboot and reboot.'
 
 
 def tunsave(module):
@@ -340,13 +335,11 @@ def tunsave(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = "Failed to save tunable parameters in file: %s" % filename
+        results['msg'] = f"Failed to save tunable parameters in file: { filename }"
         module.fail_json(**results)
     else:
-        results['msg'] = "\nAll tunables have been saved SUCCESSFULLY in file: %s \n" % filename
+        results['msg'] = f"\nAll tunables have been saved SUCCESSFULLY in file: { filename } \n"
         results['msg'] += std_out
-
-    return
 
 
 def main():
@@ -356,11 +349,13 @@ def main():
     global results
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', required=True, choices=['save', 'restore', 'validate', 'modify']),
+            action=dict(type='str', required=True, choices=['save', 'restore',\
+                                                            'validate', 'modify']),
             filename=dict(type='str', required=True),
             tunables_with_values=dict(type='dict', default=None),
             make_nextboot=dict(type='bool', default='False'),
-            validation_type=dict(type='str', default='current', choices=['current', 'reboot', 'both']),
+            validation_type=dict(type='str', default='current', choices=['current',\
+                                                                         'reboot', 'both']),
             save_all_tunables=dict(type='bool', default=True),
             set_default=dict(type='bool', default='False'),
             component_to_set_dflt=dict(type='list', elements='str', default=None)
@@ -389,7 +384,7 @@ def main():
                 invalid_components += stanza + ', '
 
     if invalid_components:
-        results['msg'] = "Invalid components are found in the tunables_with_values: %s" % invalid_components
+        results['msg'] = f"Invalid components are found: { invalid_components }"
         module.fail_json(**results)
 
     if action == 'save':
