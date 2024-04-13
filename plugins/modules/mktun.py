@@ -1,3 +1,4 @@
+"""Module for mktun on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import base64
+import os
+import re
+import tempfile
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -280,20 +286,16 @@ ansible_facts:
           elements: dict
 '''
 
-import base64
-import os
-import re
-import tempfile
-
-from ansible.module_utils.basic import AnsibleModule
-
+gentun_path = ''
+lstun_path = ''
 
 def gentun(module, vopt, tun):
     """
     Create the manual tunnel definition in the tunnel database
     with gentun and return the tunnel id.
     """
-    cmd = [gentun_path, vopt, '-t', 'manual', '-s', tun['src']['address'], '-d', tun['dst']['address']]
+    cmd = [gentun_path, vopt, '-t', 'manual', '-s',\
+           tun['src']['address'], '-d', tun['dst']['address']]
 
     # gentun options that use lowercase letters for source and uppercase for destination
     gentun_opts = {
@@ -347,7 +349,7 @@ def gentun(module, vopt, tun):
         if tun['replay']:
             cmd += ['-y', 'Y']
 
-    ret, stdout, stderr = module.run_command(cmd, check_rc=True)
+    stdout = module.run_command(cmd, check_rc=True)[1]
     m = re.search(r"^Tunnel (\d+) for IPv\d has been added successfully", stdout, re.MULTILINE)
     if not m:
         return None
@@ -373,7 +375,7 @@ def lstun(module):
 
         # List tunnel definitions in tunnel database
         cmd = [lstun_path, vopt, '-p', 'manual', '-O']
-        ret, stdout, stderr = module.run_command(cmd, check_rc=True)
+        stdout = module.run_command(cmd, check_rc=True)[1]
         for line in stdout.splitlines():
             if line.startswith('#'):
                 continue
@@ -524,11 +526,11 @@ def main():
     results['ansible_facts'] = dict(tunnels=dict())
 
     # Retrieve the list of authentication algorithms
-    ret, stdout, stderr = module.run_command([ipsecstat_path, '-A'], check_rc=True)
+    stdout = module.run_command([ipsecstat_path, '-A'], check_rc=True)[1]
     results['ansible_facts']['tunnels']['auth_algos'] = stdout.splitlines()
 
     # Retrieve the list of encryption algorithms
-    ret, stdout, stderr = module.run_command([ipsecstat_path, '-E'], check_rc=True)
+    stdout = module.run_command([ipsecstat_path, '-E'], check_rc=True)[1]
     results['ansible_facts']['tunnels']['encr_algos'] = stdout.splitlines()
 
     tunnels = lstun(module)
