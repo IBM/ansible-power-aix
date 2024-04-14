@@ -348,9 +348,9 @@ def mount(module):
             # if both mount_dir and mount_over_dir is given then check for
             # mount_over_dir
             if mount_over_dir:
-                result['msg'] = f"Filesystem/Mount point {mount_over_dir} already mounted"
+                result['msg'] = f"Filesystem/Mount point '{mount_over_dir}' already mounted"
             elif mount_dir:
-                result['msg'] = f"Filesystem/Mount point {mount_dir} already mounted"
+                result['msg'] = f"Filesystem/Mount point '{mount_dir}' already mounted"
             return
         if mount_over_dir is None:
             mount_over_dir = ""
