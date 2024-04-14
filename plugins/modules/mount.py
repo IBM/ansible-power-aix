@@ -370,14 +370,14 @@ def mount(module):
         num_mounted = 0
         for mnt_pt, mounted in init_mnt_grp_mounted.items():
             if mounted:
-                result['msg'] += f"Filesystem/Mount point {mnt_pt} already mounted\n"
+                result['msg'] += f"Filesystem/Mount point '{mnt_pt}' already mounted\n"
                 continue
             # check if it is now mounted
             if final_mnt_grp_mounted[mnt_pt]:
-                result['msg'] += f"Mount successful - {mnt_pt}\n"
+                result['msg'] += f"Mount successful - '{mnt_pt}'\n"
                 num_mounted += 1
             else:
-                result['msg'] += f"Mount failed - {mnt_pt}\n"
+                result['msg'] += f"Mount failed - '{mnt_pt}'\n"
                 module.fail_json(**result)
         if num_mounted != 0:
             result['changed'] = True
