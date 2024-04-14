@@ -1,3 +1,4 @@
+"""Module to activate or deactivate the filter rules."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -289,8 +291,6 @@ filter:
     type: dict
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-
 results = None
 
 
@@ -298,12 +298,18 @@ def list_rules(module, version):
     """
     Sample lsfilt output:
 
-    1|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|no|udp|eq|4001|eq|4001|both|both|no|all packets|0|all|0|||Default Rule
-    2|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5989|both|inbound|no|all packets|0|all|0|||allow port 5989
-    3|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5988|both|inbound|no|all packets|0|all|0|||allow port 5988
-    4|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5987|both|inbound|no|all packets|0|all|0|||allow port 5987
-    5|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|eq|657|any|0|both|inbound|no|all packets|0|all|0|||allow port 657
-    6|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|657|both|inbound|no|all packets|0|all|0|||allow port 657
+    1|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|no|udp|eq|4001|eq|4001|both|both|no|all 
+    packets|0|all|0|||Default Rule
+    2|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5989|both|inbound|no|all 
+    packets|0|all|0|||allow port 5989
+    3|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5988|both|inbound|no|all 
+    packets|0|all|0|||allow port 5988
+    4|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|5987|both|inbound|no|all 
+    packets|0|all|0|||allow port 5987
+    5|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|eq|657|any|0|both|inbound|no|all 
+    packets|0|all|0|||allow port 657
+    6|permit|0.0.0.0|0.0.0.0|0.0.0.0|0.0.0.0|yes|all|any|0|eq|657|both|inbound|no|all 
+    packets|0|all|0|||allow port 657
     """
 
     vopt = '-v4' if version != 'ipv6' else '-v6'
@@ -313,7 +319,8 @@ def list_rules(module, version):
     if ret != 0:
         results['stdout'] += stdout
         results['stderr'] += stderr
-        results['msg'] = 'Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        msg_cmd = ' '.join(cmd)
+        results['msg'] = f'Command \'{msg_cmd}\' failed with return code {ret}.'
         return None
 
     rules = []
@@ -328,15 +335,19 @@ def list_rules(module, version):
         # For more readability of the JSON output, we do not report fields
         # that are set to the default value.
 
-        if (version == 'ipv4' and fields[2] != '0.0.0.0') or (version == 'ipv6' and fields[2] != '::'):
+        if (version == 'ipv4' and fields[2] != '0.0.0.0') or \
+          (version == 'ipv6' and fields[2] != '::'):
             rule['s_addr'] = fields[2]
         # Mask or prefix length
-        if (version == 'ipv4' and fields[3] != '0.0.0.0') or (version == 'ipv6' and fields[3] != '0'):
+        if (version == 'ipv4' and fields[3] != '0.0.0.0') or \
+          (version == 'ipv6' and fields[3] != '0'):
             rule['s_mask'] = fields[3]
-        if (version == 'ipv4' and fields[4] != '0.0.0.0') or (version == 'ipv6' and fields[4] != '::'):
+        if (version == 'ipv4' and fields[4] != '0.0.0.0') or \
+          (version == 'ipv6' and fields[4] != '::'):
             rule['d_addr'] = fields[4]
         # Mask or prefix length
-        if (version == 'ipv4' and fields[5] != '0.0.0.0') or (version == 'ipv6' and fields[5] != '0'):
+        if (version == 'ipv4' and fields[5] != '0.0.0.0') or \
+          (version == 'ipv6' and fields[5] != '0'):
             rule['d_mask'] = fields[5]
 
         if fields[6] == 'yes':
@@ -436,7 +447,9 @@ def add_change_rules(module, params, version):
             results['stdout'] += stdout
             results['stderr'] += stderr
             if ret != 0:
-                results['msg'] = 'Could not remove rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+                msg_cmd = ' '.join(cmd)
+                results['msg'] = f'Could not remove rule: command \'{msg_cmd}\' failed \
+                  with return code {ret}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
             continue
@@ -449,7 +462,9 @@ def add_change_rules(module, params, version):
             results['stdout'] += stdout
             results['stderr'] += stderr
             if ret != 0:
-                results['msg'] = 'Could not move rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+                msg_cmd = ' '.join(cmd)
+                results['msg'] = f'Could not move rule: command \'{msg_cmd}\' \
+                  failed with return code {ret}.'.format(' '.join(cmd), ret)
                 module.fail_json(**results)
             results['changed'] = True
             continue
@@ -552,7 +567,9 @@ def add_change_rules(module, params, version):
         results['stdout'] += stdout
         results['stderr'] += stderr
         if ret != 0:
-            results['msg'] = 'Could not add rule: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            msg_cmd = ' '.join(cmd)
+            results['msg'] = f'Could not add rule: command \'{msg_cmd}\' \
+              failed with return code {ret}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
         results['changed'] = True
 
@@ -568,7 +585,9 @@ def add_change_rules(module, params, version):
     results['stdout'] += stdout
     results['stderr'] += stderr
     if ret != 0:
-        results['msg'] = 'Could not activate filter: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+        msg_cmd = ' '.join(cmd)
+        results['msg'] = f'Could not activate filter: command \'{msg_cmd}\' \
+          failed with return code {ret}.'.format(' '.join(cmd), ret)
         module.fail_json(**results)
 
     if params[version]['log'] is not None:
@@ -579,7 +598,9 @@ def add_change_rules(module, params, version):
         results['stdout'] += stdout
         results['stderr'] += stderr
         if ret != 0:
-            results['msg'] = 'Could not change logging: command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), ret)
+            msg_cmd = ' '.join(cmd)
+            results['msg'] = f'Could not change logging: command \'{msg_cmd}\' \
+              failed with return code {ret}.'.format(' '.join(cmd), ret)
             module.fail_json(**results)
         results['changed'] = True
 
@@ -640,10 +661,13 @@ def main():
             rules=dict(
                 type='list', elements='dict',
                 options=dict(
-                    action=dict(type='str', choices=['permit', 'deny', 'shun_host', 'shun_port', 'if', 'else', 'endif', 'remove', 'move']),
+                    action=dict(type='str', choices=['permit', 'deny', 'shun_host',\
+                                                     'shun_port', 'if', 'else', 'endif',\
+                                                      'remove', 'move']),
                     id=dict(type='str'),
                     new_id=dict(type='str'),
-                    direction=dict(type='str', choices=['inbound', 'outbound', 'both'], default='both'),
+                    direction=dict(type='str', choices=['inbound', 'outbound', 'both'],\
+                                   default='both'),
                     s_addr=dict(type='str'),
                     s_mask=dict(type='str'),
                     s_opr=dict(type='str', choices=operations),
@@ -675,7 +699,8 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', choices=['add', 'check', 'change', 'import', 'export'], default='add'),
+            action=dict(type='str', choices=['add', 'check', 'change', 'import', 'export'],\
+                        default='add'),
             directory=dict(type='str'),
             rawexport=dict(type='bool', default=False),
             ipv4=ipcommon,
