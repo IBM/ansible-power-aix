@@ -1,3 +1,4 @@
+"""Module to Mount/unmount a filesystem or device on AIX"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -174,9 +178,6 @@ stderr:
     type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import re
-
 result = None
 
 
@@ -193,18 +194,18 @@ def is_mount_group_mounted(module, mount_group):
     """
 
     # Fetch all FS in the mount_group
-    cmd = "/usr/sbin/lsfs -u %s" % mount_group
+    cmd = f"/usr/sbin/lsfs -u {mount_group}"
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        result['msg'] = "Failed to fetch filesystem name in mount group '%s'" % mount_group
+        result['msg'] = f"Failed to fetch filesystem name in mount group {mount_group}"
         result['cmd'] = cmd
         result['rc'] = rc
         result['stdout'] = stdout
         result['stderr'] = stderr
         module.fail_json(**result)
     elif stdout == "":
-        result['msg'] = "There are no filesytems in '%s' mount group." % mount_group
+        result['msg'] = f"There are no filesytems in {mount_group} mount group."
         module.fail_json(**result)
 
     # parse results - retain only the mount points
@@ -218,7 +219,7 @@ def is_mount_group_mounted(module, mount_group):
     cmd = "/usr/bin/df"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
+        result['msg'] = f"Failed to get the filesystem name. Command {cmd} failed."
         result['cmd'] = cmd
         result['rc'] = rc
         result['stdout'] = stdout
@@ -263,7 +264,7 @@ def is_fspath_mounted(module):
     cmd = "/usr/sbin/mount"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        result['msg'] = "Failed to get the filesystem name. Command '%s' failed." % cmd
+        result['msg'] = f"Failed to get the filesystem name. Command {cmd} failed."
         result['cmd'] = cmd
         result['rc'] = rc
         result['stdout'] = stdout
@@ -304,7 +305,6 @@ def fs_list(module):
         module.fail_json(**result)
 
     result['msg'] = "Mounted filesystems listed in stdout."
-    return
 
 
 def mount(module):
@@ -321,23 +321,23 @@ def mount(module):
     cmd = "/usr/sbin/mount "
     alternate_fs = module.params['alternate_fs']
     if alternate_fs:
-        cmd += "-F %s " % alternate_fs
+        cmd += f"-F {alternate_fs} "
     if module.params['removable_fs']:
         cmd += "-p "
     if module.params['read_only']:
         cmd += "-r "
     vfsname = module.params['vfsname']
     if vfsname:
-        cmd += "-v %s " % vfsname
+        cmd += f"-v {vfsname} "
     options = module.params['options']
     if options:
-        cmd += "-o %s " % options
+        cmd += f"-o {options} "
     fs_type = module.params['fs_type']
     node = module.params['node']
     if node:
-        cmd += "-n %s " % node
+        cmd += f"-n {node} "
     if fs_type:
-        cmd += "-t %s " % fs_type
+        cmd += f"-t {fs_type} "
         init_mnt_grp_mounted = is_mount_group_mounted(module, mount_group=fs_type)
     elif module.params['mount_all'] == 'all':
         cmd += "all"
@@ -348,15 +348,15 @@ def mount(module):
             # if both mount_dir and mount_over_dir is given then check for
             # mount_over_dir
             if mount_over_dir:
-                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_over_dir
+                result['msg'] = f"Filesystem/Mount point {mount_over_dir} already mounted"
             elif mount_dir:
-                result['msg'] = "Filesystem/Mount point '%s' already mounted" % mount_dir
+                result['msg'] = f"Filesystem/Mount point {mount_dir} already mounted"
             return
         if mount_over_dir is None:
             mount_over_dir = ""
         if mount_dir is None:
             mount_dir = ""
-        cmd += "%s %s" % (mount_dir, mount_over_dir)
+        cmd += f"{mount_dir} {mount_over_dir}"
 
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
@@ -370,14 +370,14 @@ def mount(module):
         num_mounted = 0
         for mnt_pt, mounted in init_mnt_grp_mounted.items():
             if mounted:
-                result['msg'] += "Filesystem/Mount point '%s' already mounted\n" % mnt_pt
+                result['msg'] += f"Filesystem/Mount point {mnt_pt} already mounted\n"
                 continue
             # check if it is now mounted
             if final_mnt_grp_mounted[mnt_pt]:
-                result['msg'] += "Mount successful - '%s'\n" % mnt_pt
+                result['msg'] += f"Mount successful - {mnt_pt}\n"
                 num_mounted += 1
             else:
-                result['msg'] += "Mount failed - '%s'\n" % mnt_pt
+                result['msg'] += f"Mount failed - {mnt_pt}\n"
                 module.fail_json(**result)
         if num_mounted != 0:
             result['changed'] = True
@@ -386,7 +386,7 @@ def mount(module):
 
     # attempting only to mount one FS
     if rc != 0:
-        result['msg'] = "Mount failed. Command '%s' failed with return code '%s'." % (cmd, rc)
+        result['msg'] = f"Mount failed. Command {cmd} failed with return code {rc}."
         module.fail_json(**result)
 
     result['msg'] = "Mount successful."
@@ -415,13 +415,13 @@ def umount(module):
     if force:
         cmd += "-f "
     if fs_type:
-        cmd += "-t %s " % fs_type
+        cmd += f"-t {fs_type} "
     if mount_all == 'remote':
         cmd += "allr "
     if mount_all == 'all':
         cmd += "all "
     if node:
-        cmd += "-n %s " % node
+        cmd += f"-n {node} "
     if cmd == "/usr/sbin/umount " and not mount_over_dir:
         result['msg'] = "Unmount failed, Please provide mount_over_dir value to unmount."
         module.fail_json(**result)
@@ -430,7 +430,7 @@ def umount(module):
             # if both mount_dir and mount_over_dir is given then check for
             # mount_over_dir
             if mount_over_dir:
-                result['msg'] = "Filesystem/Mount point '%s' is not mounted" % mount_over_dir
+                result['msg'] = f"Filesystem/Mount point {mount_over_dir} is not mounted"
             return
         cmd += mount_over_dir
 
@@ -450,7 +450,7 @@ def umount(module):
             return
 
     if rc != 0:
-        result['msg'] = "Unmount failed. Command '%s' failed with return code '%s'." % (cmd, rc)
+        result['msg'] = f"Unmount failed. Command {cmd} failed with return code {rc}."
         module.fail_json(**result)
 
     result['msg'] = "Unmount successful."
