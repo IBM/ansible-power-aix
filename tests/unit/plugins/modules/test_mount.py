@@ -296,7 +296,7 @@ class TestMount(unittest.TestCase):
                 mount.mount(self.module)
             result = result.exception.args[0]
             self.assertTrue(result['failed'])
-            pattern = r"Mount failed - '/tmp/servnfs'"
+            pattern = r"Mount failed - /tmp/servnfs"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_all_fs_in_mount_group_already_mounted(self):
@@ -311,9 +311,9 @@ class TestMount(unittest.TestCase):
             mount.mount(self.module)
             result = copy.deepcopy(mount.result)
             self.assertFalse(result['changed'])
-            pattern = r"'/tmp/testfs' already mounted"
+            pattern = r"/tmp/testfs already mounted"
             self.assertRegexpMatches(result['msg'], pattern)
-            pattern = r"'/tmp/servnfs' already mounted"
+            pattern = r"/tmp/servnfs already mounted"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_some_fs_already_mounted_some_successfully_mounted(self):
@@ -327,9 +327,9 @@ class TestMount(unittest.TestCase):
             mount.mount(self.module)
             result = copy.deepcopy(mount.result)
             self.assertTrue(result['changed'])
-            pattern = r"'/tmp/testfs' already mounted"
+            pattern = r"/tmp/testfs already mounted"
             self.assertRegexpMatches(result['msg'], pattern)
-            pattern = r"Mount successful - '/tmp/servnfs'"
+            pattern = r"Mount successful - /tmp/servnfs"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_mount_by_mount_group(self):
@@ -342,9 +342,9 @@ class TestMount(unittest.TestCase):
             mount.mount(self.module)
             result = copy.deepcopy(mount.result)
             self.assertTrue(result['changed'])
-            pattern = r"Mount successful - '/tmp/testfs'"
+            pattern = r"Mount successful - /tmp/testfs"
             self.assertRegexpMatches(result['msg'], pattern)
-            pattern = r"Mount successful - '/tmp/servnfs'"
+            pattern = r"Mount successful - /tmp/servnfs"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_mount_dir_and_mount_over_dir_given_already_mounted(self):
@@ -464,7 +464,7 @@ class TestUmount(unittest.TestCase):
             mount.umount(self.module)
             result = copy.deepcopy(mount.result)
             self.assertFalse(result['changed'])
-            pattern = r"'/tmp/nfs_client' is not mounted"
+            pattern = r"/tmp/nfs_client is not mounted"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_fail_umount(self):
