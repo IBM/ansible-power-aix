@@ -175,7 +175,7 @@ def get_chuser_command(module):
     if load_module_opts is not None:
         opts = load_module_opts + opts
     if opts:
-        cmd = f"chuser { opts } { name }" % (opts, module.params['name'])
+        cmd = f"chuser { opts } { name }"
 
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string

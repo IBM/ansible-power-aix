@@ -1,3 +1,4 @@
+"""Module to encrypt/decrypt logical and physical volumes."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -5,6 +6,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -178,9 +182,6 @@ stderr:
     type: str
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-import re
-
 result = None
 crypto_status = None
 convert_failed = False
@@ -334,10 +335,10 @@ def decrypt_lv(module, name):
         result['msg'] += f"Password to decrypt {name} was incorrect.\n"
         convert_failed = True
         return
-    elif f"LV {name} is not encryption enabled." in stdout:
+    if f"LV {name} is not encryption enabled." in stdout:
         result['msg'] += f"LV {name} is already decrypted.\n"
         return
-    elif rc != 0:
+    if rc != 0:
         result['msg'] += f"Failed to unlock LV {name}. Command '{cmd}' failed."
         module.fail_json(**result)
     elif "Passphrase authentication succeeded." in stdout:
@@ -472,10 +473,10 @@ def pv_exists(module, name):
     result['stderr'] = stderr
     if rc == 0:
         return True
-    else:
-        convert_failed = True
-        result['msg'] += f"Physical volume {name} could not be found.\n"
-        return False
+
+    convert_failed = True
+    result['msg'] += f"Physical volume {name} could not be found.\n"
+    return False
 
 
 def lv_exists(module, name):
@@ -499,10 +500,9 @@ def lv_exists(module, name):
     if rc == 0:
         crypto_status = get_crypto_status(stdout)
         return True
-    else:
-        convert_failed = True
-        result['msg'] += f"Logical volume {name} could not be found.\n"
-        return False
+    convert_failed = True
+    result['msg'] += f"Logical volume {name} could not be found.\n"
+    return False
 
 
 def get_lv_props(module, name):
