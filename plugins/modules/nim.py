@@ -1129,7 +1129,8 @@ def nim_maintenance(module, params):
         module.log('NIM - Error: ' + results['msg'])
         module.fail_json(**results)
 
-    module.debug(f'NIM - Target list: {results['targets']}')
+    debug_targets = results['targets']
+    module.debug(f'NIM - Target list: {debug_targets}')
 
     flag = '-c'  # initialized to commit flag
 
