@@ -599,7 +599,7 @@ def get_vg_props(module, just_pvs=False):
     init_props += result['stdout']
 
     if not just_pvs:
-        cmd = f"lsvg -P {vg_name}" % vg_name
+        cmd = f"lsvg -P {vg_name}"
         fail_msg = f"Failed to fetch information regarding mirror pools of volume \
             group {vg_name}"
         run_cmd(module, cmd, None, fail_msg, fetch=True)
@@ -628,7 +628,7 @@ def find_vg_state(module, vg_name):
     active_vgs = result['stdout']
 
     cmd = 'lsvg'
-    fail_msg = f"Command {cmd} failed." % cmd
+    fail_msg = f"Command {cmd} failed."
     run_cmd(module, cmd, None, fail_msg, fetch=True)
     all_vgs = result['stdout']
 

@@ -170,7 +170,7 @@ def get_chuser_command(module):
         # Only add attr=val to the opts list they're different. No reason to
         #  if the values are identical!
         if user_attrs[attr] != val:
-            opts += f"{ attr }=\"{ val }\" " % (attr, val)
+            opts += f"{ attr }=\"{ val }\" "
 
     if load_module_opts is not None:
         opts = load_module_opts + opts
@@ -330,7 +330,7 @@ def create_user(module):
     msg = ""
 
     # Adding the load module to the command so that the user is created at the right location.
-    load_module_opts = "-R %s " % module.params['load_module']
+    load_module_opts = f"-R { module.params['load_module'] } "
 
     if attributes is not None:
         for attr, val in attributes.items():
