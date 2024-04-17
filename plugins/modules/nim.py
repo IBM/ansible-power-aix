@@ -839,6 +839,7 @@ def remove_fix(module, target, fix):
     """
 
     cmd = ['/usr/sbin/emgr', '-r', '-L', fix]
+    cmd = ' '.join(cmd)
     module.log(f'EMGR remove - Command:{ cmd }')
 
     if target == 'master':
@@ -847,7 +848,7 @@ def remove_fix(module, target, fix):
         rc, stdout, stderr = nim_exec(module, target, cmd)
 
     if rc != 0:
-        msg = f'Failed to remove fix: {fix}. Command: {' '.join(cmd)} failed.'
+        msg = f'Failed to remove fix: {fix}. Command: {cmd} failed.'
         results['meta']['target']['messages'].append(msg)
         results['meta']['target']['messages'].append(f'stdout: {stdout}')
         results['meta']['target']['messages'].append(f'stderr: {stderr}')
@@ -902,7 +903,11 @@ def find_resource_by_client(module, lpp_type, lpp_time, oslevel_elts):
 
     if (lpp_source is None) or (not lpp_source.strip()):
         # setting lpp_source to current oslevel if not found
-        lpp_source = f'{oslevel_elts[0]}-{oslevel_elts[1]}-{oslevel_elts[2]}-{oslevel_elts[3]}-lpp_source'
+        part1 = oslevel_elts[0]
+        part2 = oslevel_elts[1]
+        part3 = oslevel_elts[2]
+        part4 = oslevel_elts[3]
+        lpp_source = f'{part1}-{part2}-{part3}-{part4}-lpp_source'
         module.debug(f'NIM - find resource: server already to the {lpp_time} {lpp_type}, or no lpp_source were found, {lpp_source} will be utilized')
     else:
         module.debug(f'NIM - find resource: found the {lpp_time} lpp_source, {lpp_source} will be utilized')
@@ -1665,14 +1670,15 @@ def nim_reset(module, params):
     cmd += ['-o', 'reset']
     cmd += targets_to_reset
 
+    cmd = ' '.join(cmd)
     rc, stdout, stderr = module.run_command(cmd)
 
-    results['cmd'] = ' '.join(cmd)
+    results['cmd'] = cmd
     results['rc'] = rc
     results['stdout'] = stdout
     results['stderr'] = stderr
 
-    module.log(f'cmd: {results['cmd']}')
+    module.log(f'cmd: {cmd}')
     module.log(f'rc: {rc}')
     module.log(f'stdout: {stdout}')
     module.log(f'stderr: {stderr}')
