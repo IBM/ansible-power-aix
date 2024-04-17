@@ -172,7 +172,7 @@ def modify_group(module):
             if attr == 'load_module':
                 load_module_opts = f"-R { val } "
             else:
-                opts += f"{ attr }={ val } " % (attr, val)
+                opts += f"{ attr }={ val } "
         if load_module_opts is not None:
             opts = load_module_opts + opts
         cmd = f"chgroup { opts } { name }"

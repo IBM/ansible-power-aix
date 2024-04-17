@@ -449,7 +449,7 @@ def add_change_rules(module, params, version):
             if ret != 0:
                 msg_cmd = ' '.join(cmd)
                 results['msg'] = f'Could not remove rule: command \'{msg_cmd}\' failed \
-                  with return code {ret}.'.format(' '.join(cmd), ret)
+                  with return code {ret}.'
                 module.fail_json(**results)
             results['changed'] = True
             continue
@@ -464,7 +464,7 @@ def add_change_rules(module, params, version):
             if ret != 0:
                 msg_cmd = ' '.join(cmd)
                 results['msg'] = f'Could not move rule: command \'{msg_cmd}\' \
-                  failed with return code {ret}.'.format(' '.join(cmd), ret)
+                  failed with return code {ret}.'
                 module.fail_json(**results)
             results['changed'] = True
             continue
@@ -569,7 +569,7 @@ def add_change_rules(module, params, version):
         if ret != 0:
             msg_cmd = ' '.join(cmd)
             results['msg'] = f'Could not add rule: command \'{msg_cmd}\' \
-              failed with return code {ret}.'.format(' '.join(cmd), ret)
+              failed with return code {ret}.'
             module.fail_json(**results)
         results['changed'] = True
 
@@ -587,7 +587,7 @@ def add_change_rules(module, params, version):
     if ret != 0:
         msg_cmd = ' '.join(cmd)
         results['msg'] = f'Could not activate filter: command \'{msg_cmd}\' \
-          failed with return code {ret}.'.format(' '.join(cmd), ret)
+          failed with return code {ret}.'
         module.fail_json(**results)
 
     if params[version]['log'] is not None:
@@ -600,7 +600,7 @@ def add_change_rules(module, params, version):
         if ret != 0:
             msg_cmd = ' '.join(cmd)
             results['msg'] = f'Could not change logging: command \'{msg_cmd}\' \
-              failed with return code {ret}.'.format(' '.join(cmd), ret)
+              failed with return code {ret}.'
             module.fail_json(**results)
         results['changed'] = True
 

@@ -366,7 +366,7 @@ def check_vg(module, vg):
         module.debug(f'volume group { vg } is active')
         return True
     results['msg'] = f'Volume group { vg } is not active. Active volume groups are: { vgs }.\
-          Please vary on the volume group.'.format(vg, vgs)
+          Please vary on the volume group.'
     return False
 
 
@@ -508,12 +508,15 @@ def alt_disk_mksysb(module, params):
     # [ -S ]    Skips space-checking on target disks before clone or install operation.
     # [ -C ]    Uses the /usr/lpp/bos.alt_disk_install/boot_images/bosboot.disk.chrp
     #           file from the current rootvg only.
+    
+    if params['disk'] and len(params['disk'] > 1):
+        cmd_disk = ' '.join(params['disk'])
     cmd = ['/usr/sbin/alt_disk_mksysb']
     cmd += ['-m', params['location']]
     if len(params['disk']) == 1:
         cmd += ['-d', params['disk'][0]]
     else:
-        cmd += ['-d', '{0}'.format(' '.join(params['disk']))]
+        cmd += ['-d', cmd_disk]
     if params['script']:
         cmd += ['-s', params['script']]
     if params['resolv_conf']:
