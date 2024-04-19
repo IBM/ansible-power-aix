@@ -404,11 +404,11 @@ def refresh_nim_node(module, type):
     if type not in results['nim_node']:
         results['nim_node'].update({type: nim_info})
     else:
-        for elem in nim_info.keys():
-            if elem in results['nim_node']:
-                results['nim_node'][type][elem].update(nim_info[elem])
+        for val, attr in nim_info.items():
+            if val in results['nim_node']:
+                results['nim_node'][type][val].update(attr)
             else:
-                results['nim_node'][type][elem] = nim_info[elem]
+                results['nim_node'][type][val] = attr
     res_nim_node_type = results['nim_node'][type]
     module.debug(f"results['nim_node'][{type}]: {res_nim_node_type}")
 
@@ -438,17 +438,16 @@ def get_nim_type_info(module, type):
         results['stderr'] = stderr
         module.fail_json(**results)
 
-    info_hash = build_dict(module, stdout)
+    info_hash = build_dict(stdout)
 
     return info_hash
 
 
-def build_dict(module, stdout):
+def build_dict(stdout):
     """
     Build dictionary with the stdout info
 
     arguments:
-        module  (dict): The Ansible module
         stdout   (str): stdout of the command to parse
     returns:
         info    (dict): NIM info dictionary
@@ -612,25 +611,25 @@ class MigviosThread(threading.Thread):
         threading.Thread.__init__(self, name=f'MigviosThread({vios_key})')
 
     def run(self):
-        self_name = self.getName()
+        self_name = self.name
         self._module.debug(f'Strating {self_name}')
         nim_migvios_tuple(self._module, self._target_tuple, self._stop_event)
         self._module.debug(f'End of {self_name}')
 
     def join(self, timeout=None):
-        while self.isAlive():
+        while self.is_alive():
             t = time.time()
             if self._time_limit and t >= self._time_limit:
                 break
             time.sleep(60)
         self._stop_event.set()
-        self_name = self.getName()
+        self_name = self.name
         self._module.debug(f'Asking {self_name} to terminate, waiting for timeout={timeout}')
         threading.Thread.join(self, timeout)
 
 
 # TODO: test nim_migvios_all function
-def nim_migvios_all(module, targets, time_limit):
+def nim_migvios_all(module, targets):
     """
     Execute the migvios operation on the first vios of each tuples,
     wait for completion, if succeeded execute the migvios operation
@@ -639,7 +638,6 @@ def nim_migvios_all(module, targets, time_limit):
     args:
         module     (dict): The Ansible module
         targets    (list): list of target tuples
-        time_limit  (str): date to limit the operation in time
     return:
         none
     """
@@ -729,7 +727,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
             results['status'][vios_key] = "SKIPPED-TIMEOUT"
             return
 
-        rc = nim_migvios(module, target_tuple, vios_key, vios)
+        rc = nim_migvios(module, vios_key, vios)
         if rc == 0:
             if vios == vios1:
                 results['status'][vios_key] = 'SUCCESS-UPGR1-INIT'
@@ -745,7 +743,7 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
         # check if we are asked to stop (time_limit might be reached)
         if stop_event and stop_event.isSet():
             params_time_limit = time.strftime('%m/%d/%Y %H:%M', module.params['time_limit'])
-            msg = f'Time limit {time_limit} reached, no further operation'
+            msg = f'Time limit {params_time_limit} reached, no further operation'
             module.log('[WARNING] ' + msg)
             results['meta'][vios_key]['messages'].append(msg)
             return
@@ -775,13 +773,12 @@ def nim_migvios_tuple(module, target_tuple, stop_event):
 
 
 # TODO: test nim_migvios function
-def nim_migvios(module, target_tuple, vios_key, vios):
+def nim_migvios(module, vios_key, vios):
     """
     NIM migvios operation against the specified vios
 
     args:
         module          (dict): The Ansible module
-        target_tuple    (list): tuple of target to run migvios
         vios_key         (str): key of the results dictionary matching the target_tuple
         vios             (str): the VIOS to run the command against
 
@@ -969,7 +966,7 @@ def nim_wait_migvios(module, vios_key, vios):
         #    prev_state = customization is being performed
         #    Mstate = ready for use
         #    Cstate_result = success
-        curr_states = build_dict(module, stdout)
+        curr_states = build_dict(stdout)
 
         if len(curr_states) <= 0:
             msg = f'Failed to retrieve NIM states for {vios} from lsnim output: unexpected format.'
@@ -979,7 +976,7 @@ def nim_wait_migvios(module, vios_key, vios):
             results['meta'][vios_key][vios]['stdout'] = stdout
             results['meta'][vios_key][vios]['stderr'] = stderr
             return 2
-        elif curr_states == prev_states:
+        if curr_states == prev_states:
             if wait_time % 300 == 0:
                 # log only every 5 minutes
                 waiting_time = wait_time / 60
@@ -1142,7 +1139,7 @@ def main():
 
     # perfom the operation
     if module.params['action'] == 'migrate':
-        nim_migvios_all(module, results['targets'], time_limit)
+        nim_migvios_all(module, results['targets'])
 
     # set status and exit
     if not results['status']:
