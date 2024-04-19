@@ -314,12 +314,13 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         if module.params[param] is not None and module.params[param]:
             count += 1
             break
+    action = module.params['action']
     if count == 0 and required:
-        results['msg'] = 'Missing parameter: action is {0} but one of the following is missing: '.format(module.params['action'])
+        results['msg'] = f'Missing parameter: action is {action} but one of the following is missing: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
     if count > 1 and exclusive:
-        results['msg'] = 'Invalid parameter: action is {0} supports only one of the following: '.format(module.params['action'])
+        results['msg'] = f'Invalid parameter: action is {action} supports only one of the following: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
 
@@ -350,7 +351,8 @@ def refresh_nim_node(module, type):
                 results['nim_node'][type][elem].update(nim_info[elem])
             else:
                 results['nim_node'][type][elem] = nim_info[elem]
-    module.debug("results['nim_node'][{0}]: {1}".format(type, results['nim_node'][type]))
+    nim_node_type = results['nim_node'][type]
+    module.debug(f"results['nim_node'][{type}]: {nim_node_type}")
 
 
 def get_nim_type_info(module, type):
@@ -368,9 +370,10 @@ def get_nim_type_info(module, type):
     """
 
     cmd = ['lsnim', '-t', type, '-l']
+    cmd = ' '.join(cmd)
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = 'Cannot get NIM Client information. Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        msg = f'Cannot get NIM Client information. Command \'{cmd}\' failed with return code {rc}.'
         module.log(msg)
         results['msg'] = msg
         results['stdout'] = stdout
@@ -427,17 +430,17 @@ def check_vios_targets(module, targets):
 
     # Build targets list
     for elems in targets:
-        module.debug('Checking elems: {0}'.format(elems))
+        module.debug(f'Checking elems: {elems}')
 
         tuple_elts = list(set(elems.replace(" ", "").replace("[", "").replace("]", "").replace("(", "").replace(")", "").split(',')))
         tuple_len = len(tuple_elts)
-        module.debug('Checking tuple: {0}'.format(tuple_elts))
+        module.debug(f'Checking tuple: {tuple_elts}')
 
         if tuple_len == 0:
             continue
 
         if tuple_len > 2:
-            msg = 'Malformed VIOS targets \'{0}\'. Tuple {1} should be a 1 or 2 elements.'.format(targets, elems)
+            msg = f'Malformed VIOS targets \'{targets}\'. Tuple {elems} should be a 1 or 2 elements.'
             module.log(msg)
             results['msg'] = msg
             module.exit_json(**results)
@@ -445,14 +448,14 @@ def check_vios_targets(module, targets):
         error = False
         for elem in tuple_elts:
             if len(elem) == 0:
-                msg = 'Malformed VIOS targets tuple {0}: empty string.'.format(elems)
+                msg = f'Malformed VIOS targets tuple {elems}: empty string.'
                 module.log(msg)
                 results['msg'] = msg
                 module.exit_json(**results)
 
             # check vios not already exists in the target list
             if elem in vios_list:
-                msg = 'Malformed VIOS targets \'{0}\': Duplicated VIOS: {1}'.format(targets, elem)
+                msg = f'Malformed VIOS targets \'{targets}\': Duplicated VIOS: {elem}'
                 module.log(msg)
                 results['msg'] = msg
                 error = True
@@ -460,7 +463,7 @@ def check_vios_targets(module, targets):
 
             # check vios is knowed by the NIM master - if not ignore it
             if elem not in results['nim_node']['vios']:
-                msg = "VIOS {0} is not client of the NIM master, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} is not client of the NIM master, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -468,14 +471,14 @@ def check_vios_targets(module, targets):
 
             # Get VIOS interface info in case we need to connect using c_rsh
             if 'if1' not in results['nim_node']['vios'][elem]:
-                msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} has no interface set, check its configuration in NIM, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
                 continue
             fields = results['nim_node']['vios'][elem]['if1'].split(' ')
             if len(fields) < 2:
-                msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} has no hostname set, check its configuration in NIM, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -517,13 +520,13 @@ def viosupgrade_query(module, params_flags):
         results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
-        module.log('stdout: {0}'.format(stdout))
-        module.log('stderr: {0}'.format(stderr))
+        module.log(f'stdout: {stdout}')
+        module.log(f'stderr: {stderr}')
 
         if rc == 0:
             msg = 'viosupgrade get status successful.'
         else:
-            msg = 'viosupgrade get status command failed with rc: {0}'.format(rc)
+            msg = f'viosupgrade get status command failed with rc: {rc}'
             ret += 1
         module.log(msg)
         results['meta']['messages'].append(msg)
@@ -538,8 +541,8 @@ def viosupgrade_query(module, params_flags):
             results['meta'][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios]['stdout'] = stdout
             results['meta'][vios]['stderr'] = stderr
-            module.log('stdout: {0}'.format(stdout))
-            module.log('stderr: {0}'.format(stderr))
+            module.log(f'stdout: {stdout}')
+            module.log(f'stderr: {stderr}')
 
             if rc == 0:
                 # Parse stdout to get viosupgrade result
@@ -555,7 +558,7 @@ def viosupgrade_query(module, params_flags):
                     msg = 'viosupgrade command ongoing. See meta data "stdout" and log on NIM master.'
                     results['status'][vios] = 'ONGOING'
             else:
-                msg = 'Command failed with rc: {0}'.format(rc)
+                msg = f'Command failed with rc: {rc}'
                 results['status'][vios] = 'FAILURE'
                 ret += 1
             module.log(msg)
@@ -590,8 +593,9 @@ def viosupgrade(module, params_flags):
     if module.params['target_file']:
         # check parameters
         for key in module.params['viosupgrade_params']['all'].keys():
+            flag_file = params_flags['file']
             if key not in params_flags['file']:
-                msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params are: {1}'.format(key, params_flags['file'])
+                msg = f'key \'{key}\' is not valid, supported keys for viosupgrade_params are: {flag_file}'
                 ret += 1
                 module.log(msg)
                 results['meta']['messages'].append(msg)
@@ -615,14 +619,14 @@ def viosupgrade(module, params_flags):
         results['cmd'] = ' '.join(cmd)
         results['stdout'] = stdout
         results['stderr'] = stderr
-        module.log('stdout: {0}'.format(stdout))
-        module.log('stderr: {0}'.format(stderr))
+        module.log(f'stdout: {stdout}')
+        module.log(f'stderr: {stderr}')
 
         if rc == 0:
             msg = 'viosupgrade command successful'
             results['status']['all'] = 'SUCCESS'
         else:
-            msg = 'Command failed with rc: {0}'.format(rc)
+            msg = f'Command failed with rc: {rc}'
             results['status']['all'] = 'FAILURE'
             ret += 1
         module.log(msg)
@@ -633,8 +637,9 @@ def viosupgrade(module, params_flags):
     for vios in module.params['viosupgrade_params'].keys():
         for key in module.params['viosupgrade_params'][vios].keys():
             if key not in params_flags[module.params['action']]:
-                msg = 'key \'{0}\' is not valid, supported keys for viosupgrade_params for action={1} are: {2}'\
-                      .format(key, module.params['action'], params_flags[module.params['action']].keys())
+                action = module.params['action']
+                flag_action = params_flags[module.params['action']].keys()
+                msg = f'key \'{key}\' is not valid, supported keys for viosupgrade_params for action={action} are: {flag_action}'
                 ret += 1
                 module.log(msg)
                 results['meta']['messages'].append(msg)
@@ -646,7 +651,8 @@ def viosupgrade(module, params_flags):
     if module.params['vios_status'] is not None and module.params['vios_status']:
         for vios in module.params['targets']:
             if vios in module.params['vios_status'] and 'SUCCESS' not in module.params['vios_status'][vios]:
-                msg = '{0} VIOS skipped (vios_status: {1})'.format(vios, module.params['vios_status'][vios])
+                vios_status = module.params['vios_status'][vios]
+                msg = f'{vios} VIOS skipped (vios_status: {vios_status})'
                 module.log(msg)
                 results['meta'][vios]['messages'].append(msg)
                 results['status'][vios] = module.params['vios_status'][vios]
@@ -654,13 +660,14 @@ def viosupgrade(module, params_flags):
             for key in module.params['vios_status']:
                 if vios in key:
                     if 'SUCCESS' not in module.params['vios_status'][key]:
-                        msg = '{0} VIOS skipped (vios_status[{1}: {2})'.format(vios, key, module.params['vios_status'][key])
+                        vios_status_key = module.params['vios_status'][key]
+                        msg = f'{vios} VIOS skipped (vios_status[{key}: {vios_status_key})'
                         module.log(msg)
                         results['meta'][vios]['messages'].append(msg)
                         results['status'][vios] = module.params['vios_status'][key]
                         break
             else:
-                msg = '{0} vios skipped (no previous status found)'.format(vios)
+                msg = f'{vios} vios skipped (no previous status found)'
                 module.log('[WARNING] ' + msg)
                 results['meta'][vios]['messages'].append(msg)
                 results['status'][vios] = 'SKIPPED-NO-PREV-STATUS'
@@ -697,8 +704,8 @@ def viosupgrade(module, params_flags):
         results['meta'][vios]['cmd'] = ' '.join(cmd)
         results['meta'][vios]['stdout'] = stdout
         results['meta'][vios]['stderr'] = stderr
-        module.log('stdout: {0}'.format(stdout))
-        module.log('stderr: {0}'.format(stderr))
+        module.log(f'stdout: {stdout}')
+        module.log(f'stderr: {stderr}')
 
         if rc == 0:
             if vios in module.params['viosupgrade_params'] and 'preview' in module.params['viosupgrade_params'][vios] and \
@@ -708,7 +715,7 @@ def viosupgrade(module, params_flags):
             msg = 'viosupgrade command successful.'
             results['status'][vios] = 'SUCCESS'
         else:
-            msg = 'Command failed with rc: {0}'.format(rc)
+            msg = f'Command failed with rc: {rc}'
             results['status'][vios] = 'FAILURE'
             ret += 1
         results['meta'][vios]['messages'].append(msg)
@@ -797,7 +804,9 @@ def main():
                 targets.append(line[0].strip())
             myfile.close()
         except IOError as e:
-            msg = 'Failed to parse file {0}: {1}. Check the file content is '.format(e.filename, e.strerror)
+            file_name = e.filename
+            str_err = e.strerror
+            msg = f'Failed to parse file {file_name}: {str_err}. Check the file content is '
             module.log(msg)
             module.fail_json(**results)
     else:
@@ -809,7 +818,8 @@ def main():
         module.log('Warning: Empty target list.')
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.exit_json(**results)
-    module.debug('Target list: {0}'.format(results['targets']))
+    res_targets = results['targets']
+    module.debug(f'Target list: {res_targets}')
 
     # initialize the results dictionary for targets
     for vios in results['targets']:
@@ -820,7 +830,7 @@ def main():
     if not module.params['target_file']:
         for vios in module.params['viosupgrade_params'].keys():
             if vios != 'all' and vios not in results['targets']:
-                msg = 'Info: \'viosupgrade_params\' key \'{0}\' is not in targets list.'.format(vios)
+                msg = f'Info: \'viosupgrade_params\' key \'{vios}\' is not in targets list.'
                 module.log(msg)
                 results['meta']['messages'].append(msg)
 
@@ -830,21 +840,22 @@ def main():
     else:
         viosupgrade(module, params_flags)
 
+    action = module.params['action']
     # set status and exit
     if not results['status']:
-        module.log('NIM upgradeios {0} operation: status table is empty'.format(module.params['action']))
+        module.log(f'NIM upgradeios {action} operation: status table is empty')
         results['meta']['messages'].append('Warning: status table is empty, returning initial vios_status.')
         results['status'] = module.params['vios_status']
-        results['msg'] = 'NIM updateios {0} operation completed. See meta data for details.'.format(module.params['action'])
+        results['msg'] = f'NIM updateios {action} operation completed. See meta data for details.'
         module.log(results['msg'])
     else:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
         if len(target_errored):
-            results['msg'] = 'NIM upgradeios {0} operation failed for {1}. See status and meta for details.'.format(module.params['action'], target_errored)
+            results['msg'] = f'NIM upgradeios {action} operation failed for {target_errored}. See status and meta for details.'
             module.log(results['msg'])
             module.fail_json(**results)
         else:
-            results['msg'] = 'NIM upgradeios {0} operation completed. See status and meta for details.'.format(module.params['action'])
+            results['msg'] = f'NIM upgradeios {action} operation completed. See status and meta for details.'
             module.log(results['msg'])
             module.exit_json(**results)
 
