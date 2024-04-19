@@ -211,8 +211,8 @@ def get_pvs(module):
             pvs[match_key.group(1)]['status'] = match_key.group(4)
 
     module.debug('List of PVs:')
-    for key in pvs.keys():
-        module.debug(f'pvs[{ key }]: { pvs[key] }')
+    for key, value in pvs.items():
+        module.debug(f'{key}: {value}')
 
     return pvs
 
@@ -260,8 +260,8 @@ def get_free_pvs(module):
             free_pvs[hdisk]['size'] = int(size)
 
     module.debug('List of Free PVs:')
-    for key in free_pvs.keys():
-        module.debug(f'free_pvs[{ key }]: { free_pvs[key] }')
+    for key, value in free_pvs.items():
+        module.debug(f'{key}: {value}')
 
     return free_pvs
 
@@ -622,13 +622,14 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
     else:
         # Retrieve the list of disks that belong to altinst_rootvg
         hdisks = []
-        for pv in pvs.keys():
-            if pvs[pv]['vg'] == 'altinst_rootvg':
+        for pv, value in pvs.items():
+            if value['vg'] == 'altinst_rootvg':
                 found_altdisk = True
                 hdisks.append(pv)
-            if allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg':
+            if allow_old_rootvg and value['vg'] == 'old_rootvg':
                 found_oldrootvg = True
                 hdisks.append(pv)
+            module.debug(f'{pv}: {value}')
         if not hdisks:
             # Do not fail if there is no altinst_rootvg to preserve idempotency
             results['msg'] += "There is no alternate install rootvg. "

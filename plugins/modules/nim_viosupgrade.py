@@ -346,11 +346,11 @@ def refresh_nim_node(module, type):
     if type not in results['nim_node']:
         results['nim_node'].update({type: nim_info})
     else:
-        for elem in nim_info.keys():
+        for elem, value in nim_info.items():
             if elem in results['nim_node']:
-                results['nim_node'][type][elem].update(nim_info[elem])
+                results['nim_node'][type][elem].update(value)
             else:
-                results['nim_node'][type][elem] = nim_info[elem]
+                results['nim_node'][type][elem] = value
     nim_node_type = results['nim_node'][type]
     module.debug(f"results['nim_node'][{type}]: {nim_node_type}")
 

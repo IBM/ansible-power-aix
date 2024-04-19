@@ -340,11 +340,11 @@ def refresh_nim_node(module, type):
     if type not in results['nim_node']:
         results['nim_node'].update({type: nim_info})
     else:
-        for elem in nim_info.keys():
+        for elem, elem_val in nim_info.items():
             if elem in results['nim_node']:
-                results['nim_node'][type][elem].update(nim_info[elem])
+                results['nim_node'][type][elem].update(elem_val)
             else:
-                results['nim_node'][type][elem] = nim_info[elem]
+                results['nim_node'][type][elem] = elem_val
     nim_node_type = results['nim_node'][type]
     module.debug(f"results['nim_node'][{type}]: {nim_node_type}")
 
@@ -426,9 +426,8 @@ def get_pvs(module, vios):
             pvs[match_key.group(1)]['status'] = match_key.group(4)
 
     module.debug('List of PVs:')
-    for key in pvs.keys():
-        pvs_key = pvs[key]
-        module.debug(f'    pvs[{key}]: {pvs_key}')
+    for key, val in pvs.items():
+        module.debug(f'{key}: {val}')
 
     return pvs
 
@@ -465,9 +464,8 @@ def get_free_pvs(module, vios):
             free_pvs[match_key.group(1)]['size'] = int(match_key.group(3))
 
     module.debug('List of available PVs:')
-    for key in free_pvs.keys():
-        free_pvs_key = free_pvs[key]
-        module.debug(f'    free_pvs[{key}]: {free_pvs_key}')
+    for key, val in free_pvs.items():
+        module.debug(f'{key}: {val}')
 
     return free_pvs
 
@@ -937,8 +935,8 @@ def check_valid_altdisks(module, action, vios, hdisks, vios_key, altdisk_op_tab,
                 return False
     else:
         # Retrieve the list of disks that belong to altinst_rootvg
-        for pv in pvs.keys():
-            if pvs[pv]['vg'] == 'altinst_rootvg':
+        for pv, val in pvs.items():
+            if val['vg'] == 'altinst_rootvg':
                 hdisks.append(pv)
         if not hdisks:
             msg = f'There is no alternate install rootvg on {vios}'
