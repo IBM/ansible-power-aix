@@ -209,7 +209,7 @@ def is_mount_group_mounted(module, mount_group):
         module.fail_json(**result)
 
     # parse results - retain only the mount points
-    mnt_grp_mounted = dict()
+    mnt_grp_mounted = {}
     lines = stdout.splitlines()[1:]
     for line in lines:
         mnt_pt = line.split()[2]
