@@ -493,10 +493,9 @@ def res_showres(module, resource, info):
                 results['msg'] += fail_msg
                 module.fail_json(**results)
                 break
-            else:
-                # successfully fetched contents, stored in stdout
-                # break out of retry loop and parse contents
-                break
+            # successfully fetched contents, stored in stdout
+            # break out of retry loop and parse contents
+            break
 
         # parse contents of nim resource
         if info['type'] in NIM_SHOWRES_FILESETS:
