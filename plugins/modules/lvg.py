@@ -481,10 +481,9 @@ def reduce_vg(module, vg_name, vg_state):
             return
         if len(pv_list) < len(pvs_in_vg):
             # not all pvs in the vg will be removed
-            success_msg = "Physical volume(s) '%s' removed from Volume group '%s'." \
-                % (' '.join(pv_list), vg_name)
-            fail_msg = "Failed to remove Physical volume(s) '%s' from Volume group '%s'." \
-                % (' '.join(pv_list), vg_name)
+            msg_pvlist = ' '.join(pv_list)
+            success_msg = f"Physical volume(s) {msg_pvlist} removed from Volume group {vg_name}."
+            fail_msg = f"Failed to remove Physical volume(s) {msg_pvlist} from Volume group {vg_name}."
 
     # the pvs that will be removed is all the pvs in the vg
     if success_msg is None:

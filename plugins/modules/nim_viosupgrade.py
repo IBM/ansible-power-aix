@@ -798,7 +798,7 @@ def main():
     targets = []
     if module.params['target_file']:
         try:
-            myfile = open(module.params['target_file'], 'r')
+            myfile = open(module.params['target_file'], mode='r', encoding="utf-8")
             csvreader = csv.reader(myfile, delimiter=':')
             for line in csvreader:
                 targets.append(line[0].strip())

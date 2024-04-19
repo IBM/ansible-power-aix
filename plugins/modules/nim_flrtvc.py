@@ -492,7 +492,7 @@ def unzip(module, output, src, dst, resize_fs=True):
         dst     (str): The absolute destination path
     """
     try:
-        zfile = zipfile.ZipFile(src)
+        zfile = zipfile.ZipFile(src, encoding="utf-8")
         zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
         if resize_fs and increase_fs(module, output, dst):
@@ -825,7 +825,7 @@ def parse_lpps_info(module, output, machine):
     lpps_lvl = {}
     lslpp_file = os.path.join(workdir, f'lslpp_{machine}.txt')
 
-    with open(os.path.abspath(os.path.join(os.sep, lslpp_file)), 'r') as myfile:
+    with open(os.path.abspath(os.path.join(os.sep, lslpp_file)), mode='r', encoding="utf-8") as myfile:
         for myline in myfile:
             # beginning of line: "bos:bos.rte:7.1.5.0: : :C: :Base Operating System Runtime"
             mylist = myline.split(':')
@@ -873,7 +873,7 @@ def run_lslpp(module, output, machine, filename):
         rc, stdout, stderr = nim_exec(module, machine, cmd)
 
     if rc == 0:
-        with open(filename, 'w') as myfile:
+        with open(filename, mode='w', encoding="utf-8") as myfile:
             myfile.write(stdout)
         return rc
 
@@ -903,7 +903,7 @@ def parse_emgr(machine):
     file = ''
     package = ''
 
-    with open(os.path.abspath(os.path.join(os.sep, emgr_file)), 'r') as myfile:
+    with open(os.path.abspath(os.path.join(os.sep, emgr_file)), mode='r', encoding="utf-8") as myfile:
         for line in myfile:
             line = line.rstrip()
             if not line or line.startswith('+') or line.startswith('='):
@@ -968,7 +968,7 @@ def run_emgr(module, output, machine, f_efix):
         rc, stdout, stderr = nim_exec(module, machine, cmd)
 
     if rc == 0:
-        with open(f_efix, 'w') as myfile:
+        with open(f_efix, mode='w', encoding="utf-8") as myfile:
             myfile.write(stdout)
         return True
 
@@ -1050,7 +1050,7 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
     # Save to file
     if params['save_report']:
         filename = os.path.join(params['dst_path'], f'flrtvc_{machine}.txt')
-        with open(filename, 'w') as myfile:
+        with open(filename, mode='w', encoding="utf-8") as myfile:
             if params['verbose']:
                 cmd += ['-v']
                 cmd = ' '.join(cmd)
@@ -1137,7 +1137,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
 
             # download and open tar file
             if download(module, out, url, dst, resize_fs):
-                tar = tarfile.open(dst, 'r')
+                tar = tarfile.open(dst, mode='r', encoding="utf-8")
 
                 # find all epkg in tar file
                 epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
