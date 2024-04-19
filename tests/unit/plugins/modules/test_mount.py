@@ -329,7 +329,7 @@ class TestMount(unittest.TestCase):
             self.assertTrue(result['changed'])
             pattern = r"'/tmp/testfs' already mounted"
             self.assertRegexpMatches(result['msg'], pattern)
-            pattern = r"Mount successful - /tmp/servnfs"
+            pattern = r"Mount successful - '/tmp/servnfs'"
             self.assertRegexpMatches(result['msg'], pattern)
 
     def test_success_mount_by_mount_group(self):
