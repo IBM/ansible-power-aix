@@ -385,7 +385,7 @@ def list_reqs(name, module):
     i = 0
 
     lslpp_path = module.get_bin_path('lslpp', required=True)
-    ''' 
+    '''
     sample command output
     lslpp -pcq bos.perf.tools
     /usr/lib/objrepos:bos.perf.tools 7.2.5.100:*coreq bos.sysmgt.trace 5.3.0.30
@@ -403,7 +403,7 @@ def list_reqs(name, module):
 
     for line in stdout.splitlines():
         raw_fields = line.split(':')
-        ''' 
+        '''
         In cases where requisites are not present, then the length of the raw fields from
         the output line will be less than 3. Hence continue to the next line as this would not
         need any processing.
@@ -412,7 +412,7 @@ def list_reqs(name, module):
             continue
         fields = [field.strip() for field in raw_fields]
 
-        ''' 
+        '''
         3rd field contains the requisites separated by spaces.
         Parse the requisites and categorize it as coreqs, prereqs, ifreqs.
         Sample 3rd field from lslpp -cpq
@@ -446,7 +446,7 @@ def list_reqs(name, module):
                 req_type = ''
                 fileset = ''
                 level = ''
-                ''' 
+                '''
                 Get the type of requisite, fileset name and the level
                 The values are in order and hence parse through the list
                 and assign the values to the corresponding field names.
@@ -478,7 +478,7 @@ def list_reqs(name, module):
                 (Example: *coreq bos.perf.perfstat)
                 '''
                 if i < num_reqs:
-                    ''' 
+                    '''
                     3rd field will be fileset level. Sometimes this might be some additional
                     text followed by the level. So process the additional texts here and get the
                     level .
@@ -486,7 +486,7 @@ def list_reqs(name, module):
                     if reqs[i] not in req_type_list:
                         '''
                         In some cases, prerequisites might be listed in brackets like below:
-                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41 
+                        * *ifreq bos.rte.libc (5.2.0.0) 5.2.0.41
                         *ifreq bos.rte.libc (5.3.0.0) 5.3.0.1
                         In this case, both will be listed as part of levels.
                         '''

@@ -363,7 +363,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            action=dict(type='str', default='list', choices=['install', 'commit', 'check', 'mount', 'unmount', 
+            action=dict(type='str', default='list', choices=['install', 'commit', 'check', 'mount', 'unmount',
                                                              'remove', 'view_package', 'display_ifix', 'list']),
             ifix_package=dict(type='path'),
             ifix_label=dict(type='str'),
