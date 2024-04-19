@@ -1,4 +1,3 @@
-"""Module for device management"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -501,7 +500,7 @@ def main():
             device=dict(type='str', default='all'),
             force=dict(type='bool', default=False),
             recursive=dict(type='bool', default=False),
-            state=dict(type='str', default='available',\
+            state=dict(type='str', default='available',
                        choices=['available', 'defined', 'removed', 'present', 'absent']),
             chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both', 'reset']),
             parent_device=dict(type='str'),

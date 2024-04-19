@@ -1,4 +1,3 @@
-"""Module to alter the list of boot devices available to the system."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -204,6 +203,7 @@ ansible_facts:
           elements: dict
 '''
 
+
 def main():
     # Options common to "normal", "service" and "both" dictionary keys
     attrs = dict(
@@ -259,7 +259,7 @@ def main():
         ret, stdout, stderr = module.run_command(cmd, check_rc=True)
         results['stdout'] += stdout  # Save verbose output
         results['changed'] = True
-        results ['stderr'] = stderr
+        results['stderr'] = stderr
 
     # Retrieve boot lists
     bootlists = {}

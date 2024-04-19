@@ -1,4 +1,3 @@
-"""Module to Mount/unmount a filesystem or device on AIX"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

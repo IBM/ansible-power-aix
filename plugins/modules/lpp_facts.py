@@ -1,4 +1,3 @@
-"""Module to return installed software products or fixes as facts"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -540,7 +539,7 @@ def main():
             all_updates=dict(type='bool', default=False),
             base_levels_only=dict(type='bool', default=False),
             fixes=dict(type='list', elements='str'),
-            fix_type=dict(type='str', choices=['apar', 'technology_level',\
+            fix_type=dict(type='str', choices=['apar', 'technology_level',
                                                'service_pack', 'sp', 'tl', 'all']),
             reqs=dict(type='bool', default=False)
         ),

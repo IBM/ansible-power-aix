@@ -1,4 +1,3 @@
-"""Module to Download/Install fixes, SP or TL from IBM Fix Central website"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -259,7 +258,7 @@ def find_sp_version(file):
     module.debug(f"opening file: {file}")
     with open(file, mode="r", encoding="utf-8") as myfile:
         for line in myfile:
-        # module.debug("line: {0}".format(line.rstrip()))
+            # module.debug("line: {0}".format(line.rstrip()))
             match_item = re.match(
                 r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
                 line.rstrip())
@@ -330,7 +329,6 @@ def compute_rq_name(rq_type, oslevel, last_sp):
         cmd += ['-a', f'FilterML={metadata_filter_ml}']
         cmd += ['-a', f'DisplayName="{DisplayName}"']
         cmd += ['-a', f'FilterDir={FilterDir}']
-
 
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
@@ -675,7 +673,7 @@ def suma_download():
             module.log(msg)
             results['msg'] = msg
             module.fail_json(**results)
-        elif not re.match(r"^[0-9]{4}-[0-9]{2}(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$", \
+        elif not re.match(r"^[0-9]{4}-[0-9]{2}(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$",
                           suma_params['oslevel']):
             msg_oslevel = suma_params['oslevel']
             msg = f"Bad parameter: oslevel is '{msg_oslevel}', \

@@ -272,7 +272,7 @@ def get_nim_type_info(module, lpar_type):
     """
 
     cmd = ['lsnim', '-t', lpar_type, '-l']
-    cmd  = ' '.join(cmd)
+    cmd = ' '.join(cmd)
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         results['cmd'] = cmd
@@ -1094,7 +1094,7 @@ def alt_disk_action(module, params, action, targets, vios_status, time_limit):
             if 'SUCCESS' not in vios_status[vios_key]:
                 altdisk_op_tab[vios_key] = vios_status[vios_key]
                 vios_status_key = vios_status[vios_key]
-                msg = f"{vios_key} vioses skipped ({vios_status[vios_key]})"
+                msg = f"{vios_key} vioses skipped ({vios_status_key})"
                 results['meta']['messages'].append(msg)
                 module.log("WARNING: " + msg)
                 continue

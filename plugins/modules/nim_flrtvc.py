@@ -1139,12 +1139,12 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             if download(module, out, url, dst, resize_fs):
                 with tarfile.open(dst, mode='r', encoding="utf-8") as tar:
 
-                # find all epkg in tar file
+                    # find all epkg in tar file
                     epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
                     out['2.discover'].extend(epkgs)
                     module.debug(f'{machine}: found {len(epkg)} epkg.Z file in tar file')
 
-                # extract epkg
+                    # extract epkg
                     tar_dir = os.path.join(workdir, 'tardir')
                     if not os.path.exists(tar_dir):
                         os.makedirs(tar_dir)

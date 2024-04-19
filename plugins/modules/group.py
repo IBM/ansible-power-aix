@@ -1,4 +1,3 @@
-"""Module to manage groups on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

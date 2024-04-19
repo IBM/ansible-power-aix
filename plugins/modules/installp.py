@@ -1,4 +1,3 @@
-"""Module to Install and update software"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

@@ -1,4 +1,3 @@
-"""Module to enable and disable Simultaneous MultiThreading Mode"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

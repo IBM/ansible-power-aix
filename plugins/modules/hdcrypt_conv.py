@@ -1,4 +1,3 @@
-"""Module to encrypt/decrypt logical and physical volumes."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

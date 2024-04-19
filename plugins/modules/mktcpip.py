@@ -1,4 +1,3 @@
-"""Module to set the required values for starting TCP/IP on a host."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

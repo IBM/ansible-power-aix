@@ -1,4 +1,3 @@
-"""Module to manage kernel tunables on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -320,8 +319,7 @@ def get_valid_tunables(module):
         for key, value in new_dict.items():
             current_val = tunables_dict[key]['current_value']
             reboot_val = tunables_dict[key]['reboot_value']
-            if ('n/a' in current_val or int(current_val) != int(value)) or\
-            ('n/a' in reboot_val or int(reboot_val) != int(value)):
+            if ('n/a' in current_val or int(current_val) != int(value)) or ('n/a' in reboot_val or int(reboot_val) != int(value)):
                 valid_tunables[key] = value
             else:
                 unchanged_tunables += key + ' '
@@ -640,7 +638,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str', required=True, choices=['show', 'modify', 'reset']),
-            component=dict(type='str', required=True, choices=['vmo', 'ioo', 'schedo', 'no',\
+            component=dict(type='str', required=True, choices=['vmo', 'ioo', 'schedo', 'no',
                                                                'raso', 'nfso', 'asoo']),
             change_type=dict(type='str', default='current', choices=['current', 'reboot', 'both']),
             bosboot_tunables=dict(type='bool', default=False),

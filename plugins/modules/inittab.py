@@ -1,4 +1,3 @@
-"""Module to manage inittab entries on AIX."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -115,6 +114,7 @@ stderr':
     returned: If the command failed.
     type: str
 '''
+
 
 def modify_entry(module):
     """

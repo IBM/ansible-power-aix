@@ -1,4 +1,3 @@
-"""Module to modify AIX stanza files"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -153,6 +152,7 @@ attrs:
       returned: only when cmd is run
       type: int
 '''
+
 
 def set_attr_value(module, filename, stanza, attr, target_value):
     # -> dict:

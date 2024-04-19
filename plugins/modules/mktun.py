@@ -1,4 +1,3 @@
-"""Module for mktun on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -286,15 +285,17 @@ ansible_facts:
           elements: dict
 '''
 
+
 gentun_path = ''
 lstun_path = ''
+
 
 def gentun(module, vopt, tun):
     """
     Create the manual tunnel definition in the tunnel database
     with gentun and return the tunnel id.
     """
-    cmd = [gentun_path, vopt, '-t', 'manual', '-s',\
+    cmd = [gentun_path, vopt, '-t', 'manual', '-s',
            tun['src']['address'], '-d', tun['dst']['address']]
 
     # gentun options that use lowercase letters for source and uppercase for destination

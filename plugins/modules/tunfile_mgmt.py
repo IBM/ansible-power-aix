@@ -1,4 +1,3 @@
-"""Module to manage tunables configuration file"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -349,12 +348,12 @@ def main():
     global results
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', required=True, choices=['save', 'restore',\
+            action=dict(type='str', required=True, choices=['save', 'restore',
                                                             'validate', 'modify']),
             filename=dict(type='str', required=True),
             tunables_with_values=dict(type='dict', default=None),
             make_nextboot=dict(type='bool', default='False'),
-            validation_type=dict(type='str', default='current', choices=['current',\
+            validation_type=dict(type='str', default='current', choices=['current',
                                                                          'reboot', 'both']),
             save_all_tunables=dict(type='bool', default=True),
             set_default=dict(type='bool', default='False'),

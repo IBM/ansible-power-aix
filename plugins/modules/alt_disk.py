@@ -1,4 +1,3 @@
-"""Module to Copy rootvg to an alt disk or clean an existing one on a logical partition"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -328,7 +327,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
         results['changed'] = True
 
         for pv in pvs:
-            if (pvs[pv]['vg'] == 'altinst_rootvg') or (allow_old_rootvg and\
+            if (pvs[pv]['vg'] == 'altinst_rootvg') or (allow_old_rootvg and
                                                        pvs[pv]['vg'] == 'old_rootvg'):
                 module.log(f'Clearing the owning VG from disk { pv }')
 
@@ -562,7 +561,7 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
 
     mirrors = check_mirrors(module)
 
-    find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'],\
+    find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'],
                        params['force'], allow_old_rootvg)
 
     module.log(f'Using { hdisks } as alternate disks')
@@ -694,8 +693,7 @@ def alt_rootvg_op(module):
         results['msg'] = msg
         module.fail_json(**results)
 
-    if not module.params['bundle_name'] and not module.params['apar_fixes']\
-        and not module.params['filesets']:
+    if not module.params['bundle_name'] and not module.params['apar_fixes']and not module.params['filesets']:
         msg = 'Please provide bundle_name or apar_fixes or filesets'
         results['msg'] = msg
         module.fail_json(**results)

@@ -489,7 +489,7 @@ def find_sp_version(module, file):
     module.debug(f"opening file: {file}")
     with open(file, mode="r", encoding="utf-8") as myfile:
         for line in myfile:
-        # module.debug("line: {0}".format(line.rstrip()))
+            # module.debug("line: {0}".format(line.rstrip()))
             match_item = re.match(
                 r"^<SP name=\"([0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{4})\">$",
                 line.rstrip())

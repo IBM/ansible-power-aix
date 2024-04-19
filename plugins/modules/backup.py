@@ -1,4 +1,3 @@
-"""module for data or system volume group backup management"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -395,7 +394,7 @@ def mksysb(module, params):
         if found:
             module.log('Backup file does not exist or empty proceed to mksysb.')
         elif rc == 0:
-            vg_name = [s for s in results['stdout'].splitlines()\
+            vg_name = [s for s in results['stdout'].splitlines()
                        if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
                 results['msg'] = f'Backup images for { vg } already exists. User force to overwrite'
@@ -606,7 +605,7 @@ def savevg(module, params, vg):
         if found:
             module.log('Backup file does not exist or empty proceed to savevg.')
         elif rc == 0:
-            vg_name = [s for s in results['stdout'].splitlines()\
+            vg_name = [s for s in results['stdout'].splitlines()
                        if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
                 results['msg'] = f'Backup images for { vg } already exists. Use force to overwrite'
