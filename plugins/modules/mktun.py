@@ -523,7 +523,7 @@ def main():
 
     make_devices(module)
 
-    results['ansible_facts'] = dict(tunnels=dict())
+    results['ansible_facts'] = dict(tunnels={})
 
     # Retrieve the list of authentication algorithms
     stdout = module.run_command([ipsecstat_path, '-A'], check_rc=True)[1]
