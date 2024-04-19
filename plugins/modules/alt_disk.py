@@ -623,10 +623,10 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
         # Retrieve the list of disks that belong to altinst_rootvg
         hdisks = []
         for pv, value in pvs.items():
-            if pvs[pv]['vg'] == 'altinst_rootvg':
+            if value['vg'] == 'altinst_rootvg':
                 found_altdisk = True
                 hdisks.append(pv)
-            if allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg':
+            if allow_old_rootvg and value['vg'] == 'old_rootvg':
                 found_oldrootvg = True
                 hdisks.append(pv)
             module.debug(f'{pv}: {value}')

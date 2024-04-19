@@ -489,11 +489,10 @@ def res_showres(module, resource, info):
                     # wait and retry
                     time.sleep(retry_wait_time)
                     continue
-                else:
-                    # for any other error proceed to the next resource
-                    results['msg'] += fail_msg
-                    module.fail_json(**results)
-                    break
+                # for any other error proceed to the next resource
+                results['msg'] += fail_msg
+                module.fail_json(**results)
+                break
             else:
                 # successfully fetched contents, stored in stdout
                 # break out of retry loop and parse contents
