@@ -114,6 +114,7 @@ stderr:
              /usr/sbin/mktcpip: Problem with command: hostent, return code = 1\n'
 '''
 
+
 def main():
     module = AnsibleModule(
         supports_check_mode=False,

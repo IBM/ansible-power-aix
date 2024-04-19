@@ -99,6 +99,7 @@ msg:
 
 '''
 
+
 def get_smt_state(module):
     """ Determines the current SMT status and return the present smtvalue else none"""
     cmd = "smtctl"

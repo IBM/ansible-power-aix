@@ -1,4 +1,3 @@
-"""Module to report LVM information as facts"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
