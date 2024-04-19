@@ -78,7 +78,6 @@ class ActionModule(ActionBase):
                 reboot_timeout = 300
 
             self.do_until_success_or_timeout(
-                action_desc="post-reboot test command",
                 reboot_timeout=reboot_timeout,
                 test_command=test_command,
                 action_kwargs=action_kwargs)
@@ -95,7 +94,7 @@ class ActionModule(ActionBase):
 
         return result
 
-    def do_until_success_or_timeout(self, action_desc, reboot_timeout, test_command, action_kwargs=None):
+    def do_until_success_or_timeout(self, reboot_timeout, test_command, action_kwargs=None):
         max_end_time = datetime.utcnow() + timedelta(seconds=reboot_timeout)
         if action_kwargs is None:
             action_kwargs = {}
