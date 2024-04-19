@@ -742,7 +742,7 @@ def parse_lpps_info():
     lpps_lvl = {}
     lslpp_file = os.path.join(workdir, 'lslpp.txt')
 
-    with open(os.path.abspath(lslpp_file), 'r') as myfile:
+    with open(os.path.abspath(lslpp_file), mode='r', encoding="utf-8") as myfile:
         for myline in myfile:
             # beginning of line: "bos:bos.rte:7.1.5.0: : :C: :Base Operating System Runtime"
             mylist = myline.split(':')
@@ -789,7 +789,7 @@ def run_lslpp(filename):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc == 0:
-        with open(filename, 'w') as myfile:
+        with open(filename, mode='w', encoding="utf-8") as myfile:
             myfile.write(stdout)
         return True
     else:
@@ -842,7 +842,7 @@ def parse_emgr():
     file = ''
     package = ''
 
-    with open(os.path.abspath(emgr_file), 'r') as myfile:
+    with open(os.path.abspath(emgr_file), mode='r', encoding="utf-8") as myfile:
         for line in myfile:
             line = line.rstrip()
             if not line or line.startswith('+') or line.startswith('='):
@@ -904,7 +904,7 @@ def run_emgr(f_efix):
     module.debug(f'run cmd="{debug_cmd}"')
     rc, stdout, stderr = module.run_command(cmd)
     if rc == 0:
-        with open(f_efix, 'w') as myfile:
+        with open(f_efix, mode='w', encoding="utf-8") as myfile:
             myfile.write(stdout)
         return True
     else:
@@ -981,7 +981,7 @@ def run_flrtvc(flrtvc_path, params, force):
     # Save to file
     if params['save_report']:
         filename = os.path.join(params['dst_path'], 'flrtvc.txt')
-        with open(filename, 'w') as myfile:
+        with open(filename, mode='w', encoding="utf-8") as myfile:
             # rerun the command in verbose mode if needed
             if params['verbose']:
                 cmd += ['-v']
@@ -1070,7 +1070,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
             # download and open tar file
             if download(url, dst, resize_fs):
-                tar = tarfile.open(dst, 'r')
+                tar = tarfile.open(dst, mode='r', encoding="utf-8")
 
                 # find all epkg in tar file
                 epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]

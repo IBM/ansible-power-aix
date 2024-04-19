@@ -257,7 +257,7 @@ def find_sp_version(file):
     """
     sp_version = ""
     module.debug(f"opening file: {file}")
-    myfile = open(file, "r")
+    myfile = open(file, mode="r", encoding="utf-8")
     for line in myfile:
         # module.debug("line: {0}".format(line.rstrip()))
         match_item = re.match(
