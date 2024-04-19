@@ -254,13 +254,13 @@ def res_show(module):
         cmd += ' -c resources'
 
     if object_type:
-        cmd += ' -t {0}'.format(object_type)
+        cmd += f' -t {object_type}'
 
     if name:
         cmd += ' ' + name
 
     if module.check_mode:
-        results['msg'] = 'Command \'{0}\' preview mode, execution skipped.'.format(cmd)
+        results['msg'] = f'Command \'{cmd}\' preview mode, execution skipped.'
         return
 
     return_code, stdout, stderr = module.run_command(cmd)
@@ -278,9 +278,9 @@ def res_show(module):
         found = re.search(pattern, stderr)
 
         if found:
-            results['msg'] = 'There is no NIM object resource named {0} '.format(name)
+            results['msg'] = f'There is no NIM object resource named {name} '
         else:
-            results['msg'] = 'Error trying to display object {0}'.format(name)
+            results['msg'] = f'Error trying to display object {name}'
             results['rc'] = return_code
             module.fail_json(**results)
     else:
@@ -323,14 +323,14 @@ def res_create(nim_cmd, module):
 
     if attributes is not None:
         for attr, val in attributes.items():
-            opts += " -a {0}=\"{1}\" ".format(attr, val)
+            opts += f" -a {attr}=\"{val}\" "
         cmd += opts
 
     if name:
         cmd += ' ' + name
 
     if module.check_mode:
-        results['msg'] = 'Command \'{0}\' preview mode, execution skipped.'.format(cmd)
+        results['msg'] = f'Command \'{cmd}\' preview mode, execution skipped.'
         return
 
     return_code, stdout, stderr = module.run_command(cmd)
@@ -347,13 +347,13 @@ def res_create(nim_cmd, module):
         found = re.search(pattern, stderr)
         if not found:
             results['rc'] = return_code
-            results['msg'] = 'Error trying to define resource {0} '.format(name)
+            results['msg'] = f'Error trying to define resource {name} '
             module.fail_json(**results)
         else:
             results['msg'] = 'Resource already exist'
 
     else:
-        results['msg'] = 'Creation of resource {0} was a success'.format(name)
+        results['msg'] = f'Creation of resource {name} was a success'
         results['changed'] = True
 
     return
@@ -372,10 +372,10 @@ def res_delete(nim_cmd, module):
     '''
 
     name = module.params['name']
-    cmd = nim_cmd + ' -o remove {0}'.format(name)
+    cmd = nim_cmd + f' -o remove {name}'
 
     if module.check_mode:
-        results['msg'] = 'Command \'{0}\' in preview mode, execution skipped.'.format(cmd)
+        results['msg'] = f'Command \'{cmd}\' in preview mode, execution skipped.'
         return
 
     return_code, stdout, stderr = module.run_command(cmd)
@@ -391,14 +391,14 @@ def res_delete(nim_cmd, module):
         found = re.search(pattern, stderr)
 
         if found:
-            results['msg'] = 'There is no NIM object resource named {0} '.format(name)
+            results['msg'] = f'There is no NIM object resource named {name} '
         else:
-            results['msg'] = 'Error trying to remove NIM object {0}'.format(name)
+            results['msg'] = f'Error trying to remove NIM object {name}'
             results['rc'] = return_code
             module.fail_json(**results)
 
     else:
-        results['msg'] = 'Resource {0} was removed.'.format(name)
+        results['msg'] = f'Resource {name} was removed.'
         results['changed'] = True
 
     return
@@ -447,7 +447,7 @@ def res_showres(module, resource, info):
     return:
         contents: (dict): NIM resource contents
     """
-    fail_msg = 'Unable to fetch contents of {0}.'.format(resource)
+    fail_msg = f'Unable to fetch contents of {resource}.'
     max_retries = module.params['showres']['max_retries']
     retry_wait_time = module.params['showres']['max_retries']
     contents = {}
@@ -466,7 +466,7 @@ def res_showres(module, resource, info):
 
         while True:
             return_code, stdout, stderr = module.run_command(cmd)
-            results['testing'] += "max_retries: {0}, rc: {1}".format(max_retries, return_code)
+            results['testing'] += f"max_retries: {max_retries}, rc: {return_code}"
 
             if return_code != 0:
                 max_retries -= 1
@@ -478,7 +478,7 @@ def res_showres(module, resource, info):
                 if max_retries == 0:
                     results['msg'] += fail_msg
                     results['msg'] += "Number of attempts to fetch contents of "
-                    results['msg'] += "{0} has been reached.".format(resource)
+                    results['msg'] += f"{resource} has been reached."
                     module.fail_json(**results)
                     break
 
