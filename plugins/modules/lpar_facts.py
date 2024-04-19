@@ -469,9 +469,11 @@ def main():
                     vrmf = val.split('-')
                     if len(vrmf) == 4:
                         # formatting the base level in the format 7.2.0.0
-                        baselevel = "%s.%s.%s.%s" % \
-                            (int(int(vrmf[0]) / 1000) % 10, int(int(vrmf[0]) / 100) % 10,
-                             int(int(vrmf[0]) / 10) % 10, int(vrmf[0]) % 10)
+                        level_1 = int(int(vrmf[0]) / 1000) % 10
+                        level_2 = int(int(vrmf[0]) / 100) % 10
+                        level_3 = int(int(vrmf[0]) / 10) % 10
+                        level_4 = int(vrmf[0]) % 10
+                        baselevel = f"{level_1}.{level_2}.{level_3}.{level_4}"
                         lparstat[id] = {
                             'base': baselevel,
                             'tl': int(vrmf[1]),
