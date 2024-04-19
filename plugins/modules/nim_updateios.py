@@ -290,12 +290,13 @@ def param_one_of(one_of_list, required=True, exclusive=True):
         if module.params[param] is not None and module.params[param]:
             count += 1
             break
+    action = module.params['action']
     if count == 0 and required:
-        results['msg'] = 'Missing parameter: action is {0} but one of the following is missing: '.format(module.params['action'])
+        results['msg'] = f'Missing parameter: action is {action} but one of the following is missing: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
     if count > 1 and exclusive:
-        results['msg'] = 'Invalid parameter: action is {0} supports only one of the following: '.format(module.params['action'])
+        results['msg'] = f'Invalid parameter: action is {action} supports only one of the following: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
 
@@ -314,7 +315,8 @@ def nim_exec(module, node, command):
         stderr  (str) stderr of the command
     """
 
-    rcmd = '( LC_ALL=C {0} ); echo rc=$?'.format(' '.join(command))
+    cmd = ' '.join(command)
+    rcmd = f'( LC_ALL=C {cmd} ); echo rc=$?'
     cmd = ['/usr/lpp/bos.sysmgt/nim/methods/c_rsh', node, rcmd]
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -326,8 +328,8 @@ def nim_exec(module, node, command):
         rc = int(s.group(1))
         # remove the rc of c_rsh with echo $?
         stdout = re.sub(r'rc=[-\d]+\n$', '', stdout)
-
-    module.debug('nim_exec command \'{0}\': rc:{1}, output:{2}, stderr:{3}'.format(' '.join(cmd), rc, stdout, stderr))
+    cmd = ' '.join(command)
+    module.debug(f'nim_exec command \'{cmd}\': rc:{rc}, output:{stdout}, stderr:{stderr}')
 
     return (rc, stdout, stderr)
 
@@ -358,7 +360,8 @@ def refresh_nim_node(module, type):
                 results['nim_node'][type][elem].update(nim_info[elem])
             else:
                 results['nim_node'][type][elem] = nim_info[elem]
-    module.debug("results['nim_node'][{0}]: {1}".format(type, results['nim_node'][type]))
+    nim_node_type = results['nim_node'][type]
+    module.debug(f"results['nim_node'][{type}]: {nim_node_type}")
 
 
 def get_nim_type_info(module, type):
@@ -378,7 +381,8 @@ def get_nim_type_info(module, type):
     cmd = ['lsnim', '-t', type, '-l']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = 'Cannot get NIM Client information. Command \'{0}\' failed with return code {1}.'.format(' '.join(cmd), rc)
+        cmd = ' '.join(cmd)
+        msg = f'Cannot get NIM Client information. Command \'{cmd}\' failed with return code {rc}.'
         module.log(msg)
         results['msg'] = msg
         results['stdout'] = stdout
@@ -433,7 +437,7 @@ def check_lpp_source(module, lpp_source):
     cmd = ['lsnim', '-a', 'location', lpp_source]
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = 'Cannot find location of lpp_source {0}, lsnim returns: {1}'.format(lpp_source, stderr)
+        msg = f'Cannot find location of lpp_source {lpp_source}, lsnim returns: {stderr}'
         module.log(msg)
         results['msg'] = msg
         results['stdout'] = stdout
@@ -445,7 +449,7 @@ def check_lpp_source(module, lpp_source):
     cmd = ['/bin/find', location]
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = 'Cannot find location of lpp_source {0}: {1}'.format(lpp_source, stderr)
+        msg = f'Cannot find location of lpp_source {lpp_source}: {stderr}'
         module.log(msg)
         results['msg'] = msg
         results['stdout'] = stdout
@@ -475,17 +479,17 @@ def check_vios_targets(module, targets):
 
     # Build targets list
     for elems in targets:
-        module.debug('Checking elems: {0}'.format(elems))
+        module.debug(f'Checking elems: {elems}')
 
         tuple_elts = list(set(elems.replace(" ", "").replace("[", "").replace("]", "").replace("(", "").replace(")", "").split(',')))
         tuple_len = len(tuple_elts)
-        module.debug('Checking tuple: {0}'.format(tuple_elts))
+        module.debug(f'Checking tuple: {tuple_elts}')
 
         if tuple_len == 0:
             continue
 
         if tuple_len > 2:
-            msg = 'Malformed VIOS targets \'{0}\'. Tuple {1} should be a 1 or 2 elements.'.format(targets, elems)
+            msg = f'Malformed VIOS targets \'{targets}\'. Tuple {elems} should be a 1 or 2 elements.'
             module.log(msg)
             results['msg'] = msg
             module.exit_json(**results)
@@ -493,14 +497,14 @@ def check_vios_targets(module, targets):
         error = False
         for elem in tuple_elts:
             if len(elem) == 0:
-                msg = 'Malformed VIOS targets tuple {0}: empty string.'.format(elems)
+                msg = f'Malformed VIOS targets tuple {elems}: empty string.'
                 module.log(msg)
                 results['msg'] = msg
                 module.exit_json(**results)
 
             # check vios not already exists in the target list
             if elem in vios_list:
-                msg = 'Malformed VIOS targets \'{0}\': Duplicated VIOS: {1}'.format(targets, elem)
+                msg = f'Malformed VIOS targets \'{targets}\': Duplicated VIOS: {elem}'
                 module.log(msg)
                 results['msg'] = msg
                 error = True
@@ -508,7 +512,7 @@ def check_vios_targets(module, targets):
 
             # check vios is knowed by the NIM master - if not ignore it
             if elem not in results['nim_node']['vios']:
-                msg = "VIOS {0} is not client of the NIM master, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} is not client of the NIM master, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -516,14 +520,14 @@ def check_vios_targets(module, targets):
 
             # Get VIOS interface info in case we need to connect using c_rsh
             if 'if1' not in results['nim_node']['vios'][elem]:
-                msg = "VIOS {0} has no interface set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} has no interface set, check its configuration in NIM, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
                 continue
             fields = results['nim_node']['vios'][elem]['if1'].split(' ')
             if len(fields) < 2:
-                msg = "VIOS {0} has no hostname set, check its configuration in NIM, tuple {1} will be ignored".format(elem, elems)
+                msg = f"VIOS {elem} has no hostname set, check its configuration in NIM, tuple {elems} will be ignored"
                 module.log(msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -533,7 +537,7 @@ def check_vios_targets(module, targets):
             # check vios connectivity
             rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][elem]['hostname'], ['true'])
             if rc != 0:
-                msg = 'skipping {0}: cannot reach {1} with c_rsh, rc:{2}, stderr:{3}, stdout:{4}'.format(elems, elem, rc, stderr, stdout)
+                msg = f'skipping {elems}: cannot reach {elem} with c_rsh, rc:{rc}, stderr:{stderr}, stdout:{stdout}'
                 module.log('[WARNING] ' + msg)
                 results['meta']['messages'].append(msg)
                 error = True
@@ -558,9 +562,9 @@ def tuple_str(tuple_list):
     tuple_list.sort()
     for elem in tuple_list:
         if tuple_str:
-            tuple_str += '-{0}'.format(elem)
+            tuple_str += f'-{elem}'
         else:
-            tuple_str = '{0}'.format(elem)
+            tuple_str = f'{elem}'
     return tuple_str
 
 
@@ -593,11 +597,12 @@ def check_vios_cluster_status(module, target_tuple):
             # Check a cluster is configured
             stdout = stdout.rstrip()
             if stdout.find('Cluster does not exist') != -1:
-                msg = 'There is no cluster on vios {0}'.format(vios)
+                msg = f'There is no cluster on vios {vios}'
                 module.log(msg)
                 continue
             # the command failed and stdout contains command's stderr
-            msg = 'Cannot get cluster status on {0}: command \'{1}\', rc:{2}, stderr:{3}'.format(vios, ' '.join(cmd), rc, stdout)
+            cmd = ' '.join(cmd)
+            msg = f'Cannot get cluster status on {vios}: command \'{cmd}\', rc:{rc}, stderr:{stdout}'
             module.log('[WARNING] ' + msg)
             results['meta']['messages'].append(msg)
             results['meta'][vios_key][vios]['stdout'] = stdout
@@ -621,7 +626,7 @@ def check_vios_cluster_status(module, target_tuple):
                 continue
             fields = line.split(':')
             if len(fields) != 7:
-                msg = 'Expecting 7 fields for cluster status, got {0}.'.format(len(line))
+                msg = f'Expecting 7 fields for cluster status, got {len(line)}.'
                 module.log('[WARNING] ' + msg)
                 results['meta']['messages'].append(msg)
                 continue
@@ -641,16 +646,20 @@ def check_vios_cluster_status(module, target_tuple):
     vios = target_tuple[0]
     cluster = results['nim_node']['vios'][vios]['cluster']
     if tuple_len == 1:
-        module.debug('cluster: {0}'.format(cluster))
+        module.debug(f'cluster: {cluster}')
         if not cluster or len(cluster['nodes']) == 1 and cluster[cluster['nodes'][0]]['state'] == 'DOWN':
             return True
         if len(cluster['nodes']) != 1:
-            msg = 'VIOS {0} is member of cluster {1}: {2}.'.format(vios, cluster['name'], cluster['nodes'])
+            cluster_name = cluster['name']
+            cluster_nodes = cluster['nodes']
+            msg = f'VIOS {vios} is member of cluster {cluster_name}: {cluster_nodes}.'
             module.log(msg)
             results['meta'][vios_key]['messages'].append(msg)
         else:
-            msg = 'Cluster {0} node {1} status is: {2}, need to be stopped.'\
-                  .format(cluster['name'], cluster['nodes'][0], cluster[cluster['nodes'][0]]['state'])
+            cluster_name = cluster['name']
+            cluster_node0 = cluster['nodes'][0]
+            cluster_node_state = cluster[cluster['nodes'][0]]['state']
+            msg = f'Cluster {cluster_name} node {cluster_node0} status is: {cluster_node_state}, need to be stopped.'
             module.log(msg)
             results['meta'][vios_key]['messages'].append(msg)
             return False
@@ -658,25 +667,29 @@ def check_vios_cluster_status(module, target_tuple):
     vios2 = target_tuple[1]
     cluster2 = results['nim_node']['vios'][vios2]['cluster']
     if not cluster and not cluster2:
-        msg = 'No cluster defined on both vios of the tuple {0}.'.format(target_tuple)
+        msg = f'No cluster defined on both vios of the tuple {target_tuple}.'
         module.log(msg)
         return True
     if cluster and not cluster2 or not cluster and cluster2:
-        msg = 'No cluster defined on one vios of the vios: {0}.'.format(target_tuple)
+        msg = f'No cluster defined on one vios of the vios: {target_tuple}.'
         module.log(msg)
         results['meta'][vios_key]['messages'].append(msg)
         return False
     if cluster['name'] != cluster2['name']:
-        msg = 'Cluster must be the same on both vios: {0}: {1}, {2}: {3}.'.format(vios, cluster['name'], vios2, cluster2['name'])
+        cluster_name = cluster['name']
+        cluster_name2 = cluster2['name']
+        msg = f'Cluster must be the same on both vios: {vios}: {cluster_name}, {vios2}: {cluster_name2}.'
         module.log(msg)
         results['meta'][vios_key]['messages'].append(msg)
         return False
 
     for vios in target_tuple:
         cluster = results['nim_node']['vios'][vios]['cluster']
-        module.debug('cluster on vios {0}: {1}'.format(vios, cluster))
+        module.debug(f'cluster on vios {vios}: {cluster}')
         if cluster['state'] != 'OK':
-            msg = 'Cluster {0} state on vios {1} must be OK, got: {2}.'.format(cluster['name'], vios, cluster['state'])
+            cluster_name = cluster['name']
+            cluster_state = cluster['state']
+            msg = f'Cluster {cluster_name} state on vios {vios} must be OK, got: {cluster_state}.'
             module.log(msg)
             results['meta'][vios_key]['messages'].append(msg)
             return False
@@ -685,12 +698,16 @@ def check_vios_cluster_status(module, target_tuple):
             if vios in node:
                 found = True
                 if cluster[node]['state'] != 'OK':
-                    msg = 'Cluster {0} node {1} state must be OK, got: {2}'.format(cluster['name'], node, cluster['nodes'][node]['state'])
+                    cluster_name = cluster['name']
+                    cluster_node_state = cluster['nodes'][node]['state']
+                    msg = f'Cluster {cluster_name} node {node} state must be OK, got: {cluster_node_state}'
                     module.log(msg)
                     results['meta'][vios_key]['messages'].append(msg)
                     return False
         if not found:
-            msg = 'VIOS {0} not found in cluster {1} nodes: {2}'.format(vios, cluster['name'], cluster['nodes'])
+            cluster_name = cluster['name']
+            cluster_nodes = cluster['nodes']
+            msg = f'VIOS {vios} not found in cluster {cluster_name} nodes: {cluster_nodes}'
             module.log(msg)
             results['meta'][vios_key]['messages'].append(msg)
             return False
@@ -720,12 +737,12 @@ def cluster_stop_start(module, target_tuple, vios_key, vios, action):
                 node = cur_node
                 break
 
-    module.log('{0}-ing cluster {1} for node {2} from {3}'.format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios, node))
-    cmd = ['/usr/sbin/clctrl -{0} -n {1} -m {2}'.format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios)]
+    cluster_name = results['nim_node']['vios'][vios]['cluster']['name']
+    module.log(f'{action}-ing cluster {cluster_name} for node {vios} from {node}')
+    cmd = [f'/usr/sbin/clctrl -{action} -n {cluster_name} -m {vios}']
     rc, stdout, stderr = nim_exec(module, results['nim_node']['vios'][node]['hostname'], cmd)
     if rc != 0:
-        msg = 'Failed to {0} cluster {1} on {2}: {3}'\
-              .format(action, results['nim_node']['vios'][vios]['cluster']['name'], node, stdout)
+        msg = f'Failed to {action} cluster {cluster_name} on {node}: {stdout}'
         results['meta'][vios_key]['messages'].append(msg)
         module.log(msg)
         return False
@@ -736,8 +753,7 @@ def cluster_stop_start(module, target_tuple, vios_key, vios, action):
     else:
         results['nim_node']['vios'][vios]['cluster'][vios]['state'] = 'OK'
 
-    msg = '{0} cluster {1} on {2} succeeded'\
-          .format(action, results['nim_node']['vios'][vios]['cluster']['name'], vios)
+    msg = f'{action} cluster {cluster_name} on {vios} succeeded'
     module.log(msg)
     results['meta'][vios_key]['messages'].append(msg)
     return True
@@ -754,17 +770,21 @@ def get_updateios_cmd(module):
     """
 
     cmd = ['nim', '-o', 'updateios']
-    cmd += ['-a', 'updateios_flags=-{0}'.format(module.params['action'])]
+    action = module.params['action']
+    cmd += ['-a', f'updateios_flags=-{action}']
 
     if module.params['action'] == 'remove':
         if module.params['filesets']:
-            cmd += ['-a', 'filesets={0}'.format(module.params['filesets'])]
+            filesets = module.params['filesets']
+            cmd += ['-a', f'filesets={filesets}']
         if module.params['installp_bundle']:
-            cmd += ['-a', 'installp_bundle={0}'.format(module.params['installp_bundle'])]
+            installp_bundle = module.params['installp_bundle']
+            cmd += ['-a', f'installp_bundle={installp_bundle}']
 
     if module.params['lpp_source']:
         if check_lpp_source(module, module.params['lpp_source']):
-            cmd += ['-a', 'lpp_source={0}'.format(module.params['lpp_source'])]
+            lpp_source = module.params['lpp_source']
+            cmd += ['-a', f'lpp_source={lpp_source}']
 
     cmd += ['-a', 'accept_licenses=yes' if module.params['accept_licenses'] else 'accept_licenses=no']
     cmd += ['-a', 'preview=yes' if module.params['preview'] else 'preview=no']
@@ -799,7 +819,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
 
     got_cluster_status = False
     for target_tuple in targets_list:
-        module.debug('Processing target_tuple: {0}'.format(target_tuple))
+        module.debug(f'Processing target_tuple: {target_tuple}')
 
         tuple_len = len(target_tuple)
         vios_key = tuple_str(target_tuple)
@@ -807,14 +827,15 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
         # if previous status (health check) is known, check the vios tuple has passed
         if vios_status is not None:
             if vios_key not in vios_status:
-                msg = '{0} VIOSes skipped (no previous status found)'.format(vios_key)
+                msg = f'{vios_key} VIOSes skipped (no previous status found)'
                 module.log('[WARNING] ' + msg)
                 results['meta'][vios_key]['messages'].append(msg)
                 results['status'][vios_key] = "SKIPPED-NO-PREV-STATUS"
                 continue
 
             if 'SUCCESS' not in vios_status[vios_key]:
-                msg = '{0} tuple skipped (vios_status: {1})'.format(vios_key, vios_status[vios_key])
+                vios_status_key = vios_status[vios_key]
+                msg = f'{vios_key} tuple skipped (vios_status: {vios_status_key})'
                 module.log('[WARNING] ' + msg)
                 results['status'][vios_key] = vios_status[vios_key]
                 results['meta'][vios_key]['messages'].append(msg)
@@ -824,7 +845,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
         # check if there is time to handle this tuple
         if time_limit is not None and time.localtime(time.time()) >= time_limit:
             time_limit_str = time.strftime("%m/%d/%Y %H:%M", time_limit)
-            msg = 'Time limit {0} reached, no further operation'.format(time_limit_str)
+            msg = f'Time limit {time_limit_str} reached, no further operation'
             module.log('[WARNING] ' + msg)
             results['meta'][vios_key]['messages'].append(msg)
             results['status'][vios_key] = "SKIPPED-TIMEOUT"
@@ -834,7 +855,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
             # check if cluster is defined for this VIOSes tuple.
             cluster_ok = check_vios_cluster_status(module, target_tuple)
             if not cluster_ok:
-                msg = "{0} VIOSes skipped (bad cluster status)".format(vios_key)
+                msg = f"{vios_key} VIOSes skipped (bad cluster status)"
                 module.log('[WARNING] ' + msg)
                 results['meta'][vios_key]['messages'].append(msg)
                 msg = 'Update operation can only be done when both VIOSes belong to the'\
@@ -856,7 +877,7 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
         # DEBUG-End
 
         for vios in target_tuple:
-            module.log('Updating VIOS: {0}'.format(vios))
+            module.log(f'Updating VIOS: {vios}')
 
             # set the error label to be used in sub routines
             if vios == target_tuple[0]:
@@ -874,21 +895,22 @@ def nim_updateios(module, targets_list, vios_status, time_limit):
 
             # Perform the updateios operation
             cmd = updateios_cmd + [vios]
+            action = module.params['action']
+            cmd = ' '.join(cmd)
             rc, stdout, stderr = module.run_command(cmd)
             results['meta'][vios_key][vios]['cmd'] = ' '.join(cmd)
             results['meta'][vios_key][vios]['stdout'] = stdout
             results['meta'][vios_key][vios]['stderr'] = stderr
             skip_next_target = False
             if rc != 0:
-                msg = 'Failed to perform {0} updateios operation on {1}, cmd:\'{2}\', rc:{3}'\
-                      .format(module.params['action'], vios, ' '.join(cmd), rc)
-                module.log(msg + ', stdout: {0}'.format(stdout) + ', stderr: {0}'.format(stderr))
+                msg = f'Failed to perform {action} updateios operation on {vios}, cmd:\'{cmd}\', rc:{rc}'
+                module.log(msg + f', stdout: {stdout}' + f', stderr: {stderr}')
                 results['meta'][vios_key]['messages'].append(msg)
                 results['status'][vios_key] = err_label
                 # in case of failure try to restart the cluster if needed
                 skip_next_target = True
             else:
-                msg = 'VIOS {0} updateios {1} successfull'.format(vios, module.params['action'])
+                msg = f'VIOS {vios} updateios {action} successfull'
                 module.log(msg)
                 results['meta'][vios_key]['messages'].append(msg)
                 results['changed'] = True
@@ -960,6 +982,9 @@ def main():
 
     vios_status = {}
 
+    action = module.params['action']
+    filesets = module.params['filesets']
+    installp_bundle = module.params['installp_bundle']
     # Get and check parameters
     if module.params['vios_status']:
         vios_status = module.params['vios_status']
@@ -969,9 +994,8 @@ def main():
         param_one_of(['installp_bundle', 'filesets'])
     else:
         if module.params['filesets'] or module.params['installp_bundle']:
-            msg = 'action is {0}: discarding installp_bundle and filesets attribute'.format(module.params['action'])
-            module.log(msg + ', got: filesets:"{0}" and installp_bundle:"{1}"'
-                       .format(module.params['filesets'], module.params['installp_bundle']))
+            msg = f'action is {action}: discarding installp_bundle and filesets attribute'
+            module.log(msg + f', got: filesets:"{filesets}" and installp_bundle:"{installp_bundle}"')
             results['meta']['messages'].append(msg)
 
     # build a time structure for time_limit attribute,
@@ -982,7 +1006,8 @@ def main():
         if match_key:
             time_limit = time.strptime(module.params['time_limit'], '%m/%d/%Y %H:%M')
         else:
-            results['msg'] = 'Malformed time limit "{0}", please use mm/dd/yyyy hh:mm format.'.format(module.params['time_limit'])
+            params_time_limit = module.params['time_limit']
+            results['msg'] = f'Malformed time limit "{params_time_limit}", please use mm/dd/yyyy hh:mm format.'
             module.fail_json(**results)
 
     module.debug('*** START UPDATEIOS OPERATION ***')
@@ -994,11 +1019,13 @@ def main():
     results['targets'] = check_vios_targets(module, module.params['targets'])
 
     if not results['targets']:
-        module.log('Warning: Empty target list, targets: \'{0}\''.format(module.params['targets']))
+        targs = module.params['targets']
+        module.log(f'Warning: Empty target list, targets: \'{targs}\'')
         results['msg'] = 'Empty target list, please check their NIM states and they are reacheable.'
         module.exit_json(**results)
 
-    module.debug('Target list: {0}'.format(results['targets']))
+    res_targs = results['targets']
+    module.debug(f'Target list: {res_targs}')
     # initialize the results dictionary for target tuple keys
     for target in results['targets']:
         vios_key = tuple_str(target)
@@ -1020,7 +1047,7 @@ def main():
     else:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
         if len(target_errored):
-            results['msg'] = "NIM updateios operation failed for {0}. See status and meta for details.".format(target_errored)
+            results['msg'] = f"NIM updateios operation failed for {target_errored}. See status and meta for details."
             module.log(results['msg'])
             module.fail_json(**results)
         else:
