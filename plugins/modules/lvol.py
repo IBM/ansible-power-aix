@@ -1,4 +1,3 @@
-"""Module to configure AIX LVM logical volumes"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

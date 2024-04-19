@@ -1,4 +1,3 @@
-"""Module for Generic installer for various packaging formats"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -117,6 +116,7 @@ stderr:
     type: str
     sample: '0503-105 geninstall: The device or directory: /dev/cd0 does not exist.'
 '''
+
 
 def main():
     module = AnsibleModule(

@@ -1,4 +1,3 @@
-"""Module to Report LPAR related information as facts."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

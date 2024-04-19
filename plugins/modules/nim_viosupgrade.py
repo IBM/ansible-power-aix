@@ -798,11 +798,11 @@ def main():
     targets = []
     if module.params['target_file']:
         try:
-            myfile = open(module.params['target_file'], mode='r', encoding="utf-8")
-            csvreader = csv.reader(myfile, delimiter=':')
-            for line in csvreader:
-                targets.append(line[0].strip())
-            myfile.close()
+            with open(module.params['target_file'], mode='r', encoding="utf-8") as myfile:
+                csvreader = csv.reader(myfile, delimiter=':')
+                for line in csvreader:
+                    targets.append(line[0].strip())
+                myfile.close()
         except IOError as e:
             file_name = e.filename
             str_err = e.strerror

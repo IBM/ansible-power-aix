@@ -1,4 +1,3 @@
-"""Module for mpio on AIX"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -112,6 +111,7 @@ ansible_facts:
                 }
             }
 '''
+
 
 def gather_facts(module):
     paths = {}

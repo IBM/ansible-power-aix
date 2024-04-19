@@ -1,4 +1,3 @@
-"""Module to update installed software to the latest level"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -273,6 +272,7 @@ stderr:
       install_all_updates: Log file is /var/adm/ras/install_all_updates.log\n
       install_all_updates: Result = FAILURE'
 '''
+
 
 def main():
     module = AnsibleModule(

@@ -1,4 +1,3 @@
-"""Module to manage users on AIX platform"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -125,6 +124,7 @@ stderr:
     returned: If the command failed.
     type: str
 '''
+
 
 def get_chuser_command(module):
     '''
@@ -256,10 +256,11 @@ def changed_attrs(module, current):
 
     if module.params['attributes']:
         newattrs = module.params['attributes']
-        changed = {k: newattrs[k] for k in newattrs if k\
+        changed = {k: newattrs[k] for k in newattrs if k
                    in current and str(newattrs[k]) != current[k]}
         return changed
     return None
+
 
 def modify_user(module):
     '''

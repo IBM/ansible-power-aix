@@ -1,4 +1,3 @@
-"""Module providing system security settings management automation."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -124,6 +123,7 @@ stderr:
     type: str
 '''
 
+
 def check_settings(module):
     """
     Checks the security settings against the previously applied set of rules
@@ -237,12 +237,13 @@ def query_settings(module):
     msg = stdout
     return msg
 
+
 def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
             level=dict(type='str', choices=['high', 'medium', 'low', 'default', 'sox-cobit']),
-            mode=dict(type='str', required=True, choices=['check', 'undo', 'apply', 'save',\
+            mode=dict(type='str', required=True, choices=['check', 'undo', 'apply', 'save',
                                                           'query']),
             abbr_fmt_file=dict(type='str'),
             norm_fmt_file=dict(type='str'),

@@ -1,4 +1,3 @@
-"""Module to report system configuration variable values as facts."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 

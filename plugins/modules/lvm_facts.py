@@ -1,4 +1,3 @@
-"""Module to report LVM information as facts"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -299,8 +298,7 @@ def load_pvs(module, name, LVM):
             cmd = f"lspv -L { pv }"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                warnings.append(
-                f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
+                warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
                 if stderr.find('0516-320') > -1:
                     if fields[2] == "None":
                         del LVM['PVs'][pv]["VOLUME GROUP"]
@@ -395,8 +393,7 @@ def load_vgs(module, name, LVM):
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        warnings.append(
-        f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
+        warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
     else:
         for ln in stdout.splitlines():
             vg = ln.split()[0].strip()
@@ -405,8 +402,7 @@ def load_vgs(module, name, LVM):
             cmd = f"lsvg { vg }"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                warnings.append(
-                f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
+                warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
                 # make sure that varied off volume groups
                 # are returned.
                 # 0516-010: Volume group must be varied on; use varyonvg command.
@@ -486,16 +482,14 @@ def load_lvs(module, name, LVM):
     cmd = "lsvg"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        warnings.append(
-        f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
+        warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
     else:
         for line in stdout.splitlines():
             vg = line.split()[0].strip()
             cmd = f"lsvg -l { vg }"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
-                warnings.append(
-                f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
+                warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
             else:
                 try:
                     lv_data = parse_lvs(module, stdout, vg, name)

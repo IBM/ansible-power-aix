@@ -1,4 +1,3 @@
-"""Module to activate or deactivate the filter rules."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -335,19 +334,15 @@ def list_rules(module, version):
         # For more readability of the JSON output, we do not report fields
         # that are set to the default value.
 
-        if (version == 'ipv4' and fields[2] != '0.0.0.0') or \
-          (version == 'ipv6' and fields[2] != '::'):
+        if (version == 'ipv4' and fields[2] != '0.0.0.0') or (version == 'ipv6' and fields[2] != '::'):
             rule['s_addr'] = fields[2]
         # Mask or prefix length
-        if (version == 'ipv4' and fields[3] != '0.0.0.0') or \
-          (version == 'ipv6' and fields[3] != '0'):
+        if (version == 'ipv4' and fields[3] != '0.0.0.0') or (version == 'ipv6' and fields[3] != '0'):
             rule['s_mask'] = fields[3]
-        if (version == 'ipv4' and fields[4] != '0.0.0.0') or \
-          (version == 'ipv6' and fields[4] != '::'):
+        if (version == 'ipv4' and fields[4] != '0.0.0.0') or (version == 'ipv6' and fields[4] != '::'):
             rule['d_addr'] = fields[4]
         # Mask or prefix length
-        if (version == 'ipv4' and fields[5] != '0.0.0.0') or \
-          (version == 'ipv6' and fields[5] != '0'):
+        if (version == 'ipv4' and fields[5] != '0.0.0.0') or (version == 'ipv6' and fields[5] != '0'):
             rule['d_mask'] = fields[5]
 
         if fields[6] == 'yes':
@@ -661,13 +656,11 @@ def main():
             rules=dict(
                 type='list', elements='dict',
                 options=dict(
-                    action=dict(type='str', choices=['permit', 'deny', 'shun_host',\
-                                                     'shun_port', 'if', 'else', 'endif',\
-                                                      'remove', 'move']),
+                    action=dict(type='str', choices=['permit', 'deny', 'shun_host',
+                                                     'shun_port', 'if', 'else', 'endif', 'remove', 'move']),
                     id=dict(type='str'),
                     new_id=dict(type='str'),
-                    direction=dict(type='str', choices=['inbound', 'outbound', 'both'],\
-                                   default='both'),
+                    direction=dict(type='str', choices=['inbound', 'outbound', 'both'], default='both'),
                     s_addr=dict(type='str'),
                     s_mask=dict(type='str'),
                     s_opr=dict(type='str', choices=operations),
@@ -699,8 +692,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', choices=['add', 'check', 'change', 'import', 'export'],\
-                        default='add'),
+            action=dict(type='str', choices=['add', 'check', 'change', 'import', 'export'], default='add'),
             directory=dict(type='str'),
             rawexport=dict(type='bool', default=False),
             ipv4=ipcommon,

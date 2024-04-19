@@ -1,4 +1,3 @@
-"""Module to enable and disable Simultaneous MultiThreading Mode"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -99,6 +98,7 @@ msg:
     sample: Command Executed Successfully smtctl -t 8
 
 '''
+
 
 def get_smt_state(module):
     """ Determines the current SMT status and return the present smtvalue else none"""

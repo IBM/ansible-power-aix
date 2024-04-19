@@ -1,4 +1,3 @@
-"""Module to configure AIX LVM volume groups"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -745,7 +744,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'],\
+            state=dict(type='str', choices=['absent', 'present', 'varyoff', 'varyon'],
                        default='present'),
             vg_name=dict(type='str', required=True),
             vg_type=dict(type='str', choices=['none', 'big', 'scalable']),

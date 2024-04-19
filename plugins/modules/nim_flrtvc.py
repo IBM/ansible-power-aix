@@ -492,8 +492,8 @@ def unzip(module, output, src, dst, resize_fs=True):
         dst     (str): The absolute destination path
     """
     try:
-        zfile = zipfile.ZipFile(src, encoding="utf-8")
-        zfile.extractall(dst)
+        with zipfile.ZipFile(src, encoding="utf-8") as zfile:
+            zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
         if resize_fs and increase_fs(module, output, dst):
             return unzip(module, output, src, dst, resize_fs)
@@ -1137,37 +1137,37 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
 
             # download and open tar file
             if download(module, out, url, dst, resize_fs):
-                tar = tarfile.open(dst, mode='r', encoding="utf-8")
+                with tarfile.open(dst, mode='r', encoding="utf-8") as tar:
 
-                # find all epkg in tar file
-                epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
-                out['2.discover'].extend(epkgs)
-                module.debug(f'{machine}: found {len(epkg)} epkg.Z file in tar file')
+                    # find all epkg in tar file
+                    epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
+                    out['2.discover'].extend(epkgs)
+                    module.debug(f'{machine}: found {len(epkg)} epkg.Z file in tar file')
 
-                # extract epkg
-                tar_dir = os.path.join(workdir, 'tardir')
-                if not os.path.exists(tar_dir):
-                    os.makedirs(tar_dir)
-                for epkg in epkgs:
-                    for attempt in range(3):
-                        try:
-                            tar.extract(epkg, tar_dir)
-                        except (OSError, IOError, tarfile.TarError) as exc:
-                            if resize_fs:
-                                increase_fs(module, out, tar_dir)
+                    # extract epkg
+                    tar_dir = os.path.join(workdir, 'tardir')
+                    if not os.path.exists(tar_dir):
+                        os.makedirs(tar_dir)
+                    for epkg in epkgs:
+                        for attempt in range(3):
+                            try:
+                                tar.extract(epkg, tar_dir)
+                            except (OSError, IOError, tarfile.TarError) as exc:
+                                if resize_fs:
+                                    increase_fs(module, out, tar_dir)
+                                else:
+                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}: {exc}'
+                                    module.log(f'[WARNING] {machine}: {msg}')
+                                    out['messages'].append(msg)
+                                    break
                             else:
-                                msg = f'Cannot extract tar file {epkg} to {tar_dir}: {exc}'
-                                module.log(f'[WARNING] {machine}: {msg}')
-                                out['messages'].append(msg)
                                 break
                         else:
-                            break
-                    else:
-                        msg = f'Cannot extract tar file {epkg} to {tar_dir}'
-                        module.log(f'[WARNING] {machine}: {msg}')
-                        out['messages'].append(msg)
-                        continue
-                    out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                            msg = f'Cannot extract tar file {epkg} to {tar_dir}'
+                            module.log(f'[WARNING] {machine}: {msg}')
+                            out['messages'].append(msg)
+                            continue
+                        out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
         else:  # URL as a Directory
             module.debug(f'{machine}: treat url as a directory')

@@ -1352,7 +1352,8 @@ def main():
                     params['exclude_files'] = module.params['exclude_files']
                     nim_savevg_create(module, target, params)
                 else:
-                    results['meta'][target]['messages'].append(f'Operation {action} {objtype} not supported on a standalone machine. You may want to select mksysb.')
+                    meta_msg = f'Operation {action} {objtype} not supported on a standalone machine. You may want to select mksysb.'
+                    results['meta'][target]['messages'] = meta_msg
                     results['status'][target] = 'FAILURE'
                     continue
 
@@ -1371,7 +1372,8 @@ def main():
         for target in targets:
 
             if target in results['nim_node']['standalone'] and objtype != 'mksysb' and objtype != 'savevg':
-                results['meta'][target]['messages'].append(f'Operation {action} {objtype} not supported on a standalone machine. You may want to select mksysb.')
+                meta_msg2 = f'Operation {action} {objtype} not supported on a standalone machine. You may want to select mksysb.'
+                results['meta'][target]['messages'] = meta_msg2
                 results['status'][target] = 'FAILURE'
                 continue
             if target in results['nim_node']['vios'] and (objtype == 'mksysb' or objtype == 'savevg'):

@@ -1,4 +1,3 @@
-"""Module to create boot image."""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -383,7 +382,7 @@ def main():
     # Check for verifying that both the create_image and only_verify are not set at the same time.
 
     if (module.params['create_image'] and module.params['only_verify']) or\
-        (not module.params['create_image'] and not module.params['only_verify']):
+            (not module.params['create_image'] and not module.params['only_verify']):
         results['msg'] = "create_image and only_verify attribute can not have same boolean value"
         module.fail_json(**results)
 

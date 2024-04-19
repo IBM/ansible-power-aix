@@ -1,4 +1,3 @@
-"""Module for system interim fixes management"""
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
