@@ -116,7 +116,7 @@ role-lint:
 
 .PHONY: porting
 porting:
-	python -m pylint --py3k --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
+	python -m pylint --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
 
 .PHONY: compile
 compile:
