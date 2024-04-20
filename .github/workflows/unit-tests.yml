@@ -17,7 +17,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.9']
+        ansible-version: ['2.15']
         python-version: ['3.7']
         
     name: running unit tests with python ${{ matrix.python-version }}
