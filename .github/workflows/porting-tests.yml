@@ -21,7 +21,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.15']
+        ansible-version: ['2.10.7']
         python-version: ['3.7']
 
     name: running python3 porting test
@@ -39,7 +39,7 @@ jobs:
     - name: install linting test requirements
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pylint==2.10.*
+        python -m pip install pylint==3.1.*
 
     - name: run python3 porting linter
       run: |

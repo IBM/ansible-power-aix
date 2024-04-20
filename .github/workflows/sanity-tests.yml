@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ansible-version: ['2.15', '3', '4', '5', 'devel']
+        ansible-version: ['2.10.7', '3', '4', '5', 'devel']
         python-version: ['3.8']
       include:
         - ansible-version: 'devel'

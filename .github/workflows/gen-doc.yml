@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.11']
-        ansible-version: ['2.15']
+        ansible-version: ['2.10.7']
 
     name: generate documenation source files
     steps:
