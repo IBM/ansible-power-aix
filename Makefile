@@ -93,7 +93,7 @@ install-unit-test-requirements:
 .PHONY: install-pylint-py3k
 install-pylint-py3k: uninstall-pylint
 	python -m pip install --upgrade pip
-	python -m pip install pylint==2.10.*
+	python -m pip install pylint==2.13.*
 
 ######################################################################################
 # testing targets

@@ -4,6 +4,6 @@ six
 voluptuous
 yamllint
 flake8
-ansible-lint==24.2.1
+ansible-lint==5.4.0
 rich==10.*
 shellcheck-py
