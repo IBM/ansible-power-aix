@@ -1,0 +1,3 @@
+- roles/power_aix_bootstrap/files/dnf_installer.sh shellcheck!skip
+- roles/power_aix_bootstrap/files/dnf_installer.sh shebang!skip
+- roles/power_aix_vioshc/files/vioshc.py shebang!skip
