@@ -342,7 +342,7 @@ def main():
 
     result['msg'] = 'install_all_updates successful.'
     if not module.check_mode:
-        if stdout.find('No filesets on the media could be used') > -1:
+        if stdout.find('No filesets on the media could be used') == -1:
             result['changed'] = True
     else:
         result['msg'] = 'install_all_updates preview successful.'
