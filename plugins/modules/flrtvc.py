@@ -812,9 +812,18 @@ def parse_stdout(stdout):
     get_system_type(module)
 
     stdout = stdout.splitlines()
-    parsed_list = [stdout[0]]
 
-    for line in stdout[1:]:
+    header = "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs"
+    header += "|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|Last Update|Fixed In"
+
+    index = 0
+
+    while stdout[index] != header:
+        index += 1
+
+    parsed_list = [stdout[index]]
+
+    for line in stdout[index:]:
         fixed_in_val = line.split("|")[-1]
         if "See Bulletin" in fixed_in_val:
             parsed_list.append(line)
@@ -948,10 +957,10 @@ def run_flrtvc(flrtvc_path, params, force):
 
     if not os.path.exists(lslpp_file) or not os.path.exists(emgr_file):
         if not os.path.exists(lslpp_file):
-            results['meta']['message'].append(f'Failed to list filsets (lslpp), {lslpp_file} \
+            results['meta']['messages'].append(f'Failed to list filsets (lslpp), {lslpp_file} \
                                               does not exist')
         if not os.path.exists(emgr_file):
-            results['meta']['message'].append(f'Failed to list fixes (emgr), {emgr_file} does not exist')
+            results['meta']['messages'].append(f'Failed to list fixes (emgr), {emgr_file} does not exist')
         return False
 
     # Prepare flrtvc command
