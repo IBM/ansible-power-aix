@@ -182,6 +182,8 @@ def validate_attributes(module):
     return: True - Attributes are valid / False - Invalid attributes provided.
     """
     attr = module.params['attributes']
+    if attr is None:
+        return True
     for attributes in attr:
         if attributes.split("=")[0] in crfs_specific_attributes:
             return False
