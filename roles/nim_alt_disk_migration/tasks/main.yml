@@ -280,6 +280,7 @@
           register: results
           async: "{{ nim_alt_disk_migration_wait_nimadm_timeout_secs }}"
           poll: 0
+          changed_when: true
         - ansible.builtin.debug:  # var=results
             msg:
               - "timeout = {{ nim_alt_disk_migration_wait_nimadm_timeout_secs }} seconds or {{ nim_alt_disk_migration_wait_nimadm_timeout_hours }} hours "
