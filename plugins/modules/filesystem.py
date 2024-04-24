@@ -163,7 +163,7 @@ def is_nfs(module, filesystem):
     return: True - filesystem is NFS type / False - filesystem is not NFS type
     """
     cmd = f"lsfs -l { filesystem }"
-    rc, stdout = module.run_command(cmd)
+    rc, stdout = module.run_command(cmd)[:2]
     if rc != 0:
         return None
 
@@ -199,12 +199,12 @@ def fs_state(module, filesystem):
     """
 
     cmd = f"lsfs -l { filesystem }"
-    rc, stdout = module.run_command(cmd)
+    rc = module.run_command(cmd)[0]
     if rc != 0:
         return None
 
     cmd = "df"
-    rc, stdout = module.run_command(cmd)
+    rc, stdout = module.run_command(cmd)[:2]
     if rc != 0:
         module.fail_json(f"Command { cmd } failed.")
 
