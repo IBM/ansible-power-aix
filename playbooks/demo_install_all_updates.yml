@@ -1,0 +1,22 @@
+---
+- name: Install_all_updates on AIX
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: all
+    device_val: /mnt/update/7300-00+SP1-2148
+
+  tasks:
+    - name: Install all installp updates on device
+      ibm.power_aix.install_all_updates:
+        device: "{{ device_val }}"
+
+    - name: Update any rpm images on your system, with newer technology levels from the /images directory
+      ibm.power_aix.install_all_updates:
+        device: "{{ device_val }}"
+        update_rpm: true
+
+    - name: install the latest level of install utilities on device /dev/cd0 (bos.rte.install update)
+      ibm.power_aix.install_all_updates:
+        device: "{{ device_val }}"
+        utilities_only: true
