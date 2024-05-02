@@ -1,0 +1,70 @@
+---
+# ptsiamis@gmail.com
+# Simple sync on aap server
+# In order to server content you have to edit nginx as:
+# edit /etc/nginx/conf.d/automation-controller.nginx.conf
+# add: location /ifix { alias /var/lib/awx/ifix; autoindex on; }
+# Or create your own nginx server with a similar setup
+- name: "AIX sync all ifixes on webserver"
+  hosts: aap-server
+  gather_facts: no
+  vars:
+    ifix_path: "/var/lib/awx/ifix/"
+    ifix_url: "https://aix.software.ibm.com/aix/ifixes/security/"
+    apar_csv_url: "https://esupport.ibm.com/customercare/flrt/doc?page=aparCSV"
+    apar_csv_filename: "apar.csv"
+    flrtvc_url: "https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip"
+    flrtvc_filename: "FLRTVC-latest.zip"
+    proxy: "http_proxy=YOURPROXYHERE:8080 https_proxy=$http_proxy"
+    debug: true
+    sync_ifix: true
+    sync_apar: true
+    sync_flrtvc: true
+  tasks:
+    - name: "Create ifix_path {{ ifix_path }} if not exists"
+      ansible.builtin.file:
+        path: "{{ ifix_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: "Synchronizing ifix to {{ ifix_path }} from {{ ifix_url }} "
+      ansible.builtin.shell:
+        cmd: "{{ proxy }} wget -q -nc -r -np -nd --no-check-certificate  -l 1 -A .tar,.asc,.sig  {{ ifix_url }} "
+        chdir: "{{ ifix_path }}"
+      register: ifixd
+      when: sync_ifix
+
+    - name: print debug
+      debug:
+        var: ifixd
+      when: sync_ifix
+
+    - name: "Synchronizing {{ ifix_path }}/{{ apar_csv_filename }} from {{ apr_csv_url }}"
+      ansible.builtin.shell:
+        cmd: "{{ proxy }} wget -k {{ apar_csv_url }} -O {{ apar_csv_filename }}"
+        chdir: "{{ ifix_path }}"
+      register: apard
+      when: sync_apar
+
+    - name: print debug
+      debug:
+        var: apard
+      when: sync_apar
+
+    - name: "Synchronizing {{ ifix_path }}/{{ flrtvc_filename }} from {{ flrtvc_url }}"
+      ansible.builtin.shell:
+        cmd: "{{ proxy }} wget -k {{ flrtvc_url }} -O {{ flrtvc_filename }}"
+        chdir: "{{ ifix_path }}"
+      register: flrtvcd
+      when: sync_flrtvc
+
+    - name: print debug
+      debug:
+        var: flrtvcd
+      when: sync_flrtvc
+
+    - name: "Recursive fix permissions on ifix_path {{ ifix_path }}"
+      ansible.builtin.file:
+        path: "{{ ifix_path }}"
+        mode: "u=rwX,g=rwX,o=rX"
+        recurse: yes

@@ -1,0 +1,42 @@
+---
+#ptsiamis@gmail.com
+#Demo playbook
+#Create a local nginx with the patches
+#Download patches with playbook:
+#demo_shell_flrtvc_wget_ifix.yml
+- name: "Demo install ifix from flrtvc from local patch server"
+  hosts: all
+  gather_facts: no
+  vars:
+    localpatchserver: "192.168.1.1"
+    localpatchpath: "ifix"
+    protocol: "https"
+    apar_csv: "/tmp/apar.csv"
+    flrtvczip: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/FLRTVC-latest.zip"
+    apar_csv_url: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/apar.csv"
+  collections:
+    - ibm.power_aix
+  tasks:
+    - name: Download apar.csv to {{ apar_csv }} from {{ apar_csv_url }}
+      ansible.builtin.shell:
+        cmd: "wget -q --no-check-certificate {{ apar_csv_url }} -O {{ apar_csv }}"
+
+    - name: install all security interim fixes
+      flrtvc:
+        apar: "sec"
+        verbose: true
+        protocol: "{{ protocol }}"
+        force: no
+        clean: no
+        flrtvczip: "{{ flrtvczip }}"
+        localpatchserver: "{{ localpatchserver }}"
+        localpatchpath: "{{ localpatchpath }}"
+        csv: "{{ apar_csv }}"
+      register: reg_install
+      environment:
+        http_proxy: ""
+        https_proxy: ""
+        PATH: "/usr/bin:/usr/sbin:/usr/local/bin:/opt/freeware/bin"
+
+    - debug:
+        var: reg_install
