@@ -1,0 +1,49 @@
+---
+- name: LVG on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: all
+    vg_name_val: vg00
+  tasks:
+    - name: Create a scalable volume group with a mirror pool
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: "{{ vg_name_val }}"
+        pvs: hdisk1
+        vg_type: scalable
+        mirror_pool: mp1
+
+    - name: Create a volume group with multiple physical volumes
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: "{{ vg_name_val }}"
+        pvs: hdisk1 hdisk2
+
+    - name: Extend a volume group
+      ibm.power_aix.lvg:
+        state: present
+        vg_name: "{{ vg_name_val }}"
+        pvs: hdisk3
+
+    - name: Varyoff a volume group
+      ibm.power_aix.lvg:
+        state: varyoff
+        vg_name: "{{ vg_name_val }}"
+
+    - name: Varyon a volume group
+      ibm.power_aix.lvg:
+        vg_name: "{{ vg_name_val }}"
+        state: varyon
+
+    - name: Removing hdisk3 physical volume from a volume group
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: "{{ vg_name_val }}"
+        pvs: hdisk3
+        delete_lvs: true
+
+    - name: Remove a volume group
+      ibm.power_aix.lvg:
+        state: absent
+        vg_name: "{{ vg_name_val }}"
