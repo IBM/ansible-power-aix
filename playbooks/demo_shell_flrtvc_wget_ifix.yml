@@ -16,7 +16,7 @@
     flrtvc_url: "https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip"
     flrtvc_filename: "FLRTVC-latest.zip"
     proxy: "http_proxy=YOURPROXYHERE:8080 https_proxy=$http_proxy"
-    debug: true
+    debug: false
     sync_ifix: true
     sync_apar: true
     sync_flrtvc: true
@@ -34,10 +34,12 @@
       register: ifixd
       when: sync_ifix
 
-    - name: print debug
-      debug:
+    - name: print ifixd
+      ansible.builtin.debug:
         var: ifixd
-      when: sync_ifix
+      when: 
+        - sync_ifix
+        - debug
 
     - name: "Synchronizing {{ ifix_path }}/{{ apar_csv_filename }} from {{ apr_csv_url }}"
       ansible.builtin.shell:
@@ -46,10 +48,12 @@
       register: apard
       when: sync_apar
 
-    - name: print debug
-      debug:
+    - name: print apard
+      ansible.builtin.debug:
         var: apard
-      when: sync_apar
+      when: 
+        - sync_apar
+        - debug
 
     - name: "Synchronizing {{ ifix_path }}/{{ flrtvc_filename }} from {{ flrtvc_url }}"
       ansible.builtin.shell:
@@ -58,10 +62,12 @@
       register: flrtvcd
       when: sync_flrtvc
 
-    - name: print debug
-      debug:
+    - name: print flrtvcd
+      ansible.builtin.debug:
         var: flrtvcd
-      when: sync_flrtvc
+      when: 
+        - sync_flrtvc
+        - debug
 
     - name: "Recursive fix permissions on ifix_path {{ ifix_path }}"
       ansible.builtin.file:

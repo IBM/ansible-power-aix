@@ -148,7 +148,7 @@ notes:
     be updated.
   - When the FLRTVC ksh script cannot execute the emgr command, it tries with B(sudo), so you can
     try installing B(sudo) on the managed system.
-  - When use local patch server settings  localpatchserver and localpatchpath must be both set 
+  - When use local patch server settings  localpatchserver and localpatchpath must be both set
     in order to have a complete full url with patches, for example the local url
     192.168.1.100/ifix should become in module localpatchserver 192.168.1.100 and localpatchpath ifix.
 '''
@@ -1055,10 +1055,10 @@ def run_parser(report, localpatchserver, localpatchpath):
     dict_rows = csv.DictReader(report, delimiter='|')
     rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
     rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$'
-    if localpatchserver != "" :
-      rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com|' + localpatchserver + ')'
-    if localpatchpath != "" :
-      rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
+    if localpatchserver != "":
+        rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com|' + localpatchserver + ')'
+    if localpatchpath != "":
+        rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
 
     pattern = re.compile(rule1 +
                          rule2)

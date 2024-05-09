@@ -14,6 +14,7 @@
     apar_csv: "/tmp/apar.csv"
     flrtvczip: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/FLRTVC-latest.zip"
     apar_csv_url: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/apar.csv"
+    debug: false
   collections:
     - ibm.power_aix
   tasks:
@@ -22,7 +23,7 @@
         cmd: "wget -q --no-check-certificate {{ apar_csv_url }} -O {{ apar_csv }}"
 
     - name: install all security interim fixes
-      flrtvc:
+      ibm.power_aix.flrtvc:
         apar: "sec"
         verbose: true
         protocol: "{{ protocol }}"
@@ -38,5 +39,7 @@
         https_proxy: ""
         PATH: "/usr/bin:/usr/sbin:/usr/local/bin:/opt/freeware/bin"
 
-    - debug:
+    - name: debug reg_install
+      ansible.builtin.debug:
         var: reg_install
+      when: debug
