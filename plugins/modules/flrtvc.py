@@ -1060,8 +1060,7 @@ def run_parser(report, localpatchserver, localpatchpath):
     if localpatchpath != "":
         rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
 
-    pattern = re.compile(rule1 +
-                         rule2)
+    pattern = re.compile(rule1 + rule2)
 
     rows = []
     for row in dict_rows:
