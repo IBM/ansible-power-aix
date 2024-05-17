@@ -152,7 +152,7 @@ stderr:
 '''
 
 result = None
-crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize"]
+crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize", "isnapshot"]
 
 
 def is_nfs(module, filesystem):
@@ -175,20 +175,27 @@ def is_nfs(module, filesystem):
     return False
 
 
-def validate_attributes(module):
+def valid_attributes(module):
     """
-    Determines if valid attributes are provided for "chfs" command.
-    param module: Ansible module argument spec.
-    return: True - Attributes are valid / False - Invalid attributes provided.
+    Returns list of valid attributes for chfs command
+    param:
+        module - Ansible module argument spec.
+    return:
+        valid_attrs (list) - List of valid attributes among the provided ones.
     """
     attr = module.params['attributes']
     if attr is None:
         return True
+
+    valid_attrs = []
+
     for attributes in attr:
         if attributes.split("=")[0] in crfs_specific_attributes:
-            return False
+            continue
+        else:
+            valid_attrs.append(attributes)
 
-    return True
+    return valid_attrs
 
 
 def fs_state(module, filesystem):
@@ -220,6 +227,107 @@ def fs_state(module, filesystem):
     return False
 
 
+def compare_attrs(module):
+    """
+    Helper function to compare the provided and already existing attributes of a filesystem
+    params:
+        module - Ansible module argument spec.
+    return:
+        updated_attrs (list) - List of updated attributes and their values, that need to be changed
+    """
+
+    # Check for NFS and remove hashed out code 
+    module.params['attributes'] = valid_attributes(module)
+    fs_mount_pt = module.params['filesystem']
+    cmd1 = f"lsfs -c {fs_mount_pt}"
+    cmd2 = f"lsfs -q {fs_mount_pt}"
+
+    rc1, stdout1, stderr1 = module.run_command(cmd1)
+
+    if rc1:
+        result['stdout'] = stdout1
+        result['cmd'] = cmd1
+        result['stderr'] = stderr1
+        result['msg'] = f"Could not get information about the provided filesystem."
+        module.fail_json(**result)
+
+    rc2, stdout2, stderr2 = module.run_command(cmd2)
+
+    if rc2:
+        result['stdout'] = stdout2
+        result['cmd'] = cmd2
+        result['stderr'] = stderr2
+        result['msg'] = f"Could not get information about the provided filesystem."
+        module.fail_json(**result)
+
+    current_attributes = {}
+
+    fs_attrs = ["mountpoint", "device", "vfs", "nodename", "type", "size", "options", "automount", "acct"]
+
+    lines1 = stdout1.splitlines()
+    line1 = lines1[1].replace("::", ":--:")
+    line1 = line1.split(":")
+
+    for it in range(9):
+        current_attributes[fs_attrs[it]] = line1[it]
+
+    lines2 = stdout2.splitlines()
+
+    fs_attrs = ["name", "nodename", "mount pt", "vfs", "size", "options", "auto", "accounting"]
+
+    line2 = lines2[1].split()
+    for it in range(8):
+        if fs_attrs[it] in current_attributes.keys() and line2[it] == "--":
+            continue
+        current_attributes[fs_attrs[it]] = line2[it]
+
+    mapped_key = {
+        "dmapi" : "managed",
+        "fs size": "size",
+        "eaformat": "ea",
+        "inline log size": "logsize"
+    }
+
+    for it in lines2[2].split(","):
+        curr_attr = it.split(":")
+        attr_key = curr_attr[0].strip().lower()
+        if attr_key in mapped_key.keys():
+            attr_key = mapped_key[attr_key]
+        attr_val = curr_attr[1].strip()
+        if attr_key[0] == "(":
+            attr_key = attr_key[1:]
+        if attr_val[-1] == ")":
+            attr_val = attr_val[:-1]
+        current_attributes[attr_key] = attr_val
+
+    updated_attrs = []
+    provided_attributes = module.params['attributes']
+    for attrs in provided_attributes:
+        attrs = attrs.split("=")
+        attr = attrs[0].strip()
+        val = attrs[1].strip()
+        if attr == "log" or attr == "logname":
+            if current_attributes['inline log'] and val != current_attributes['inline log']:
+                updated_attrs.append(f"{attr}={val}")
+            continue
+
+        prefix = ["+", "-"]
+        if attr == "size" and val[0] not in prefix:
+            if val[-1] == "M":
+                val = int(val[:-1])
+                if val % 64 != 0:
+                    val = str(((val//64) + 1)*64)
+            if val[-1] == "G":
+                val = int(val[:-1])
+                val = str(val * 1024)
+            block_size = int(current_attributes["block size"])//1024
+            val = str(int(val) * block_size * 512)
+
+        if attr not in current_attributes.keys() or val != current_attributes[attr]:
+            updated_attrs.append(f"{attr}={val}")
+    return updated_attrs
+
+
 def nfs_opts(module):
     """
     Helper function to build NFS parameters for mknfsmnt and chnfsmnt.
@@ -242,7 +350,7 @@ def nfs_opts(module):
         opts += f"-t { perms } "
 
     if mgroup:
-        opts += f"-m { mgroup } " % mgroup
+        opts += f"-m { mgroup } "
 
     return opts
 
@@ -282,64 +390,29 @@ def fs_opts(module):
     return opts
 
 
-def get_fs_props(module, filesystem):
-    """
-    Fetches the current attributes of a specified filesystem
-    using lsfs.
-    param module: Ansible module argument spec.
-    param filesystem: filesystem name.
-    return: fs_props - output of lsfs -cq <fs>
-    """
-
-    cmd = f"lsfs -cq { filesystem }"
-    rc, stdout, stderr = module.run_command(cmd)
-    if rc != 0:
-        msg = f"Failed to fetch current attributes of { filesystem }. cmd - { cmd }"
-        result["rc"] = rc
-        result["msg"] = msg
-        result["stdout"] = stdout
-        result["stderr"] = stderr
-        module.fail_json(**result)
-
-    fs_props = stdout
-    # for in NFS we are only concerned about limited properties
-    props = stdout.splitlines()[1]
-    props = props.split(":")
-    # currently we are only interested in:
-    # props[4] - mount group
-    # props[6] - options - only interested in permissions here
-    # props[7] - automount
-    mnt_grp = props[4]
-    perms = "rw" if "rw" in props[6].split(",") else "ro"
-    amount = props[7]
-    nfs_props = f"{ mnt_grp }:{ perms }:{ amount }"
-    return fs_props, nfs_props
-
-
 def chfs(module, filesystem):
     """
     Changes the attributes of the filesystem.
     param module: Ansible module argument spec.
-    param device: Filesystem name.
+    param filesystem: Filesystem name.
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
+    # compare initial and the provided attributes. Exit if no change is required.
+    if module.params['attributes']:
+        module.params['attributes'] = compare_attrs(module)
+        if not module.params['attributes']:
+            result['msg'] = "No modification is required, exiting"
+            module.exit_json(**result)
 
-    # fetch initial attributes
-    init_props_fs, init_props_nfs = get_fs_props(module, filesystem)
-
-    # build command to run
     opts = ""
     nfs = is_nfs(module, filesystem)
     if nfs:
-        init_props = init_props_nfs
         opts = nfs_opts(module)
         device = module.params["device"]
         nfs_server = module.params["nfs_server"]
         cmd = f"chnfsmnt { opts } -f { filesystem } -d { device } -h { nfs_server }"
     else:
-        # Modify Local Filesystem
-        init_props = init_props_fs
         opts = fs_opts(module)
         cmd = f"chfs { opts } { filesystem }"
 
@@ -347,18 +420,8 @@ def chfs(module, filesystem):
     rc, stdout, stderr = module.run_command(cmd)
     result["rc"] = rc
 
-    # fetch the final properties of the filesystem after running command
-    final_props_fs, final_props_nfs = get_fs_props(module, filesystem)
-    if nfs:
-        final_props = final_props_nfs
-    else:
-        final_props = final_props_fs
-
-    if init_props == final_props and rc == 0:
-        result["msg"] = f"No changes needed in { filesystem }"
-        return
     if rc != 0:
-        msg = f"Modification of filesystem { filesystem } failed. cmd - { cmd }" % (filesystem, cmd)
+        msg = f"Modification of filesystem { filesystem } failed. cmd - { cmd }"
         result["msg"] = msg
         result["stdout"] = stdout
         result["stderr"] = stderr
@@ -412,7 +475,7 @@ def mkfs(module, filesystem):
         if nfs_server:
             msg = f"Creation of NFS filesystem { filesystem } failed. cmd - { cmd }"
         else:
-            msg = f"Creation of filesystem { filesystem } failed. cmd - { cmd }" % (filesystem, cmd)
+            msg = f"Creation of filesystem { filesystem } failed. cmd - { cmd }"
         result["stdout"] = stdout
         result["stderr"] = stderr
         module.fail_json(**result)
@@ -514,10 +577,6 @@ def main():
         if fs_state(module, filesystem) is None:
             mkfs(module, filesystem)
         else:
-            if not validate_attributes(module):
-                result['msg'] = "The following attributes can not be changed once set: "
-                result['msg'] += ', '. join(crfs_specific_attributes) + "."
-                module.fail_json(**result)
             chfs(module, filesystem)
     elif state == 'absent':
         # Remove filesystem
