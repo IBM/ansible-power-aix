@@ -280,7 +280,7 @@ def compare_attrs(module):
         current_attributes[fs_attrs[it]] = line2[it]
 
     mapped_key = {
-        "dmapi" : "managed",
+        "dmapi": "managed",
         "fs size": "size",
         "eaformat": "ea",
         "inline log size": "logsize"
@@ -314,11 +314,11 @@ def compare_attrs(module):
             if val[-1] == "M":
                 val = int(val[:-1])
                 if val % 64 != 0:
-                    val = str(((val//64) + 1)*64)
+                    val = str(((val // 64) + 1) * 64)
             if val[-1] == "G":
                 val = int(val[:-1])
                 val = str(val * 1024)
-            block_size = int(current_attributes["block size"])//1024
+            block_size = int(current_attributes["block size"]) // 1024
             val = str(int(val) * block_size * 512)
 
         if attr not in current_attributes.keys() or val != current_attributes[attr]:
