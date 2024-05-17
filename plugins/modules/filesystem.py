@@ -192,8 +192,7 @@ def valid_attributes(module):
     for attributes in attr:
         if attributes.split("=")[0] in crfs_specific_attributes:
             continue
-        else:
-            valid_attrs.append(attributes)
+        valid_attrs.append(attributes)
 
     return valid_attrs
 
@@ -236,7 +235,6 @@ def compare_attrs(module):
         updated_attrs (list) - List of updated attributes and their values, that need to be changed
     """
 
-    # Check for NFS and remove hashed out code 
     module.params['attributes'] = valid_attributes(module)
     fs_mount_pt = module.params['filesystem']
     cmd1 = f"lsfs -c {fs_mount_pt}"
@@ -248,7 +246,7 @@ def compare_attrs(module):
         result['stdout'] = stdout1
         result['cmd'] = cmd1
         result['stderr'] = stderr1
-        result['msg'] = f"Could not get information about the provided filesystem."
+        result['msg'] = "Could not get information about the provided filesystem."
         module.fail_json(**result)
 
     rc2, stdout2, stderr2 = module.run_command(cmd2)
@@ -257,7 +255,7 @@ def compare_attrs(module):
         result['stdout'] = stdout2
         result['cmd'] = cmd2
         result['stderr'] = stderr2
-        result['msg'] = f"Could not get information about the provided filesystem."
+        result['msg'] = "Could not get information about the provided filesystem."
         module.fail_json(**result)
 
     current_attributes = {}
