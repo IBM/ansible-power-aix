@@ -120,6 +120,24 @@ options:
     - When set, downloads will be attempted using set protocol.
     type: str
     choices: [ https, http, ftp ]
+  flrtvczip:
+    description:
+    - Specifies alternative location (local repository) hosting flrtvc.zip file.
+    - When set, download of FLRTVC-Latest.zip will be attempted from this url.
+    type: str
+    default: "https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip"
+  localpatchserver:
+    description:
+    - Specifies local server ip/hostname containing ifix patches.
+    - When set, urls from frltvc.ksh will replaced with localpatchserver to point to local server.
+    type: str
+    default: no
+  localpatchpath:
+    description:
+    - Specifies local server path containing ifix patches.
+    - When set, sub paths from frltvc.ksh containing patches will replaced with localpatchpath to point to local path.
+    type: str
+    default: no
 notes:
   - Refer to the FLRTVC page for detail on the script.
     U(https://esupport.ibm.com/customercare/flrt/sas?page=../jsp/flrtvc.jsp)
@@ -130,6 +148,9 @@ notes:
     be updated.
   - When the FLRTVC ksh script cannot execute the emgr command, it tries with B(sudo), so you can
     try installing B(sudo) on the managed system.
+  - When use local patch server settings  localpatchserver and localpatchpath must be both set
+    in order to have a complete full url with patches, for example the local url
+    192.168.1.100/ifix should become in module localpatchserver 192.168.1.100 and localpatchpath ifix.
 '''
 
 EXAMPLES = r'''
@@ -147,6 +168,15 @@ EXAMPLES = r'''
     verbose: true
     force: false
     clean: false
+
+- name: Install patches from local patch server
+  flrtvc:
+    apar: sec
+    protocol: https
+    localpatchserver: 192.168.1.1
+    localpatchpath: ifix
+    flrtvczip: https://192.168.1.1/ifix/flrtvc.zip
+    csv: https://192.168.1.1/ifix/apar.csv
 '''
 
 RETURN = r'''
@@ -1012,7 +1042,7 @@ def run_flrtvc(flrtvc_path, params, force):
     return True
 
 
-def run_parser(report):
+def run_parser(report, localpatchserver, localpatchpath):
     """
     Parse report by extracting URLs
     args:
@@ -1023,16 +1053,26 @@ def run_parser(report):
 
     protocol = module.params['protocol']
     dict_rows = csv.DictReader(report, delimiter='|')
-    pattern = re.compile(r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
-                         r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$')
+    rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
+    rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$'
+    if localpatchserver != "":
+        rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com|' + localpatchserver + ')'
+    if localpatchpath != "":
+        rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
+
+    pattern = re.compile(rule1 + rule2)
 
     rows = []
     for row in dict_rows:
         row = row['Download URL']
         if protocol:
             row = re.sub(r'^(https|http|ftp)', protocol, row, count=1)
-
+        if localpatchserver:
+            row = re.sub(r'://(aix.software.ibm.com|public.dhe.ibm.com)/', '://' + localpatchserver + '/', row, count=1)
+        if localpatchpath:
+            row = re.sub(r'/(aix/ifixes/|aix/efixes/security)/', '/' + localpatchpath + '/', row, count=1)
         rows.append(row)
+
     selected_rows = [row for row in rows if pattern.match(row) is not None]
     rows = list(set(selected_rows))  # remove duplicates
     debug_len = len(rows)
@@ -1245,6 +1285,9 @@ def main():
             download_only=dict(required=False, type='bool', default=False),
             extend_fs=dict(required=False, type='bool', default=True),
             protocol=dict(required=False, type='str', choices=['https', 'http', 'ftp']),
+            localpatchserver=dict(required=False, type='str', default=""),
+            localpatchpath=dict(required=False, type='str', default=""),
+            flrtvczip=dict(required=False, type='str', default='https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip'),
         ),
         supports_check_mode=True
     )
@@ -1284,6 +1327,9 @@ def main():
     check_only = module.params['check_only']
     download_only = module.params['download_only']
     resize_fs = module.params['extend_fs']
+    flrtvczip = module.params['flrtvczip']
+    localpatchserver = module.params['localpatchserver']
+    localpatchpath = module.params['localpatchpath']
 
     # Create working directory if needed
     workdir = os.path.abspath(os.path.join(flrtvc_params['dst_path'], 'work'))
@@ -1306,8 +1352,7 @@ def main():
             results['meta']['messages'].append(msg)
 
     flrtvc_dst = os.path.abspath(os.path.join(workdir, 'FLRTVC-latest.zip'))
-    if not download('https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip',
-                    flrtvc_dst, resize_fs):
+    if not download(flrtvczip, flrtvc_dst, resize_fs):
         if clean and os.path.exists(workdir):
             shutil.rmtree(workdir, ignore_errors=True)
         results['msg'] = 'Failed to download FLRTVC-latest.zip'
@@ -1344,7 +1389,7 @@ def main():
     # Parse flrtvc report
     # ===========================================
     module.debug('*** PARSE ***')
-    run_parser(results['meta']['0.report'])
+    run_parser(results['meta']['0.report'], localpatchserver, localpatchpath)
 
     # ===========================================
     # Download and check efixes
