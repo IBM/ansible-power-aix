@@ -166,10 +166,10 @@ def set_attr_value(module, filename, stanza, attr, target_value):
     """
     chsec_command = module.get_bin_path('chsec', required=True)
     if str(target_value) in ["True", "False"]:
-      if str(target_value) == "True":
-          target_value = "true"
-      else:
-          target_value = "false"
+        if str(target_value) == "True":
+            target_value = "true"
+        else:
+            target_value = "false"
     cmd = [
         chsec_command,
         '-f', filename,
