@@ -1,0 +1,69 @@
+---
+- name: CHSEC on AIX
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: all
+  tasks:    
+    - name: Add registry as files for a user
+      ibm.power_aix.chsec:
+        file: /etc/security/user
+        stanza: ldapuser
+        attrs:
+          registry: files
+        state: present
+    - name: Change login times for user
+      ibm.power_aix.chsec:
+        file: /etc/security/user
+        stanza: ldapuser
+        attrs:
+          logintimes: :0800-1700
+        state: present
+    - name: Remove registry attribute from stanza
+      ibm.power_aix.chsec:
+        file: /etc/security/user
+        stanza: ldapuser
+        attrs:
+          registry:
+        state: absent
+    - name: Lock System User Accounts
+      ibm.power_aix.chsec:
+        path: /etc/security/user
+        stanza: "{{ item }}"
+        attrs:
+          account_locked: "true"
+          login: "false"
+          rlogin: "false"
+        state: present
+      loop:
+        - "adm"
+        - "guest"
+        - "invscout"
+        - "ipsec"
+        - "snapp"
+        - "srvproxy"
+        - "uucp"
+    - name: Change CPU time limit of a user Joe to 1 hour
+      ibm.power_aix.chsec:
+        file: /etc/security/limits
+        stanza: joe
+        attrs:
+          cpu: 3600
+        state: present
+    - name: Allow other users to switch to this user using su command
+      ibm.power_aix.chsec:
+        file: /etc/security/user
+        stanza: joe
+        attrs:
+          su: false
+        state: present
+    - name: Set password rules for a user
+      ibm.power_aix.chsec:
+        file: /etc/security/user
+        stanza: joe
+        attrs:
+          maxage: 13
+          maxexpired: 2
+          maxrepeats: 4
+          minlen: 8
+        state: present
