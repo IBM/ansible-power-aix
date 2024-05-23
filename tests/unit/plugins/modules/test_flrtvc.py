@@ -72,6 +72,8 @@ class TestRunParser(unittest.TestCase):
         global params, init_results, mock_https, mock_http, mock_ftp
         self.module = mock.Mock()
         self.module.params = params
+        self.localpatchserver = ""
+        self.localpatchpath = ""
         self.module.debug.return_value = None
         self.results = init_results
 
@@ -93,7 +95,7 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_http})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('ftp', flrtvc.results['meta']['1.parse']))
 
     def test_http_to_https(self):
@@ -101,7 +103,7 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_http})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('https', flrtvc.results['meta']['1.parse']))
 
     def test_ftp_to_http(self):
@@ -109,7 +111,7 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_ftp})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('http', flrtvc.results['meta']['1.parse']))
 
     def test_ftp_to_https(self):
@@ -117,7 +119,7 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_ftp})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('https', flrtvc.results['meta']['1.parse']))
 
     def test_https_to_ftp(self):
@@ -125,7 +127,7 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_https})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('ftp', flrtvc.results['meta']['1.parse']))
 
     def test_https_to_http(self):
@@ -133,5 +135,5 @@ class TestRunParser(unittest.TestCase):
         flrtvc.module = self.module
         flrtvc.results = self.results
         flrtvc.results['meta'].update({'0.report': mock_https})
-        flrtvc.run_parser(flrtvc.results['meta']['0.report'])
+        flrtvc.run_parser(flrtvc.results['meta']['0.report'], self.localpatchserver, self.localpatchpath)
         self.assertTrue(_check_protocol('http', flrtvc.results['meta']['1.parse']))
