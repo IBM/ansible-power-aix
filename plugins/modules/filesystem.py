@@ -156,6 +156,7 @@ stderr:
 result = None
 crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize", "isnapshot"]
 
+
 def is_nfs(module, filesystem):
     """
     Determines if a filesystem is NFS or not
@@ -316,7 +317,7 @@ def compare_attrs(module):
         module.params['mount_group'] = ""
         check_other_perms += 1
 
-    if not acct_sub_sys or acct_sub_sys ==  current_attributes['accounting']:
+    if not acct_sub_sys or acct_sub_sys == current_attributes['accounting']:
         module.params['account_subsystem'] = ""
         check_other_perms += 1
 
@@ -330,7 +331,7 @@ def compare_attrs(module):
             attrs = attrs.split("=")
             attr = attrs[0].strip()
             val = attrs[1].strip()
-            val = val.strip('\"') #For case when variables are used while providing values to attributes
+            val = val.strip('\"')  # For case when variables are used while providing values to attributes
             if attr == "log" or attr == "logname":
                 if current_attributes['inline log'] and val != current_attributes['inline log']:
                     updated_attrs.append(f"{attr}={val}")
