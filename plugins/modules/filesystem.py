@@ -70,7 +70,8 @@ options:
     description:
     - When I(state=present), for local filesystems, specifies whether the file system is to be
       processed by the accounting subsystem.
-    type: bool
+    type: str
+    choices: ['yes', 'no']
   fs_type:
     description:
     - Specifies the virtual filesystem type to create the local filesystem.
@@ -85,7 +86,8 @@ options:
     description:
     - Specifies whether to automatically mount the filesystem at system restart while creating or
       updating filesystem.
-    type: bool
+    type: str
+    choices: ['yes', 'no']
   permissions:
     description:
     - Specifies file system permissions while creation/updation of any filesystem.
@@ -153,7 +155,6 @@ stderr:
 
 result = None
 crfs_specific_attributes = ["ag", "bf", "compress", "frag", "nbpi", "agblksize", "isnapshot"]
-
 
 def is_nfs(module, filesystem):
     """
@@ -235,7 +236,6 @@ def compare_attrs(module):
         updated_attrs (list) - List of updated attributes and their values, that need to be changed
     """
 
-    module.params['attributes'] = valid_attributes(module)
     fs_mount_pt = module.params['filesystem']
     cmd1 = f"lsfs -c {fs_mount_pt}"
     cmd2 = f"lsfs -q {fs_mount_pt}"
@@ -298,32 +298,64 @@ def compare_attrs(module):
             attr_val = attr_val[:-1]
         current_attributes[attr_key] = attr_val
 
+    amount = module.params["auto_mount"]
+    perms = module.params["permissions"]
+    mgroup = module.params["mount_group"]
+    acct_sub_sys = module.params["account_subsystem"]
+    check_other_perms = 0
+
+    if not amount or amount == current_attributes['auto']:
+        module.params['auto_mount'] = ""
+        check_other_perms += 1
+
+    if not perms or perms == current_attributes['options']:
+        module.params['permissions'] = ""
+        check_other_perms += 1
+
+    if not mgroup or mgroup == current_attributes['type']:
+        module.params['mount_group'] = ""
+        check_other_perms += 1
+
+    if not acct_sub_sys or acct_sub_sys ==  current_attributes['accounting']:
+        module.params['account_subsystem'] = ""
+        check_other_perms += 1
+
     updated_attrs = []
-    provided_attributes = module.params['attributes']
-    for attrs in provided_attributes:
-        attrs = attrs.split("=")
-        attr = attrs[0].strip()
-        val = attrs[1].strip()
-        if attr == "log" or attr == "logname":
-            if current_attributes['inline log'] and val != current_attributes['inline log']:
+
+    if module.params['attributes']:
+        module.params['attributes'] = valid_attributes(module)
+        provided_attributes = module.params['attributes']
+
+        for attrs in provided_attributes:
+            attrs = attrs.split("=")
+            attr = attrs[0].strip()
+            val = attrs[1].strip()
+            val = val.strip('\"') #For case when variables are used while providing values to attributes
+            if attr == "log" or attr == "logname":
+                if current_attributes['inline log'] and val != current_attributes['inline log']:
+                    updated_attrs.append(f"{attr}={val}")
+                continue
+
+            prefix = ["+", "-"]
+            if attr == "size" and val[0] not in prefix:
+                if val[-1] == "M":
+                    val = int(val[:-1])
+                    if val % 64 != 0:
+                        val = str(((val // 64) + 1) * 64)
+                if val[-1] == "G":
+                    val = int(val[:-1])
+                    val = str(val * 1024)
+                block_size = int(current_attributes["block size"]) // 1024
+                val = str(int(val) * block_size * 512)
+
+            if attr not in current_attributes.keys() or val != current_attributes[attr]:
                 updated_attrs.append(f"{attr}={val}")
-            continue
 
-        prefix = ["+", "-"]
-        if attr == "size" and val[0] not in prefix:
-            if val[-1] == "M":
-                val = int(val[:-1])
-                if val % 64 != 0:
-                    val = str(((val // 64) + 1) * 64)
-            if val[-1] == "G":
-                val = int(val[:-1])
-                val = str(val * 1024)
-            block_size = int(current_attributes["block size"]) // 1024
-            val = str(int(val) * block_size * 512)
+    if check_other_perms == 4 and len(updated_attrs) == 0:
+        result['msg'] = "No modification is required, exiting!"
+        module.exit_json(**result)
 
-        if attr not in current_attributes.keys() or val != current_attributes[attr]:
-            updated_attrs.append(f"{attr}={val}")
-    return updated_attrs
+    module.params['attributes'] = updated_attrs
 
 
 def nfs_opts(module):
@@ -336,9 +368,9 @@ def nfs_opts(module):
     nfs_soft_mount = module.params["nfs_soft_mount"]
 
     opts = ""
-    if amount is True:
+    if amount == "yes":
         opts += "-A "
-    elif amount is False:
+    elif amount == "no":
         opts += "-a "
 
     if nfs_soft_mount:
@@ -364,10 +396,8 @@ def fs_opts(module):
     acct_sub_sys = module.params["account_subsystem"]
 
     opts = ""
-    if amount is True:
-        opts += "-A yes "
-    elif amount is False:
-        opts += "-A no "
+    if amount:
+        opts += f"-A {amount} "
 
     if attrs:
         opts += "-a " + ' -a '.join(attrs) + " "
@@ -381,9 +411,7 @@ def fs_opts(module):
         opts += f"-p { perms } "
 
     if acct_sub_sys:
-        opts += "-t yes "
-    elif acct_sub_sys is False:
-        opts += "-t no "
+        opts += f"-t {acct_sub_sys} "
 
     return opts
 
@@ -397,11 +425,13 @@ def chfs(module, filesystem):
             msg - message
     """
     # compare initial and the provided attributes. Exit if no change is required.
-    if module.params['attributes']:
-        module.params['attributes'] = compare_attrs(module)
-        if not module.params['attributes']:
-            result['msg'] = "No modification is required, exiting"
-            module.exit_json(**result)
+    
+    amount = module.params["auto_mount"]
+    perms = module.params["permissions"]
+    mgroup = module.params["mount_group"]
+    acct_sub_sys = module.params["account_subsystem"]
+    if module.params['attributes'] or amount or perms or mgroup or acct_sub_sys:
+        compare_attrs(module)
 
     opts = ""
     nfs = is_nfs(module, filesystem)
@@ -532,8 +562,8 @@ def main():
         supports_check_mode=False,
         argument_spec=dict(
             attributes=dict(type='list', elements='str'),
-            account_subsystem=dict(type='bool'),
-            auto_mount=dict(type='bool'),
+            account_subsystem=dict(type='str', choices=['yes', 'no']),
+            auto_mount=dict(type='str', choices=['yes', 'no']),
             device=dict(type='str'),
             vg=dict(type='str'),
             fs_type=dict(type='str', default='jfs2'),
