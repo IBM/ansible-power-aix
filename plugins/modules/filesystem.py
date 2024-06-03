@@ -424,12 +424,12 @@ def chfs(module, filesystem):
     return: changed - True/False(filesystem state modified or not),
             msg - message
     """
-    # compare initial and the provided attributes. Exit if no change is required.
-    
     amount = module.params["auto_mount"]
     perms = module.params["permissions"]
     mgroup = module.params["mount_group"]
     acct_sub_sys = module.params["account_subsystem"]
+
+    # compare initial and the provided attributes. Exit if no change is required.
     if module.params['attributes'] or amount or perms or mgroup or acct_sub_sys:
         compare_attrs(module)
 
