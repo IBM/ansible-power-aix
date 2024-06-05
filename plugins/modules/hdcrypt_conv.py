@@ -26,7 +26,7 @@ description:
 version_added: '1.7.0'
 requirements:
 - AIX >= 72X
-- Python >= 2.7
+- Python >= 3.6
 options:
   action:
     description:

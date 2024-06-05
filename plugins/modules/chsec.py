@@ -28,7 +28,7 @@ author:
   - Stephen Ulmer (@stephenulmer)
 requirements:
   - AIX
-  - Python >= 2.7
+  - Python >= 3.6
   - 'Privileged user with authorizations'
 options:
   file:

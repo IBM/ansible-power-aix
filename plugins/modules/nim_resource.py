@@ -22,7 +22,7 @@ description:
 version_added: '1.5.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - User with root authority to run the nim command.
 - NIM master software bos.sysmgt.nim.master.
 - 'Privileged user with authorization:

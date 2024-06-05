@@ -18,7 +18,7 @@ description:
 - Reboot a machine and validate by runnning a test command once the system comes back up.
 version_added: '1.1.0'
 requirements:
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorization: B(aix.system.boot.shutdown)'
 - In ansible.cfg file, ensure that ssh_args are properly set, so that ssh connection does not end up in a hang.
   For example, ssh_args = -o ForwardAgent=yes -o ControlPersist=30m -o ServerAliveInterval=45 -o ServerAliveCountMax=10

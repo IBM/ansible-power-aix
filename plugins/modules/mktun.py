@@ -30,7 +30,7 @@ description:
 version_added: '1.2.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations: B(aix.security.network.vpn,aix.security.network.stat)'
 options:
   manual:

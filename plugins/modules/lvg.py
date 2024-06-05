@@ -26,7 +26,7 @@ description:
 version_added: '0.4.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations:
   B(aix.lvm.manage.extend,aix.lvm.manage.change,aix.lvm.manage.create,aix.lvm.manage.remove)'
 options:

@@ -18,7 +18,7 @@ description:
 version_added: '1.5.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - Root user is required.
 options:
   action:

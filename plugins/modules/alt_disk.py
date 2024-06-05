@@ -27,7 +27,7 @@ description:
 version_added: '1.1.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations: B(aix.system.install,aix.lvm.manage.change)'
 options:
   action:
