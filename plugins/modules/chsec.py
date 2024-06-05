@@ -179,6 +179,8 @@ def set_attr_value(module, filename, stanza, attr, target_value):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         msg = 'Failed to run chsec command: ' + ' '.join(cmd)
+        if "3004-692" in stderr:
+            msg += f"Invalid value provided - {target_value}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     return_dict = {
         'cmd': ' '.join(cmd),
@@ -196,6 +198,8 @@ def get_current_attr_value(module, filename, stanza, attr):
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
         msg = 'Failed to run lssec command: ' + ' '.join(cmd)
+        if "3004-725" in stderr:
+            msg += f" Invalid stanza: '{stanza}'"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     # Strip newline and double-quotation marks that are sometimes added
     lssec_out = stdout.splitlines()[1].split(':', 1)[1].strip('\\\"\n')
