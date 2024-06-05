@@ -508,7 +508,7 @@ def alt_disk_mksysb(module, params):
     # [ -C ]    Uses the /usr/lpp/bos.alt_disk_install/boot_images/bosboot.disk.chrp
     #           file from the current rootvg only.
 
-    if params['disk'] and len(params['disk'] > 1):
+    if params['disk'] and len(params['disk']) > 1:
         cmd_disk = ' '.join(params['disk'])
     cmd = ['/usr/sbin/alt_disk_mksysb']
     cmd += ['-m', params['location']]
