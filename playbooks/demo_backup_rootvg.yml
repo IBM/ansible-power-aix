@@ -92,6 +92,28 @@
         attributes: size="{{ restore_fs_size }}"
 
     # ulimit for fsize and data must be unlimited
+    - name: Get ulimit of fsize
+      ansible.builtin.raw: "ulimit -f"
+      register: fsize_ulimit
+      changed_when: false
+
+    - name: Get ulimit of data
+      ansible.builtin.raw: "ulimit -d"
+      register: data_ulimit
+      changed_when: false
+
+    - name: Set ulimit of file size to unlimited if not set
+      when: '"unlimited" not in fsize_ulimit.stdout'
+      ansible.builtin.command: "ulimit -f unlimited"
+      register: result
+      changed_when: result.rc == 0
+
+    - name: Set ulimit of data to unlimited if not set
+      when: '"unlimited" not in data_ulimit.stdout'
+      ansible.builtin.command: "ulimit -d unlimited"
+      register: result
+      changed_when: result.rc == 0
+
     - name: Move mksysb image to /tmp
       ansible.builtin.copy:
         remote_src: true
@@ -102,7 +124,7 @@
     - name: "Unmount the filesystem"
       ibm.power_aix.mount:
         state: umount
-        mount_dir: "{{ fs_mnt }}"
+        mount_over_dir: "{{ fs_mnt }}"
 
     - name: "Delete volume group"
       ibm.power_aix.lvg:

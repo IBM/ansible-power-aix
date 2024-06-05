@@ -80,7 +80,7 @@
     - name: Unmount filesystem
       ibm.power_aix.mount:
         state: umount
-        mount_dir: "{{ mnt_pt_v }}"
+        mount_over_dir: "{{ mnt_pt_v }}"
 
     - name: Remove the volume group
       ibm.power_aix.lvg:
