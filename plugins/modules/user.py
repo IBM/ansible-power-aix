@@ -25,7 +25,7 @@ description:
 version_added: '1.0.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - Root user is required.
 - 'Privileged user with authorizations:
   B(aix.security.user.remove.admin,aix.security.user.remove.normal,aix.security.user.create.admin,aix.security.user.create.normal,,aix.security.user.change,aix.security.user.list)'

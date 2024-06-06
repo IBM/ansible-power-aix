@@ -28,7 +28,7 @@ description:
 version_added: '1.0.0'
 requirements:
 - AIX
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations:
   B(aix.device.manage.change,aix.device.manage.remove,aix.device.config)'
 options:

@@ -28,7 +28,7 @@ description:
 version_added: '1.1.0'
 requirements:
 - AIX
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorization: B(aix.security.aixpert)'
 options:
   mode:

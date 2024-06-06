@@ -28,7 +28,7 @@ version_added: '1.3.0'
 requirements:
 - AIX  7.2
 - IBM Power9_Power8
-- Python >= 2.7
+- Python >= 3.6
 options:
   smt_value:
     description:

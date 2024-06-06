@@ -24,7 +24,7 @@ description:
 version_added: '1.0.0'
 requirements:
 - AIX
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations:
   B(aix.fs.manage.list,aix.fs.manage.create,aix.fs.manage.change,aix.fs.manage.remove,aix.network.nfs.mount)'
 options:

@@ -27,7 +27,7 @@ description:
 version_added: '0.4.0'
 requirements:
 - AIX >= 7.2 TL3
-- Python >= 2.7
+- Python >= 3.6
 - ios_mksysb VIOS level >= 3.1.0.0
 - 'Privileged user with authorizations: B(aix.system.install,aix.system.nim.config.server)'
 options:

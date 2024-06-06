@@ -25,7 +25,7 @@ description:
 version_added: '1.0.0'
 requirements:
 - AIX >= 7.1 TL3
-- Python >= 2.7
+- Python >= 3.6
 - 'Privileged user with authorizations:
   B(aix.security.group.remove.admin,aix.security.group.remove.normal,
   aix.security.group.create.admin,aix.security.group.create.normal,aix.security.group.list)'
