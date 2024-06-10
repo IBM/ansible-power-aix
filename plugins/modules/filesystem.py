@@ -507,6 +507,7 @@ def mkfs(module, filesystem):
             msg = f"Creation of filesystem { filesystem } failed. cmd - { cmd }"
         result["stdout"] = stdout
         result["stderr"] = stderr
+        result["msg"] = msg
         module.fail_json(**result)
     else:
         if nfs_server:
