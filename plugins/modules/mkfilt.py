@@ -446,6 +446,7 @@ def add_change_rules(module, params, version):
                 results['msg'] = f'Could not remove rule: command \'{msg_cmd}\' failed \
                   with return code {ret}.'
                 module.fail_json(**results)
+            results['msg'] = "Removed the rules successfully."
             results['changed'] = True
             continue
         elif rule['action'] == 'move':
@@ -461,6 +462,7 @@ def add_change_rules(module, params, version):
                 results['msg'] = f'Could not move rule: command \'{msg_cmd}\' \
                   failed with return code {ret}.'
                 module.fail_json(**results)
+            results['msg'] = "Moved the rules successfully."
             results['changed'] = True
             continue
 
@@ -566,6 +568,7 @@ def add_change_rules(module, params, version):
             results['msg'] = f'Could not add rule: command \'{msg_cmd}\' \
               failed with return code {ret}.'
             module.fail_json(**results)
+        results['msg'] = "Added the rules successfully."
         results['changed'] = True
 
     # Activate the rules
@@ -597,6 +600,7 @@ def add_change_rules(module, params, version):
             results['msg'] = f'Could not change logging: command \'{msg_cmd}\' \
               failed with return code {ret}.'
             module.fail_json(**results)
+        results['msg'] = "Changed log settings successfully."
         results['changed'] = True
 
     return True
@@ -609,6 +613,7 @@ def import_rules(module, params):
 
     cmd = ['impfilt', '-f', params['directory']]
     module.run_command(cmd, check_rc=True)
+    results['msg'] = "Rules imported successfully."
     results['changed'] = True
 
 
@@ -620,6 +625,8 @@ def export_rules(module, params):
     if params['rawexport']:
         cmd += ['-r']
     module.run_command(cmd, check_rc=True)
+    results['msg'] = "Rules exported successfully."
+    results['changed'] = True
 
 
 def check_rules(module):
@@ -731,7 +738,11 @@ def main():
     rules = list_rules(module, 'ipv6')
     results['filter']['ipv6'] = rules
 
-    results['msg'] = 'mkfilt completed successfully'
+    if results['msg'] != '':
+        results['msg'] += ' mkfilt completed successfully'
+    else:
+        results['msg'] = 'mkfilt completed successfully'
+
     module.exit_json(**results)
 
 
