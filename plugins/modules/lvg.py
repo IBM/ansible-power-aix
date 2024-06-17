@@ -787,7 +787,7 @@ def main():
             # Creating VG does not support quorum option
             quorum = module.params['quorum']
             if quorum:
-                result['msg'] += f"Attribute quorom is not supported while \
+                result['msg'] += f"Attribute quorum is not supported while \
                     changing volume group {vg_name}.\n"
                 module.fail_json(**result)
 

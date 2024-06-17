@@ -59,8 +59,7 @@ options:
     choices: [ minimize, upper, lower, nearest ]
   existing_altinst_rootvg:
     description:
-    - When I(action=install), specifies the bundle_name or fixes or filesets to be installed
-      in alt_rootvg
+    - When I(action=install), specifies the target disk where bundle_name/fixes/filesets will be installed.
     type: str
   force:
     description:
