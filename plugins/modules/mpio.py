@@ -40,15 +40,39 @@ options:
 EXAMPLES = r'''
 - name: Gather paths to all MultiPath I/O capable devices
   mpio:
+  register: mpio_info
 - name: Print the paths
   debug:
-    var: ansible_facts.mpio.paths
+    var: mpio_info.mpio_facts.paths
 '''
 
 RETURN = r'''
-ansible_facts:
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: "Successfully retrieved mpio facts. Check mpio_facts for more details."
+cmd:
+    description: The command executed.
+    returned: always
+    type: str
+    sample: /usr/bin/manage_disk_drivers -l
+rc:
+    description: The command return code.
+    returned: always
+    type: int
+stdout:
+    description: The standard output of the command.
+    returned: always
+    type: str
+stderr:
+    description: The standard error of the command.
+    returned: In case of error
+    type: str
+    sample: 'lspath: 0514-546 Invalid parameter - ansibleNegativeTest.'
+mpio_facts:
   description:
-  - Facts to add to ansible_facts about paths to MultiPath I/O capable devices.
+  - Facts about paths to MultiPath I/O capable devices.
   returned: always
   type: complex
   contains:
@@ -112,6 +136,8 @@ ansible_facts:
             }
 '''
 
+results = None
+
 
 def gather_facts(module):
     paths = {}
@@ -123,7 +149,19 @@ def gather_facts(module):
         cmd += ['-l', module.params['device']]
     if module.params['parent']:
         cmd += ['-p', module.params['parent']]
-    stdout = module.run_command(cmd)[1]
+
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['cmd'] = ' '.join(cmd)
+
+    if rc:
+        results['stderr'] = stderr
+        results['rc'] = 1
+        results['msg'] = f"The following command failed: {' '.join(cmd)}."
+        if "0514-546" in stderr:
+            results['msg'] += " Invalid device provided."
+        module.fail_json(**results)
+
     for line in stdout.splitlines():
         fields = line.split(':')
         if len(fields) != 6:
@@ -146,7 +184,17 @@ def gather_facts(module):
         return dict(paths=paths, drivers=drivers)
 
     cmd = [manage_disk_drivers_path, '-l']
-    stdout = module.run_command(cmd)[1]
+
+    rc, stdout, stderr = module.run_command(cmd)
+    results['stdout'] = stdout
+    results['cmd'] = ' '.join(cmd)
+
+    if rc:
+        results['stderr'] = stderr
+        results['rc'] = 1
+        results['msg'] = f"The following command failed: {' '.join(cmd)}"
+        module.fail_json(**results)
+
     for line in stdout.splitlines():
         fields = line.split()
         if len(fields) != 3:
@@ -162,6 +210,7 @@ def gather_facts(module):
 
 
 def main():
+    global results
     module = AnsibleModule(
         argument_spec=dict(
             device=dict(type='str'),
@@ -169,9 +218,20 @@ def main():
         )
     )
 
-    facts = gather_facts(module)
+    results = dict(
+        changed=False,
+        rc=0,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
+        mpio_facts={},
+    )
 
-    module.exit_json(ansible_facts=dict(mpio=facts))
+    results['mpio_facts'] = gather_facts(module)
+    results['msg'] = "Successfully retrieved mpio facts. Check mpio_facts for more details."
+
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
