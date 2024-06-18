@@ -9,15 +9,17 @@
   tasks:
     - name: Gather the mpio info
       ibm.power_aix.mpio:
-
-    - name: Gather specific device  mpio info
-      ibm.power_aix.mpio:
-        device: IBMSVC
-
-    - name: Gather specific absent device  mpio info
-      ibm.power_aix.mpio:
-        device: ansibleNegativeTest
+      register: mpio_info
 
     - name: Print the paths
       ansible.builtin.debug:
-        var: ansible_facts.mpio.paths
+        var: mpio_info.mpio_facts.paths
+
+    - name: Gather specific device  mpio info
+      ibm.power_aix.mpio:
+        device: hdisk0
+
+    - name: Gather mpio information when device and parent is provided
+      ibm.power_aix.mpio:
+        device: hdisk1
+        parent: vscsi0
