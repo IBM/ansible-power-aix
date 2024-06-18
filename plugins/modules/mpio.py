@@ -138,6 +138,7 @@ mpio_facts:
 
 results = None
 
+
 def gather_facts(module):
     paths = {}
     drivers = {}
