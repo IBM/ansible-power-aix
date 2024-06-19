@@ -167,6 +167,9 @@ options:
           state:
             description:
             - Tunnel state.
+            - C(active) specifies that the tunnel will be created.
+            - C(defined) specifies the tunnels that are to be deactivated.
+            - C(absent) specifies the tunnel needs to be removed.
             type: str
             choices: [ active, defined, absent ]
             default: active
@@ -239,6 +242,11 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Successfully imported the tunnle(s)'
 stdout:
     description: The standard output
     returned: always
@@ -288,6 +296,12 @@ ansible_facts:
 
 gentun_path = ''
 lstun_path = ''
+results = dict(
+    changed=False,
+    msg='',
+    stdout='',
+    stderr='',
+)
 
 
 def gentun(module, vopt, tun):
@@ -350,7 +364,15 @@ def gentun(module, vopt, tun):
         if tun['replay']:
             cmd += ['-y', 'Y']
 
-    stdout = module.run_command(cmd, check_rc=True)[1]
+    rc, stdout, stderr = module.run_command(cmd)
+
+    results['stdout'] = stdout
+
+    if rc:
+        results['stderr'] = stderr
+        results['msg'] += f"Following command failed: {' '.join(cmd)}."
+        module.fail_json(**results)
+
     m = re.search(r"^Tunnel (\d+) for IPv\d has been added successfully", stdout, re.MULTILINE)
     if not m:
         return None
@@ -376,7 +398,14 @@ def lstun(module):
 
         # List tunnel definitions in tunnel database
         cmd = [lstun_path, vopt, '-p', 'manual', '-O']
-        stdout = module.run_command(cmd, check_rc=True)[1]
+        rc, stdout, stderr = module.run_command(cmd)
+
+        results['stdout'] = stdout
+        if rc:
+            results['msg'] += f" The following command failed: {' '.join(cmd)}"
+            results['stderr'] = stderr
+            module.fail_json(**results)
+
         for line in stdout.splitlines():
             if line.startswith('#'):
                 continue
@@ -434,7 +463,14 @@ def lstun(module):
 
         # Mark active tunnels as active
         cmd = [lstun_path, vopt, '-p', 'manual', '-O', '-a']
-        ret, stdout, stderr = module.run_command(cmd, check_rc=True)
+        ret, stdout, stderr = module.run_command(cmd)
+
+        results['stdout'] = stdout
+        if rc:
+            results['msg'] += f"The following command failed: {' '.join(cmd)}"
+            results['stderr'] = stderr
+            module.fail_json(**results)
+
         for line in stdout.splitlines():
             if line.startswith('#'):
                 continue
@@ -452,12 +488,19 @@ def make_devices(module):
     """
     for version in ['4', '6']:
         cmd = ['mkdev', '-l', 'ipsec', '-t', version]
-        module.run_command(cmd, check_rc=True)
+        rc, stdout, stderr = module.run_command(cmd)
+
+        results['stdout'] = stdout
+        if rc:
+            results['stderr'] = stderr
+            results['msg'] += f"The following command failed: {' '.join(cmd)}"
+            module.fail_json(**results)
 
 
 def main():
     global gentun_path
     global lstun_path
+    global results
 
     tuncommon = dict(
         type='dict',
@@ -507,13 +550,6 @@ def main():
         ),
     )
 
-    results = dict(
-        changed=False,
-        msg='',
-        stdout='',
-        stderr='',
-    )
-
     ipsecstat_path = module.get_bin_path('ipsecstat', required=True)
     gentun_path = module.get_bin_path('gentun', required=True)
     lstun_path = module.get_bin_path('lstun', required=True)
@@ -527,11 +563,25 @@ def main():
     results['ansible_facts'] = dict(tunnels={})
 
     # Retrieve the list of authentication algorithms
-    stdout = module.run_command([ipsecstat_path, '-A'], check_rc=True)[1]
+    rc, stdout, stderr = module.run_command([ipsecstat_path, '-A'])
+
+    results['stdout'] = stdout
+    if rc:
+        results['msg'] += f"The following command failed: {' '.join(cmd)}"
+        results['stderr'] = stderr
+        module.fail_json(**results)
+
     results['ansible_facts']['tunnels']['auth_algos'] = stdout.splitlines()
 
     # Retrieve the list of encryption algorithms
-    stdout = module.run_command([ipsecstat_path, '-E'], check_rc=True)[1]
+    rc, stdout, stderr = module.run_command([ipsecstat_path, '-E'])
+
+    results['stdout'] = stdout
+    if rc:
+        results['msg'] += f"The following command failed: {' '.join(cmd)}"
+        results['stderr'] = stderr
+        module.fail_json(**results)
+
     results['ansible_facts']['tunnels']['encr_algos'] = stdout.splitlines()
 
     tunnels = lstun(module)
@@ -552,22 +602,31 @@ def main():
                 tid = tun['id']
                 # Ignore if tunnel is not defined
                 if tid not in tunnels[version]:
+                    results['msg'] += f" Provided tunnel id '{tid}' does not exist on the system."
                     continue
             else:
                 if tun['state'] == 'absent':
+                    results['msg'] += f" You need to provide a tunnel id for state 'absent'."
                     continue
                 tid = gentun(module, vopt, tun)
+                results['msg'] += f" Successfully created tunnel with id '{tid}'"
                 results['changed'] = True
 
             if tun['state'] == 'active':
                 if tid not in tunnels[version] or tunnels[version][tid]['state'] != 'active':
                     active_tid_list.add(str(tid))
+                else:
+                    results['msg'] += f" Tunnel '{tid}' exists and is in active state."
             elif tun['state'] == 'defined':
                 if tid in tunnels[version] and tunnels[version][tid]['state'] == 'active':
                     defined_tid_list.add(str(tid))
+                else:
+                    results['msg'] += f" The provided id '{tid}' does not exist or is inactive."
             elif tun['state'] == 'absent':
                 if tid in tunnels[version]:
                     absent_tid_list.add(str(tid))
+                else:
+                    results['msg'] += f" The provided tunnel '{tid}' does not exist."
 
             if tun['export'] and tun['state'] != 'absent':
                 export_tid_list.add(str(tid))
@@ -575,30 +634,64 @@ def main():
         # Activate tunnels that are marked as active
         if active_tid_list:
             cmd = [mktun_path, vopt, '-t', ','.join(active_tid_list)]
-            module.run_command(cmd, check_rc=True)
+            rc, stdout, stderr = module.run_command(cmd)
+
+            results['stdout'] = stdout
+            if rc:
+                results['msg'] += f" Failed to activate the tunnels. The following command failed: {' '.join(cmd)}."
+                results['stderr'] = stderr
+                module.fail_json(**results)
+
+            results['msg'] += " Successfully activated the tunnel(s)."
             results['changed'] = True
 
         # Deactivate tunnels that are marked as defined
         if defined_tid_list:
             cmd = [rmtun_path, vopt, '-t', ','.join(defined_tid_list)]
-            module.run_command(cmd, check_rc=True)
+            rc, stdout, stderr = module.run_command(cmd)
+
+            results['stdout'] = stdout
+            if rc:
+                results['msg'] += f" Failed to deactivate the tunnels. The following command failed: {' '.join(cmd)}."
+                results['stderr'] = stderr
+                module.fail_json(**results)
+
+            results['msg'] += " Successfully deactivated the tunnel(s)."
             results['changed'] = True
 
         # Remove tunnel definitions that are marked as absent
         if absent_tid_list:
             cmd = [rmtun_path, vopt, '-d', '-t', ','.join(absent_tid_list)]
-            module.run_command(cmd, check_rc=True)
+            rc, stdout, stderr = module.run_command(cmd)
+
+            results['stdout'] = stdout
+            if rc:
+                results['msg'] += f" Failed to remove the tunnels. The following command failed: {' '.join(cmd)}."
+                results['stderr'] = stderr
+                module.fail_json(**results)
+
+            results['msg'] += " Successfully removed the tunnel(s)."
             results['changed'] = True
 
         # Process tunnel exports, if any
         if export_tid_list:
             tmpdir = tempfile.mkdtemp(dir=module.tmpdir)
             cmd = [exptun_path, vopt, '-f', tmpdir, '-t', ','.join(export_tid_list)]
-            module.run_command(cmd, check_rc=True)
+            rc, stdout, stderr = module.run_command(cmd)
+
+            results['stdout'] = stdout
+            if rc:
+                results['msg'] += f" Failed to export the tunnels. The following command failed: {' '.join(cmd)}."
+                results['stderr'] = stderr
+                module.fail_json(**results)
+
             source = os.path.join(tmpdir, 'ipsec_tun_manu.exp')
             with open(source, 'rb') as source_fh:
                 source_content = source_fh.read()
                 results['export_' + version] = base64.b64encode(source_content)
+
+            results['msg'] += " Successfully exported the tunnel(s)."
+            results['changed'] = True
 
         # Process tunnel imports, if any
         if module.params['manual']['import_' + version]:
@@ -608,7 +701,15 @@ def main():
             with open(source, 'wb') as source_fh:
                 source_fh.write(source_content)
             cmd = [imptun_path, vopt, '-f', tmpdir]
-            module.run_command(cmd, check_rc=True)
+            rc, stdout, stderr = module.run_command(cmd)
+
+            results['stdout'] = stdout
+            if rc:
+                results['msg'] += f" Failed to import the tunnels. The following command failed: {' '.join(cmd)}."
+                results['stderr'] = stderr
+                module.fail_json(**results)
+
+            results['msg'] += " Successfully imported the tunnle(s)"
             results['changed'] = True
 
     # Re-run lstun if anything has changed
