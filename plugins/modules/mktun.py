@@ -562,7 +562,8 @@ def main():
     results['ansible_facts'] = dict(tunnels={})
 
     # Retrieve the list of authentication algorithms
-    rc, stdout, stderr = module.run_command([ipsecstat_path, '-A'])
+    cmd = [ipsecstat_path, '-A']
+    rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     if rc:
@@ -573,7 +574,8 @@ def main():
     results['ansible_facts']['tunnels']['auth_algos'] = stdout.splitlines()
 
     # Retrieve the list of encryption algorithms
-    rc, stdout, stderr = module.run_command([ipsecstat_path, '-E'])
+    cmd = [ipsecstat_path, '-E']
+    rc, stdout, stderr = module.run_command(cmd)
 
     results['stdout'] = stdout
     if rc:
