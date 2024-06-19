@@ -167,9 +167,9 @@ options:
           state:
             description:
             - Tunnel state.
-            - C(active) specifies that the tunnel will be created.
-            - C(defined) specifies the tunnels that are to be deactivated.
-            - C(absent) specifies the tunnel needs to be removed.
+            - C(active) specifies that the tunnel(s) will be created.
+            - C(defined) specifies the tunnel(s) that are to be deactivated.
+            - C(absent) specifies the tunnel(s) that needs to be removed.
             type: str
             choices: [ active, defined, absent ]
             default: active
@@ -500,7 +500,6 @@ def make_devices(module):
 def main():
     global gentun_path
     global lstun_path
-    global results
 
     tuncommon = dict(
         type='dict',
@@ -606,7 +605,7 @@ def main():
                     continue
             else:
                 if tun['state'] == 'absent':
-                    results['msg'] += f" You need to provide a tunnel id for state 'absent'."
+                    results['msg'] += " You need to provide a tunnel id for state 'absent'."
                     continue
                 tid = gentun(module, vopt, tun)
                 results['msg'] += f" Successfully created tunnel with id '{tid}'"
