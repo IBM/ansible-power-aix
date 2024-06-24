@@ -54,7 +54,7 @@ options:
     required: false
   admgroups:
     decsription:
-      - Lists the groups the user administrates. 
+      - Lists the groups the user administrates.
     type: list
     required: false
   auditclasses:
@@ -86,8 +86,8 @@ options:
   core_path:
     decsription:
       - Enables or disables core file path specification.
-      - If this attribute has a value of C(On), core files will be placed in the directory specified by core_pathname (the feature is enabled); 
-      - If set to C(Off), core files are placed in the user's current working directory. 
+      - If this attribute has a value of C(On), core files will be placed in the directory specified by core_pathname (the feature is enabled);
+      - If set to C(Off), core files are placed in the user's current working directory.
     type: str
     required: false
     choices: ['on', 'off']
@@ -137,7 +137,7 @@ options:
     required: false
   minspecialchar:
     decsription:
-      - Defines the minimum number of special characters that must be in a new password. 
+      - Defines the minimum number of special characters that must be in a new password.
     type: str
     required: false
   efs_adminks_access:
@@ -309,7 +309,7 @@ options:
     choices: ['always', 'notsh', 'nosak', 'on']
   ttys:
     decsription:
-      - Lists the terminals that can access the account specified by the Name parameter. 
+      - Lists the terminals that can access the account specified by the Name parameter.
     type: str
     required: false
   umask:
@@ -383,6 +383,7 @@ result = dict(
     stdout='',
     stderr='',
 )
+
 
 def set_attr_value(module, stanza, attr, target_value):
     # -> dict:
