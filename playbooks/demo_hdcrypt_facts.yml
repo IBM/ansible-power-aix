@@ -1,0 +1,42 @@
+---
+- name: "Demo hdcrypt facts"
+  hosts: "{{ hosts_val }}"
+  gather_facts: false
+  vars:
+    hosts_val: all
+    vg_val: vg00
+    lv_val: testlv
+    pv_val: hdisk1
+  tasks:
+    - name: Display LV encryption status
+      ibm.power_aix.hdcrypt_facts:
+        action: lv
+        device: "{{ lv_val }}"
+
+    - name: Display LV encryption status of all the LVs in a VG
+      ibm.power_aix.hdcrypt_facts:
+        action: lv
+        device: "{{ vg_val }}"
+
+    - name: Display VG encryption status of all the VGs
+      ibm.power_aix.hdcrypt_facts:
+        action: vg
+
+    - name: Display VG encryption status of a VG
+      ibm.power_aix.hdcrypt_facts:
+        action: vg
+        device: "{{ vg_val }}"
+
+    - name: Display PV encryption status of a PV
+      ibm.power_aix.hdcrypt_facts:
+        action: pv
+        device: "{{ pv_val }}"
+
+    - name: Display meta facts of a VG
+      ibm.power_aix.hdcrypt_facts:
+        action: meta
+        device: "{{ vg_val }}"
+
+    - name: Display all active and stopped conversions
+      ibm.power_aix.hdcrypt_facts:
+        action: conv
