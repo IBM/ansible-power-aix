@@ -419,7 +419,7 @@ def disp_conv(module):
         stdout: standard output of the command.
     """
     # Command for getting the conversion facts
-    cmd = f"hdcryptmgr showconv"
+    cmd = "hdcryptmgr showconv"
 
     rc, stdout, stderr = module.run_command(cmd)
 

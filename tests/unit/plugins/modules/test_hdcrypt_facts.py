@@ -11,7 +11,7 @@ from ansible_collections.ibm.power_aix.plugins.modules import hdcrypt_facts
 
 from .common.utils import (
     AnsibleFailJson, fail_json, rootdir,
-    lsvg_output_path1, lspv_output_path1, lslv_output_path1
+    lsvg_output_path1, lslv_output_path1
 )
 
 params = {
