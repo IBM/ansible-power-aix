@@ -1,9 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Copyright: (c) 2018, Christian Tremel (@flynn1973)
-# Additional changes 2021, David Little (@d-little)
-# Additional changes 2022, Stephen Ulmer (@stephenulmer)
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # AIX 7.3: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_73/c_commands/chsec.html
