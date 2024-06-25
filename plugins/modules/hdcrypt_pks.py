@@ -18,7 +18,7 @@ author:
 module: hdcrypt_pks
 short_description: Adds PKS authentication method and manages PKS keys
 description:
-- This module is used for 
+- This module is useful for adding Platform Key Store authentication method to a device and managing the PKS keys.
 - This module is a wrapper around hdcryptmgr command.
 version_added: '1.9.0'
 requirements:
@@ -466,7 +466,7 @@ def validate_label(module, id):
     Note:
         Fails if the key is not present in PKS storage or is a valid key
     """
-    buffer = pksshow(module)
+    results['msg'] = pksshow(module)
 
     pksshow_res = results['pksshow_results']
 
@@ -528,7 +528,7 @@ def pksshow(module):
     arguements:
         module - The generic ansible module
     returns:
-        stdout - Standard output of "hdcryptmgr pksshow" command.
+        success_msg: If the command runs successfully, success message is returned.
     """
     cmd = "hdcryptmgr pksshow"
     success_msg = "Successfully fetched PKS keys, labels and their status, check pksshow_results"
@@ -724,6 +724,7 @@ def main():
         module.exit_json(**results)
 
     module.exit_json(**results)
+
 
 if __name__ == '__main__':
     main()
