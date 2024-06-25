@@ -325,16 +325,16 @@ def parse_stdout(stdout):
         parsed_output (dict) - Parsed stdout
     """
     # The output will be something like this:
-    # Total PKS size: 65536 bytes 
+    # Total PKS size: 65536 bytes
     # Used  PKS size: 479 bytes
     # Estimated encryption key slots: 747
 
     # PKS_Label (LVid)                         Status		Device
     # 00fb293100004c0000000174c0a994b7.1       VALID		 testlv
-    # 00fb293100004c0000000174c0a994b7.2       UNKNOWN	      
-    # 00fb293100004c0000000174c0a994b7.3       UNKNOWN	      
+    # 00fb293100004c0000000174c0a994b7.2       UNKNOWN
+    # 00fb293100004c0000000174c0a994b7.3       UNKNOWN
 
-    # PKS_Label (PVuuid)                           status           Device          
+    # PKS_Label (PVuuid)                           status           Device
     # pvuuid:706aa87a-e4d0-f2ec-3999-2631162226d2  VALID KEY        hdisk3
 
     # PKS_Label (objects)
@@ -363,13 +363,13 @@ def parse_stdout(stdout):
 
             if "PKS_Label (LVid)" in line:
                 curr_key = "PKS_Label (LVid)"
-                continue
+
             elif "PKS_Label (PVuuid)" in line:
                 curr_key = "PKS_Label (PVuuid)"
-                continue
+
             elif "PKS_Label (objects)" in line:
                 curr_key = "PKS_Label (objects)"
-                continue
+
             else:
                 if curr_key == "":
                     if "MISC" not in parsed_output.keys():
@@ -377,7 +377,7 @@ def parse_stdout(stdout):
                     else:
                         parsed_output["MISC"] += " " + line
                 else:
-                    line = re.split("\s+", line)
+                    line = re.split(r"\s+", line)
                     if curr_key == "PKS_Label (LVid)":
                         PKS_labels[curr_key][line[0]] = {}
                         LVid_status = line[1]
@@ -440,11 +440,11 @@ def validate_device(module, device):
     arguments:
         module (dict) - The Ansible module
         device (str) - The device (LV/VG/PV) that needs to be validated
-    
+
     returns:
         True - If the device is valid
         False - If the device is invalid
-    
+
     """
     if not lv_exists(module, device) and not vg_exists(module, device) and not pv_exists(module, device):
         return 0
@@ -462,7 +462,7 @@ def validate_label(module, id):
 
     returns:
         Nothing
-    
+
     Note:
         Fails if the key is not present in PKS storage or is a valid key
     """
@@ -564,7 +564,7 @@ def pksclean(module):
     if not pks_label:
         results['msg'] = "You must specify the PKS label that is associated with the invalid key that you want to remove."
         module.fail_json(**results)
-    
+
     validate_label(module, pks_label)
 
     cmd = "hdcryptmgr pksclean " + pks_label
@@ -576,7 +576,7 @@ def pksclean(module):
         results['stderr'] = stderr
         results['msg'] = fail_msg
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
@@ -590,7 +590,7 @@ def pksexport(module, version):
         Nothing
     """
     # hdcryptmgr pksexport -p /tmp/file123 testlv1
-    # Enter Passphrase: 
+    # Enter Passphrase:
     # Trying to use unsecure passphrase. Constraints preceded by * are not met.
     # Passphrase must contain at least :
     #         * 12 characters
@@ -599,7 +599,7 @@ def pksexport(module, version):
     #         * 1 digits
     #         * 1 special characters from list "~`!@#$%^&*()_-+={[}]|\:;"'<,>.?/ */"
     # Please confirm usage of an unsecure passphrase (y|n): y
-    # Confirm Passphrase: 
+    # Confirm Passphrase:
     # 1 PKS keys exported.
 
     success_msg = "Successfully exported the PKS key."
@@ -651,9 +651,9 @@ def pksimport(module):
         success_msg (str) - Success message when the command runs successfully.
     """
     # hdcryptmgr pksimport -p /tmp/file123 testlv1
-    # Enter Passphrase: 
+    # Enter Passphrase:
     # Wrong passphrase. Try again (1/3)
-    # Enter Passphrase: 
+    # Enter Passphrase:
     # Key having label 00fb293100004c000000018deea122dc.2 is succesfully imported for the device testlv1.
     # 1 PKS keys imported.
     success_msg = "Successfully imported PKS keys"
