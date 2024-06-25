@@ -1,0 +1,44 @@
+---
+- name: "Demo hdcrypt PKS"
+  hosts: "{{ hosts_val }}"
+  gather_facts: false
+  vars:
+    hosts_val: all
+    vg_val: vg00
+    lv_val: testlv1
+    pv_val: hdisk2
+    loc: /tmp/file123
+    pass_val: "abc123456789"
+    key_label: "00fb293100004c000000018deea122dc.3"
+
+  tasks:
+    - name: "Add PKS to filesystem"
+      ibm.power_aix.hdcrypt_pks:
+        action: addpks
+        device: "{{ lv_val }}"
+        method_name: "initpks"
+
+    - name: "Display PKS keys status"
+      ibm.power_aix.hdcrypt_pks:
+        action: show
+
+    - name: "Export PKS key to a file"
+      ibm.power_aix.hdcrypt_pks:
+        action: export
+        device: "{{ lv_val }}"
+        location: "{{ loc }}"
+        passphrase: "{{ pass_val }}"
+      no_log: True
+
+    - name: "Import PKS key"
+      ibm.power_aix.hdcrypt_pks:
+        action: import
+        device: "{{ lv_val }}"
+        location: "{{ loc }}"
+        passphrase: "{{ pass_val }}"
+      no_log: True
+
+    - name: "Clean invalid PKS key"
+      ibm.power_aix.hdcrypt_pks:
+        action: clean
+        pks_label: "{{ key_label }}"
