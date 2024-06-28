@@ -344,7 +344,7 @@ def parse_ifix_details(output):
                     position_dict[field] = line.find(field)
 
         # Iterating over each line looking for actual data
-        elif len(position_dict.keys()) > 0:
+        elif len(position_dict) > 0:
             try:
                 ifix_id = get_value(line, info_list[0])
                 int(ifix_id)
