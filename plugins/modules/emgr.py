@@ -610,6 +610,28 @@ def main():
             module.exit_json(**results)
 
         if rc != 0:
+            line_pattern = r"(\s*)E(PKG|FIX) NUMBER(\s*)LABEL(\s*)OPERATION(\s*)RESULT(\s*)"
+            res_line = re.search(line_pattern, stdout)
+
+            if module.params['list_file'] and res_line:
+                summary_line = res_line.group(0)
+                success_list = []
+                fail_list = []
+                stdout_lines = (stdout.split(summary_line)[1]).splitlines()[1:-1]
+                for line in stdout_lines:
+                    line = line.split()
+                    if len(line):
+                        if line[-1] == "SUCCESS":
+                            success_list.append(line[1])
+                        if line[-1] == "FAILURE":
+                            fail_list.append(line[1])
+
+                if len(success_list):
+                    results['msg'] = f"Action - {module.params['action']} performed successfuly on {', '.join(success_list)}."
+                    results['msg'] += f" Failed for the following: {', '.join(fail_list)}."
+                    results['changed'] = True
+                    module.exit_json(**results)
+
             # Ifix was already installed(0645-065).
             # Ifix with label to remove is not there (0645-066).
             # Ifix with VUUID to remove is not there (0645-082).
