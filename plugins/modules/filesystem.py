@@ -343,7 +343,7 @@ def compare_attrs(module):
                     val = int(val[:-1])
                     if val % 64 != 0:
                         val = str(((val // 64) + 1) * 64)
-                if str(val[-1]) == "G":
+                if str(val)[-1] == "G":
                     val = int(val[:-1])
                     val = str(val * 1024)
                 block_size = int(current_attributes["block size"]) // 1024
