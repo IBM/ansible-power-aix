@@ -5,6 +5,50 @@
 Releases
 ========
 
+Version 1.9.0
+-------------
+Notes
+   * New module: lku. (Live Kernel Update, PowerVC support)
+   * New module: password_rules_policies, allows the user to manage password rules and policies.
+   * New module: hdcrypt_facts, useful for displaying encryption/decryption related information.
+   * New module: hdcrypt_pks, which allows the user to add PKS authentication method and manage PKS keys.
+   * New playbook: install_all_updates
+   * New playbook: lvg
+   * New playbook: chsec
+   * New playbook: lki
+   * Updated demo playbook for backing up rootvg.
+   * Enhancement: Local patch server can be used to download the fixes though FLRTVC module.
+   * Enhancement: Empty attributes are now allowed in filesystem module.
+   * Defect: Fixed parsing of emgr -l output for AIX 7.3.
+   * Defect: Fixed indexing error for int data type in filesystem module.
+   * Defect: Fixed linting issues for latest ansible-lint version.
+   * Defect: Fixed pylint issues according to latest requirements.
+   * Defect: Fixed incorrect check of inetd services.
+   * Defect: Fixed idempotency issue in filesystem module.
+   * Defect: Fixed idempotency issue in EMGR module.
+   * Defect: Fixed FLRTVC module in accordance with the new version of the script.
+   * Defect: Fixed boolean value error in chsec module.
+   * Defect: Updated chsec module to show custom error messages.
+   * Defect: Updated mkfilt module to show custom messages.
+   * Defect: Updated MPIO module - erroneous cases are now dealt with.
+   * Defect: Modified Mktun module to show proper messages.
+   * Made minor documentation changes in most of the modules.
+
+
+Availability
+  * `Automation Hub v1.9.0`_
+  * `Galaxy v1.9.0`_
+  * `GitHub v1.9.0`_
+
+.. _Automation Hub v1.9.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.9.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.9.0.tar.gz
+
+.. _GitHub v1.9.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.9.0.tar.gz
+
 Version 1.8.3
 -------------
 Notes
