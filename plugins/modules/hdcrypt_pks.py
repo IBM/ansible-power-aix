@@ -71,36 +71,36 @@ notes:
 '''
 
 EXAMPLES = r'''
-- name: "Add PKS to filesystem"
+- name: Add PKS to filesystem
     ibm.power_aix.hdcrypt_pks:
         action: addpks
-        device: "{{ lv_val }}"
-        method_name: "initpks"
+        device: testlv1
+        method_name: initpks
 
-- name: "Display PKS keys status"
+- name: Display PKS keys status
     ibm.power_aix.hdcrypt_pks:
         action: show
 
-- name: "Export PKS key to a file"
+- name: Export PKS key to a file
     ibm.power_aix.hdcrypt_pks:
         action: export
-        device: "{{ lv_val }}"
-        location: "{{ loc }}"
-        passphrase: "{{ pass_val }}"
+        device: testlv1
+        location: /tmp/file123
+        passphrase: abc1234
     no_log: True
 
-- name: "Import PKS key"
+- name: Import PKS key
     ibm.power_aix.hdcrypt_pks:
         action: import
-        device: "{{ lv_val }}"
-        location: "{{ loc }}"
-        passphrase: "{{ pass_val }}"
+        device: testlv1
+        location: /tmp/file123
+        passphrase: abc1234
     no_log: True
 
-- name: "Clean invalid PKS key"
+- name: Clean invalid PKS key
     ibm.power_aix.hdcrypt_pks:
         action: clean
-        pks_label: "{{ key_label }}"
+        pks_label: {{ key_label }}
 '''
 
 RETURN = r'''
@@ -108,7 +108,6 @@ msg:
     description: The execution message.
     returned: always
     type: str
-    sample: "Logical Volume 'testlv' encrypted."
 cmd:
     description: The command executed.
     returned: always

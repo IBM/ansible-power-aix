@@ -24,8 +24,7 @@ version_added: '1.9.0'
 requirements:
 - AIX >= 7.2
 - Python >= 3.6
-- 'Privilage user with authrization:
-  B(aix.system.install)
+- 'Privilage user with authrization:B(aix.system.install)'
 options:
   PVC_name:
     description:
