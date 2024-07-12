@@ -1,0 +1,21 @@
+
+ID  STATE LABEL      INSTALL TIME      UPDATED BY ABSTRACT
+=== ===== ========== ================= ========== ======================================
+1    S    IJ49570tu1 06/28/24 00:58:15            Trusted update signatures for IJ49570
+
+STATE codes:
+ S = STABLE
+ M = MOUNTED
+ U = UNMOUNTED
+ Q = REBOOT REQUIRED
+ B = BROKEN
+ I = INSTALLING
+ R = REMOVING
+ T = TESTED
+ P = PATCHED
+ N = NOT PATCHED
+ SP = STABLE + PATCHED
+ SN = STABLE + NOT PATCHED
+ QP = BOOT IMAGE MODIFIED + PATCHED
+ QN = BOOT IMAGE MODIFIED + NOT PATCHED
+ RQ = REMOVING + REBOOT REQUIRED

@@ -60,3 +60,7 @@ lsvg_output_path3 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsvg_o
 lquerylv_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lquerylv_output1"
 lsuser_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsuser_output1"
 lsuser_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_lsuser_output2"
+emgr_output_path1 = os.path.dirname(os.path.abspath(__file__)) + "/sample_emgr_output1"
+emgr_output_path2 = os.path.dirname(os.path.abspath(__file__)) + "/sample_emgr_output2"
+emgr_output_path3 = os.path.dirname(os.path.abspath(__file__)) + "/sample_emgr_output3"
+emgr_output_path4 = os.path.dirname(os.path.abspath(__file__)) + "/sample_emgr_output4"

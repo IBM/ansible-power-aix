@@ -314,30 +314,50 @@ def parse_ifix_details(output):
     return:
       List of dictionaries containing information about the iFixes.
     """
-    output = output.split('\n')
     ifix_name = []
 
-    len_info = []
-    for i in output[2].split():
-        len_info.append(len(i))
-
     info_list = ["ID", "STATE", "LABEL", "INSTALL TIME", "UPDATED BY", "ABSTRACT"]
+    position_dict = {}
 
-    ind = 3
-    while output[ind] != "":
-        line = output[ind]
-        current_index = 0
-        ifix_info = {}
-        for info_index in range(6):
-            upto_index = current_index + len_info[info_index]
-            if info_index == 5:
-                val = line[current_index:]
-            else:
-                val = line[current_index:upto_index]
-            ifix_info[info_list[info_index]] = val.strip()
-            current_index = upto_index + 1
-        ifix_name.append(ifix_info)
-        ind += 1
+    def get_value(line, field):
+        field_index = info_list.index(field)
+        next_field_index = field_index + 1
+        start_position = position_dict[field]
+
+        # End-of-line
+        if next_field_index >= len(info_list):
+            end_position = None
+
+        # All fields before the last one
+        else:
+            end_position = position_dict[info_list[next_field_index]]
+
+        return line[start_position:end_position].strip()
+
+    for line in output.split('\n'):
+        line = line.strip()
+
+        # Looking where each field position starts
+        if line.upper().startswith(info_list[0].upper()):
+            for field in info_list:
+                if field not in position_dict:
+                    position_dict[field] = line.find(field)
+
+        # Iterating over each line looking for actual data
+        elif len(position_dict) > 0:
+            try:
+                ifix_id = get_value(line, info_list[0])
+                int(ifix_id)
+            except ValueError:
+                continue
+
+            # Collect row values into dictionary
+            ifix_data = {info_list[0]: ifix_id}
+            for field in info_list[1:]:
+                ifix_data[field] = get_value(line, field)
+
+            ifix_name.append(ifix_data)
+
     return ifix_name
 
 
