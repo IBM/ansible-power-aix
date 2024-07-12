@@ -89,6 +89,7 @@ stderr':
 
 result = None
 
+
 def authenticate_PVC(module):
     """
     Authenticate the PowerVC for LKU operation
@@ -109,6 +110,7 @@ def authenticate_PVC(module):
     if rc != 0:
         msg = f"\nFailed to authenticate PowerVC { pvc_name }. Please check the credentials."
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+
 
 def perform_lku(module):
     """
@@ -152,7 +154,7 @@ def main():
             PVC_name=dict(type='str', required=True),
             PVC_password=dict(type='str', required=True),
             PVC_user=dict(type='str', required=True),
-            directory=dict(type='str',required=False, default=None),
+            directory=dict(type='str', required=False, default=None),
             filesets_fixes=dict(type='str', required=False, default=None),
         ),
     )
