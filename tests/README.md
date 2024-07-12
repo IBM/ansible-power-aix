@@ -34,10 +34,10 @@ python -m pip install ansible==2.9.*
 **NOTE**: You can also use the utility `Makefile` included in the repo by running
 `make install-ansible ANSIBLE_VERSION=2.9`
 
-(6) `export ANSIBLE_COLLECTIONS_PATHS=<path/to/ansible_collections>`
+(6) `export ANSIBLE_COLLECTIONS_PATH=<path/to/ansible_collections>`
 
 e.g. if `ansible_collections/ibm/power_aix` is in `$(HOME)/Ansible/ansible_collections/ibm/power_aix`
-then run `export ANSIBLE_COLLECTIONS_PATHS=$(HOME)/Ansible`
+then run `export ANSIBLE_COLLECTIONS_PATH=$(HOME)/Ansible`
 
 --------------------------------------------------------------------------------------------------------
 ## Running Sanity Tests Locally
