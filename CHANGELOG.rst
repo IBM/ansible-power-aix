@@ -5,6 +5,27 @@
 Releases
 ========
 
+Version 1.9.1
+-------------
+Notes
+   * Fixed documentation issue reported by Red Hat Automation Hub
+
+
+Availability
+  * `Automation Hub v1.9.1`_
+  * `Galaxy v1.9.1`_
+  * `GitHub v1.9.1`_
+
+.. _Automation Hub v1.9.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.9.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.9.1.tar.gz
+
+.. _GitHub v1.9.1:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.9.1.tar.gz
+
+
 Version 1.9.0
 -------------
 Notes
@@ -15,7 +36,7 @@ Notes
    * New playbook: install_all_updates
    * New playbook: lvg
    * New playbook: chsec
-   * New playbook: lki
+   * New playbook: lku, hdcrypt_facts, hdcrypt_pks, password_rules_policies.
    * Updated demo playbook for backing up rootvg.
    * Enhancement: Local patch server can be used to download the fixes though FLRTVC module.
    * Enhancement: Empty attributes are now allowed in filesystem module.
