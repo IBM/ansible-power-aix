@@ -100,7 +100,7 @@ EXAMPLES = r'''
 - name: Clean invalid PKS key
     ibm.power_aix.hdcrypt_pks:
         action: clean
-        pks_label: {{ key_label }}
+        pks_label: 00fb293100004c000000018deea122dc.3
 '''
 
 RETURN = r'''
