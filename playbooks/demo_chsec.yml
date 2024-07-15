@@ -1,7 +1,7 @@
 ---
 - name: CHSEC on AIX
   hosts: "{{host_name}}"
-  gather_facts: False
+  gather_facts: false
   vars:
     host_name: all
   tasks:    
@@ -31,9 +31,9 @@
         path: /etc/security/user
         stanza: "{{ item }}"
         attrs:
-          account_locked: True
-          login: False
-          rlogin: False
+          account_locked: true
+          login: false
+          rlogin: false
         state: present
       loop:
         - "adm"
@@ -55,7 +55,7 @@
         file: /etc/security/user
         stanza: joe
         attrs:
-          su: False
+          su: false
         state: present
     - name: Set password rules for a user
       ibm.power_aix.chsec:

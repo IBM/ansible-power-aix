@@ -1,12 +1,12 @@
 ---
-#ptsiamis@gmail.com
-#Demo playbook
-#Create a local nginx with the patches
-#Download patches with playbook:
-#demo_shell_flrtvc_wget_ifix.yml
+# ptsiamis@gmail.com
+# Demo playbook
+# Create a local nginx with the patches
+# Download patches with playbook:
+# demo_shell_flrtvc_wget_ifix.yml
 - name: "Demo install ifix from flrtvc from local patch server"
   hosts: all
-  gather_facts: no
+  gather_facts: false
   vars:
     localpatchserver: "192.168.1.1"
     localpatchpath: "ifix"
@@ -15,20 +15,20 @@
     flrtvczip: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/FLRTVC-latest.zip"
     apar_csv_url: "{{protocol}}://{{localpatchserver}}/{{localpatchpath}}/apar.csv"
     debug: false
-  collections:
-    - ibm.power_aix
   tasks:
-    - name: Download apar.csv to {{ apar_csv }} from {{ apar_csv_url }}
-      ansible.builtin.shell:
-        cmd: "wget -q --no-check-certificate {{ apar_csv_url }} -O {{ apar_csv }}"
+    - name: Download apar.csv to /tmp/apar.csv from {{ apar_csv_url }}
+      ansible.builtin.get_url:
+        url: "{{ apar_csv_url }}"
+        dest: "{{ apar_csv }}"
+        validate_certs: false
 
-    - name: install all security interim fixes
+    - name: Install all security interim fixes
       ibm.power_aix.flrtvc:
         apar: "sec"
         verbose: true
         protocol: "{{ protocol }}"
-        force: no
-        clean: no
+        force: false
+        clean: false
         flrtvczip: "{{ flrtvczip }}"
         localpatchserver: "{{ localpatchserver }}"
         localpatchpath: "{{ localpatchpath }}"
@@ -39,7 +39,7 @@
         https_proxy: ""
         PATH: "/usr/bin:/usr/sbin:/usr/local/bin:/opt/freeware/bin"
 
-    - name: debug reg_install
+    - name: Debug reg_install
       ansible.builtin.debug:
         var: reg_install
       when: debug

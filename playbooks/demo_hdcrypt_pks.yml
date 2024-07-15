@@ -28,7 +28,7 @@
         device: "{{ lv_val }}"
         location: "{{ loc }}"
         passphrase: "{{ pass_val }}"
-      no_log: True
+      no_log: true
 
     - name: "Import PKS key"
       ibm.power_aix.hdcrypt_pks:
@@ -36,7 +36,7 @@
         device: "{{ lv_val }}"
         location: "{{ loc }}"
         passphrase: "{{ pass_val }}"
-      no_log: True
+      no_log: true
 
     - name: "Clean invalid PKS key"
       ibm.power_aix.hdcrypt_pks:
