@@ -5,6 +5,26 @@
 Releases
 ========
 
+Version 1.9.2
+-------------
+Notes
+   * Minimum required ansible version is 2.15.0 now. 
+
+
+Availability
+  * `Automation Hub v1.9.2`_
+  * `Galaxy v1.9.2`_
+  * `GitHub v1.9.2`_
+
+.. _Automation Hub v1.9.2:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v1.9.2:
+   https://galaxy.ansible.com/download/ibm-power_aix-1.9.2.tar.gz
+
+.. _GitHub v1.9.2:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-1.9.2.tar.gz
+
 Version 1.9.1
 -------------
 Notes
