@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     host_name: all
-  tasks:    
+  tasks:
     - name: Add registry as files for a user
       ibm.power_aix.chsec:
         file: /etc/security/user
