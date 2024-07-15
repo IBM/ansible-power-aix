@@ -3,6 +3,7 @@
   hosts: "{{host_name}}"
   gather_facts: false
   vars:
+    host_name: all
     PVC_name: powervchostname
     PVC_password: passw0rd123
     PVC_user: powervcuser
