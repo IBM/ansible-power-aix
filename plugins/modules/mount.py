@@ -429,15 +429,17 @@ def umount(module):
         cmd += "all "
     if node:
         cmd += f"-n {node} "
-    if not mount_all and not node and not mount_over_dir:
+    if cmd == "/usr/sbin/umount " and not mount_over_dir:
         result['msg'] = "Unmount failed, Please provide mount_over_dir value to unmount."
         module.fail_json(**result)
-
-    if is_fspath_mounted(module) is False:
-        result['msg'] = f"Filesystem/Mount point '{mount_over_dir}' is not mounted"
-        return
-
-    cmd += mount_over_dir
+    if mount_over_dir:
+        if is_fspath_mounted(module) is False:
+            # if both mount_dir and mount_over_dir is given then check for
+            # mount_over_dir
+            if mount_over_dir:
+                result['msg'] = f"Filesystem/Mount point '{mount_over_dir}' is not mounted"
+            return
+        cmd += mount_over_dir
 
     rc, stdout, stderr = module.run_command(cmd)
     result['cmd'] = cmd
