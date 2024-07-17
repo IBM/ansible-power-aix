@@ -7,7 +7,7 @@
 # Or create your own nginx server with a similar setup
 - name: "AIX sync all ifixes on webserver"
   hosts: aap-server
-  gather_facts: no
+  gather_facts: false
   vars:
     ifix_path: "/var/lib/awx/ifix/"
     ifix_url: "https://aix.software.ibm.com/aix/ifixes/security/"
@@ -21,51 +21,54 @@
     sync_apar: true
     sync_flrtvc: true
   tasks:
-    - name: "Create ifix_path {{ ifix_path }} if not exists"
+    - name: "Create ifix_path /var/lib/awx/ifix/ if not exists"
       ansible.builtin.file:
         path: "{{ ifix_path }}"
         state: directory
         mode: '0755'
 
-    - name: "Synchronizing ifix to {{ ifix_path }} from {{ ifix_url }} "
-      ansible.builtin.shell:
+    - name: "Synchronizing ifix to /var/lib/awx/ifix/ from {{ ifix_url }} "
+      ansible.builtin.command:
         cmd: "{{ proxy }} wget -q -nc -r -np -nd --no-check-certificate  -l 1 -A .tar,.asc,.sig  {{ ifix_url }} "
         chdir: "{{ ifix_path }}"
+      changed_when: true
       register: ifixd
       when: sync_ifix
 
-    - name: print ifixd
+    - name: Print ifixd
       ansible.builtin.debug:
         var: ifixd
-      when: 
+      when:
         - sync_ifix
         - debug
 
-    - name: "Synchronizing {{ ifix_path }}/{{ apar_csv_filename }} from {{ apr_csv_url }}"
-      ansible.builtin.shell:
+    - name: "Synchronizing /var/lib/awx/ifix/apar.csv from {{ apr_csv_url }}"
+      ansible.builtin.command:
         cmd: "{{ proxy }} wget -k {{ apar_csv_url }} -O {{ apar_csv_filename }}"
         chdir: "{{ ifix_path }}"
+      changed_when: true
       register: apard
       when: sync_apar
 
-    - name: print apard
+    - name: Print apard
       ansible.builtin.debug:
         var: apard
-      when: 
+      when:
         - sync_apar
         - debug
 
-    - name: "Synchronizing {{ ifix_path }}/{{ flrtvc_filename }} from {{ flrtvc_url }}"
-      ansible.builtin.shell:
+    - name: "Synchronizing /var/lib/awx/ifix/FLRTVC-latest.zip from {{ flrtvc_url }}"
+      ansible.builtin.command:
         cmd: "{{ proxy }} wget -k {{ flrtvc_url }} -O {{ flrtvc_filename }}"
         chdir: "{{ ifix_path }}"
+      changed_when: true
       register: flrtvcd
       when: sync_flrtvc
 
-    - name: print flrtvcd
+    - name: Print flrtvcd
       ansible.builtin.debug:
         var: flrtvcd
-      when: 
+      when:
         - sync_flrtvc
         - debug
 
@@ -73,4 +76,4 @@
       ansible.builtin.file:
         path: "{{ ifix_path }}"
         mode: "u=rwX,g=rwX,o=rX"
-        recurse: yes
+        recurse: true

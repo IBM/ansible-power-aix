@@ -16,7 +16,7 @@
         device: "{{ device_val }}"
         update_rpm: true
 
-    - name: install the latest level of install utilities on device /dev/cd0 (bos.rte.install update)
+    - name: Install the latest level of install utilities on device /dev/cd0 (bos.rte.install update)
       ibm.power_aix.install_all_updates:
         device: "{{ device_val }}"
         utilities_only: true

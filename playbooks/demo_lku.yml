@@ -4,33 +4,34 @@
   gather_facts: false
   vars:
     host_name: all
-    PVC_name: powervchostname
-    PVC_password: passw0rd123
-    PVC_user: powervcuser
+    pvc_name: powervchostname
+    pvc_password: passw0rd123
+    pvc_user: powervcuser
     directory: /tmp
     filesets_fixes: bos.mp64 bos.rte.libc IZ12345.140806.epkg.Z
 
   tasks:
     - name: To install the updates to two filesets and to install an interim fix
       ibm.power_aix.lku:
-        PVC_name: "{{ PVC_name }}"
-        PVC_password: "{{ PVC_password }}"
-        PVC_user: "{{ PVC_user }}"
+        PVC_name: "{{ pvc_name }}"
+        PVC_password: "{{ pvc_password }}"
+        PVC_user: "{{ pvc_user }}"
         directory: "{{ directory }}"
         filesets_fixes: "{{ filesets_fixes }}"
 
     - name: To install all the updates and interim fixes that are available in the /tmp directory
       ibm.power_aix.lku:
-        PVC_name: "{{ PVC_name }}"
-        PVC_password: "{{ PVC_password }}"
-        PVC_user: "{{ PVC_user }}"
+        PVC_name: "{{ pvc_name }}"
+        PVC_password: "{{ pvc_password }}"
+        PVC_user: "{{ pvc_user }}"
         directory: "{{ directory }}"
         filesets_fixes: all
 
     - name: To install all the updates, but not interim fixes, that are located in the /tmp directory
       ibm.power_aix.lku:
-        PVC_name: "{{ PVC_name }}"
-        PVC_password: "{{ PVC_password }}"
-        PVC_user: "{{ PVC_user }}"
+        PVC_name: "{{ pvc_name }}"
+        PVC_password: "{{ pvc_password }}"
+        PVC_user: "{{ pvc_user }}"
         directory: "{{ directory }}"
         filesets_fixes: update_all
+        
