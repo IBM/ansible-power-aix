@@ -272,8 +272,16 @@ def is_fspath_mounted(module):
 
     fdirs = []
     if stdout:
-        for ln in stdout.splitlines()[1:]:
-            fdirs.append(ln.split()[-6])
+        for ln in stdout.splitlines()[2:]:
+            ln = ln.split()
+            slash = 0
+            for value in ln:
+                if "/" in value:
+                    slash += 1
+                if slash == 2:
+                    fdirs.append(value)
+                    break
+
     for fdir in fdirs:
         found = re.search('^' + fs_name + '$', fdir)
         if found:
