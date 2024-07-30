@@ -9,7 +9,7 @@
 
 Items needed for this guide: 
 
-* A Controller Node to install ansilbe on.
+* A Controller Node to install ansible.
 
 * A Managed Node(s) to apply the example ansible-power-aix playbook_.
 
@@ -47,7 +47,7 @@ To install a build from the ansible-power-aix Git repository:
          Installing 'ibm.power_aix:1.0.0' to '/Users/user/.ansible/collections/ansible_collections/ibm/power_aix'
 
 
-  .. note:: There is a role_ to auto install python and yum on your managed nodes, however for this guide we will perform this step manually for clarity.
+  .. note:: There is a role_ to auto install python and dnf on your managed nodes, however for this guide we will perform this step manually for clarity.
     
   .. _role: https://ibm.github.io/ansible-power-aix/roles/power_aix_bootstrap.html#example-playbook
 

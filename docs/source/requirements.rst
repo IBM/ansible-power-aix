@@ -17,8 +17,8 @@ The nodes listed below require these specific versions of software:
 Control node
 ------------
 
-* `Ansible version`_: 2.9 or later
-* `Python`_: 2.7 or later
+* `Ansible version`_: 2.15 or later
+* `Python`_: 3.9 or later
 * `OpenSSH`_
 
 .. _Ansible version:
@@ -32,7 +32,7 @@ Control node
 Managed node
 ------------
 
-* `Python on AIX`_: 2.7 or later
+* `Python on AIX`_: 3.9 or later
 * `AIX OS`_: 7.1 or later
 * `AIX OpenSSH`_
 
