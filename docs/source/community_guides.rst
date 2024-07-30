@@ -5,7 +5,7 @@
 Contributing
 ============
 
-We are not currently accepting community contributions. However, we encourage
+We are accepting community contributions. However, we encourage
 you to open `git issues`_ for bugs, comments or feature requests.
 
 Review this content periodically to learn when and how to make contributions in
