@@ -287,6 +287,7 @@ def res_show(module):
         if stdout.strip():
             results['nim_resources'] = build_dic(stdout)
             results['nim_resource_found'] = True
+            results['msg'] = "NIM resource details fetched successfully. See nim_resources for more info."
 
     if module.params['showres']:
         # check if we need to fetch the filesets installed in a lpp_source or
@@ -350,7 +351,7 @@ def res_create(nim_cmd, module):
             results['msg'] = f'Error trying to define resource {name} '
             module.fail_json(**results)
         else:
-            results['msg'] = 'Resource already exist'
+            results['msg'] = 'Resource already exists'
 
     else:
         results['msg'] = f'Creation of resource {name} was a success'
@@ -568,11 +569,8 @@ def main():
         res_show(module)
     elif action == 'create':
         res_create(nim_cmd, module)
-    elif action == 'delete':
-        res_delete(nim_cmd, module)
     else:
-        results['msg'] = 'The action selected is NOT recognized. Please check again.'
-        module.fail_json(**results)
+        res_delete(nim_cmd, module)
 
     module.exit_json(**results)
 
