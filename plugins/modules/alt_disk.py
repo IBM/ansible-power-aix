@@ -309,7 +309,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             if ret != 0:
                 results['stdout'] = stdout
                 results['stderr'] = stderr
-                results['msg'] = 'fCommand \'{ cmd }\' failed with RC { ret }.'
+                results['msg'] = f'Command \'{ cmd }\' failed with RC { ret }.'
                 module.fail_json(**results)
 
         # Clean existing old_rootvg
