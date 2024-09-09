@@ -512,6 +512,41 @@ def get_oslevels(module, targets):
     return oslevels
 
 
+def check_if_allocated(module, provided_lpp_source, targets):
+    """
+    Check if the lpp source is allocated to the provided targets
+
+    arguments:
+        lpp_source (str) : LPP Source
+        targtes (list) : list of targets that need to be checked
+
+    returns:
+        new_targets (list) : Updated list having only the targets that
+        have the specified lpp_source allocated to them.
+    """
+    cmd = "lsnim -t lpp_source"
+
+    targets = expand_targets(targets)
+    new_targets = []
+
+    for target in targets:
+        cmd += f" {target}"
+        rc, stdout, stderr = module.run_command(cmd)
+        results['cmd'] = cmd
+        results['stderr'] = stderr
+        results['stdout'] = stdout
+        if rc:
+            results['msg'] += f"Failed to get information on {target}. "
+            results['msg'] += f"Following command failed: {cmd}"
+            module.fail_json(**results)
+        stdout_lines = stdout.splitlines()
+        stdout_list = ' '.join(stdout_lines).split()
+        if provided_lpp_source in stdout_list:
+            new_targets.append(target)
+
+    return new_targets        
+
+
 def run_oslevel_cmd(module, target, levels):
     """
     Run the oslevel command on target target.
@@ -1058,6 +1093,8 @@ def nim_update(module, params):
                 msg = f'Invalid oslevel got: \'{ cur_oslevel }\'.'
                 results['meta'][target]['messages'].append(msg)
                 module.log(f'NIM - WARNING: On { target } with msg: { msg } ')
+                results['msg'] += f"{target} - {results['meta'][target]['messages']}"
+                results['status'][target] = 'FAILURE'
                 continue
             cur_oslevel_elts = cur_oslevel.split('-')
 
@@ -1091,6 +1128,8 @@ def nim_update(module, params):
                 msg = f'Cannot get oslevel from lpp source name: { new_lpp_source }'
                 results['meta'][target]['messages'].append(msg)
                 module.log(f'NIM - WARNING: On { target} with msg: { msg } ')
+                results['msg'] += f"{target} - {results['meta'][target]['messages']}"
+                results['status'][target] = 'FAILURE'
                 continue
 
             full_elts = '-'.join(oslevel_elts)
@@ -1098,11 +1137,14 @@ def nim_update(module, params):
                 msg = f'Has a different release number than { full_elts }, got { cur_oslevel }'
                 results['meta'][target]['messages'].append(msg)
                 module.log(f'NIM - WARNING: { target } with msg: { msg } ')
+                results['msg'] += f"{target} - {results['meta'][target]['messages']}"
+                results['status'][target] = 'FAILURE'
                 continue
             if (cur_oslevel_elts[1] > oslevel_elts[1] or cur_oslevel_elts[1] == oslevel_elts[1] and cur_oslevel_elts[2] >= oslevel_elts[2]):
                 msg = f'Already at same or higher level: {full_elts}, got: {cur_oslevel_elts}'
                 results['meta'][target]['messages'].append(msg)
                 module.log(f'NIM - { target} with msg: { msg } ')
+                results['msg'] += f"{target} - {results['meta'][target]['messages']}"
                 continue
 
             msg = f'Synchronous software customization from {cur_oslevel} to {full_elts}.'
@@ -1110,6 +1152,7 @@ def nim_update(module, params):
             module.log(f'NIM - On {target} ' + msg)
 
             rc = perform_customization(module, new_lpp_source, target, False)
+            results['msg'] += f"{target} - {results['meta'][target]['messages']}"
             if rc:
                 results['status'][target] = 'FAILURE'
             else:
@@ -1428,8 +1471,12 @@ def nim_deallocate(module, params):
     note:
         Exits with fail_json in case of error
     """
+    params_targets = check_if_allocated(module, params['lpp_source'], params['targets'])
 
-    params_targets = params['targets']
+    if not len(params_targets):
+        results['msg'] += "Resource is not allocated to the provided targets, no need to deallocate."
+        module.exit_json(**results)
+
     params_lpp_source = params['lpp_source']
     module.log(f'NIM - deallocate operation on {params_targets} for {params_lpp_source} lpp source')
 
@@ -1444,7 +1491,7 @@ def nim_deallocate(module, params):
 
     cmd = ['nim', '-o', 'deallocate',
            '-a', 'lpp_source=' + params['lpp_source']]
-    cmd += results['targets']
+    cmd += params_targets
 
     cmd = ' '.join(cmd)
     module.debug(f'NIM - Command:{cmd}')
@@ -2109,11 +2156,11 @@ def main():
     if results['status']:
         target_errored = [key for key, val in results['status'].items() if 'FAILURE' in val]
         if len(target_errored):
-            results['msg'] = f'NIM {action} operation failed for {target_errored}. See status and meta for details.'
+            results['msg'] += f' NIM {action} operation failed for {target_errored}. See status and meta for details.'
             module.log(results['msg'])
             module.fail_json(**results)
 
-    results['msg'] = f'NIM {action} operation successful. See status and meta for details.'
+    results['msg'] += f' NIM {action} operation successful. See status and meta for details.'
     module.log(results['msg'])
     module.exit_json(**results)
 
