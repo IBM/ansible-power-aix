@@ -544,7 +544,7 @@ def check_if_allocated(module, provided_lpp_source, targets):
         if provided_lpp_source in stdout_list:
             new_targets.append(target)
 
-    return new_targets        
+    return new_targets
 
 
 def run_oslevel_cmd(module, target, levels):
