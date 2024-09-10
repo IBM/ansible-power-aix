@@ -473,7 +473,7 @@ def download(module, output, src, dst, resize_fs=True):
                 output['messages'].append(msg)
                 res = False
         else:
-            msg = f'Cannot locate {wget}, please install related package.'
+            msg = f'Cannot locate wget, please install related package.'
             module.log(msg)
             output['messages'].append(msg)
             res = False
@@ -492,7 +492,7 @@ def unzip(module, output, src, dst, resize_fs=True):
         dst     (str): The absolute destination path
     """
     try:
-        with zipfile.ZipFile(src, encoding="utf-8") as zfile:
+        with zipfile.ZipFile(src) as zfile:
             zfile.extractall(dst)
     except (zipfile.BadZipfile, zipfile.LargeZipFile, RuntimeError) as exc:
         if resize_fs and increase_fs(module, output, dst):
@@ -885,6 +885,28 @@ def run_lslpp(module, output, machine, filename):
     output['messages'].append(msg)
     return rc
 
+def parse_stdout(stdout):
+    """
+    Utility function to parse the output so as to exclude certificate information from stdout
+    args:
+        stdout      (str): standard output obtained
+    return:
+        parsed_list (list): List of all the Fixes without certificate information
+    """
+
+    stdout = stdout.splitlines()
+
+    header = "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs"
+    header += "|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|Last Update|Fixed In"
+
+    index = 0
+
+    while stdout[index] != header:
+        index += 1
+
+    parsed_list = stdout[index:]
+
+    return parsed_list
 
 def parse_emgr(machine):
     """
@@ -1045,7 +1067,8 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
         output['messages'].append(msg + f" stderr: {stderr}")
         return False
 
-    output.update({'0.report': stdout.splitlines()})
+    parsed_out = parse_stdout(stdout)
+    output.update({'0.report': parsed_out})
 
     # Save to file
     if params['save_report']:
@@ -1142,8 +1165,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
                     # find all epkg in tar file
                     epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
                     out['2.discover'].extend(epkgs)
-                    module.debug(f'{machine}: found {len(epkg)} epkg.Z file in tar file')
-
+                    module.debug(f'{machine}: found {len(epkgs)} epkg.Z file in tar file')
                     # extract epkg
                     tar_dir = os.path.join(workdir, 'tardir')
                     if not os.path.exists(tar_dir):
@@ -1156,16 +1178,17 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
                                 if resize_fs:
                                     increase_fs(module, out, tar_dir)
                                 else:
-                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}: {exc}'
-                                    module.log(f'[WARNING] {machine}: {msg}')
-                                    out['messages'].append(msg)
+                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}'
+                                    module.log(msg)
+                                    module.log(f'EXCEPTION {exc}')
+                                    results['meta']['messages'].append(msg)
                                     break
                             else:
                                 break
                         else:
                             msg = f'Cannot extract tar file {epkg} to {tar_dir}'
                             module.log(f'[WARNING] {machine}: {msg}')
-                            out['messages'].append(msg)
+                            results['meta']['messages'].append(msg)
                             continue
                         out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
@@ -1175,12 +1198,13 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             response = open_url(url, validate_certs=False)
 
             # find all epkg in html body
-            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', str(response))
+            epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read().decode('utf-8'))
 
             epkgs = list(set(epkgs))
 
             out['2.discover'].extend(epkgs)
-            module.debug(f'{machine}: found {len(epkgs)} epkg.Z file in html body')
+            debug_len = len(epkgs)
+            module.debug(f'found {debug_len} epkg.Z file in html body')
 
             # download epkg
             epkgs = [os.path.abspath(os.path.join(workdir, epkg)) for epkg in epkgs
