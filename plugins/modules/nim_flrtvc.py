@@ -473,7 +473,7 @@ def download(module, output, src, dst, resize_fs=True):
                 output['messages'].append(msg)
                 res = False
         else:
-            msg = f'Cannot locate wget, please install related package.'
+            msg = 'Cannot locate wget, please install related package.'
             module.log(msg)
             output['messages'].append(msg)
             res = False
