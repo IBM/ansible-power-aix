@@ -885,6 +885,7 @@ def run_lslpp(module, output, machine, filename):
     output['messages'].append(msg)
     return rc
 
+
 def parse_stdout(stdout):
     """
     Utility function to parse the output so as to exclude certificate information from stdout
@@ -907,6 +908,7 @@ def parse_stdout(stdout):
     parsed_list = stdout[index:]
 
     return parsed_list
+
 
 def parse_emgr(machine):
     """
