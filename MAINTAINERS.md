@@ -4,8 +4,8 @@ Following is the current list of maintainers on this project
 
 The maintainers are listed in alphabetical order of their Github username.
 
-* Pedro V Torres (@pvtorres)
+* Nitish K Mishra (@nitismis)
 
 
 
-Pedro V Torres -  pvtorres@us.ibm.com
+Nitish K Mishra (nitismis@in.ibm.com)
