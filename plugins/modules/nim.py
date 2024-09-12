@@ -514,7 +514,7 @@ def get_oslevels(module, targets):
 
 def check_if_allocated(module, provided_lpp_source, targets):
     """
-    Check if the lpp source is allocated to the provided targets
+    Check if the lpp source is allocated to the provided targets.
 
     arguments:
         lpp_source (str) : LPP Source
@@ -528,6 +528,7 @@ def check_if_allocated(module, provided_lpp_source, targets):
 
     targets = expand_targets(targets)
     new_targets = []
+    cmd_failed = []
 
     for target in targets:
         cmd += f" {target}"
@@ -536,13 +537,17 @@ def check_if_allocated(module, provided_lpp_source, targets):
         results['stderr'] = stderr
         results['stdout'] = stdout
         if rc:
-            results['msg'] += f"Failed to get information on {target}. "
-            results['msg'] += f"Following command failed: {cmd}"
-            module.fail_json(**results)
+            cmd_failed.append(target)
+            continue
         stdout_lines = stdout.splitlines()
         stdout_list = ' '.join(stdout_lines).split()
         if provided_lpp_source in stdout_list:
             new_targets.append(target)
+
+    results['msg'] += f"Could not get allocation information about the following targets: {cmd_failed}"
+
+    if len(cmd_failed) == len(targets):
+        module.fail_json(**results)
 
     return new_targets
 
@@ -1425,20 +1430,34 @@ def nim_allocate(module, params):
     """
     params_targets = params['targets']
     params_lpp_source = params['lpp_source']
+
     module.log(f'NIM - allocate operation on {params_targets} for {params_lpp_source} lpp source')
 
-    results['targets'] = expand_targets(params['targets'])
-    if not results['targets']:
+    alloc_targets = expand_targets(params['targets'])
+
+    if not alloc_targets:
         results['msg'] = f'No matching target found for targets \'{params_targets}\'.'
         module.log('NIM - Error: ' + results['msg'])
         module.fail_json(**results)
 
-    res_targets = results['targets']
+    already_allocated = check_if_allocated(module, params_lpp_source, params_targets)
+
+    if len(already_allocated):
+        results['msg'] += f"Resource is already allocated to: {already_allocated}."
+
+    for target in already_allocated:
+        alloc_targets.remove(target)
+
+    if len(alloc_targets) == 0:
+        results['msg'] += " No need to allocate again."
+        module.exit_json(**results)
+
+    res_targets = alloc_targets
     module.debug(f'NIM - Target list: {res_targets}')
 
     cmd = ['nim', '-o', 'allocate',
            '-a', 'lpp_source=' + params['lpp_source']]
-    cmd += results['targets']
+    cmd += alloc_targets
 
     cmd = ' '.join(cmd)
     rc, stdout, stderr = module.run_command(cmd)
