@@ -87,6 +87,9 @@ options:
     default: 'files'
     choices: [files, LDAP]
 notes:
+  - For using 'password_hash' filter present in Ansible core for hashing the passwords, Loadable Password Algorithm (LPA) module present at
+    U(https://iwm.dhe.ibm.com/sdfdl/v2/regs2/vikvicky/pwmod/Xa.2/Xb.YpX6IhcfDwq46HlyRDRscYTBAIfbO3d-fYOIkpXfFQo/Xc.pwmod/Xd./Xf.lPr.A6vr/Xg.
+    13020934/Xi.aixbp/XY.regsrvs/XZ.SH7WiO6NvOjYR4drBxWUr2lQWDJsnB9N/pwmod) needs to be installed on the target/end nodes.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkuser.html),
