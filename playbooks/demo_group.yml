@@ -4,39 +4,86 @@
   gather_facts: false
   vars:
     host_name: all
-    user_list_val: test1
-    group_name: ansible
+    user_list_val: shreyansh_local
+    group_name: Vi_21
+    group_name1: Vi_22
+    load_module: LDAP
   tasks:
-    - name: Create a group
+  #  # - name: Create a group
+  #     ibm.power_aix.group:
+  #       state: present
+  #       name: "{{ group_name }}"
+  #   - name: Create a group with group attributes
+  #     ibm.power_aix.group:
+  #       state: present
+  #       name: group1
+  #       group_attributes:
+  #         id: 1000
+    #    state: modify
+    #     name: "{{ group_name }}"
+    #     user_list_action: remove
+    #     user_list_type: members
+    #     users_list: "{{ user_list_val }}"
+    # - name: Modify group attributes
+    #   ibm.power_aix.group:
+    #     state: modify
+    #     name: "{{ group_name }}"
+    #     group_attributes: admin=true
+    # - name: Remove a group
+    #   ibm.power_aix.group:
+    #     state: absent
+    #     name: "{{ group_name }}"  #   - name: Add a member to a group
+  #     ibm.power_aix.group:
+  #       state: modify
+  #       name: "{{ group_name }}"
+  #       user_list_action: add
+  #       user_list_type: members
+  #       users_list: "{{ user_list_val }}"
+  #   - name: Remove a member from a group
+  #     ibm.power_aix.group:
+ 
+    #vivek code 
+    - name: Create a group #create a group in local
       ibm.power_aix.group:
         state: present
+        load_module: files
+        name: "{{ group_name }}"
+    - name: Create a group #create a group in LDAP even its present in local
+      ibm.power_aix.group:
+        state: present
+        load_module: LDAP
         name: "{{ group_name }}"
     - name: Create a group with group attributes
       ibm.power_aix.group:
         state: present
-        name: group1
+        load_module: LDAP
+        name: "{{ group_name1 }}"
         group_attributes:
-          id: 1000
+          id: 1000229
     - name: Add a member to a group
       ibm.power_aix.group:
-        state: modify
+        state: present
+        load_module: LDAP
         name: "{{ group_name }}"
         user_list_action: add
         user_list_type: members
         users_list: "{{ user_list_val }}"
     - name: Remove a member from a group
       ibm.power_aix.group:
-        state: modify
+        state: present
+        load_module: LDAP
         name: "{{ group_name }}"
         user_list_action: remove
         user_list_type: members
         users_list: "{{ user_list_val }}"
     - name: Modify group attributes
       ibm.power_aix.group:
-        state: modify
+        state: present
+        load_module: files
         name: "{{ group_name }}"
         group_attributes: admin=true
     - name: Remove a group
       ibm.power_aix.group:
         state: absent
+        load_module: "{{ load_module }}"
         name: "{{ group_name }}"
