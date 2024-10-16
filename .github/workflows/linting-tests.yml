@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         ansible-version: ['2.9']
-        python-version: ['3.7']
+        python-version: ['3.11.0']
 
     name: running module linting test
     steps:
@@ -60,7 +60,7 @@ jobs:
     strategy:
       matrix:
         ansible-version: ['2.9']
-        python-version: ['3.7']
+        python-version: ['3.11.0']
 
     name: running role linting test
     steps:

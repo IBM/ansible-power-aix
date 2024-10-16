@@ -117,7 +117,7 @@ jobs:
   ########################################################################
   # compile test
   # - makes sure that the collection has compatible syntax
-  # with python version 2.7, 3.6, 3.7, and 3.8
+  # with python version 3.6, 3.8 and 3.11.0
   ########################################################################
     - name: "compile-test"
       language: python
@@ -154,10 +154,10 @@ jobs:
     - name: "compile-test"
       language: python
       python:
-        - "3.7"
+        - "3.11.0"
       env:
         - NAME="compile-test"
-        - PYTHON_VERSION="3.7"
+        - PYTHON_VERSION="3.11.0"
         - ANSIBLE_VERSION="2.9"
         - ANSIBLE_COLLECTION_DIR=ansible_collections/ibm/power_aix/
       script:
