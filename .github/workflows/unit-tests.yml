@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         ansible-version: ['2.10']
-        python-version: ['default']
+        python-version: ['3.8']
         
     name: running unit tests with python ${{ matrix.python-version }}
     steps:
