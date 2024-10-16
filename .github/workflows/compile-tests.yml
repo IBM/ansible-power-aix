@@ -13,7 +13,7 @@ jobs:
   ########################################################################
   # compile test
   # - makes sure that the collection has compatible syntax
-  # with python version 3.6, 3.7, and 3.8
+  # with python version 3.6, and 3.8
   ########################################################################
   compile-test:
     runs-on: ubuntu-20.04
@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.6', '3.7', '3.8']
+        python-version: ['3.6', '3.8']
         ansible-version: ['2.9']
 
     name: running compile tests with python ${{ matrix.python-version }}

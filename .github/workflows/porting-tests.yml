@@ -21,8 +21,8 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.9']
-        python-version: ['3.7']
+        ansible-version: ['2.10']
+        python-version: ['3.9']
 
     name: running python3 porting test
     steps:
