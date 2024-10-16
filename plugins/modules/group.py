@@ -43,9 +43,9 @@ options:
       Changes specified value of attributes of an existing group. When the group does not
       exist, use I(state=present).
     - C(absent) deletes an existing group. Users who are group members are not removed.
-     
+
     type: str
-    choices: [ present, absent, ] 
+    choices: [ present, absent, ]
     required: true
   group_attributes:
     description:
@@ -81,14 +81,14 @@ options:
     - Can be used when I(state=absent).
     type: bool
     default: yes
-  load_module:    
+  load_module:
     description:
     - Specifies the location where the operations need to be performed on the user.
     - C(files) creates/updates/deletes the user present in the Local machine.
     - C(LDAP) creates/updates the user present in the LDAP server.
     type: str
     default: 'files'
-    choices: [files, LDAP]    
+    choices: [files, LDAP]
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkgroup.html),
@@ -183,10 +183,9 @@ def modify_group(module):
                 opts += f"{ attr }={ val } "
         if load_module_opts is not None:
             opts = load_module_opts + opts
-       
+
         if module.params['load_module']:
             load_module_op = f" -R { module.params['load_module'] } "
-    
         cmd = f"chgroup { load_module_op } { opts } { name }"
 
         init_props = get_group_attributes(module)
@@ -211,11 +210,10 @@ def modify_group(module):
         if init_props != get_group_attributes(module):
             result['changed'] = True
             msg = f"\nGroup: { name } attributes SUCCESSFULLY set."
-            
         else:
             msg = f"\nGroup: { name } attributes were not changed."
             result['changed'] = False
-        return msg 
+        return msg
 
     if module.params['user_list_action']:
         cmd = "chgrpmem "
@@ -291,9 +289,7 @@ def create_group(module):
 
     if module.params['load_module']:
         load_module_opts = f" -R { module.params['load_module'] } "
-        cmd += load_module_opts    
-
-
+        cmd += load_module_opts
     if module.params['group_attributes']:
         for attr, val in module.params['group_attributes'].items():
             cmd += " " + str(attr) + "=" + str(val)
@@ -335,10 +331,8 @@ def remove_group(module):
 
     if module.params['load_module']:
         cmd = cmd + ['-R ']
-        cmd = cmd + [module.params['load_module']] 
+        cmd = cmd + [module.params['load_module']]
 
-
-    
     if module.params['remove_keystore']:
         cmd += ['-p']
     cmd += [module.params['name']]
@@ -367,21 +361,13 @@ def group_exists(module):
         false otherwise
     """
     cmd = ['lsgroup']
-    
-   
     if module.params['load_module']:
-
         cmd.append("-R")
         cmd.append(module.params['load_module'])
 
-
-
-    cmd = cmd  + [module.params['name']]
-
-
+    cmd = cmd + [module.params['name']]
 
     rc, out, err = module.run_command(cmd)
-
     result['cmd'] = cmd
     result['stdout'] = out
     result['stderr'] = err
@@ -400,16 +386,13 @@ def get_group_attributes(module):
         standard output of lsgroup <group name>
     """
     cmd = ['lsgroup']
-    
-   
+
     if module.params['load_module']:
 
         cmd.append("-R")
         cmd.append(module.params['load_module'])
 
-    
-
-    cmd = cmd  + [module.params['name']]
+    cmd = cmd + [module.params['name']]
 
     rc, out, err = module.run_command(cmd)
 
@@ -431,7 +414,7 @@ def main():
             user_list_type=dict(type='str', choices=['members', 'admins']),
             users_list=dict(type='list', elements='str'),
             remove_keystore=dict(type='bool', default=True),
-            load_module=dict(type='str', default='files', choices=['files', 'LDAP']),    
+            load_module=dict(type='str', default='files', choices=['files', 'LDAP']),
         ),
         supports_check_mode=False
     )

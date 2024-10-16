@@ -5,8 +5,8 @@
   vars:
     host_name: all
     user_list_val: aixtestgroup
-    group_name: aix_g3
-    group_name1: aix_g4
+    group_name: aix_g7
+    group_name1: aix_g8
     load_module: LDAP
   tasks:
 
@@ -26,7 +26,7 @@
         load_module: LDAP
         name: "{{ group_name1 }}"
         group_attributes:
-          id: 1000232
+          id: 1000235
     - name: Add a member to a group
       ibm.power_aix.group:
         state: present
