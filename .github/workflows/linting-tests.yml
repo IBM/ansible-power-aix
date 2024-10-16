@@ -22,7 +22,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.15']
+        ansible-version: ['2.10']
         python-version: ['3.9', '3.11']
 
     name: running module linting test
@@ -59,7 +59,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.15']
+        ansible-version: ['2.10']
         python-version: ['3.9', '3.11']
 
     name: running role linting test
