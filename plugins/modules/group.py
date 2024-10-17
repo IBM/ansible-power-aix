@@ -38,14 +38,12 @@ options:
   state:
     description:
     - Specifies the action to be performed.
-    - C(present) creates a new group. When the group already exists, use I(sate=modify) to change
-      its attributes.
-      Changes specified value of attributes of an existing group. When the group does not
-      exist, use I(state=present).
+    - C(present) specifies to create a group if it does not exist, otherwise it changes the
+      attributes of the specified group.
     - C(absent) deletes an existing group. Users who are group members are not removed.
 
     type: str
-    choices: [ present, absent, ]
+    choices: [ present, absent ]
     required: true
   group_attributes:
     description:
@@ -213,13 +211,12 @@ def modify_group(module):
         else:
             msg = f"\nGroup: { name } attributes were not changed."
             result['changed'] = False
-        return msg
 
     if module.params['user_list_action']:
         cmd = "chgrpmem "
-        if module.params['load_module']:
-            load_module_opts = f" -R { module.params['load_module'] } "
-            cmd += load_module_opts
+
+        load_module_opts = f" -R { module.params['load_module'] } "
+        cmd += load_module_opts
 
         if not module.params['user_list_type']:
             result['msg'] += "\nAttribute 'user_list_type' is missing."
@@ -287,9 +284,8 @@ def create_group(module):
     name = module.params['name']
     cmd = "mkgroup"
 
-    if module.params['load_module']:
-        load_module_opts = f" -R { module.params['load_module'] } "
-        cmd += load_module_opts
+    load_module_opts = f" -R { module.params['load_module'] } "
+    cmd += load_module_opts
     if module.params['group_attributes']:
         for attr, val in module.params['group_attributes'].items():
             cmd += " " + str(attr) + "=" + str(val)
@@ -302,7 +298,6 @@ def create_group(module):
     result['rc'] = rc
     result['stdout'] = stdout
     result['stderr'] = stderr
-    result['msg'] = f"Attributes is already exits into any other group: { name }."
     if rc != 0:
 
         result['msg'] = f"Failed to create group: { name }."
@@ -329,9 +324,8 @@ def remove_group(module):
     cmd = ['rmgroup']
     name = module.params['name']
 
-    if module.params['load_module']:
-        cmd = cmd + ['-R ']
-        cmd = cmd + [module.params['load_module']]
+    cmd = cmd + ['-R ']
+    cmd = cmd + [module.params['load_module']]
 
     if module.params['remove_keystore']:
         cmd += ['-p']
@@ -361,9 +355,9 @@ def group_exists(module):
         false otherwise
     """
     cmd = ['lsgroup']
-    if module.params['load_module']:
-        cmd.append("-R")
-        cmd.append(module.params['load_module'])
+
+    cmd.append("-R")
+    cmd.append(module.params['load_module'])
 
     cmd = cmd + [module.params['name']]
 
@@ -387,10 +381,8 @@ def get_group_attributes(module):
     """
     cmd = ['lsgroup']
 
-    if module.params['load_module']:
-
-        cmd.append("-R")
-        cmd.append(module.params['load_module'])
+    cmd.append("-R")
+    cmd.append(module.params['load_module'])
 
     cmd = cmd + [module.params['name']]
 
@@ -445,11 +437,7 @@ def main():
             if not module.params['group_attributes'] and not module.params['user_list_action']:
                 result['msg'] = f"State is { state }. Please provide attributes or action."
             else:
-                if group_exists(module):
-                    result['msg'] = modify_group(module)
-                else:
-                    result['msg'] = f"No group found in the system to modify the attributes: { name }"
-                    module.fail_json(**result)
+                result['msg'] = modify_group(module)
     else:
         # should not happen
         result['msg'] = f"Invalid state. The state provided is not supported: { state }"
