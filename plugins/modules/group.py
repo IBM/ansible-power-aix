@@ -38,25 +38,24 @@ options:
   state:
     description:
     - Specifies the action to be performed.
-    - C(present) creates a new group. When the group already exists, use I(sate=modify) to change
-      its attributes.
+    - C(present) specifies to create a group if it does not exist, otherwise it changes the
+      attributes of the specified group.
     - C(absent) deletes an existing group. Users who are group members are not removed.
-    - C(modify) changes specified value of attributes of an existing group. When the group does not
-      exist, use I(state=present).
+
     type: str
-    choices: [ present, absent, modify ]
+    choices: [ present, absent ]
     required: true
   group_attributes:
     description:
     - Specifies the attributes for the group to be created or modified.
-    - Can be used when I(state=present) or I(state=modify).
+    - Can be used when I(state=present)  .
     type: dict
   user_list_action:
     description:
     - Specifies to add or remove members/admins from the group.
     - C(add) to add members or admins of the group with provided I(users_list) in group I(name)
     - C(remove) to remove members or admins of the group with provided I(users_list) from group I(name)
-    - Can be used when I(state=modify).
+    - Can be used when I(state=present).
     type: str
     choices: [ add, remove ]
   user_list_type:
@@ -64,14 +63,14 @@ options:
     - Specifies the type of user to add/remove.
     - C(members) specifies the I(user_list_action) is performed on members of the group
     - C(admins) specifies the I(user_list_action) is performed on admins of the group
-    - Can be used when I(state=modify).
+    - Can be used when I(state=present).
     type: str
     choices: [ members, admins ]
   users_list:
     description:
     - Specifies a list of user to be added/removed as members/admins of the group.
     - Should be used along with I(user_list_action) and I(user_list_type) parameters.
-    - Can be used when I(state=modify).
+    - Can be used when I(state=present).
     type: list
     elements: str
   remove_keystore:
@@ -80,6 +79,14 @@ options:
     - Can be used when I(state=absent).
     type: bool
     default: yes
+  load_module:
+    description:
+    - Specifies the location where the operations need to be performed on the user.
+    - C(files) creates/updates/deletes the user present in the Local machine.
+    - C(LDAP) creates/updates the user present in the LDAP server.
+    type: str
+    default: 'files'
+    choices: [files, LDAP]
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkgroup.html),
@@ -174,7 +181,10 @@ def modify_group(module):
                 opts += f"{ attr }={ val } "
         if load_module_opts is not None:
             opts = load_module_opts + opts
-        cmd = f"chgroup { opts } { name }"
+
+        if module.params['load_module']:
+            load_module_op = f" -R { module.params['load_module'] } "
+        cmd = f"chgroup { load_module_op } { opts } { name }"
 
         init_props = get_group_attributes(module)
 
@@ -185,8 +195,15 @@ def modify_group(module):
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            result['msg'] += f"\nFailed to modify attributes for group: { name }."
-            module.fail_json(**result)
+            # User is not in member list. (Not a problem: idempotency)
+            pattern = "3004-692"
+            found = re.search(pattern, stderr)
+
+            if not found:
+                result['msg'] += f"\nFailed to modify attributes for group: { name }."
+                module.fail_json(**result)
+            else:
+                result['rc'] = 0
 
         if init_props != get_group_attributes(module):
             result['changed'] = True
@@ -197,6 +214,9 @@ def modify_group(module):
 
     if module.params['user_list_action']:
         cmd = "chgrpmem "
+
+        load_module_opts = f" -R { module.params['load_module'] } "
+        cmd += load_module_opts
 
         if not module.params['user_list_type']:
             result['msg'] += "\nAttribute 'user_list_type' is missing."
@@ -264,6 +284,8 @@ def create_group(module):
     name = module.params['name']
     cmd = "mkgroup"
 
+    load_module_opts = f" -R { module.params['load_module'] } "
+    cmd += load_module_opts
     if module.params['group_attributes']:
         for attr, val in module.params['group_attributes'].items():
             cmd += " " + str(attr) + "=" + str(val)
@@ -277,6 +299,7 @@ def create_group(module):
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
+
         result['msg'] = f"Failed to create group: { name }."
         module.fail_json(**result)
     else:
@@ -300,6 +323,9 @@ def remove_group(module):
     msg = ""
     cmd = ['rmgroup']
     name = module.params['name']
+
+    cmd = cmd + ['-R ']
+    cmd = cmd + [module.params['load_module']]
 
     if module.params['remove_keystore']:
         cmd += ['-p']
@@ -328,11 +354,14 @@ def group_exists(module):
         true if exists
         false otherwise
     """
-    cmd = ["lsgroup"]
-    cmd += [module.params['name']]
+    cmd = ['lsgroup']
+
+    cmd.append("-R")
+    cmd.append(module.params['load_module'])
+
+    cmd = cmd + [module.params['name']]
 
     rc, out, err = module.run_command(cmd)
-
     result['cmd'] = cmd
     result['stdout'] = out
     result['stderr'] = err
@@ -350,8 +379,13 @@ def get_group_attributes(module):
     return:
         standard output of lsgroup <group name>
     """
-    cmd = ["lsgroup"]
-    cmd += [module.params['name']]
+    cmd = ['lsgroup']
+
+    cmd.append("-R")
+    cmd.append(module.params['load_module'])
+
+    cmd = cmd + [module.params['name']]
+
     rc, out, err = module.run_command(cmd)
 
     return out
@@ -372,6 +406,7 @@ def main():
             user_list_type=dict(type='str', choices=['members', 'admins']),
             users_list=dict(type='list', elements='str'),
             remove_keystore=dict(type='bool', default=True),
+            load_module=dict(type='str', default='files', choices=['files', 'LDAP']),
         ),
         supports_check_mode=False
     )
@@ -399,15 +434,10 @@ def main():
         else:
             result['msg'] = f"Group { name } already exists."
 
-    elif module.params['state'] == 'modify':
-        if not module.params['group_attributes'] and not module.params['user_list_action']:
-            result['msg'] = f"State is { state }. Please provide attributes or action."
-        else:
-            if group_exists(module):
-                result['msg'] = modify_group(module)
+            if not module.params['group_attributes'] and not module.params['user_list_action']:
+                result['msg'] = f"State is { state }. Please provide attributes or action."
             else:
-                result['msg'] = f"No group found in the system to modify the attributes: { name }"
-                module.fail_json(**result)
+                result['msg'] = modify_group(module)
     else:
         # should not happen
         result['msg'] = f"Invalid state. The state provided is not supported: { state }"
