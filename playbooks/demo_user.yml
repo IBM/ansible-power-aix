@@ -52,7 +52,7 @@
         name: "{{ user_name }}"
         load_module: LDAP
         attributes:
-          admin: false
+          admin: true
     - name: Delete Local user
       ibm.power_aix.user:
         state: absent

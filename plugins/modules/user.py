@@ -136,7 +136,6 @@ def get_chuser_command(module):
     '''
     # 'attributes' contains all of the key=value pairs that Ansible wants us to set
     attributes = module.params['attributes']
-    #print("jaunpur12  " + str(attributes.items()))
     load_module = module.params['load_module']
     name = module.params['name']
     if attributes is None:
@@ -159,8 +158,6 @@ def get_chuser_command(module):
     # Now loop over every key-value in attributes
     opts = ""
     cmd = ""
-    #load_module_opts = None
-   # print("jaunpur11  " + str(attributes.items()))
     for attr, val in attributes.items():
         pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
         if val in [True, False] or re.match(pattern, str(val)):
@@ -245,8 +242,6 @@ def get_user_attrs(module):
     load_module_opts = f" -R { load_module } "
     cmd += load_module_opts
     cmd += name
-
-    print("this is output of code vivek pandey " + str(cmd))
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0 and stderr:
         return {}
