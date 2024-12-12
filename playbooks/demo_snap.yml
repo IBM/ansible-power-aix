@@ -1,0 +1,110 @@
+---
+- name: USER on AIX
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: vivek
+    user_name: aixguest
+    password_val: abc12345
+    attribute_home: /home/test/aixguest
+
+  tasks:
+    - name: Reset Data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        compress: false
+        hacmp: false
+        reset: true
+    - name: ALL Data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        all_info: true
+    - name: collects dump
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        compress: false
+        hacmp: false
+        reset: false
+        collects_dump: true
+    - name: Compress Data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        compress: true
+        hacmp: false
+        reset: false
+    - name: hacmp  Data collection
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        compress: false
+        hacmp: true
+    - name: Compress Data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: false
+        compress: false
+        file_system_info: true
+    - name: live kernal data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        live_kernel: true
+        compress: false
+        file_system_info: false
+    - name: Collects dump data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        collects_dump: true
+        compress: false
+        file_system_info: false
+    - name: installation software data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        installation_info: true
+        compress: false
+        file_system_info: false
+    - name: kernel related info
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        kernel_info: true
+        compress: false
+        file_system_info: false
+    - name: security info data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        security_info: true
+        general_info: true
+        compress: false
+        file_system_info: false
+    - name: workload manager info
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        workload_manager_info: true
+        compress: false
+        file_system_info: false
+    - name: hardware info data
+      ibm.power_aix.snap:
+        action: "snap"
+        general_option_selection: true
+        hardware_info: true
+        compress: false
+        file_system_info: false
+
+  
+
+        
