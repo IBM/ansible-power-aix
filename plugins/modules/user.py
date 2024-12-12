@@ -33,13 +33,11 @@ options:
   state:
     description:
     - Specifies the action to be performed for the user.
-    - C(present) creates a user with provided I(name) and I(attributes) in the system.
-    - If the user already exists in the system, the I(attributes) will be changed.
+    - C(present) specifies to create a user if it does not exist, otherwise it changes the
+      attributes of the specified group.
     - C(absent) deletes the user with provided I(name).
-    - C(modify) changes the specified I(attributes) of an exiting user.
-    - If the user doesn't exist on the system, it will be created.
     type: str
-    choices: [ present, absent, modify ]
+    choices: [ present, absent ]
     required: true
   name:
     description:
@@ -76,7 +74,7 @@ options:
   password:
     description:
     - Specifies the encrypted string for the password to create or change the password.
-    - Can be used when I(state=present) or I(state=modify).
+    - Can be used when I(state=present).
     type: str
   load_module:
     description:
@@ -87,9 +85,6 @@ options:
     default: 'files'
     choices: [files, LDAP]
 notes:
-  - For using 'password_hash' filter present in Ansible core for hashing the passwords, Loadable Password Algorithm (LPA) module present at
-    U(https://iwm.dhe.ibm.com/sdfdl/v2/regs2/vikvicky/pwmod/Xa.2/Xb.YpX6IhcfDwq46HlyRDRscYTBAIfbO3d-fYOIkpXfFQo/Xc.pwmod/Xd./Xf.lPr.A6vr/Xg.
-    13020934/Xi.aixbp/XY.regsrvs/XZ.SH7WiO6NvOjYR4drBxWUr2lQWDJsnB9N/pwmod) needs to be installed on the target/end nodes.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkuser.html),
@@ -163,7 +158,6 @@ def get_chuser_command(module):
     # Now loop over every key-value in attributes
     opts = ""
     cmd = ""
-    load_module_opts = None
     for attr, val in attributes.items():
         pattern = re.compile(r'(yes|true|always|no|false|never)', re.IGNORECASE)
         if val in [True, False] or re.match(pattern, str(val)):
@@ -172,13 +166,16 @@ def get_chuser_command(module):
         #  compared to what is already set
         # Only add attr=val to the opts list they're different. No reason to
         #  if the values are identical!
-        if user_attrs[attr] != val:
-            opts += f"{ attr }=\"{ val }\" "
+        # if user_attrs[attr] != val:
 
-    if load_module_opts is not None:
-        opts = load_module_opts + opts
+        if str(user_attrs[attr]) != str(val):
+            opts += f"{ attr }=\"{ val }\" "
+            opts = load_module_opts + opts
+
     if opts:
         cmd = f"chuser { opts } { name }"
+    # if module.params['load_module'] != 'LDAP':
+    #    module.fail_json(msg=cmd, rc=rc, stdout=stdout, stderr=stderr)
 
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string
@@ -237,7 +234,12 @@ def get_user_attrs(module):
         (dict): User attributes
     '''
     name = module.params['name']
-    cmd = f"lsuser -f { name }"
+    # cmd = f"lsuser -f { name }"
+    cmd = "lsuser -f "
+    load_module = module.params['load_module']
+    load_module_opts = f" -R { load_module } "
+    cmd += load_module_opts
+    cmd += name
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0 and stderr:
         return {}
@@ -256,11 +258,10 @@ def changed_attrs(module, current):
     return:
         (dict): Changed user attributes
     '''
-
     if module.params['attributes']:
         newattrs = module.params['attributes']
         changed = {k: newattrs[k] for k in newattrs if k
-                   in current and str(newattrs[k]) != current[k]}
+                   in current and str(newattrs[k]) != str(current[k])}
         return changed
     return None
 
@@ -368,13 +369,18 @@ def remove_user(module):
         Message for successfull command
     '''
     name = module.params['name']
-    cmd = ['userdel']
-
-    if module.params['remove_homedir']:
-        cmd.append('-r')
-
+    if module.params['load_module']:
+        cmd = ['rmuser']
+        load_module = module.params['load_module']
+        load_module_opts = f"{ load_module }"
+        load_opt = "-R"
+        cmd.append(load_opt)
+        cmd.append(load_module_opts)
+    else:
+        cmd = ['userdel']
+        if module.params['remove_homedir']:
+            cmd.append('-r')
     cmd.append(name)
-
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
@@ -448,7 +454,7 @@ def change_password(module):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
+            state=dict(type='str', required=True, choices=['present', 'absent']),
             name=dict(type='str', required=True, aliases=['user']),
             attributes=dict(type='dict'),
             remove_homedir=dict(type='bool', default=True, no_log=False),
@@ -474,12 +480,13 @@ def main():
             changed = True
         else:
             msg = f"User name is NOT FOUND : { name }"
-    elif state == 'present' or state == 'modify':
+    elif state == 'present':
         if not user_exists(module):
             msg = create_user(module)
             changed = True
         else:
             msg = f"User { name } already exists."
+
             if module.params['attributes'] is None and module.params['password'] is None:
                 msg = f"Provide attributes to be changed for the user: { name }"
             else:
