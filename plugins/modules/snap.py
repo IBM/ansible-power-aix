@@ -17,7 +17,7 @@ DOCUMENTATION = r'''
 ---
 module: snap_command
 author:
-- AIX Development Team (@pbfinley1911)
+- AIX Development Team (@vivekpandeyibm)
 short_description: Run snap command on AIX.
 description:
 - This module facilitates running the AIX snap command to gather diagnostic data.
@@ -29,18 +29,6 @@ requirements:
 - Python >= 3.6
 - Root user is required.
 options:
-  action:
-    description:
-    - Specifies the command you have to run.
-    - C(snap) run the snap command for specific option .
-    type: str
-    choices: [ snap ]
-    required: true
-  general_option_selection:
-    description:
-    - Specifies the general command have to run.
-    type: bool
-    required: true
   all_info:
     description:
     - Gathers all available system information.
@@ -69,7 +57,7 @@ options:
     type: bool
   live_kernel:
     description:
-    - Collects Live kernel update information and save it in the /tmp/ibmsupt/liveupdate directory.
+    - Collects Live kernel update information and saves it in the /tmp/ibmsupt/liveupdate directory.
     type: bool
   collects_dump:
     description:
@@ -141,8 +129,6 @@ stderr:
     type: str
 
 '''
-cmd = ['snap']  # declare a global variable for snap
-
 expectPrompts = {
     "reset": "/usr/bin/expect -c \"spawn snap -r; \
             expect \\\"Do you want me to remove these directories \\(y|n\\): \\\"; \
@@ -161,74 +147,64 @@ def build_snap_command(module):
 
     """
     if check_memory_availbilty():
-        if module.params['general_option_selection']:
-            snap_general_option(module)
+        cmd = snap_general_option(module)
     else:
-        print("this is very low memory less than 8 mb")
+        msg = "Memory is less than 8 mb:"
+        module.fail_json(msg=msg)
     return cmd
 
 
 def snap_general_option(module):
 
     """
-    Build the snap command with specify option
+    Build the snap command with specified options
     arguments:
      module (AnsibleModule): The Ansible module instance.
     return:
-        True - when command succesfully cretaed
+        True - when command succesfully created
     """
-    global cmd
-    if module.params['reset']:
-        cmd = ['snap']
-        cmd += ['-r']
-        return True
+    cmd = ['snap']
+    if module.params['all_info']:
+        cmd += ['-a']
+    elif module.params['hacmp']:
+        cmd += ['-e']
     else:
-        if module.params['all_info']:
-            cmd = ['snap']
-            cmd += ['-a']
-            return True
-        elif module.params['hacmp']:
-            cmd = ['snap']
-            cmd += ['-e']
-            return True
-        else:
-            if module.params['file_system_info']:
-                cmd += ['-f']
-            if module.params['live_kernel']:
-                cmd += ['-U']
-            if module.params['installation_info']:
-                cmd += ['-i']
-            if module.params['kernel_info']:
-                cmd += ['-k']
-            if module.params['workload_manager_info']:
-                cmd += ['-w']
-            if module.params['general_info']:
-                if module.params['security_info']:
-                    cmd += ['-S']
-                cmd += ['-g']
-            elif module.params['hardware_info']:
-                cmd += ['-H']
-            if module.params['collects_dump']:
-                cmd += ['-D']
-            if module.params['compress']:
-                cmd += ['-c']
-    return True
+        if module.params['file_system_info']:
+            cmd += ['-f']
+        if module.params['live_kernel']:
+            cmd += ['-U']
+        if module.params['installation_info']:
+            cmd += ['-i']
+        if module.params['kernel_info']:
+            cmd += ['-k']
+        if module.params['workload_manager_info']:
+            cmd += ['-w']
+        if module.params['general_info']:
+            if module.params['security_info']:
+                cmd += ['-S']
+            cmd += ['-g']
+        elif module.params['hardware_info']:
+            cmd += ['-H']
+        if module.params['collects_dump']:
+            cmd += ['-D']
+        if module.params['compress']:
+            cmd += ['-c']
+    return cmd
 
 
 def check_memory_availbilty():
     """
-    Check the memroy is greater than 8 MB
+    Check the memory is greater than 8 MB
     arguments:
       None
     return:
         True - If the memory greater than 8 MB
-        False - If the memory does not greater than 8 MB.
+        False - If the memory less than 8 MB.
     """
 
     stat = shutil.disk_usage("/")
     free_space_mb = stat.free // (1024 * 1024)
     if free_space_mb < 8:
-        raise RuntimeError("Insufficient memory: At least 8MB free space is required to run the '-a' option.")
         return False
     return True
 
@@ -281,15 +257,8 @@ def run_snap_command_with_expect(module):
 
 def main():
     # Define the arguments the module accepts
-    # action option
-    # 1:action = snap
-    # 2:action = snapcore
-    # 3:action = snapsplit
-    global cmd
     module = AnsibleModule(
         argument_spec=dict(
-            action=dict(type='str', default='snap', choices=['snap']),
-            general_option_selection=dict(type='bool', default=False),
             all_info=dict(type='bool', default=False),
             compress=dict(type='bool', default=False),
             general_info=dict(type='bool', default=False),
@@ -314,23 +283,20 @@ def main():
         stdout='',
         stderr='',
     )
-    action = module.params['action']
-    if action == 'snap':
-        build_snap_command(module)
-        if module.params['reset']:
-            result = run_snap_command_with_expect(module)
+    if module.params['reset']:
+        result = run_snap_command_with_expect(module)
+    else:
+        cmd = build_snap_command(module)
+        rc, stdout, stderr = module.run_command(cmd)
+        result['cmd'] = ' '.join(cmd)
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
+        if rc != 0:
+            msg = f"Unable to run the snap command: { cmd }"
+            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            rc, stdout, stderr = module.run_command(cmd)
-            result['cmd'] = ' '.join(cmd)
-            result['rc'] = rc
-            result['stdout'] = stdout
-            result['stderr'] = stderr
-            if rc != 0:
-                msg = f"Unable to run the snap command: { cmd }"
-                module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
-            else:
-                module.exit_json(changed=True, msg=f"Snap command executed successfully with option {cmd}", stdout=stdout)
-
+            module.exit_json(changed=True, msg=f"Snap command executed successfully with option {cmd}", stdout=stdout)
     module.exit_json(**result)
 
 
