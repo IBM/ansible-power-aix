@@ -33,8 +33,7 @@ options:
   state:
     description:
     - Specifies the action to be performed for the user.
-    - C(present) specifies to create a user if it does not exist, otherwise it changes the
-      attributes of the specified group.
+    - C(present) creates a user with provided I(name) and I(attributes) in the system. If already present, it can be used to modify the attributes.
     - C(absent) deletes the user with provided I(name).
     type: str
     choices: [ present, absent ]
@@ -85,6 +84,9 @@ options:
     default: 'files'
     choices: [files, LDAP]
 notes:
+  - For using 'password_hash' filter present in Ansible core for hashing the passwords, Loadable Password Algorithm (LPA) module present at
+    U(https://iwm.dhe.ibm.com/sdfdl/v2/regs2/vikvicky/pwmod/Xa.2/Xb.YpX6IhcfDwq46HlyRDRscYTBAIfbO3d-fYOIkpXfFQo/Xc.pwmod/Xd./Xf.lPr.A6vr/Xg.
+    13020934/Xi.aixbp/XY.regsrvs/XZ.SH7WiO6NvOjYR4drBxWUr2lQWDJsnB9N/pwmod) needs to be installed on the target/end nodes.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chuser.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mkuser.html),
@@ -166,7 +168,6 @@ def get_chuser_command(module):
         #  compared to what is already set
         # Only add attr=val to the opts list they're different. No reason to
         #  if the values are identical!
-        # if user_attrs[attr] != val:
 
         if str(user_attrs[attr]) != str(val):
             opts += f"{ attr }=\"{ val }\" "
@@ -174,9 +175,6 @@ def get_chuser_command(module):
 
     if opts:
         cmd = f"chuser { opts } { name }"
-    # if module.params['load_module'] != 'LDAP':
-    #    module.fail_json(msg=cmd, rc=rc, stdout=stdout, stderr=stderr)
-
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
@@ -234,7 +232,6 @@ def get_user_attrs(module):
         (dict): User attributes
     '''
     name = module.params['name']
-    # cmd = f"lsuser -f { name }"
     cmd = "lsuser -f "
     load_module = module.params['load_module']
     load_module_opts = f" -R { load_module } "
@@ -369,7 +366,7 @@ def remove_user(module):
         Message for successfull command
     '''
     name = module.params['name']
-    if module.params['load_module']:
+    if module.params['load_module'] == 'LDAP':
         cmd = ['rmuser']
         load_module = module.params['load_module']
         load_module_opts = f"{ load_module }"
@@ -480,7 +477,7 @@ def main():
             changed = True
         else:
             msg = f"User name is NOT FOUND : { name }"
-    elif state == 'present':
+    else:
         if not user_exists(module):
             msg = create_user(module)
             changed = True
@@ -491,8 +488,6 @@ def main():
                 msg = f"Provide attributes to be changed for the user: { name }"
             else:
                 msg, changed = modify_user(module)
-    else:
-        msg = f"Invalid state. The state provided is not supported: { state }"
 
     module.exit_json(changed=changed, msg=msg)
 
