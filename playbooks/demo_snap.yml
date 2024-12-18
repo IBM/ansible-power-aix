@@ -5,7 +5,7 @@
   vars:
     host_name: snaptest
     user_name: aixguest
-    password_val: abc12345
+    password_val: Password
     attribute_home: /home/test/aixguest
 
   tasks:

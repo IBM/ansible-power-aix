@@ -230,6 +230,7 @@ def run_snap_command_with_expect(module):
                 "stdout": stdout.strip(),
                 "stderr": stderr.strip(),
                 "rc": rc,
+                "cmd": "snap -r",
                 "msg": "No cleanup was required."
             }
         elif rc == 0:
@@ -238,6 +239,7 @@ def run_snap_command_with_expect(module):
                 "stdout": stdout.strip(),
                 "stderr": stderr.strip(),
                 "rc": rc,
+                "cmd": "snap -r",
                 "msg": "Command executed successfully."
             }
         else:
@@ -296,7 +298,8 @@ def main():
             msg = f"Unable to run the snap command: { cmd }"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            module.exit_json(changed=True, msg=f"Snap command executed successfully with option {cmd}", stdout=stdout)
+            result['changed'] = True
+            result['msg'] = f"Snap command executed successfully with option {cmd}"
     module.exit_json(**result)
 
 
