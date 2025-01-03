@@ -11,22 +11,28 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aix_route_command
+module: route
 author:
 - AIX Development Team (@vivekpandeyibm)
 short_description: Manage routes on IBM AIX systems.
 description:
 - This module allows adding, deleting, flushing, or listing routes in IBM AIX systems.
 - Supports advanced options such as `-f`, `-n`, `-C`, `-v`, and WPAR-specific routing.
-version_added: '1.0.0'
+version_added: '2.0.0'
 requirements:
 - AIX >= 7.1 TL3
 - Python >= 3.6
 - Root user is required.
 options:
-  command:
+  action:
     description:
     - Specifies the action to perform: add, delete, flush, or change.
+    - C(add) Adds a route.
+    - C(flush) Removes all routes.
+    - C(delete) Deletes a specific route.
+    - C(change) Changes aspects of a route (such as its gateway).
+    - C(get) Lookup and display the route for a destination.
+    - C(set) Set the policy and weight attributes of a route.
     type: str
     choices: ['add', 'delete', 'flush', 'change', 'get', 'set']
     required: true
@@ -89,31 +95,31 @@ options:
     required: false
 notes:
   - Refer to IBM documentation for more details on route commands at
-    U(https://www.ibm.com/support/knowledgecenter).
+    U(https://www.ibm.com/docs/en/aix/7.3?topic=r-route-command).
 '''
 
 EXAMPLES = r'''
 - name: Add a route to 192.168.1.0/24 via 192.168.0.1
   aix_route_command:
-    command: add
+    action: add
     destination: 192.168.1.0
     netmask: 255.255.255.0
     gateway: 192.168.0.1
 
 - name: Delete a route to 192.168.1.0/24
   aix_route_command:
-    command: delete
+    action: delete
     destination: 192.168.1.0
     netmask: 255.255.255.0
 
 - name: Flush all routes
   aix_route_command:
-    command: flush
+    action: flush
     flush: true
 
 - name: Add a route with verbose mode
   aix_route_command:
-    command: add
+    action: add
     destination: 10.0.0.0
     prefixlen: 24
     gateway: 192.168.1.1
@@ -121,7 +127,7 @@ EXAMPLES = r'''
 
 - name: Add a route with weight and policy
   aix_route_command:
-    command: add
+    action: add
     destination: 192.158.2.2
     gateway: 192.158.2.5
     arguments:
@@ -132,7 +138,7 @@ EXAMPLES = r'''
 
 - name: Add a route for a specific destination_ip
   aix_route_command:
-    command: add
+    action: add
     destination: 192.168.1.0
     netmask: 255.255.255.0
     gateway: 192.168.0.1
@@ -194,7 +200,7 @@ def normalize_route_entry(module, route_entry):
 
 def parse_routing_table(module):
     """
-    Parses the routing table from the `netstat -r` command output.
+    Parses the routing table from the `netstat -rn` command output.
 
     Arguments:
     - module (AnsibleModule): The Ansible module instance.
@@ -307,8 +313,8 @@ def build_route_command(module):
         cmd.append('-v')
 
     # Add the command type
-    command = module.params['command']
-    cmd.append(command)
+    action = module.params['action']
+    cmd.append(action)
 
     # Add optional parameters
     destination = module.params['destination']
@@ -323,21 +329,21 @@ def build_route_command(module):
         cmd.append(family)
 
     if destination:
-        if flags == 'net':
+        if flags == 'net':  # check if network flag is set
             cmd.append('-net')
-            if command in ['delete']:
+            if action in ['delete']:
                 if netmask:
                     input_mask = netmask
                 elif prefixlen:
                     input_mask = prefixlen
                 else:
                     input_mask = 32
-                network_destination_ip = calculate_network_address(module, destination, input_mask)
+                network_destination_ip = calculate_network_address(module, destination, input_mask)  # Call the function for network address
                 cmd.append(network_destination_ip)
             else:
                 cmd.append(destination)
 
-        elif flags == 'host':
+        elif flags == 'host':  # check if host flag is set
             cmd.append('-host')
             cmd.append(destination)
     else:
@@ -353,7 +359,8 @@ def build_route_command(module):
     if gateway:
         cmd.append(gateway)
     if arguments:
-        cmd.extend(arguments)
+        for key, value in arguments.items():
+            cmd.extend([f"-{key}", value])
 
     return ' '.join(cmd)
 
@@ -369,14 +376,15 @@ def run_route_command(module):
     """
 
     destination = module.params.get('destination')
+    action = module.params['action']
     if destination:
         result = check_destination_in_routing_table(module, destination)
-        if result and module.params['command'] in ['add']:
+        if result and module.params['action'] in ['add']:
             module.exit_json(
                 msg=f"The destination '{destination}' is  found in the routing table.",
                 changed=False
             )
-        elif not result and module.params['command'] in ['delete', 'change', 'flush', 'get', 'set']:
+        elif not result and module.params['action'] in ['delete', 'change', 'flush', 'get', 'set']:
             module.exit_json(
                 msg=f"The destination '{destination}' is not found in the routing table.",
                 changed=False
@@ -384,7 +392,7 @@ def run_route_command(module):
     cmd = build_route_command(module)
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        module.fail_json(msg="Failed to execute route command.", cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+        module.fail_json(msg=f"Route command '{ action }' Failed to execute with error {stderr}.", cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
     return rc, stdout.strip(), stderr.strip(), cmd
 
 
@@ -392,12 +400,12 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            command=dict(type='str', choices=['add', 'delete', 'change', 'flush', 'get', 'set'], required=True),
+            action=dict(type='str', choices=['add', 'delete', 'change', 'flush', 'get', 'set'], required=True),
             destination=dict(type='str', required=False),
             gateway=dict(type='str', required=False),
             netmask=dict(type='str', required=False),
             prefixlen=dict(type='int', required=False),
-            arguments=dict(type='list', elements='str', required=False),
+            arguments=dict(type='dict'),
             flush=dict(type='bool', required=False),
             numeric=dict(type='bool', required=False),
             ioctl_preference=dict(type='bool', required=False),
@@ -418,13 +426,15 @@ def main():
     )
 
     try:
+        action = module.params['action']
         rc, stdout, stderr, cmd = run_route_command(module)
+        is_changed = False if action == "get" else True
         result.update(
             cmd=cmd,
             rc=rc,
             stdout=stdout,
             stderr=stderr,
-            changed=True,
+            changed=is_changed,
             msg="Route command executed successfully."
         )
     except Exception as e:
