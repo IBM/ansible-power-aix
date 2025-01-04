@@ -214,6 +214,7 @@ def parse_routing_table(module):
         module.fail_json(msg="Failed to fetch routing table.", rc=rc, stdout=stdout, stderr=stderr)
 
     routing_table = []
+    gateways = []
     lines = stdout.splitlines()
 
     for line in lines:
@@ -222,19 +223,22 @@ def parse_routing_table(module):
             continue
         # Inspect raw entry
         route_entry = columns[0]
+        gateway_entry = columns[1]
         try:
             if "/" in route_entry:  # CIDR format
                 normalized_entry = normalize_route_entry(module, route_entry)
                 network = ipaddress.ip_network(normalized_entry, strict=False)
                 routing_table.append(network)
+                gateways.append(gateway_entry)
             elif "." in route_entry:  # IP format, assume /32
                 network = ipaddress.ip_network(f"{route_entry}/32", strict=False)
                 routing_table.append(network)
+                gateways.append(gateway_entry)
         except Exception as e:
             module.warn(f"Invalid route entry skipped: {route_entry}, Error: {str(e)}")
             continue
 
-    return routing_table
+    return routing_table, gateways
 
 
 def check_destination_in_routing_table(module, destination):
@@ -248,17 +252,37 @@ def check_destination_in_routing_table(module, destination):
     Returns:
     - bool: True if the destination matches an entry in the routing table, False otherwise.
     """
+    netmask = module.params['netmask']
+    prefixlen = module.params['prefixlen']
+    flags = module.params['flags']
+    gateway = module.params['gateway']
+    action = module.params['action']
+
+    if flags == 'net':  # check if network flag is set
+        if netmask:
+            input_mask = netmask
+        elif prefixlen:
+            input_mask = prefixlen
+        else:
+            input_mask = 32
+        destination = calculate_network_address(module, destination, input_mask)  # Call the function for network address
     try:
         destination_ip = ipaddress.ip_address(destination)
     except Exception as e:
         module.fail_json(msg=f"Invalid destination IP address: {destination}, Error: {str(e)}")
-    routing_table = parse_routing_table(module)
-    # Check if the destination IP matches any network in the table
-    for network in routing_table:
-        if destination_ip == network.network_address:
-            return True
-        elif destination_ip in network:
-            return True
+    routing_table, gateways = parse_routing_table(module)
+    # Check if the destination IP and gateway matches any network in the table
+    for network, gateway_get in zip(routing_table, gateways):
+        if action in ['set', 'change']:  # Skip gateway validation for 'set' or 'change'
+            if destination_ip == network.network_address:
+                return True
+            elif destination_ip in network:
+                return True
+        else:  # Perform full validation for other actions
+            if destination_ip == network.network_address and gateway == gateway_get:
+                return True
+            elif destination_ip in network and gateway == gateway_get:
+                return True
     return False
 
 
@@ -331,7 +355,7 @@ def build_route_command(module):
     if destination:
         if flags == 'net':  # check if network flag is set
             cmd.append('-net')
-            if action in ['delete']:
+            if action in ['delete', 'set', 'change']:
                 if netmask:
                     input_mask = netmask
                 elif prefixlen:
@@ -381,12 +405,12 @@ def run_route_command(module):
         result = check_destination_in_routing_table(module, destination)
         if result and module.params['action'] in ['add']:
             module.exit_json(
-                msg=f"The destination '{destination}' is  found in the routing table.",
+                msg=f"The destination '{destination}' is  found in the routing table during action {action}.",
                 changed=False
             )
         elif not result and module.params['action'] in ['delete', 'change', 'flush', 'get', 'set']:
             module.exit_json(
-                msg=f"The destination '{destination}' is not found in the routing table.",
+                msg=f"The destination '{destination}' is not found in the routing table during action {action}.",
                 changed=False
             )
     cmd = build_route_command(module)
