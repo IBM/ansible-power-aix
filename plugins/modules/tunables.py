@@ -494,6 +494,10 @@ def reset(module):
     if bosboot_tunables or change_type == 'reboot':
         cmd += '-r '
 
+    live_update = getOSlevel(module)
+    if live_update and component in ['vmo', 'no']:
+        cmd += '-K '
+
     # -p when used in combination with -o, -d or -D, makes changes apply to both current and
     # reboot values, that is, turns on the updating of the /etc/tunables/nextboot file in addition
     # to the updating of the current value.
@@ -529,6 +533,31 @@ def reset(module):
                 results['msg'] = 'Tunables have been reset SUCCESSFULLY for nextboot.\n'
                 results['msg'] += 'Perform bosboot and reboot for the changes to take effect.'
         results['msg'] += std_out
+
+
+def getOSlevel(module):
+    '''
+    Checks if target node is AIX v7.3
+
+    arguments:
+        module (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    return:
+        True in case AIX is version 7.3
+    '''
+
+    cmd = 'oslevel -s'
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc != 0:
+        oslevel = stdout.split("-")
+        if oslevel[0] == "7300":
+            return True
+        else:
+            return False
+    else:
+        module.fail_json(msg=stderr)
 
 
 def modify(module):
@@ -603,6 +632,10 @@ def modify(module):
     # so, dont need to suppress it. In this case reboot values of other tunables will be changed.
     if not bosboot_tunables and change_type == 'reboot':
         cmd += '-r '
+
+    live_update = getOSlevel(module)
+    if live_update and component in ['vmo', 'no']:
+        cmd += '-K '
 
     # include the tunables to be modified and their new values in command
     for tunable, value in tunable_params_with_value.items():

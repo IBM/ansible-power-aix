@@ -121,6 +121,8 @@ None.
     - include_role:
         name: live_kernel_update
       vars:
+        live_kernel_update_hmc_name: test1.hmc.hostname
+        live_kernel_update_hmc_password: password123
         live_kernel_update_directory: /tmp/source
         live_kernel_update_file_name: IZ12345.140806.epkg.Z
         live_kernel_update_preview_mode: false
