@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: live_kernel_update
+  author: >
+    Nitish K Mishra
+  description: Ansible role for live kernel update operations.
+  company: IBM
+
+  license: GPL-3.0-only
+
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: AIX
+      versions:
+        - "7.2"
+
+  galaxy_tags:
+    - aix
+    - lku
+    - patching

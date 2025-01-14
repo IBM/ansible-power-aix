@@ -1,0 +1,46 @@
+---
+argument_specs:
+  main:
+    short_description: >
+      This role is used for LKU operations on AIX >= 7.2 machines managed by HMC
+    author:
+      - Nitish K Mishra
+    options:
+      live_kernel_update_hmc_name:
+        type: str
+        required: false
+        description: >
+          Specifies HMC host name managing the target AIX node
+          if, LKU is not running in preview mode.
+        default: ""
+
+      live_kernel_update_hmc_password:
+        type: str
+        required: false
+        description: >
+          Specifies password of HMC for authentication purpose
+          if, LKU is not running in preview mode.
+        default: ""
+
+      live_kernel_update_preview_mode:
+        type: bool
+        required: false
+        description: >
+          Specifies if LKU is running only in preview mode.
+          Default value is true.
+        default: true
+
+      live_kernel_update_directory:
+        type: str
+        required: false
+        description: >
+          Specifies the source directory of the fixes.
+        default: ""
+
+      live_kernel_update_file_name:
+        type: str
+        required: false
+        description: >
+          Specifies the fixes in the directory to be applied.
+          If not specified all the fixes in the given directory will be applied.
+        default: all
