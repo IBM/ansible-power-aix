@@ -5,6 +5,41 @@
 Releases
 ========
 
+Version 2.0.0
+-------------
+Notes
+   * New module: route (Manage routes on IBM AIX systems.)
+   * New module: snap (snap command to gather diagnostic data)
+   * New role: live_kernel_update
+   * New playbook: demo_aix_lku_role, demo_route, demo_snap.
+   * Enhancement in NIM ADM role to support concurrent migration.
+   * Enhancement in tunables module to support -K flag
+   * Removed modify state from user module.
+   * Enhancement in NIM module to support new fileset installation.
+   * Defects: https://github.com/IBM/ansible-power-aix/pull/580
+   * Defects: https://github.com/IBM/ansible-power-aix/pull/582
+   * Enhancement in group module to support -R flag for LDAP
+   * Updated nim-flrtvc module in accordance with the flrtvc script
+   * Defects: https://github.com/IBM/ansible-power-aix/issues/193
+   * Fixed idempotency issue in NIM module for allocation and deallocation.
+   * Minimum required ansible version is 2.16.0 now.
+
+
+Availability
+  * `Automation Hub v2.0.0`_
+  * `Galaxy v2.0.0`_
+  * `GitHub v2.0.0`_
+
+.. _Automation Hub v2.0.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.0.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.0.0.tar.gz
+
+.. _GitHub v2.0.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.0.tar.gz
+
+
 Version 1.9.2
 -------------
 Notes
