@@ -18,6 +18,7 @@
   tasks:
     - name: Download apar.csv to /tmp/apar.csv from {{ apar_csv_url }}
       ansible.builtin.get_url:
+        mode: "0644"
         url: "{{ apar_csv_url }}"
         dest: "{{ apar_csv }}"
         validate_certs: false

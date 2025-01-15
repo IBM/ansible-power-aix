@@ -16,7 +16,7 @@
         destination: "192.168.1.23"
         gateway: "192.168.1.1"
         family: "-inet"
-    - name: delete a default route
+    - name: Delete a default route
       ibm.power_aix.route:
         action: delete
         destination: "192.168.1.23"
@@ -29,7 +29,7 @@
         gateway: "192.168.1.1"
         numeric: true
         flags: "net"
-    - name: delete a route with numeric mode
+    - name: Delete a route with numeric mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.1"
@@ -44,7 +44,7 @@
         numeric: true
         prefixlen: 24
         flags: "net"
-    - name: delete a route with numeric mode
+    - name: Delete a route with numeric mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.1"
@@ -60,7 +60,7 @@
         numeric: true
         prefixlen: 24
         flags: "net"
-    - name: delete a route with numeric mode
+    - name: Delete a route with numeric mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.1"
@@ -75,7 +75,7 @@
         gateway: "192.168.2.1"
         ioctl_preference: true
         flags: "net"
-    - name: delete a route with ioctl preference
+    - name: Delete a route with ioctl preference
       ibm.power_aix.route:
         action: delete
         destination: "192.168.3.0"
@@ -89,7 +89,7 @@
         gateway: "192.168.3.1"
         verbose: true
         flags: "host"
-    - name: delete a route with verbose mode
+    - name: Delete a route with verbose mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.0"
@@ -103,7 +103,7 @@
         gateway: "192.168.3.2"
         verbose: true
         flags: "host"
-    - name: delete a route with verbose mode
+    - name: Delete a route with verbose mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.0"
@@ -190,7 +190,7 @@
           weight: "6"
           policy: "4"
         flags: "host"
-    - name: delete route attributes
+    - name: Delete route attributes
       ibm.power_aix.route:
         action: delete
         destination: "192.158.4.2"
@@ -229,7 +229,7 @@
           weight: "4"
           policy: "4"
         flags: "net"
-    - name: delete route attributes
+    - name: Delete route attributes
       ibm.power_aix.route:
         action: delete
         destination: "192.158.4.2"

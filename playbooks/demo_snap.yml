@@ -19,7 +19,7 @@
       ibm.power_aix.snap:
         live_kernel: false
         all_info: true
-    - name: collects dump
+    - name: Collects dump
       ibm.power_aix.snap:
         live_kernel: false
         compress: false
@@ -32,7 +32,7 @@
         compress: true
         hacmp: false
         reset: false
-    - name: hacmp  Data collection
+    - name: HACMP  Data collection
       ibm.power_aix.snap:
         live_kernel: false
         compress: false
@@ -42,7 +42,7 @@
         live_kernel: false
         compress: false
         file_system_info: true
-    - name: live kernal data
+    - name: Live kernal data
       ibm.power_aix.snap:
         live_kernel: true
         compress: false
@@ -52,34 +52,29 @@
         collects_dump: true
         compress: false
         file_system_info: false
-    - name: installation software data
+    - name: Installation software data
       ibm.power_aix.snap:
         installation_info: true
         compress: false
         file_system_info: false
-    - name: kernel related info
+    - name: Kernel related info
       ibm.power_aix.snap:
         kernel_info: true
         compress: false
         file_system_info: false
-    - name: security info data
+    - name: Security info data
       ibm.power_aix.snap:
         security_info: true
         general_info: true
         compress: false
         file_system_info: false
-    - name: workload manager info
+    - name: Workload manager info
       ibm.power_aix.snap:
         workload_manager_info: true
         compress: false
         file_system_info: false
-    - name: hardware info data
+    - name: Hardware info data
       ibm.power_aix.snap:
         hardware_info: true
         compress: false
         file_system_info: false
-
-
-  
-
-        

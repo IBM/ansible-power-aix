@@ -72,35 +72,35 @@ notes:
 
 EXAMPLES = r'''
 - name: Add PKS to filesystem
-    ibm.power_aix.hdcrypt_pks:
-        action: addpks
-        device: testlv1
-        method_name: initpks
+  ibm.power_aix.hdcrypt_pks:
+    action: addpks
+    device: testlv1
+    method_name: initpks
 
 - name: Display PKS keys status
-    ibm.power_aix.hdcrypt_pks:
-        action: show
+  ibm.power_aix.hdcrypt_pks:
+    action: show
 
 - name: Export PKS key to a file
-    ibm.power_aix.hdcrypt_pks:
-        action: export
-        device: testlv1
-        location: /tmp/file123
-        passphrase: abc1234
-    no_log: True
+  ibm.power_aix.hdcrypt_pks:
+    action: export
+    device: testlv1
+    location: /tmp/file123
+    passphrase: abc1234
+  no_log: true
 
 - name: Import PKS key
-    ibm.power_aix.hdcrypt_pks:
-        action: import
-        device: testlv1
-        location: /tmp/file123
-        passphrase: abc1234
-    no_log: True
+  ibm.power_aix.hdcrypt_pks:
+    action: import
+    device: testlv1
+    location: /tmp/file123
+    passphrase: abc1234
+  no_log: true
 
 - name: Clean invalid PKS key
-    ibm.power_aix.hdcrypt_pks:
-        action: clean
-        pks_label: 00fb293100004c000000018deea122dc.3
+  ibm.power_aix.hdcrypt_pks:
+    action: clean
+    pks_label: 00fb293100004c000000018deea122dc.3
 '''
 
 RETURN = r'''
