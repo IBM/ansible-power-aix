@@ -1,5 +1,5 @@
 ---
-- name: Live Kernel updfate operation on AIX
+- name: Live Kernel update operation on AIX
   hosts: all
   gather_facts: false
   user: root

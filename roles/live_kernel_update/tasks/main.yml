@@ -9,16 +9,16 @@
 - name: Fail if hmc name is not specified
   ansible.builtin.fail:
     msg: live_kernel_update_hmc_name is not specified
-  when: >
-    live_kernel_update_hmc_name == "" and
-    live_kernel_update_preview_mode is false
+  when:
+    - live_kernel_update_hmc_name | length == 0
+    - live_kernel_update_preview_mode is false
 
 - name: Fail if hmc password is not specified
   ansible.builtin.fail:
     msg: live_kernel_update_hmc_password is not specified
-  when: >
-    live_kernel_update_hmc_password == "" and
-    live_kernel_update_preview_mode is false
+  when:
+    - live_kernel_update_hmc_password | length == 0
+    - live_kernel_update_preview_mode is false
 
 - name: Check if target node is running AIX version 7.2 or higher
   ansible.builtin.include_tasks: check_oslevel.yml
@@ -35,17 +35,17 @@
 
 - name: Run LKU in preview mode when directory is provided.
   ansible.builtin.command: "geninstall -k -p -d {{ live_kernel_update_directory }} {{ live_kernel_update_file_name }}"
-  when: >
-    live_kernel_update_directory != ""
-    live_kernel_update_preview_mode is true
+  when:
+    - live_kernel_update_directory | length > 0
+    - live_kernel_update_preview_mode is true
   changed_when: false
   register: preview_result
 
 - name: Run LKU in preview mode when directory is not provide provided.
   ansible.builtin.command: "geninstall -k -p"
-  when: >
-    live_kernel_update_directory == ""
-    live_kernel_update_preview_mode is true
+  when:
+    - live_kernel_update_directory | length == 0
+    - live_kernel_update_preview_mode is true
   changed_when: false
   register: preview_result
 
@@ -78,18 +78,18 @@
 
 - name: Run LKU when directory is provided.
   ansible.builtin.command: "geninstall -k -d {{ live_kernel_update_directory }} {{ live_kernel_update_file_name }}"
-  when: >
-    live_kernel_update_directory != ""
-    live_kernel_update_preview_mode is false
+  when:
+    - live_kernel_update_directory | length > 0
+    - live_kernel_update_preview_mode is false
   changed_when: true
   register: lku_result
   failed_when: lku_result.rc != 0
 
 - name: Run LKU when directory is not provide provided.
   ansible.builtin.command: "geninstall -k"
-  when: >
-    live_kernel_update_directory == ""
-    live_kernel_update_preview_mode is false
+  when:
+    - live_kernel_update_directory | length == 0
+    - live_kernel_update_preview_mode is false
   changed_when: true
   register: lku_result
   failed_when: lku_result.rc != 0
