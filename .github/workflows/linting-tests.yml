@@ -4,7 +4,7 @@ name: run ibm.power_aix collection linting tests
 # run sanity test during pull request to dev-collection
 on:
   pull_request:
-    branches: [ dev-collection ]
+    branches: [dev-collection]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -27,25 +27,25 @@ jobs:
 
     name: running module linting test
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
-      
-    - name: setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: install linting test requirements
-      run: |
-        python -m pip install --upgrade pip
-        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-        make install-sanity-test-requirements
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
 
-    - name: run pep8 coding style linter
-      run: |
-        make module-lint
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install linting test requirements
+        run: |
+          python -m pip install --upgrade pip
+          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
+          make install-sanity-test-requirements
+
+      - name: run pep8 coding style linter
+        run: |
+          make module-lint
 
   ########################################################################
   # role linting test
@@ -64,22 +64,22 @@ jobs:
 
     name: running role linting test
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
-      
-    - name: setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: install linting test requirements
-      run: |
-        python -m pip install --upgrade pip
-        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-        make install-sanity-test-requirements
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
 
-    - name: run pep8 coding style linter
-      run: |
-        make role-lint
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install linting test requirements
+        run: |
+          python -m pip install --upgrade pip
+          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
+          make install-sanity-test-requirements
+
+      - name: run pep8 coding style linter
+        run: |
+          make role-lint

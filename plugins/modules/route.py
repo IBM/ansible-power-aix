@@ -462,7 +462,8 @@ def main():
             msg="Route command executed successfully."
         )
     except Exception as e:
-        module.fail_json(msg=str(e), **result)
+        result['msg'] = str(e)
+        module.fail_json(**result)
 
     module.exit_json(**result)
 

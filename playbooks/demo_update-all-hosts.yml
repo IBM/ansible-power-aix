@@ -29,18 +29,3 @@
       register: output
     - ansible.builtin.debug:
         var: output
-
-    - name: Perform YuM check-updates
-      ansible.builtin.yum:
-        name: "*"
-        state: latest
-      when: ansible_distribution == 'CentOS'
-      register: output
-    - ansible.builtin.debug:
-        var: output
-
-    - name: Restart with newest kernel
-      ansible.builtin.reboot:
-      register: output
-    - ansible.builtin.debug:
-        var: output
