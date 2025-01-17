@@ -43,4 +43,4 @@ jobs:
 
       - name: run python3 porting linter
         run: |
-          make porting 
+          make porting
