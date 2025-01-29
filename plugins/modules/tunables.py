@@ -550,7 +550,7 @@ def getOSlevel(module):
     cmd = 'oslevel -s'
     rc, stdout, stderr = module.run_command(cmd)
 
-    if rc != 0:
+    if rc == 0:
         oslevel = stdout.split("-")
         if oslevel[0] == "7300":
             return True
