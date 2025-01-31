@@ -151,6 +151,8 @@ notes:
   - When use local patch server settings  localpatchserver and localpatchpath must be both set
     in order to have a complete full url with patches, for example the local url
     192.168.1.100/ifix should become in module localpatchserver 192.168.1.100 and localpatchpath ifix.
+  - Using this module with Python version 3.9.20 can lead to erroneous conditions. It is recommended
+    to use Python version 3.11 or later.
 '''
 
 EXAMPLES = r'''

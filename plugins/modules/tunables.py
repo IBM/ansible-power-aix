@@ -494,6 +494,17 @@ def reset(module):
     if bosboot_tunables or change_type == 'reboot':
         cmd += '-r '
 
+    live_update = getOSlevel(module)
+    if live_update and component in ['vmo', 'no']:
+        valid_live_update_tunables = validate_live_update(module, tunable_params)
+        if valid_live_update_tunables:
+            if change_type != "reboot":
+                results['msg'] = "In AIX 7.3, if you want to change tunables which support"
+                results['msg'] += "live update flag, -K, then provide change_type as reboot."
+                module.fail_json(**results)
+            else:
+                cmd += '-K '
+
     # -p when used in combination with -o, -d or -D, makes changes apply to both current and
     # reboot values, that is, turns on the updating of the /etc/tunables/nextboot file in addition
     # to the updating of the current value.
@@ -529,6 +540,31 @@ def reset(module):
                 results['msg'] = 'Tunables have been reset SUCCESSFULLY for nextboot.\n'
                 results['msg'] += 'Perform bosboot and reboot for the changes to take effect.'
         results['msg'] += std_out
+
+
+def getOSlevel(module):
+    '''
+    Checks if target node is AIX v7.3
+
+    arguments:
+        module (dict): The Ansible module
+    note:
+        Exits with fail_json in case of error
+    return:
+        True in case AIX is version 7.3
+    '''
+
+    cmd = 'oslevel -s'
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc == 0:
+        oslevel = stdout.split("-")
+        if oslevel[0] == "7300":
+            return True
+        else:
+            return False
+    else:
+        module.fail_json(msg=stderr)
 
 
 def modify(module):
@@ -604,6 +640,20 @@ def modify(module):
     if not bosboot_tunables and change_type == 'reboot':
         cmd += '-r '
 
+    live_update = getOSlevel(module)
+    if live_update and component in ['vmo', 'no']:
+        to_be_validated = []
+        for params in tunable_params_with_value.keys():
+            to_be_validated.append(params)
+        valid_live_update_tunables = validate_live_update(module, to_be_validated)
+        if valid_live_update_tunables:
+            if change_type != "reboot":
+                results['msg'] = "In AIX 7.3, if you want to change tunables which support"
+                results['msg'] += "live update flag, -K, then provide change_type as reboot."
+                module.fail_json(**results)
+            else:
+                cmd += '-K '
+
     # include the tunables to be modified and their new values in command
     for tunable, value in tunable_params_with_value.items():
         parameters += '-o ' + tunable + '=' + str(value) + ' '
@@ -628,6 +678,42 @@ def modify(module):
             results['msg'] += "\n To make the changes take effect, bosboot and reboot is required"
             results['bosboot_required'] = True
             results['reboot_required'] = True
+
+
+def validate_live_update(module, to_be_validated):
+    '''
+    Checks that all tunables support -K option in AIX 7.3
+
+    arguments:
+        module: The ansible module
+        tunable_params_with_value  (dict): Tunable parameters and values
+    note:
+        Exits with fail_json in case of both supported and non supported tunables are present
+    return:
+        True if all tunables are -K supported
+    '''
+
+    contain_supported_tunables = False
+    contain_non_supported_tunables = False
+
+    supported_tunables = ["ame_cpus_per_pool", "kernel_heap_size", "msem_nlocks",
+                          "num_locks_per_semid", "vmm_klock_mode", "timer_wheel_tick",
+                          "extendednetstats", "lo_perf", "ipqmaxlen", "arptab_bsiz",
+                          "arptab_nb", "tcp_inpcb_hashtab_siz", "udp_inpcb_hashtab_siz",
+                          "use_sndbufpool", "udp_recv_perf", "udp_send_perf", "rtentry_lock_complex"]
+
+    for params in to_be_validated:
+        if params in supported_tunables:
+            contain_supported_tunables = True
+        else:
+            contain_non_supported_tunables = True
+        if contain_supported_tunables and contain_non_supported_tunables:
+            results['msg'] = "Live update flag -K supported and non supported tunables are used together."
+            results['msg'] += "Please use those tunables separately."
+            module.fail_json(**results)
+
+    if contain_supported_tunables and not contain_non_supported_tunables:
+        return True
 
 
 def main():

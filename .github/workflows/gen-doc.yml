@@ -23,31 +23,31 @@ jobs:
 
     name: generate documenation source files
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v4
-      
-    - name: setup python
-      uses: actions/setup-python@v5.0.0
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: install document generation requirements
-      run: |
-        python -m pip install --upgrade pip
-        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-        python -m pip install ansible-doc-extractor
-        python -m pip install sphinx
-        python -m pip install sphinx_rtd_theme
-        python -m pip install --upgrade myst-parser
+      - name: checkout repository
+        uses: actions/checkout@v4
 
-    - name: run document generator script
-      run: |
-        bash devops/bin/gen_doc.sh
+      - name: setup python
+        uses: actions/setup-python@v5.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: aix-doc-artifact
-        path: ./docs/build
+      - name: install document generation requirements
+        run: |
+          python -m pip install --upgrade pip
+          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
+          python -m pip install ansible-doc-extractor
+          python -m pip install sphinx
+          python -m pip install sphinx_rtd_theme
+          python -m pip install --upgrade myst-parser
+
+      - name: run document generator script
+        run: |
+          bash devops/bin/gen_doc.sh
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: aix-doc-artifact
+          path: ./docs/build
 
   deploy-doc:
     runs-on: ubuntu-latest
@@ -58,20 +58,20 @@ jobs:
     permissions:
       id-token: write
       pages: write
-      
+
     steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: aix-doc-artifact
-        path: .
-    - uses: actions/configure-pages@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        enablement: true
-    - uses: actions/upload-pages-artifact@v1
-      with:
-        path: .
-    - id: deployment
-      uses: actions/deploy-pages@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: aix-doc-artifact
+          path: .
+      - uses: actions/configure-pages@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          enablement: true
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

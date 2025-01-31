@@ -4,7 +4,7 @@ name: run ibm.power_aix collection compile tests
 # run sanity test during pull request to dev-collection
 on:
   pull_request:
-    branches: [ dev-collection ]
+    branches: [dev-collection]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,20 +28,20 @@ jobs:
 
     name: running compile tests with python ${{ matrix.python-version }}
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
-      
-    - name: setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: install ansible ${{ matrix.ansible-version }}
-      run: |
-        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-        
-    - name: run compile test on python ${{ matrix.python-version }}
-      run: |
-        make compile PYTHON_VERSION=${{ matrix.python-version }}
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install ansible ${{ matrix.ansible-version }}
+        run: |
+          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
+
+      - name: run compile test on python ${{ matrix.python-version }}
+        run: |
+          make compile PYTHON_VERSION=${{ matrix.python-version }}

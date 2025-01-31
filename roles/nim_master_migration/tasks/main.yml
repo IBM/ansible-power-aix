@@ -5,10 +5,10 @@
 # 1. Do NIM Database backup of NIM Master B.
 # 2. Unconfigure the NIM Database.
 # 3. Uninstall the NIM master fileset from NIM Master B.
-# 4. Add the NIM Master B as a "standalone" client to NIM Master A.
-# 5. Perform “nimadm” migration using available "non-rootvg" physical volume of NIM client.
+# 4. Add the NIM Master B as a standalone client to NIM Master A.
+# 5. Perform nimadm migration using available non-rootvg physical volume of NIM client.
 # 6. After migration is completed, reboot the NIM client and ensure that the NIM client has been migrated to the new version.
-# 7. Install "bos.sysmgt.nim.master" fileset of new oslevel to NIM Master B and configure it as a “NIM Master”.
+# 7. Install bos.sysmgt.nim.master fileset of new oslevel to NIM Master B and configure it as a NIM Master.
 # 8. Restore the NIM DB.
 
 ###############################################################################

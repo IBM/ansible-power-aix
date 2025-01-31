@@ -1,0 +1,25 @@
+---
+- name: Get the oslevel -s output
+  ansible.builtin.command: "oslevel -s"
+  register: oslevel_output
+  changed_when: false
+
+- name: Parse OS level
+  ansible.builtin.set_fact:
+    oslevel: "{{ oslevel_output.stdout.split('-') }}"
+  changed_when: false
+
+- name: Determine node OS level
+  ansible.builtin.set_fact:
+    node_oslevel: "{{ oslevel[0] }}"
+  changed_when: false
+
+- name: Fail if OS level is less than 7.2
+  ansible.builtin.fail:
+    msg: Client LPAR must be AIX 7.2 or higher.
+  when: client_oslevel < "7200"
+  changed_when: false
+
+- ansible.builtin.debug:
+    msg: Target LPAR is at AIX level '{{ oslevel_output }}'
+    changed_when: false

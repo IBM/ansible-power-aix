@@ -3,7 +3,7 @@
 # able to use noqa tag on individual task to ignore
 # flagged yaml linting issues that might not be necessary
 # WHEN the task is inside a block
-# 
+#
 # skip_list will globally ignore the following flagged
 # linting errors for roles
 skip_list:

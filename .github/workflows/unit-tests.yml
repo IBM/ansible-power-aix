@@ -4,7 +4,7 @@ name: run ibm.power_aix collection unit tests
 # run unit test during pull request to dev-collection
 on:
   pull_request:
-    branches: [ dev-collection, dev-LI028-migration-role ]
+    branches: [dev-collection, dev-LI028-migration-role]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -19,27 +19,27 @@ jobs:
       matrix:
         ansible-version: ['2.10']
         python-version: ['3.8']
-        
+
     name: running unit tests with python ${{ matrix.python-version }}
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
-      
-    - name: setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-  
-    - name: install ansible ${{ matrix.ansible-version }}
-      run: |
-        make install-ansible ANSIBLE_VERSION=2.9
-        
-    - name: install python modules needed for unit testing
-      run: |
-        make install-unit-test-requirements
-        
-    - name: run unit tests
-      run: |
-        make unit-test PYTHON_VERSION=${{ matrix.python-version }}
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install ansible ${{ matrix.ansible-version }}
+        run: |
+          make install-ansible ANSIBLE_VERSION=2.9
+
+      - name: install python modules needed for unit testing
+        run: |
+          make install-unit-test-requirements
+
+      - name: run unit tests
+        run: |
+          make unit-test PYTHON_VERSION=${{ matrix.python-version }}

@@ -10,12 +10,12 @@
     load_module: LDAP
   tasks:
 
-    - name: Create a group #create a group in local
+    - name: Create a group # create a group in local
       ibm.power_aix.group:
         state: present
         load_module: files
         name: "{{ group_name }}"
-    - name: Create a group #create a group in LDAP even its present in local
+    - name: Create a group # create a group in LDAP even its present in local
       ibm.power_aix.group:
         state: present
         load_module: LDAP

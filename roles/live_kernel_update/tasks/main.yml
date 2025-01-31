@@ -1,0 +1,105 @@
+# Copyright (c) IBM Corporation 2020
+---
+#############################################################
+#############################################################
+
+# Code block for LKU operations
+
+# For HMC authentication purpose, if, operation is not running in preview mode
+- name: Fail if hmc name is not specified
+  ansible.builtin.fail:
+    msg: live_kernel_update_hmc_name is not specified
+  when:
+    - live_kernel_update_hmc_name | length == 0
+    - live_kernel_update_preview_mode is false
+
+- name: Fail if hmc password is not specified
+  ansible.builtin.fail:
+    msg: live_kernel_update_hmc_password is not specified
+  when:
+    - live_kernel_update_hmc_password | length == 0
+    - live_kernel_update_preview_mode is false
+
+- name: Check if target node is running AIX version 7.2 or higher
+  ansible.builtin.include_tasks: check_oslevel.yml
+
+- name: Check if lvupdate.data is created
+  ansible.builtin.stat:
+    path: /var/adm/ras/liveupdate/lvupdate.data
+  register: lvupdate_stat
+
+- name: Fail if the file is not present
+  ansible.builtin.fail:
+    msg: /var/adm/ras/liveupdate/lvupdate.data is not present
+  when: not lvupdate_stat.stat.exists
+
+- name: Run LKU in preview mode when directory is provided.
+  ansible.builtin.command: "geninstall -k -p -d {{ live_kernel_update_directory }} {{ live_kernel_update_file_name }}"
+  when:
+    - live_kernel_update_directory | length > 0
+    - live_kernel_update_preview_mode is true
+  changed_when: false
+  register: preview_result
+
+- name: Run LKU in preview mode when directory is not provide provided.
+  ansible.builtin.command: "geninstall -k -p"
+  when:
+    - live_kernel_update_directory | length == 0
+    - live_kernel_update_preview_mode is true
+  changed_when: false
+  register: preview_result
+
+- name: Print the preview result.
+  ansible.builtin.debug:
+    msg: "The preview result is: {{ preview_result.stdout }} {{ preview_result.stderr }}"
+  when: live_kernel_update_preview_mode is true
+
+- name: End play as preview mode was completed
+  ansible.builtin.meta: end_host
+  when: live_kernel_update_preview_mode is true
+
+- name: Authenticate the target node for hmc
+  ansible.builtin.expect:
+    command: "hmcauth -u hscroot -a name {{ live_kernel_update_hmc_name }}"
+    responses:
+      '(?i)(password*)': "{{ live_kernel_update_hmc_password }}"
+  register: authenticate_result
+  failed_when: authenticate_result.rc != 0
+  changed_when: false
+
+- name: Debug the stderr output if the command fails
+  ansible.builtin.debug:
+    msg: "The command failed with stderr: {{ command_result.stderr }}"
+  when: authenticate_result.rc != 0
+
+- name: End play because of authentication error in HMC
+  ansible.builtin.meta: end_host
+  when: authenticate_result.rc != 0
+
+- name: Run LKU when directory is provided.
+  ansible.builtin.command: "geninstall -k -d {{ live_kernel_update_directory }} {{ live_kernel_update_file_name }}"
+  when:
+    - live_kernel_update_directory | length > 0
+    - live_kernel_update_preview_mode is false
+  changed_when: true
+  register: lku_result
+  failed_when: lku_result.rc != 0
+
+- name: Run LKU when directory is not provide provided.
+  ansible.builtin.command: "geninstall -k"
+  when:
+    - live_kernel_update_directory | length == 0
+    - live_kernel_update_preview_mode is false
+  changed_when: true
+  register: lku_result
+  failed_when: lku_result.rc != 0
+
+- name: Print the preview result for success.
+  ansible.builtin.debug:
+    msg: "Live update operation is SUCCESSFUL: {{ lku_result.stdout }}"
+  when: lku_result.rc == 0
+
+- name: Print the preview result for failure.
+  ansible.builtin.debug:
+    msg: "Live update operation FAILED: {{ lku_result.stderr }}"
+  when: lku_result.rc != 0

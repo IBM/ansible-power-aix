@@ -4,7 +4,7 @@ name: run ibm.power_aix collection sanity tests
 # run sanity test during pull request to dev-collection
 on:
   pull_request:
-    branches: [ dev-collection ]
+    branches: [dev-collection]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,30 +30,30 @@ jobs:
 
     name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
-      with:
-        path: ansible_collections/ibm/power_aix
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
 
-    - name: setup python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: install ansible ${{ matrix.ansible-version }}
-      if: ${{ matrix.ansible-version != 'devel' }}
-      run: |
-        make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
+      - name: install ansible ${{ matrix.ansible-version }}
+        if: ${{ matrix.ansible-version != 'devel' }}
+        run: |
+          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
 
-    - name: install ansible ${{ matrix.ansible-version }}
-      if: ${{ matrix.ansible-version == 'devel' }}
-      run: |
-        make install-ansible-devel-branch
+      - name: install ansible ${{ matrix.ansible-version }}
+        if: ${{ matrix.ansible-version == 'devel' }}
+        run: |
+          make install-ansible-devel-branch
 
-    - name: install sanity test requirements
-      run: |
-        make install-sanity-test-requirements
+      - name: install sanity test requirements
+        run: |
+          make install-sanity-test-requirements
 
-    - name: run sanity test on ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
-      run: |
-        make sanity-test PYTHON_VERSION=${{ matrix.python-version }}
+      - name: run sanity test on ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
+        run: |
+          make sanity-test PYTHON_VERSION=${{ matrix.python-version }}

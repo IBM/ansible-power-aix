@@ -1,0 +1,7 @@
+---
+# Copyright (c) IBM Corporation 2022
+live_kernel_update_hmc_name: ""
+live_kernel_update_hmc_password: ""
+live_kernel_update_preview_mode: true
+live_kernel_update_directory: ""
+live_kernel_update_file_name: all

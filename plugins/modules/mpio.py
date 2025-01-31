@@ -230,7 +230,7 @@ def main():
 
     results['mpio_facts'] = gather_facts(module)
     results['msg'] = "Successfully retrieved mpio facts. Check mpio_facts for more details."
-
+    results['ansible_facts'] = results['mpio_facts']
     module.exit_json(**results)
 
 

@@ -34,4 +34,3 @@
         PVC_user: "{{ pvc_user }}"
         directory: "{{ directory }}"
         filesets_fixes: update_all
-        

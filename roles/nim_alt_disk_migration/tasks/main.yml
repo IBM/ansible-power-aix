@@ -60,7 +60,7 @@
         - name: Add default Post-migration script if provided
           when: nim_alt_disk_migration_nimadm_postmig_script is defined and nim_alt_disk_migration_nimadm_postmig_script|length != 0
           ansible.builtin.set_fact:
-            additional_flags: "{{ additional_flags + ' -z ' +nim_alt_disk_migration_nimadm_postmig_script }}"
+            additional_flags: "{{ additional_flags + ' -z ' + nim_alt_disk_migration_nimadm_postmig_script }}"
 
     - name: Create the full command
       when: additional_flags|length != 0
@@ -101,7 +101,7 @@
         msg: '" PARALLEL MIGRATION COMPLETE!!!"'
 
     - name: End play as parallel migration was completed
-      meta: end_host
+      ansible.builtin.meta: end_host
 
 
 #############################################################
@@ -285,7 +285,7 @@
         - when: nim_alt_disk_migration_target_disk.disk_name is defined and nim_alt_disk_migration_target_disk.disk_name != ""
 
           block:
-            - ibm.power_aix.internal.nim_select_target_disk:
+            - ibm.power_aix.nim_select_target_disk:
                 nim_client: "{{ nim_alt_disk_migration_nim_client }}"
                 target_disk: "{{ nim_alt_disk_migration_target_disk.disk_name }}"
                 force: "{{ nim_alt_disk_migration_target_disk_force }}"
@@ -298,7 +298,7 @@
         - when: nim_alt_disk_migration_target_disk.disk_size_policy is defined and nim_alt_disk_migration_target_disk.disk_size_policy != ""
 
           block:
-            - ibm.power_aix.internal.nim_select_target_disk:
+            - ibm.power_aix.nim_select_target_disk:
                 nim_client: "{{ nim_alt_disk_migration_nim_client }}"
                 target_disk_policy: "{{ nim_alt_disk_migration_target_disk.disk_size_policy }}"
                 force: "{{ nim_alt_disk_migration_target_disk_force }}"

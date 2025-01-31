@@ -3,9 +3,9 @@
   hosts: "{{host_name}}"
   gather_facts: false
   vars:
-    host_name: all
-    user_name: aixguest
-    password_val: abc12345
+    host_name: usertest
+    user_name: aixuser404
+    password_val: abc123456
     attribute_home: /home/test/aixguest
 
   tasks:
@@ -18,17 +18,17 @@
         load_module: LDAP
         attributes:
           home: "{{ attribute_home }}"
-          data: 1272
+          data: 1290
     - name: Create local user
       ibm.power_aix.user:
         state: present
-        name: testuser
+        name: aixnewuser45
         change_passwd_on_login: false
         password: "{{ password_val }}"
         load_module: files
         attributes:
           home: "{{ attribute_home }}"
-          data: 1272
+          data: 1291
     - name: Create a local user even if it is present in LDAP
       ibm.power_aix.user:
         state: present
@@ -38,16 +38,17 @@
         load_module: files
         attributes:
           home: "{{ attribute_home }}"
-          data: 1272
+          data: 1999
     - name: Modify locally present user
       ibm.power_aix.user:
-        state: modify
+        state: present
         name: "{{ user_name }}"
+        load_module: files
         attributes:
           admin: true
     - name: Modify User present in LDAP
       ibm.power_aix.user:
-        state: modify
+        state: present
         name: "{{ user_name }}"
         load_module: LDAP
         attributes:
@@ -56,4 +57,11 @@
       ibm.power_aix.user:
         state: absent
         name: "{{ user_name }}"
+        load_module: files
+        remove_homedir: false
+    - name: Delete Local user
+      ibm.power_aix.user:
+        state: absent
+        name: "{{ user_name }}"
+        load_module: LDAP
         remove_homedir: false

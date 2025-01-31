@@ -877,7 +877,8 @@ def install_filesets(module, params):
 
         # Perform customization
 
-        cust_cmd = ['nim', '-o', 'cust']
+        cust_cmd = ['nim', '-o', 'cust',
+                    '-a', 'accept_licenses=yes']
         cust_cmd.append(target)
 
         rc, stdout, stderr = module.run_command(cust_cmd)
@@ -893,7 +894,7 @@ def install_filesets(module, params):
             module.log('NIM - Error: ' + msg)
             results['status'][target] = 'FAILURE'
         else:
-            if stdout.split()[-1] == "SUCCESS":
+            if "SUCCESS" in stdout.split():
                 changed_val = 1
             results['status'][target] = 'SUCCESS'
 

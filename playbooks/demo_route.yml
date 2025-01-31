@@ -1,0 +1,241 @@
+---
+- name: Manage Routes on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    route_destination: "192.168.14.16"
+    route_gateway: "192.168.14.13"
+    route_netmask: "255.255.255.0"
+
+  tasks:
+
+    - name: Add a default route
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.1.23"
+        gateway: "192.168.1.1"
+        family: "-inet"
+    - name: Delete a default route
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.1.23"
+        gateway: "192.168.1.1"
+        family: "-inet"
+    - name: Add a route with numeric mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.4.1"
+        gateway: "192.168.1.1"
+        numeric: true
+        flags: "net"
+    - name: Delete a route with numeric mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.4.1"
+        gateway: "192.168.1.1"
+        numeric: true
+        flags: "net"
+    - name: Add a route with numeric mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.4.1"
+        gateway: "192.168.1.1"
+        numeric: true
+        prefixlen: 24
+        flags: "net"
+    - name: Delete a route with numeric mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.4.1"
+        gateway: "192.168.1.1"
+        numeric: true
+        prefixlen: 24
+        flags: "net"
+    - name: Add a route with numeric mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.4.1"
+        gateway: "192.168.1.2"
+        numeric: true
+        prefixlen: 24
+        flags: "net"
+    - name: Delete a route with numeric mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.4.1"
+        gateway: "192.168.1.2"
+        numeric: true
+        prefixlen: 24
+        flags: "net"
+    - name: Add a route with ioctl preference
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.3.0"
+        gateway: "192.168.2.1"
+        ioctl_preference: true
+        flags: "net"
+    - name: Delete a route with ioctl preference
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.3.0"
+        gateway: "192.168.2.1"
+        ioctl_preference: true
+        flags: "net"
+    - name: Add a route with verbose mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.4.0"
+        gateway: "192.168.3.1"
+        verbose: true
+        flags: "host"
+    - name: Delete a route with verbose mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.4.0"
+        gateway: "192.168.3.1"
+        verbose: true
+        flags: "host"
+    - name: Add a route with verbose mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.4.0"
+        gateway: "192.168.3.2"
+        verbose: true
+        flags: "host"
+    - name: Delete a route with verbose mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.4.0"
+        gateway: "192.168.3.2"
+        verbose: true
+        flags: "host"
+    - name: Add a route with verbose,ioctl, numeric mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.6.0"
+        gateway: "192.168.5.1"
+        ioctl_preference: true
+        numeric: true
+        flags: "host"
+    - name: Delete a route with verbose,ioctl, numeric mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.6.0"
+        gateway: "192.168.5.1"
+        ioctl_preference: true
+        numeric: true
+        flags: "host"
+    - name: Add a route with verbose,ioctl, numeric mode
+      ibm.power_aix.route:
+        action: add
+        destination: "192.168.7.0"
+        gateway: "192.168.6.1"
+        numeric: true
+        verbose: true
+        flags: "host"
+    - name: Delete a route with verbose,ioctl, numeric mode
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.168.7.0"
+        gateway: "192.168.6.1"
+        numeric: true
+        verbose: true
+        flags: "host"
+    - name: Add a route for a specific ip
+      ibm.power_aix.route:
+        action: add
+        destination: "{{ route_destination }}"
+        gateway: "{{ route_gateway }}"
+        prefixlen: 24
+        numeric: true
+        flags: "net"
+    - name: Get route information for a destination
+      ibm.power_aix.route:
+        action: get
+        destination: "{{ route_destination }}"
+        flags: "host"
+    - name: Delete a specific route with netmask
+      ibm.power_aix.route:
+        action: delete
+        destination: "{{ route_destination }}"
+        gateway: "{{ route_gateway }}"
+        netmask: "{{ route_netmask }}"
+        numeric: true
+        flags: "net"
+    - name: Add a route with weight and policy
+      ibm.power_aix.route:
+        action: add
+        destination: "192.158.4.2"
+        gateway: "192.158.3.5"
+        arguments:
+          weight: "5"
+          policy: "4"
+        flags: "host"
+    - name: Change route parameters
+      ibm.power_aix.route:
+        action: change
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        flags: "host"
+        arguments:
+          weight: "4"
+          policy: "3"
+    - name: Set route attributes
+      ibm.power_aix.route:
+        action: set
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        arguments:
+          weight: "6"
+          policy: "4"
+        flags: "host"
+    - name: Delete route attributes
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        arguments:
+          weight: "4"
+          policy: "2"
+        flags: "host"
+    - name: Add a route with weight and policy
+      ibm.power_aix.route:
+        action: add
+        destination: "192.158.4.2"
+        gateway: "192.158.3.5"
+        prefixlen: 24
+        arguments:
+          weight: "5"
+          policy: "4"
+        flags: "net"
+    - name: Change route parameters
+      ibm.power_aix.route:
+        action: change
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        prefixlen: 24
+        flags: "net"
+        arguments:
+          weight: "6"
+          policy: "4"
+    - name: Set route attributes
+      ibm.power_aix.route:
+        action: set
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        prefixlen: 24
+        arguments:
+          weight: "4"
+          policy: "4"
+        flags: "net"
+    - name: Delete route attributes
+      ibm.power_aix.route:
+        action: delete
+        destination: "192.158.4.2"
+        gateway: "10.32.144.2"
+        prefixlen: 24
+        arguments:
+          weight: "4"
+          policy: "2"
+        flags: "net"
