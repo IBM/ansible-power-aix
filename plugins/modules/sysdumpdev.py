@@ -11,7 +11,7 @@ module: sysdumpdev
 
 short_description: Manage system dump settings
 
-version_added: "1.0.0"
+version_added: "2.1.0"
 
 description: This module allows to update and display the system dump settings
 
@@ -141,10 +141,16 @@ from ansible.module_utils.basic import AnsibleModule
 
 
 def get_dump_config(module):
+    """
+    Determines the current dump settings
+    param module: 
+        Ansible module argument spec.
+    return: 
+        dump_config (dict) - Parsed sysdumpdev -l output.
+    """
     sysdumpdev_command = module.get_bin_path('sysdumpdev', required=True)
     cmd = [sysdumpdev_command, '-l']
     rc, stdout, stderr = module.run_command(cmd)
-    rc = 0
     if rc != 0:
         msg = 'Failed to run sysdumpdev command: ' + ' '.join(cmd)
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
@@ -184,6 +190,15 @@ def get_dump_config(module):
 
 
 def set_dump_config(module, cmd_args):
+    """
+    Set dump settings using sysdumpdev command
+    param module: 
+        Ansible module argument spec.
+    param cmd_args: 
+        Arguments for the sysdumpdev command.
+    return: 
+        return_dict (dict) - Dict containing sysdumpdev command results.
+    """
     sysdumpdev_command = module.get_bin_path('sysdumpdev', required=True)
     cmd = [sysdumpdev_command] + cmd_args
     rc, stdout, stderr = module.run_command(cmd)
@@ -192,7 +207,6 @@ def set_dump_config(module, cmd_args):
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     return_dict = {
-        'changed': False,
         'cmd': ' '.join(cmd),
         'rc': rc,
         'stdout': stdout,
@@ -203,6 +217,15 @@ def set_dump_config(module, cmd_args):
 
 
 def update_dump_config(module, current_config):
+    """
+    Determine what dump settings need to be changed, create argument string for the sysdumpdev command and perform the update
+    param module: 
+        Ansible module argument spec.
+    param current_config: 
+        Current dump configuration.
+    return: 
+        return_dict (dict) - Dict containing sysdumpdev command results and change flag.
+    """
     return_dict = {
         'changed': False,
         'cmd': '',
@@ -298,6 +321,9 @@ def update_dump_config(module, current_config):
 
 
 def run_module():
+    """
+    Main module function. Exits with module.exit_json.
+    """
     module_args = dict(
         state=dict(type='str', required=False, choices=['present', 'fact'], default='present'),
         primary=dict(type='path', required=False),
