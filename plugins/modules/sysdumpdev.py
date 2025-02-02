@@ -143,9 +143,9 @@ from ansible.module_utils.basic import AnsibleModule
 def get_dump_config(module):
     """
     Determines the current dump settings
-    param module: 
+    param module:
         Ansible module argument spec.
-    return: 
+    return:
         dump_config (dict) - Parsed sysdumpdev -l output.
     """
     sysdumpdev_command = module.get_bin_path('sysdumpdev', required=True)
@@ -192,11 +192,11 @@ def get_dump_config(module):
 def set_dump_config(module, cmd_args):
     """
     Set dump settings using sysdumpdev command
-    param module: 
+    param module:
         Ansible module argument spec.
-    param cmd_args: 
+    param cmd_args:
         Arguments for the sysdumpdev command.
-    return: 
+    return:
         return_dict (dict) - Dict containing sysdumpdev command results.
     """
     sysdumpdev_command = module.get_bin_path('sysdumpdev', required=True)
@@ -219,11 +219,11 @@ def set_dump_config(module, cmd_args):
 def update_dump_config(module, current_config):
     """
     Determine what dump settings need to be changed, create argument string for the sysdumpdev command and perform the update
-    param module: 
+    param module:
         Ansible module argument spec.
-    param current_config: 
+    param current_config:
         Current dump configuration.
-    return: 
+    return:
         return_dict (dict) - Dict containing sysdumpdev command results and change flag.
     """
     return_dict = {
