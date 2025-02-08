@@ -557,7 +557,7 @@ def to_utc_epoch(date):
         match = re.match(r'^(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+(\d{4})$', date)
         if match:
             part1 = match.group(1)
-            part2 = match.group(2)
+            part2 = match.group(3)
             date = f'{part1} UTC {part2}'
             TZ = match.group(2)
         else:  # should not happen
