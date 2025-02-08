@@ -71,8 +71,7 @@ install-requirements: install-ansible install-sanity-test-requirements \
 install-ansible:
 	python -m pip install --upgrade pip
 ifdef ANSIBLE_VERSION
-	python -m pip install ansible==$(ANSIBLE_VERSION).* --user
-else
+	python -m pip install ansible==$(ANSIBLE_VERSION).*
 	python -m pip install ansible
 endif
 

@@ -39,7 +39,7 @@ jobs:
           path: ansible_collections/ibm/power_aix
 
       - name: setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
 
