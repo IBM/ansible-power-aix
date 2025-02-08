@@ -1,9 +1,13 @@
 pycodestyle
-pylint==2.13.*
+pylint
 six
 voluptuous
 yamllint
 flake8
-ansible-lint==5.2.1
-rich==10.*
+ansible-lint
+rich
 shellcheck-py
+changelog
+ignores
+pep8
+shebang

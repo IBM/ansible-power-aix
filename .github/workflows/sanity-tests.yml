@@ -15,18 +15,21 @@ jobs:
   # - makes sure that the collection passes the ansible sanity tests
   ########################################################################
   sanity-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     defaults:
       run:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       fail-fast: false
       matrix:
-        ansible-version: ['2.9', '3', '4', '5', 'devel']
-        python-version: ['3.8']
-      include:
-        - ansible-version: 'devel'
-          python-version: '3.9'
+        ansible-version: ['2.9', '3', '4', '5']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        include:
+          - ansible-version: 'devel'
+            python-version: ['3.11', '3.12']
+        exclude:
+          - ansible-version: ['4', '5']
+            python-version: ['3.9']
 
     name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
     steps:
@@ -36,7 +39,7 @@ jobs:
           path: ansible_collections/ibm/power_aix
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
