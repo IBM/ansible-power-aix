@@ -71,7 +71,7 @@ install-requirements: install-ansible install-sanity-test-requirements \
 install-ansible:
 	python -m pip install --upgrade pip
 ifdef ANSIBLE_VERSION
-	python -m pip install ansible==$(ANSIBLE_VERSION).*
+	python -m pip install ansible==$(ANSIBLE_VERSION).* --user
 	python -m pip install ansible
 endif
 
@@ -123,7 +123,7 @@ compile:
 
 .PHONY: sanity-test
 sanity-test:
-	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
+	~/.local/bin/ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
 		--exclude $(DEPRECATED) $(MODULE)
 
 .PHONY: unit-test

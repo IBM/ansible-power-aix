@@ -22,14 +22,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ansible-version: ['2.9', '3', '4', '5']
+        ansible-version: ['2.9', '3']
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         include:
           - ansible-version: 'devel'
-            python-version: ['3.11', '3.12']
-        exclude:
-          - ansible-version: ['4', '5']
-            python-version: ['3.9']
+            python-version: '3.11'
+          - ansible-version: 'devel'
+            python-version: '3.12'
+          - ansible-version: '4'
+            python-version: '3.8'
+          - ansible-version: '4'
+            python-version: '3.10'
+          - ansible-version: '4'
+            python-version: '3.11'
+          - ansible-version: '4'
+            python-version: '3.12'
+          - ansible-version: '5'
+            python-version: '3.8'
+          - ansible-version: '5'
+            python-version: '3.10'
+          - ansible-version: '5'
+            python-version: '3.11'
+          - ansible-version: '5'
+            python-version: '3.12'
 
     name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
     steps:
