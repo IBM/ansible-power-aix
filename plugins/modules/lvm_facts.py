@@ -492,7 +492,7 @@ def load_lvs(module, name, LVM):
                 warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
             else:
                 try:
-                    lv_data = parse_lvs(module, stdout, vg, name)
+                    lv_data, warnings = parse_lvs(module, stdout, vg, name, warnings)
                     LVM['LVs'].update(lv_data)
                 except (IndexError, AssertionError) as err:
                     warnings.append(str(err))
@@ -500,13 +500,59 @@ def load_lvs(module, name, LVM):
     return warnings, LVM
 
 
-def parse_lvs(module, lsvg_output, vg_name, lv_name):
+def add_lslv_data(module, lv, lv_data, warnings):
+    """
+    Get additional details about the logical volume using lslv command.
+    arguments:
+        module (dict): Ansible module argument spec.
+        warnings (list): List of warning messages
+        lv (str): Name of the logical volume.
+        lv_data (dict): Contains lv details fetched using lsvg -l <lvname>
+    return:
+        lv_data (dict): Dictionary containing all the details about the provided
+                        logical volume, fetched using lslv and lsvg -l <lvname> combined.
+                        These details are present in parsed format.
+        warnings (list): List of warning messages, updated in case of failure
+                         during command execution.
+    """
+    cmd = f"lslv {lv}"
+    rc, stdout, stderr = module.run_command(cmd)
+
+    if rc:
+        warnings.append(f"Failed to get additional details about {lv}, using the command {cmd}")
+        return lv_data, warnings
+
+    general_pattern = r"""\s*(LV IDENTIFIER|INTER-POLICY|VOLUME GROUP|LOGICAL VOLUME
+                        |PERMISSION|VG STATE|LV STATE|TYPE|WRITE VERIFY|MAX LPs|COPIES|SCHED POLICY|
+                        LPs|PPs|STALE PPs|BB POLICY|RELOCATABLE|INTRA-POLICY|UPPER BOUND|MOUNT POINT|
+                        LABEL|DEVICE UID|DEVICE GID|DEVICE PERMISSIONS|MIRROR WRITE CONSISTENCY|
+                        INFINITE RETRY|PREFERRED READ|DEVICESUBTYPE|COPY 1 MIRROR POOL|COPY 2 MIRROR POOL
+                        |COPY 3 MIRROR POOL|ENCRYPTION|[A-Za-z\s\?]+):\s*([^\n\s]+)"""
+
+    PP_size_pattern = r"PP SIZE:\s*(\d+\s+[a-zA-Z]+(?:\([a-zA-Z]+\))?)"
+
+    general_matches = re.findall(general_pattern, stdout)
+
+    for match in general_matches:
+        if match[0] not in lv_data[lv].keys():
+            lv_data[lv][match[0]] = match[1]
+
+    match_pp_size = re.search(PP_size_pattern, stdout)
+
+    if match_pp_size:
+        lv_data[lv]["PP SIZE"] = match_pp_size.group(1).strip()
+
+    return lv_data, warnings
+
+
+def parse_lvs(module, lsvg_output, vg_name, lv_name, warnings):
     """
     Parse 'lsvg -l <vg>' output
     arguments:
         lsvg_output (str): Raw output of 'lsvg -l <vg>' cmd
         vg_name     (str): Volume group name
         lv_name     (str): Logical volume name (or 'all')
+        warnings (list): List of warning messages
     return:
         lv_data    (dict): Dictionary of LV data. Top level keys are LV NAMEs,
                            values are data parse from the rest of the lsvg -l
@@ -542,15 +588,25 @@ def parse_lvs(module, lsvg_output, vg_name, lv_name):
             lv_state = ln[headings_indexes[5]:headings_indexes[6]].strip()
             mnt_pt = ln[headings_indexes[6]:].strip()
             lv_data[lv] = {
-                'type': type,
-                'vg': vg_name,
+                'TYPE': type,
+                'VOLUME GROUP': vg_name,
                 'PVs': pvs,
-                'lv_state': lv_state,
+                'LV STATE': lv_state,
                 'PPs': pps,
                 'LPs': lps,
-                'mount_point': mnt_pt
+                'MOUNT POINT': mnt_pt
             }
-    return lv_data
+            lv_data, warnings = add_lslv_data(module, lv, lv_data, warnings)
+
+            if lv_name != 'all':
+                break
+
+    msg = f"Could not get any information about the provided LV - {lv_name}"
+
+    if not lv_data and msg not in warnings:
+        warnings.append(msg)
+
+    return lv_data, warnings
 
 
 def main():
@@ -597,7 +653,10 @@ def main():
     if len(warnings) > 0:
         return_values['warnings'] = warnings
 
-    module.exit_json(ansible_facts=dict(LVM=LVM), **return_values)
+    result['ansible_facts'] = dict(LVM=LVM)
+    result['return_values'] = return_values
+
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':
