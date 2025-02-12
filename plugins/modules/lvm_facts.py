@@ -522,6 +522,7 @@ def add_lslv_data(module, lv, lv_data, warnings):
         warnings.append(f"Failed to get additional details about {lv}, using the command {cmd}")
         return lv_data, warnings
 
+    # This pattern will be used to fetch all the keys fetched using lslv command, except "PP SIZE"
     general_pattern = r"""\s*(LV IDENTIFIER|INTER-POLICY|VOLUME GROUP|LOGICAL VOLUME
                         |PERMISSION|VG STATE|LV STATE|TYPE|WRITE VERIFY|MAX LPs|COPIES|SCHED POLICY|
                         LPs|PPs|STALE PPs|BB POLICY|RELOCATABLE|INTRA-POLICY|UPPER BOUND|MOUNT POINT|
@@ -529,6 +530,7 @@ def add_lslv_data(module, lv, lv_data, warnings):
                         INFINITE RETRY|PREFERRED READ|DEVICESUBTYPE|COPY 1 MIRROR POOL|COPY 2 MIRROR POOL
                         |COPY 3 MIRROR POOL|ENCRYPTION|[A-Za-z\s\?]+):\s*([^\n\s]+)"""
 
+    # PP size has its value in a different pattern(eg: 16 megabyte(s)), so need to match accordiingly
     PP_size_pattern = r"PP SIZE:\s*(\d+\s+[a-zA-Z]+(?:\([a-zA-Z]+\))?)"
 
     general_matches = re.findall(general_pattern, stdout)
