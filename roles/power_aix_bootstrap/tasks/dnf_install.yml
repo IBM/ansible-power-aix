@@ -65,7 +65,7 @@
 
 - when: dnf_exists.stdout is search("false")
 
-  # { Execute this block if dnf has been installed and proxy needs to be set
+  # { Execute this block to install dnf and proxy needs to be set
   block:
     - name: Copy dnf install script to "{{ power_aix_bootstrap_target_dir }}"
       ansible.builtin.copy:
@@ -109,16 +109,6 @@
       when:
         - dnf_installed.stat.exists
 
-    - name: Unmount target filesystem "{{ power_aix_bootstrap_target_dir }}"
-      ibm.power_aix.mount:
-        state: umount
-        mount_over_dir: "{{ power_aix_bootstrap_target_dir }}"
-
-    - name: Remove target filesystem "{{ power_aix_bootstrap_target_dir }}"
-      ibm.power_aix.filesystem:
-        state: absent
-        filesystem: "{{ power_aix_bootstrap_target_dir }}"
-
     - name: Print status
       ansible.builtin.debug:
         msg: Bootstrap attempt of yum upgrade to dnf on {{ power_aix_bootstrap_aix_host }} has completed
@@ -128,6 +118,18 @@
       ansible.builtin.debug:
         msg: Bootstrap attempt of dnf on {{ power_aix_bootstrap_aix_host }} has completed
       when: dnf_installed.stat.exists
+
+      # always run this block to remove the filesystem
+      always:
+        - name: Unmount target filesystem "{{ power_aix_bootstrap_target_dir }}"
+          ibm.power_aix.mount:
+            state: umount
+            mount_over_dir: "{{ power_aix_bootstrap_target_dir }}"
+
+        - name: Remove target filesystem "{{ power_aix_bootstrap_target_dir }}"
+          ibm.power_aix.filesystem:
+            state: absent
+            filesystem: "{{ power_aix_bootstrap_target_dir }}"
 
 #    Block to install dnf }
 - when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists) and "proxy" is defined

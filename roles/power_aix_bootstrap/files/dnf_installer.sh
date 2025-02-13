@@ -94,7 +94,7 @@ os_f4=$(echo "$oslvl" | /usr/bin/cut -d"." -f4)
 if [ "$os_f1" -ge 7 ] && [ "$os_f2" -ge 3 ] && [ "$os_f3" -ge 0 ] && [ "$os_f4" -ge 0 ]
 then
     aix_730_plus=1
-fi 
+fi
 
 aix_715_prior=0
 oslvl_tl=$(/usr/bin/lslpp -qLc bos.rte | /usr/bin/cut -d: -f3)
@@ -154,8 +154,6 @@ mkdir -p "$tmppath"/dnf-"$curr_time"
 tmppath="$tmppath"/dnf-"$curr_time"
 cd "$tmppath" || exit 1
 
-
-
 if [ $aix_715_prior -eq 1 ]
 then
     echo "Attempting download of dnf_bundle_aix_71_72.tar ..."
@@ -190,12 +188,12 @@ DNFEOF
        cd - >/dev/null 2>&1 || exit 1
        rm -rf "$tmppath"
        exit 1
-   fi   
+   fi
 elif [ $aix_730_plus -eq 1 ]
 then
     echo "Attempting download of dnf_bundle_aix_73.tar ..."
     export PERL_LWP_SSL_VERIFY_HOSTNAME=0
-    if LDR_CNTRL=MAXDATA=0x80000000@DSA /usr/opt/perl5/bin/lwp-download https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_73.tar; then
+    if ! LDR_CNTRL=MAXDATA=0x80000000@DSA /usr/opt/perl5/bin/lwp-download https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_73.tar; then
         echo "Failed to download dnf_bundle_aix_73.tar"
         cd - >/dev/null 2>&1 || exit 1
         rm -rf "$tmppath"
@@ -204,12 +202,12 @@ then
 
 else
     echo "Attempting download of dnf_bundle_aix_71_72.tar ..."
-     if LDR_CNTRL=MAXDATA=0x80000000@DSA /usr/opt/perl5/bin/lwp-download https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_71_72.tar; then
+     if ! LDR_CNTRL=MAXDATA=0x80000000@DSA /usr/opt/perl5/bin/lwp-download https://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/ezinstall/ppc/dnf_bundle_aix_71_72.tar; then
         echo "Failed to download dnf_bundle_aix_71_72.tar"
         cd - >/dev/null 2>&1 || exit 1
         rm -rf "$tmppath"
         exit 1
-     fi 
+     fi
 
 fi
 #end of perl download

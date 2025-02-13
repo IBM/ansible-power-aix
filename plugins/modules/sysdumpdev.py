@@ -11,7 +11,7 @@ module: sysdumpdev
 
 short_description: Manage system dump settings
 
-version_added: "2.1.0"
+version_added: "2.0.3"
 
 description: This module allows to update and display the system dump settings
 
@@ -92,24 +92,23 @@ notes:
 EXAMPLES = r'''
 - name: Configure primary and secondary dump devices permanently
   ibm.power_aix.sysdumpdev:
-      primary: /dev/sysdump0
-      secondary: /dev/sysdump1
-      permanent: True
+    primary: /dev/sysdump0
+    secondary: /dev/sysdump1
+    permanent: true
 
 - name: Configure system dump copy directory and set the forced copy flag to False
   ibm.power_aix.sysdumpdev:
-       copy_directory: /var/adm/ras
-       forced_copy_flag: True
+    copy_directory: /var/adm/ras
+    forced_copy_flag: true
 
 - name: Retrieve the current dump configuration
   ibm.power_aix.sysdumpdev:
-      state: fact
+    state: fact
 
 - name: Configure fw-assisted dump with full memory system dump mode
   ibm.power_aix.sysdumpdev:
-       dump_type: fw-assisted
-       dump_mode: require_full
-
+    dump_type: fw-assisted
+    dump_mode: require_full
 '''
 
 RETURN = r'''
