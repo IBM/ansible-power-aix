@@ -5,6 +5,31 @@
 Releases
 ========
 
+Version 2.0.3
+-------------
+Notes
+   * New module: sysdumpdev to manage system dump settings.
+   * New demo playbook for sysdumpdev module.
+   * Fixed defects for DNF boostrap role.
+   * Enhancement in lvm_facts to include information from lslv command for logical volumes.
+   * Fixed sorting issue in flrtvc module.
+   * Updated NIM module to accept license.
+   * Crical fixes in tunable module to include -K option for live update flag in AIX 7.3
+
+Availability
+  * `Automation Hub v2.0.3`_
+  * `Galaxy v2.0.3`_
+  * `GitHub v2.0.3`_
+
+.. _Automation Hub v2.0.3:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.0.3:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.0.3.tar.gz
+
+.. _GitHub v2.0.3:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.3.tar.gz
+
 Version 2.0.2
 -------------
 Notes
