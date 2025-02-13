@@ -7,7 +7,7 @@ namespace: ibm
 name: power_aix
 
 # The version of the collection.
-version: 2.0.3
+version: 2.0.2
 
 # Collection README file (relative to root path)
 readme: README.md
@@ -24,8 +24,6 @@ authors:
  - Shreyansh Chamola (@schamola)
  - Syahrul Aiman Shaharuddin (@syahrul-aiman)
  - Vivek Pandey (@vivekpandeyibm)
- - Oliver Stadler (@staoli)
-
 # Collection Description
 description: Ansible Content for IBM Power Systems - AIX provides a collection of content used to manage and deploy Power Systems AIX.
 

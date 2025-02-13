@@ -8,7 +8,7 @@ Releases
 Version 2.0.2
 -------------
 Notes
-   * Fixed linting issues reported by Red hat automation hub.
+   * Fixed linting issues in dnf installer reported by Red hat automation hub.
 
 Availability
   * `Automation Hub v2.0.2`_
@@ -44,6 +44,7 @@ Availability
 .. _GitHub v2.0.1:
    https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.1.tar.gz
 
+
 Version 2.0.0
 -------------
 Notes
@@ -61,6 +62,7 @@ Notes
    * Updated nim-flrtvc module in accordance with the flrtvc script
    * Defects: https://github.com/IBM/ansible-power-aix/issues/193
    * Fixed idempotency issue in NIM module for allocation and deallocation.
+   * Minimum required ansible version is 2.16.0 now.
 
 
 Availability
@@ -77,10 +79,11 @@ Availability
 .. _GitHub v2.0.0:
    https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.0.tar.gz
 
+
 Version 1.9.2
 -------------
 Notes
-   * Minimum required ansible version is 2.15.0 now.
+   * Minimum required ansible version is 2.15.0 now. 
 
 
 Availability
