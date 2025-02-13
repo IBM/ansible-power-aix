@@ -1,0 +1,28 @@
+---
+- name: "Demo sysdumpdev"
+  hosts: aix
+  gather_facts: false
+  vars:
+    primary_dev: "/dev/sysdump0"
+    secondary_dev: "/dev/sysdumpnull"
+    copy_dir: "/var/adm/ras"
+  tasks:
+    - name: Configure primary and secondary dump devices
+      ibm.power_aix.sysdumpdev:
+        primary: "{{ primary_dev }}"
+        secondary: "{{ secondary_dev }}"
+        permanent: true
+
+    - name: Configure system dump copy directory and set the forced copy flag to False
+      ibm.power_aix.sysdumpdev:
+        copy_directory: "{{ copy_dir }}"
+        forced_copy_flag: true
+
+    - name: Configure fw-assisted dump with full memory system dump mode
+      ibm.power_aix.sysdumpdev:
+        dump_type: fw-assisted
+        dump_mode: require_full
+
+    - name: Retrieve the current dump configuration
+      ibm.power_aix.sysdumpdev:
+        state: fact
