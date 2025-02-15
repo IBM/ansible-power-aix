@@ -31,8 +31,8 @@ options:
     description:
       - If set to C(present) all given attrs values will be set.
       - If set to C(absent) all attrs provided will be un-set, regardless of value provided.
-        - NB, this does not remove the entire stanza, only the provided attrs will be removed.
-        - To remove a single attribute from the stanza set to C(present) and set key to an empty value (key=).
+      - NB, this does not remove the entire stanza, only the provided attrs will be removed.
+      - To remove a single attribute from the stanza set to C(present) and set key to an empty value (key=).
       - All rules/allowed file-stanza combos/allowed files for the AIX C(chsec) command apply here.
     type: str
     choices: [ absent, present ]
@@ -43,48 +43,48 @@ options:
     type: str
     required: true
   account_locked:
-    decsription:
+    description:
       - Indicates if the user account is locked.
     type: bool
     required: false
   admin:
-    decsription:
+    description:
       - Defines the administrative status of the user.
     type: bool
     required: false
   admgroups:
-    decsription:
+    description:
       - Lists the groups the user administrates.
     type: list
     required: false
   auditclasses:
-    decsription:
+    description:
       - Lists the user's audit classes.
     type: list
     required: false
   auth1:
-    decsription:
+    description:
       - Lists additional mandatory methods for authenticating the user.
       - The auth1 attribute has been deprecated and may not be supported in a future release. The SYSTEM attribute should be used instead.
       - The authentication process will fail if any of the methods specified by the auth1 attribute fail.
     type: list
     required: false
   auth2:
-    decsription:
+    description:
       - Lists additional optional methods for authenticating the user.
       - The auth2 attribute has been deprecated and may not be supported in a future release. The SYSTEM attribute should be used instead.
       - The authentication process will not fail if any of the methods specified by the auth2 attribute fail.
     type: list
     required: false
   core_compress:
-    decsription:
+    description:
       - Enables or disables core file compression.
       - If this attribute has a value of C(On), compression is enabled; otherwise, compression is disabled.
     type: str
     required: false
     choices: ['on', 'off']
   core_path:
-    decsription:
+    description:
       - Enables or disables core file path specification.
       - If this attribute has a value of C(On), core files will be placed in the directory specified by core_pathname (the feature is enabled);
       - If set to C(Off), core files are placed in the user's current working directory.
@@ -92,77 +92,77 @@ options:
     required: false
     choices: ['on', 'off']
   core_pathname:
-    decsription:
+    description:
       - Specifies a location to be used to place core files, if the core_path attribute is set to C(On).
       - If this is not set and I(core_path=On), core files will be placed in the user's current working directory.
       - This attribute is limited to 256 characters.
     type: str
     required: false
   core_naming:
-    decsription:
+    description:
       - Selects a choice of core file naming strategies.
       - A value of C(On) enables core file naming in the form core.pid.time
     type: str
     required: false
     choices: ['on', 'off']
   daemon:
-    decsription:
+    description:
       - Indicates whether the user specified by the Name parameter can execute programs using the cron daemon or the src (system resource controller) daemon.
     type: bool
     required: false
   dce_export:
-    decsription:
+    description:
       - Allows the DCE registry to overwrite the local user information with the DCE user information during a DCE export operation.
     type: bool
     required: false
   dictionlist:
-    decsription:
+    description:
       - Defines the password dictionaries used by the composition restrictions when checking new passwords.
     type: list
     required: false
   minloweralpha:
-    decsription:
+    description:
       - Defines the minimum number of lower case alphabetic characters that must be in a new password.
     type: str
     required: false
   minupperalpha:
-    decsription:
+    description:
       - Defines the minimum number of upper case alphabetic characters that must be in a new password.
     type: str
     required: false
   mindigit:
-    decsription:
+    description:
       - Defines the minimum number of digits that must be in a new password.
     type: str
     required: false
   minspecialchar:
-    decsription:
+    description:
       - Defines the minimum number of special characters that must be in a new password.
     type: str
     required: false
   efs_adminks_access:
-    decsription:
+    description:
       - Defines the efs_admin keystore location.
       - This attribute is valid only if the system is EFS-enabled.
     type: str
     required: false
     choices: ['files']
   efs_allowksmodechangebyuser:
-    decsription:
+    description:
       - Defines whether the user can change the mode or not.
       - This attribute is valid only if the system is EFS-enabled.
     type: str
     required: false
     choices: ['yes', 'no']
   efs_file_algo:
-    decsription:
+    description:
       - Defines the algorithm that is used to generate the file protection key.
       - This attribute is valid only if the system is EFS-enabled.
     type: str
     required: false
     choices: ['AES_128_CBC', 'AES_192_CBC', 'AES_256_CBC']
   efs_initialks_mode:
-    decsription:
+    description:
       - Defines the initial mode of the user keystore.
       - This attribute is valid only if the system is EFS-enabled.
     type: str
@@ -176,36 +176,36 @@ options:
     required: false
     choices: ['none', 'file']
   efs_keystore_algo:
-    decsription:
+    description:
       - Defines the user keystore location.
       - This attribute is valid only if the system is EFS-enabled.
     type: str
     required: false
     choices: ['RSA_1024', 'RSA_2048', 'RSA_4096']
   expires:
-    decsription:
+    description:
       - Identifies the expiration date of the account.
       - The Value parameter is a 10-character string in the MMDDhhmmyy form, where MM = month,
         DD = day, hh = hour, mm = minute, and yy = last 2 digits of the years 1939 through 2038.
     type: str
     required: false
   histexpire:
-    decsription:
+    description:
       - Designates the period of time (in weeks) that a user cannot reuse a password.
     type: str
     required: false
   histsize:
-    decsription:
+    description:
       - Designates the number of previous passwords a user cannot reuse.
     type: str
     required: false
   login:
-    decsription:
+    description:
       - Indicates whether the user can log in to the system with the login command.
     type: bool
     required: false
   logintimes:
-    decsription:
+    description:
       - Specifies the times, days, or both, the user is allowed to access the system.
       - The day variable must be one digit between 0 and 6 that represents one of the days of the week.
         A 0 (zero) indicates Sunday and a 6 indicates Saturday.
@@ -216,104 +216,104 @@ options:
     type: str
     required: false
   loginretries:
-    decsription:
+    description:
       - Defines the number of unsuccessful login attempts allowed after the last successful login before the system locks the account.
     type: str
     required: false
   maxage:
-    decsription:
+    description:
       - Defines the maximum age (in weeks) of a password.
     type: str
     required: false
   maxexpired:
-    decsription:
+    description:
       - Defines the maximum time (in weeks) beyond the maxage value that a user can change an expired password.
     type: str
     required: false
   maxrepeats:
-    decsription:
+    description:
       - Defines the maximum number of times a character can be repeated in a new password.
     type: str
     required: false
   minage:
-    decsription:
+    description:
       - Defines the minimum age (in weeks) a password must be before it can be changed.
     type: str
     required: false
   minalpha:
-    decsription:
+    description:
       - Defines the minimum number of alphabetic characters that must be in a new password.
     type: str
     required: false
   mindiff:
-    decsription:
+    description:
       - Defines the minimum number of characters required in a new password that were not in the old password.
     type: str
     required: false
   minlen:
-    decsription:
+    description:
       - Defines the minimum length of a password.
     type: str
     required: false
   minother:
-    decsription:
+    description:
       - Defines the minimum number of non-alphabetic characters that must be in a new password.
     type: str
     required: false
   projects:
-    decsription:
+    description:
       - Defines the list of projects that the user's processes can be assigned to.
     type: list
     required: false
   pwdchecks:
-    decsription:
+    description:
       - Defines the password restriction methods enforced on new passwords.
     type: list
     required: false
   pwdwarntime:
-    decsription:
+    description:
       - Defines the number of days before the system issues a warning that a password change is required.
     type: str
     required: false
   registry:
-    decsription:
+    description:
       - Defines the authentication registry where the user is administered.
     type: str
     required: false
     choices: ['files', 'NIS', 'DCE']
   rlogin:
-    decsription:
+    description:
       - Permits access to the account from a remote location with the telnet or rlogin commands.
     type: bool
     required: false
   su:
-    decsription:
+    description:
       - Indicates whether another user can switch to the specified user account with the su command.
     type: bool
     required: false
   sugroups:
-    decsription:
+    description:
       - Lists the groups that can use the su command to switch to the specified user account.
     type: str
     required: false
   SYSTEM:
-    decsription:
+    description:
       - Defines the system authentication mechanism for the user.
     type: str
     required: false
   tpath:
-    decsription:
+    description:
       - Indicates the user's trusted path status.
     type: str
     required: false
     choices: ['always', 'notsh', 'nosak', 'on']
   ttys:
-    decsription:
+    description:
       - Lists the terminals that can access the account specified by the Name parameter.
     type: str
     required: false
   umask:
-    decsription:
+    description:
       - Determines file permissions. This value, along with the permissions of the creating process
         determines a file's permissions when the file is created.
     type: str
@@ -321,13 +321,11 @@ options:
 
 notes:
   - If the registry is set to NIS or DCE, it can not be removed.
-  - For removing an attribute, you need to provide a valid value along with I(state=absent)
-  - name: The chsec manual page from the IBM Knowledge Center
-    description: Changes the attributes in the security stanza files.
-    link: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/c_commands/chsec.html
-  - name: The lssec manual page from the IBM Knowledge Center
-    description: Lists attributes in the security stanza files.
-    link: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/l_commands/lssec.html
+  - For removing an attribute, you need to provide a valid value along with state as absent.
+  - Refer to the chsec manual page from the IBM Knowledge Center
+    U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/c_commands/chsec)
+  - Refer to the lssec manual page from the IBM Knowledge Center
+    U(https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/l_commands/lssec.html)
 '''
 
 EXAMPLES = r'''
