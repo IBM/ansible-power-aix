@@ -29,6 +29,15 @@ requirements:
 - Python >= 3.6
 - Root user is required.
 options:
+  action:
+    description:
+    - Controls what snap-related action is performed.
+    - C(snap) collects system information and logs using snap command.
+    - C(snapcore) gathers core dumps and crash data using snapcore comamnd.
+    - C(snapsplit) splits and processes collected snap data using snapsplt command.
+    type: str
+    choices: [ snap, snapcore, snapsplit ]
+    default: snap
   all_info:
     description:
     - Gathers all available system information.
@@ -86,6 +95,53 @@ options:
     description:
     - Gather hardware information
     type: bool
+  ss_filename:
+    description:
+    - Specifies the filename for the snapsplit operation.
+    - This determines the output file name used for storing snap data.
+    type: str
+  ss_timestamp:
+    description:
+    - Specifies the timestamp for the snapsplit operation.
+    - This is useful for organizing and restoring snapshots based on time.
+    type: str
+  ss_machinename:
+    description:
+    - Specifies the machine name for the snapsplit operation.
+    - Helps in identifying the source system for the collected data.
+    type: str
+  ss_size:
+    description:
+    - Defines the size limit for snap data storage.
+    - Helps in controlling the disk space used by the snapsplit operation.
+    type: str
+  ss_rejoining:
+    description:
+    - Determines whether previously split snap files should be rejoined.
+    - If set to C(true), snapsplit will attempt to reconstruct snap files.
+    type: bool
+    default: false
+  sc_output_dir:
+    description:
+    - Specifies the directory where snapcore output files will be stored.
+    - Helps in organizing collected core files.
+    type: str
+  sc_core_file:
+    description:
+    - Specifies the core file to be gather.
+    - Used for diagnosing system debugging.
+    type: str
+  sc_program_name:
+    description:
+    - Defines the name of the program related to the core file.
+    type: str
+  sc_remove_core:
+    description:
+    - Determines whether the core file should be removed after processing.
+    - If set to C(true), the core file will be deleted after analysis.
+    type: bool
+    default: false
+
 notes:
   - You can refer to the IBM documentation for additional information on the snap command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/snap.html).
@@ -94,18 +150,22 @@ notes:
 EXAMPLES = r'''
 - name: Collect hardware related data
   ibm.power_aix.snap_command:
+    action: "snap"
     option: -h
 
 - name: Clear old snap data
   ibm.power_aix.snap_command:
+    action: "snap"
     option: -r
 
 - name: Collect file system data
   ibm.power_aix.snap_command:
+    action: "snap"
     option: -f
 
 - name: Collect all system data
   ibm.power_aix.snap_command:
+    action: "snap"
     option: -a
 '''
 
@@ -257,10 +317,56 @@ def run_snap_command_with_expect(module):
         )
 
 
+def build_snapsplit_command(module):
+    """
+    Build the snapsplit command with specified options
+    arguments:
+     module (AnsibleModule): The Ansible module instance.
+    Returns:
+        cmd - A successfully created snapsplit command
+    """
+    cmd = ['snapsplit']
+    if module.params['ss_filename']:
+        if module.params['ss_size']:
+            cmd += [f" -s { module.params['ss_size'] }"]
+        if module.params['ss_machinename']:
+            cmd += [f" -H { module.params['ss_machinename'] }"]
+        cmd += [f" -f { module.params['ss_filename'] }"]
+    elif module.params['ss_rejoining']:
+        cmd += ['-u']
+        if module.params['ss_timestamp']:
+            cmd += [f" -T { module.params['ss_timestamp'] }"]
+        if module.params['ss_machinename']:
+            cmd += [f" -H { module.params['ss_machinename'] }"]
+    return cmd
+
+
+def build_snapcore_command(module):
+    """
+    Build the snapcore command with specified options
+    arguments:
+     module (AnsibleModule): The Ansible module instance.
+    Returns:
+        cmd - A successfully created snapcore command
+    """
+    cmd = ['snapcore']
+    if module.params['sc_output_dir']:
+        cmd.append(f"-d {module.params['sc_output_dir']}")
+    # Check for the remove option (-r)
+    if module.params['sc_remove_core']:
+        cmd.append('-r')
+    if module.params['sc_core_file']:
+        cmd.append(module.params['sc_core_file'])
+    if module.params['sc_program_name']:
+        cmd.append(module.params['sc_program_name'])
+    return cmd
+
+
 def main():
     # Define the arguments the module accepts
     module = AnsibleModule(
         argument_spec=dict(
+            action=dict(type='str', default='snap', choices=['snap', 'snapcore', 'snapsplit']),
             all_info=dict(type='bool', default=False),
             compress=dict(type='bool', default=False),
             general_info=dict(type='bool', default=False),
@@ -274,6 +380,15 @@ def main():
             security_info=dict(type='bool', default=False),
             workload_manager_info=dict(type='bool', default=False),
             hardware_info=dict(type='bool', default=False),
+            ss_filename=dict(type='str'),
+            ss_timestamp=dict(type='str'),
+            ss_machinename=dict(type='str'),
+            ss_size=dict(type='str'),
+            ss_rejoining=dict(type='bool', default=False),
+            sc_output_dir=dict(type='str'),
+            sc_core_file=dict(type='str'),
+            sc_program_name=dict(type='str'),
+            sc_remove_core=dict(type='bool', default=False),
         ),
         supports_check_mode=False
     )
@@ -285,21 +400,50 @@ def main():
         stdout='',
         stderr='',
     )
-    if module.params['reset']:
-        result = run_snap_command_with_expect(module)
-    else:
-        cmd = build_snap_command(module)
+    action = module.params['action']
+    if action == 'snap':
+        if module.params['reset']:
+            result = run_snap_command_with_expect(module)
+        else:
+            cmd = build_snap_command(module)
+            rc, stdout, stderr = module.run_command(cmd)
+            result['cmd'] = ' '.join(cmd)
+            result['rc'] = rc
+            result['stdout'] = stdout
+            result['stderr'] = stderr
+            if rc != 0:
+                msg = f"Unable to run the snap command: { cmd }"
+                module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+            else:
+                result['changed'] = True
+                result['msg'] = f"Snap command executed successfully with option {cmd}"
+
+    elif action == 'snapsplit':
+        cmd = build_snapsplit_command(module)
         rc, stdout, stderr = module.run_command(cmd)
         result['cmd'] = ' '.join(cmd)
         result['rc'] = rc
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            msg = f"Unable to run the snap command: { cmd }"
+            msg = f"Unable to run the snapsplit command: { cmd }"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
             result['changed'] = True
-            result['msg'] = f"Snap command executed successfully with option {cmd}"
+            result['msg'] = f"Snapsplit command executed successfully with option {cmd}"
+    elif action == 'snapcore':
+        cmd = build_snapcore_command(module)
+        rc, stdout, stderr = module.run_command(cmd)
+        result['cmd'] = ' '.join(cmd)
+        result['rc'] = rc
+        result['stdout'] = stdout
+        result['stderr'] = stderr
+        if rc != 0:
+            msg = f"Unable to run the snapcore command: { cmd }"
+            module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
+        else:
+            result['changed'] = True
+            result['msg'] = f"Snapcore command executed successfully with option {cmd}"
     module.exit_json(**result)
 
 

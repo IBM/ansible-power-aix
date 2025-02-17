@@ -3,7 +3,7 @@
   hosts: "{{host_name}}"
   gather_facts: false
   vars:
-    host_name: snaptest
+    host_name: usertest
     user_name: aixguest
     password_val: Password
     attribute_home: /home/test/aixguest
@@ -11,16 +11,19 @@
   tasks:
     - name: Reset Data
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         compress: false
         hacmp: false
         reset: true
     - name: ALL Data
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         all_info: true
-    - name: Collects dump
+    - name: collects dump
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         compress: false
         hacmp: false
@@ -28,53 +31,115 @@
         collects_dump: true
     - name: Compress Data
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         compress: true
         hacmp: false
         reset: false
-    - name: HACMP  Data collection
+    - name: hacmp  Data collection
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         compress: false
         hacmp: true
-    - name: Compress Data
+    - name: file system data 
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: false
         compress: false
         file_system_info: true
-    - name: Live kernal data
+    - name: live kernal data
       ibm.power_aix.snap:
+        action: "snap"
         live_kernel: true
         compress: false
         file_system_info: false
     - name: Collects dump data
       ibm.power_aix.snap:
+        action: "snap"
         collects_dump: true
         compress: false
         file_system_info: false
-    - name: Installation software data
+    - name: installation software data
       ibm.power_aix.snap:
+        action: "snap"
         installation_info: true
         compress: false
         file_system_info: false
-    - name: Kernel related info
+    - name: kernel related info
       ibm.power_aix.snap:
         kernel_info: true
         compress: false
         file_system_info: false
-    - name: Security info data
+    - name: security info data
       ibm.power_aix.snap:
+        action: "snap"
         security_info: true
         general_info: true
         compress: false
         file_system_info: false
-    - name: Workload manager info
+    - name: workload manager info
       ibm.power_aix.snap:
+        action: "snap"
         workload_manager_info: true
         compress: false
         file_system_info: false
-    - name: Hardware info data
+    - name: hardware info data
       ibm.power_aix.snap:
+        action: "snap"
         hardware_info: true
         compress: false
         file_system_info: false
+    - name: run the only snapsplit command for split the file 
+      ibm.power_aix.snap:
+        action: "snapsplit"
+    - name: run the snapsplit command for split the file 
+      ibm.power_aix.snap:
+        action: "snapsplit"
+        ss_filename: "/tmp/ibmsupt/snap.pax.Z"
+        ss_machinename: "p9zpa-ansible-test4.aix-test.tadn.ibm.com"
+        ss_size: "1"
+    - name: run the snapsplit command for split the file without machine name
+      ibm.power_aix.snap:
+        action: "snapsplit"
+        ss_filename: "/tmp/ibmsupt/snap.pax.Z"
+    - name: run the snapsplit restore command 
+      ibm.power_aix.snap:
+        action: "snapsplit"
+        ss_rejoining: true
+        ss_timestamp: "020725032455"
+        ss_machinename: "p9zpa-ansible-test4.aix-test.tadn.ibm.com"
+        ss_size: "2"
+    - name: run the snapsplit restore command without machine details
+      ibm.power_aix.snap:
+        action: "snapsplit"
+        ss_rejoining: true
+        ss_timestamp: "021225003143"
+    - name: run the snapcore command to create pax file using core fine only
+      ibm.power_aix.snap:
+        action: "snapcore"
+        sc_core_file: "core"
+    - name: run the snapcore remove comand
+      ibm.power_aix.snap:
+        action: "snapcore"
+        sc_remove_core: true
+    - name: run the snapcore command to create pax file using core file and program file name 
+      ibm.power_aix.snap:
+        action: "snapcore"
+        sc_core_file: "core"
+        sc_program_name: "coretest"  
+    - name: run the snapcore command to create output in different directroy
+      ibm.power_aix.snap:
+        action: "snapcore"
+        sc_core_file: "core"
+        sc_program_name: "coretest" 
+        sc_output_dir: "/snapcoretest"   
+    - name: run the snapcore remove command
+      ibm.power_aix.snap:
+        action: "snapcore"
+        sc_remove_core: true
+        sc_core_file: "core"
+        sc_program_name: "coretest"
+    
+
+        
