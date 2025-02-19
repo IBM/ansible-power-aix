@@ -810,6 +810,7 @@ def main():
         stderr='',
         rc=-1,
     )
+    rc = -1
 
     params = {}
     action = module.params['action']
