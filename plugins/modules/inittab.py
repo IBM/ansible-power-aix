@@ -141,10 +141,10 @@ def modify_entry(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = f"\nFailed to change the entry in inittab file: { name }"
+        msg = f"\nFailed to change the entry in inittab file: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = f"\nEntry for: { name } is changed SUCCESSFULLY in inittab file"
+        msg = f"\nEntry for: {name} is changed SUCCESSFULLY in inittab file"
 
     return msg
 
@@ -180,10 +180,10 @@ def create_entry(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg += f"\nFailed to create entry in inittab file: { name }"
+        msg += f"\nFailed to create entry in inittab file: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg += f"\nEntry is created in inittab file SUCCESSFULLY: { name }"
+        msg += f"\nEntry is created in inittab file SUCCESSFULLY: {name}"
 
     return msg
 
@@ -205,10 +205,10 @@ def remove_entry(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = f"Unable to remove the entry from inittab file: { name }"
+        msg = f"Unable to remove the entry from inittab file: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = f"Entry is REMOVED SUCCESSFULLY from inittab file: { name }"
+        msg = f"Entry is REMOVED SUCCESSFULLY from inittab file: {name}"
 
     return msg
 
@@ -270,19 +270,19 @@ def main():
             msg = remove_entry(module)
             changed = True
         else:
-            msg = f"Entry is NOT FOUND in inittab file: { name }"
+            msg = f"Entry is NOT FOUND in inittab file: {name}"
     elif module.params['state'] == 'present':
         if not entry_exists(module):
             msg = create_entry(module)
             changed = True
         else:
-            msg = f"Entry { name } already exists. If you want modification, use modify state."
+            msg = f"Entry {name} already exists. If you want modification, use modify state."
     elif module.params['state'] == 'modify':
         if entry_exists(module):
             msg = modify_entry(module)
             changed = True
         else:
-            msg = f"Entry does NOT exists in inittab file: { name }"
+            msg = f"Entry does NOT exists in inittab file: {name}"
     else:
         msg = "Invalid state. The state provided is not supported"
 

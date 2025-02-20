@@ -416,7 +416,7 @@ def run_route_command(module):
     cmd = build_route_command(module)
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        module.fail_json(msg=f"Route command '{ action }' Failed to execute with error {stderr}.", cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
+        module.fail_json(msg=f"Route command '{action}' Failed to execute with error {stderr}.", cmd=cmd, rc=rc, stdout=stdout, stderr=stderr)
     return rc, stdout.strip(), stderr.strip(), cmd
 
 

@@ -134,11 +134,11 @@ def check_settings(module):
     cmd = "aixpert -c "
     profile = module.params["profile"]
     if profile:
-        cmd += f"-P { profile }"
+        cmd += f"-P {profile}"
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"aixpert security check failed. Command in failure { cmd }"
+        msg = f"aixpert security check failed. Command in failure {cmd}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -156,7 +156,7 @@ def undo_settings(module):
     cmd = "aixpert -u "
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"Unable to undo aixpert settings. Command in failure { cmd } "
+        msg = f"Unable to undo aixpert settings. Command in failure {cmd} "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -178,7 +178,7 @@ def apply_settings(module, mode):
     profile = module.params["profile"]
 
     if profile and not os.path.isfile(profile):
-        msg = f"Specified profile { profile } doesn't exist"
+        msg = f"Specified profile {profile} doesn't exist"
         return False, msg
 
     if mode == 'apply' and not level and not profile:
@@ -195,18 +195,18 @@ def apply_settings(module, mode):
 
     cmd = "aixpert "
     if level:
-        cmd += f"-l { level } "
+        cmd += f"-l {level} "
         if norm_fmt_file:
-            cmd += f"-n -o { norm_fmt_file } "
+            cmd += f"-n -o {norm_fmt_file} "
     elif profile:
-        cmd += f"-f { profile } "
+        cmd += f"-f {profile} "
 
     if abbr_fmt_file:
-        cmd += f" -a -o { abbr_fmt_file } "
+        cmd += f" -a -o {abbr_fmt_file} "
 
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"Unable to apply or save aixpert settings. Command in failure { cmd } "
+        msg = f"Unable to apply or save aixpert settings. Command in failure {cmd} "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     # The aixpert can fail if file path is invalid  but still return 0"
@@ -214,7 +214,7 @@ def apply_settings(module, mode):
     pattern = "errno=2"
     found = re.search(pattern, stderr)
     if found:
-        msg = f"Unable to access the file from command: { cmd } "
+        msg = f"Unable to access the file from command: {cmd} "
         module.fail_json(msg=msg, rc=1, stdout=stdout, stderr=stderr)
 
     changed = True
@@ -231,7 +231,7 @@ def query_settings(module):
     cmd = "aixpert -t"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"Unable to query aixpert settings. Command in failure { cmd } "
+        msg = f"Unable to query aixpert settings. Command in failure {cmd} "
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     msg = stdout
@@ -267,7 +267,7 @@ def main():
         changed, msg = apply_settings(module, mode)
     else:
         changed = False
-        msg = f"Invalid state { mode }"
+        msg = f"Invalid state {mode}"
 
     module.exit_json(changed=changed, msg=msg)
 

@@ -520,7 +520,7 @@ def fileset_consistency_check(module, name):
             'NOT OK', if failure
     """
     lppchk_path = module.get_bin_path('lppchk', required=True)
-    cmd = f"{ lppchk_path } -v { name }"
+    cmd = f"{lppchk_path} -v {name}"
     cons_check = 'UNKNOWN'
     ret = module.run_command(cmd)[0]
     if ret == 0:

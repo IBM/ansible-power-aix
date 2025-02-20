@@ -328,16 +328,16 @@ def build_snapsplit_command(module):
     cmd = ['snapsplit']
     if module.params['ss_filename']:
         if module.params['ss_size']:
-            cmd += [f" -s { module.params['ss_size'] }"]
+            cmd += [f" -s {module.params['ss_size']}"]
         if module.params['ss_machinename']:
-            cmd += [f" -H { module.params['ss_machinename'] }"]
-        cmd += [f" -f { module.params['ss_filename'] }"]
+            cmd += [f" -H {module.params['ss_machinename']}"]
+        cmd += [f" -f {module.params['ss_filename']}"]
     elif module.params['ss_rejoining']:
         cmd += ['-u']
         if module.params['ss_timestamp']:
-            cmd += [f" -T { module.params['ss_timestamp'] }"]
+            cmd += [f" -T {module.params['ss_timestamp']}"]
         if module.params['ss_machinename']:
-            cmd += [f" -H { module.params['ss_machinename'] }"]
+            cmd += [f" -H {module.params['ss_machinename']}"]
     return cmd
 
 
@@ -412,7 +412,7 @@ def main():
             result['stdout'] = stdout
             result['stderr'] = stderr
             if rc != 0:
-                msg = f"Unable to run the snap command: { cmd }"
+                msg = f"Unable to run the snap command: {cmd}"
                 module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
             else:
                 result['changed'] = True
@@ -426,7 +426,7 @@ def main():
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            msg = f"Unable to run the snapsplit command: { cmd }"
+            msg = f"Unable to run the snapsplit command: {cmd}"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
             result['changed'] = True
@@ -439,7 +439,7 @@ def main():
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            msg = f"Unable to run the snapcore command: { cmd }"
+            msg = f"Unable to run the snapcore command: {cmd}"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
             result['changed'] = True

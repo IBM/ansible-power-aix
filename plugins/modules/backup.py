@@ -347,24 +347,24 @@ def check_vg(module, vg):
         False otherwise
     """
 
-    module.log(f'Checking { vg } is active.')
+    module.log(f'Checking {vg} is active.')
 
     # list active volume groups
     cmd = ['/usr/sbin/lsvg', '-o']
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        results['msg'] = f'Cannot get active volume group. Command \'{ cmd }\' failed.'
+        results['msg'] = f'Cannot get active volume group. Command \'{cmd}\' failed.'
         results['stdout'] = stdout
         results['stderr'] = stderr
         results['rc'] = rc
         return False
 
     vgs = stdout.splitlines()
-    module.log(f'Active volume groups are: { vgs }')
+    module.log(f'Active volume groups are: {vgs}')
     if vg in vgs:
-        module.debug(f'volume group { vg } is active')
+        module.debug(f'volume group {vg} is active')
         return True
-    results['msg'] = f'Volume group { vg } is not active. Active volume groups are: { vgs }.\
+    results['msg'] = f'Volume group {vg} is not active. Active volume groups are: {vgs}.\
           Please vary on the volume group.'
     return False
 
@@ -397,13 +397,13 @@ def mksysb(module, params):
             vg_name = [s for s in results['stdout'].splitlines()
                        if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
-                results['msg'] = f'Backup images for { vg } already exists. User force to overwrite'
+                results['msg'] = f'Backup images for {vg} already exists. User force to overwrite'
                 return 0
-            results['msg'] = f'Backup images already exists for { vg_name } volume group '
+            results['msg'] = f'Backup images already exists for {vg_name} volume group '
             results['msg'] += 'on the specified location. Use force to overwrite.'
             return 1
         else:
-            results['msg'] = f'Cannot check { vg } backup image existence.'
+            results['msg'] = f'Cannot check {vg} backup image existence.'
             return rc
 
     # mksysb  device | file
@@ -452,7 +452,7 @@ def mksysb(module, params):
             cmd += [f]
     cmd += [params['location']]
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -538,7 +538,7 @@ def alt_disk_mksysb(module, params):
         for f in params['flags'].split(' '):
             cmd += [f]
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -570,7 +570,7 @@ def lsmksysb(module, params):
     if params['location'].strip():
         cmd += ['-f', params['location']]
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -592,7 +592,7 @@ def savevg(module, params, vg):
         rc       (int): the return code of the command
     """
 
-    module.log(f'Creating VG backup of { vg } with savevg.')
+    module.log(f'Creating VG backup of {vg} with savevg.')
 
     # Check if the backup image already exists
     if not params['force']:
@@ -608,13 +608,13 @@ def savevg(module, params, vg):
             vg_name = [s for s in results['stdout'].splitlines()
                        if "VOLUME GROUP:" in s][0].split(':')[1].strip()
             if vg_name == vg:
-                results['msg'] = f'Backup images for { vg } already exists. Use force to overwrite'
+                results['msg'] = f'Backup images for {vg} already exists. Use force to overwrite'
                 return 0
-            results['msg'] = f'Backup images already exists for { vg_name } volume group '
+            results['msg'] = f'Backup images already exists for {vg_name} volume group '
             results['msg'] += 'on the specified location. Use force to overwrite.'
             return 1
         else:
-            results['msg'] = f'Cannot check { vg } backup image existence.'
+            results['msg'] = f'Cannot check {vg} backup image existence.'
             return rc
 
     if not check_vg(module, vg):
@@ -660,7 +660,7 @@ def savevg(module, params, vg):
             cmd += [f]
     cmd += [vg]
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -684,7 +684,7 @@ def restvg(module, params, action, disk):
         rc       (int): the return code of the command
     """
 
-    module.log(f'VG backup { action } on { disk } with restvg.')
+    module.log(f'VG backup {action} on {disk} with restvg.')
 
     # restvg [DiskName]
     # [ -d FileName ]   Uses a file (absolute or relative path) instead of the vgname.
@@ -716,7 +716,7 @@ def restvg(module, params, action, disk):
     if disk:
         cmd += [disk]
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -741,7 +741,7 @@ def restvg_view(module, params):
     location = params['location'].strip()
     if not location:
         location = '/dev/rmt0'
-    module.log(f'View VG backup { location } with restvg.')
+    module.log(f'View VG backup {location} with restvg.')
 
     # restvg -f Device -l
     # [ -f Device ]     Device of file to store the image.
@@ -750,7 +750,7 @@ def restvg_view(module, params):
     #                   Used when action is 'view'.
     cmd = ['/bin/restvg', '-f', location, '-l']
 
-    module.log(f'running command: { cmd }')
+    module.log(f'running command: {cmd}')
     rc, stdout, stderr = module.run_command(cmd)
     results['cmd'] = ' '.join(cmd)
     results['stdout'] = stdout
@@ -879,13 +879,13 @@ def main():
 
     if rc == 0:
         if not results['msg']:
-            msg = f'AIX { action } backup operation successful.'
+            msg = f'AIX {action} backup operation successful.'
             results['msg'] = msg
         module.log(results['msg'])
         module.exit_json(**results)
     else:
         if not results['msg']:
-            results['msg'] = f'AIX { action } backup operation failed.'
+            results['msg'] = f'AIX {action} backup operation failed.'
         module.log(results['msg'])
         module.fail_json(**results)
 

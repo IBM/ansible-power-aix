@@ -102,12 +102,12 @@ def authenticate_PVC(module):
     pvc_passwd = module.params['PVC_password']
     pvc_user = module.params['PVC_user']
 
-    cmd = f'pvcauth -a { pvc_name } -u { pvc_user } -p { pvc_passwd }'
+    cmd = f'pvcauth -a {pvc_name} -u {pvc_user} -p {pvc_passwd}'
 
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = f"\nFailed to authenticate PowerVC { pvc_name }. Please check the credentials."
+        msg = f"\nFailed to authenticate PowerVC {pvc_name}. Please check the credentials."
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
 

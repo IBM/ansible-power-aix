@@ -145,17 +145,17 @@ def get_chuser_command(module):
         return None
 
     # 'user_attrs' contains the key=value pairs that are _currently_ set in AIX
-    lsuser_cmd = f"lsuser -R { load_module } -C { name }"
+    lsuser_cmd = f"lsuser -R {load_module} -C {name}"
     rc, stdout, stderr = module.run_command(lsuser_cmd)
     if rc != 0:
-        msg = f"\nFailed to validate attributes for the user: { name }"
+        msg = f"\nFailed to validate attributes for the user: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     keys = stdout.splitlines()[0].split(':')
     values = stdout.splitlines()[1].split(':')
     user_attrs = dict(zip(keys, values))
 
     # Adding the load module to the command so that the correct user's attributes are changed.
-    load_module_opts = f"-R { load_module } "
+    load_module_opts = f"-R {load_module} "
 
     # Now loop over every key-value in attributes
     opts = ""
@@ -170,11 +170,11 @@ def get_chuser_command(module):
         #  if the values are identical!
 
         if str(user_attrs[attr]) != str(val):
-            opts += f"{ attr }=\"{ val }\" "
+            opts += f"{attr}=\"{val}\" "
             opts = load_module_opts + opts
 
     if opts:
-        cmd = f"chuser { opts } { name }"
+        cmd = f"chuser {opts} {name}"
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
@@ -234,7 +234,7 @@ def get_user_attrs(module):
     name = module.params['name']
     cmd = "lsuser -f "
     load_module = module.params['load_module']
-    load_module_opts = f" -R { load_module } "
+    load_module_opts = f" -R {load_module} "
     cmd += load_module_opts
     cmd += name
     rc, stdout, stderr = module.run_command(cmd)
@@ -290,10 +290,10 @@ def modify_user(module):
     if cmd is not None:
         rc, stdout, stderr = module.run_command(cmd)
         if rc != 0:
-            msg = f"\nFailed to modify attributes for the user: { name }"
+            msg = f"\nFailed to modify attributes for the user: {name}"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            msg = f"\nAttributes for the user: { name } are set SUCCESSFULLY"
+            msg = f"\nAttributes for the user: {name} are set SUCCESSFULLY"
         changed = True
 
     # Change user password
@@ -332,20 +332,20 @@ def create_user(module):
     msg = ""
 
     # Adding the load module to the command so that the user is created at the right location.
-    load_module_opts = f"-R { module.params['load_module'] } "
+    load_module_opts = f"-R {module.params['load_module']} "
 
     if attributes is not None:
         for attr, val in attributes.items():
-            opts += f"{ attr }=\"{ val }\" "
+            opts += f"{attr}=\"{val}\" "
         if load_module_opts is not None:
             opts = load_module_opts + opts
-    cmd = f"mkuser { opts } { name }"
+    cmd = f"mkuser {opts} {name}"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"Failed to create user: { name }"
+        msg = f"Failed to create user: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = f"Username is created SUCCESSFULLY: { name }"
+        msg = f"Username is created SUCCESSFULLY: {name}"
 
     if module.params['password'] is not None:
         msg_pass = change_password(module)
@@ -369,7 +369,7 @@ def remove_user(module):
     if module.params['load_module'] == 'LDAP':
         cmd = ['rmuser']
         load_module = module.params['load_module']
-        load_module_opts = f"{ load_module }"
+        load_module_opts = f"{load_module}"
         load_opt = "-R"
         cmd.append(load_opt)
         cmd.append(load_module_opts)
@@ -381,10 +381,10 @@ def remove_user(module):
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = f"Unable to remove the user name: { name }"
+        msg = f"Unable to remove the user name: {name}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
     else:
-        msg = f"User name is REMOVED SUCCESSFULLY: { name }"
+        msg = f"User name is REMOVED SUCCESSFULLY: {name}"
 
     return msg
 
@@ -405,9 +405,9 @@ def user_exists(module):
 
     # Adding the load module to the command so that the user's
     # existence is checked at the right location.
-    load_module_opts = f"-R { load_module }"
+    load_module_opts = f"-R {load_module}"
     cmd += load_module_opts
-    cmd += f" { name }"
+    cmd += f" {name}"
 
     rc = module.run_command(cmd)[0]
     if rc == 0:
@@ -433,17 +433,17 @@ def change_password(module):
     load_module = module.params['load_module']
 
     if change_passwd_on_login:
-        cmd = f"echo \'{ name }:{ passwd }\' | chpasswd -e"
+        cmd = f"echo \'{name}:{passwd}\' | chpasswd -e"
     else:
-        cmd = f"echo \'{ name }:{ passwd }\' | chpasswd -e -c"
+        cmd = f"echo \'{name}:{passwd}\' | chpasswd -e -c"
 
-    cmd += f" -R { load_module }"
+    cmd += f" -R {load_module}"
     pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
     if pass_rc != 0:
-        msg = f"\nFailed to set password for the user: { name }"
+        msg = f"\nFailed to set password for the user: {name}"
         module.fail_json(msg=msg, rc=pass_rc, stdout=pass_out, stderr=pass_err)
     else:
-        msg = f"\nPassword is set successfully for the user: { name }"
+        msg = f"\nPassword is set successfully for the user: {name}"
 
     return msg
 
@@ -476,16 +476,16 @@ def main():
             msg = remove_user(module)
             changed = True
         else:
-            msg = f"User name is NOT FOUND : { name }"
+            msg = f"User name is NOT FOUND : {name}"
     else:
         if not user_exists(module):
             msg = create_user(module)
             changed = True
         else:
-            msg = f"User { name } already exists."
+            msg = f"User {name} already exists."
 
             if module.params['attributes'] is None and module.params['password'] is None:
-                msg = f"Provide attributes to be changed for the user: { name }"
+                msg = f"Provide attributes to be changed for the user: {name}"
             else:
                 msg, changed = modify_user(module)
 

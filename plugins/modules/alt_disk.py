@@ -194,7 +194,7 @@ def get_pvs(module):
     if ret != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = f'Command \'{ cmd }\' failed with return code { ret }.'
+        results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
         return None
 
     # hdisk0           000018fa3b12f5cb                     rootvg           active
@@ -227,7 +227,7 @@ def get_free_pvs(module):
     if ret != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = f'Command \'{ cmd }\' failed with return code { ret }.'
+        results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
         return None
 
     # hdisk0           000018fa3b12f5cb                     rootvg           active
@@ -249,7 +249,7 @@ def get_free_pvs(module):
             cmd = ['getconf', 'DISK_SIZE', '/dev/' + hdisk]
             ret, stdout, stderr = module.run_command(cmd)
             if ret != 0:
-                module.log(f'[WARN] could not retrieve { hdisk } size')
+                module.log(f'[WARN] could not retrieve {hdisk} size')
                 continue
             size = stdout.strip()
 
@@ -296,9 +296,9 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
     if found_altdisk or found_oldrootvg:
         if not force:
             if found_altdisk:
-                results['msg'] = f'An alt disk already exists on disk { found_altdisk }'
+                results['msg'] = f'An alt disk already exists on disk {found_altdisk}'
             elif found_oldrootvg:
-                results['msg'] = f'An old rootvg already exists on disk { found_oldrootvg }'
+                results['msg'] = f'An old rootvg already exists on disk {found_oldrootvg}'
             module.fail_json(**results)
 
         # Clean existing altinst_rootvg
@@ -309,7 +309,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             if ret != 0:
                 results['stdout'] = stdout
                 results['stderr'] = stderr
-                results['msg'] = f'Command \'{ cmd }\' failed with RC { ret }.'
+                results['msg'] = f'Command \'{cmd}\' failed with RC {ret}.'
                 module.fail_json(**results)
 
         # Clean existing old_rootvg
@@ -320,21 +320,21 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             if ret != 0:
                 results['stdout'] = stdout
                 results['stderr'] = stderr
-                results['msg'] = f'Command \'{ cmd }\' failed with RC { ret }.'
+                results['msg'] = f'Command \'{cmd}\' failed with RC {ret}.'
                 module.fail_json(**results)
 
         results['changed'] = True
 
         for pv in pvs:
             if (pvs[pv]['vg'] == 'altinst_rootvg') or (allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg'):
-                module.log(f'Clearing the owning VG from disk { pv }')
+                module.log(f'Clearing the owning VG from disk {pv}')
 
                 cmd = ['/usr/sbin/chpv', '-C', pv]
                 ret, stdout, stderr = module.run_command(cmd)
                 if ret != 0:
                     results['stdout'] = stdout
                     results['stderr'] = stderr
-                    results['msg'] = f'Command \'{ cmd }\' fail with RC { ret }.'
+                    results['msg'] = f'Command \'{cmd}\' fail with RC {ret}.'
                     module.fail_json(**results)
 
     pvs = get_free_pvs(module)
@@ -355,7 +355,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             diffsize = 0
             prev_diffsize = 0
             if not pvs:
-                results['msg'] = f"Could not find the required number { mirrors } of\
+                results['msg'] = f"Could not find the required number {mirrors} of\
                     PVs as per the requirements."
                 results['msg'] += f" Found: {hdisks}, {mirrors - num_pv} more required"
                 module.fail_json(**results)
@@ -407,18 +407,18 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
                     # Best Can Do...
                     selected_disk = prev_disk
                 else:
-                    results['msg'] = f'No available alternate disk with size greater than { rootvg_size } MB'
+                    results['msg'] = f'No available alternate disk with size greater than {rootvg_size} MB'
                     module.fail_json(**results)
             hdisks.append(selected_disk)
             del pvs[selected_disk]
 
-        module.debug(f'Selected disks: { hdisks } (select mode: { disk_size_policy })')
+        module.debug(f'Selected disks: {hdisks} (select mode: {disk_size_policy})')
     # hdisks specified by the user
     else:
         tot_size = 0
         for hdisk in hdisks:
             if hdisk not in pvs:
-                results['msg'] = f'Alternate disk { hdisk } is either not found or not available'
+                results['msg'] = f'Alternate disk {hdisk} is either not found or not available'
                 module.fail_json(**results)
             tot_size += pvs[hdisk]['size']
 
@@ -427,7 +427,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
             if tot_size >= used_size:
                 module.log('[WARNING] Alternate disks smaller than the current rootvg.')
             else:
-                results['msg'] = f'Alternate disks too small ({ tot_size } < { rootvg_size }).'
+                results['msg'] = f'Alternate disks too small ({tot_size} < {rootvg_size}).'
                 module.fail_json(**results)
 
 
@@ -498,7 +498,7 @@ def check_rootvg(module):
     if ret != 0:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = f'Command \'{ cmd }\' failed with return code { ret }.'
+        results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
         return None
 
     # parse lsvg output to get the size in megabytes:
@@ -562,7 +562,7 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
     find_valid_altdisk(module, hdisks, rootvg_info, params['disk_size_policy'],
                        params['force'], allow_old_rootvg)
 
-    module.log(f'Using { hdisks } as alternate disks')
+    module.log(f'Using {hdisks} as alternate disks')
 
     # alt_disk_copy
     cmd = ['alt_disk_copy', '-d', ' '.join(hdisks)]
@@ -585,7 +585,7 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
 
     if ret != 0:
         # an error occured during alt_disk_copy
-        results['msg'] = f'Failed to copy { hdisks }: return code { ret }.'
+        results['msg'] = f'Failed to copy {hdisks}: return code {ret}.'
         module.fail_json(**results)
     results['changed'] = True
 
@@ -609,7 +609,7 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
         # Check that all specified disks exist and belong to altinst_rootvg
         for hdisk in hdisks:
             if (hdisk not in pvs) or ((pvs[hdisk]['vg'] != 'altinst_rootvg') and (not allow_old_rootvg or pvs[hdisk]['vg'] != 'old_rootvg')):
-                results['msg'] = f'Specified disk { hdisk } is not an alternate install rootvg'
+                results['msg'] = f'Specified disk {hdisk} is not an alternate install rootvg'
                 module.fail_json(**results)
 
             if pvs[hdisk]['vg'] == 'altinst_rootvg':
@@ -645,7 +645,7 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
         results['stderr'] = stderr
 
         if ret != 0:
-            results['msg'] = f'Command \'{ cmd }\' fail with return code { ret }.'
+            results['msg'] = f'Command \'{cmd}\' fail with return code {ret}.'
             module.fail_json(**results)
 
     if found_oldrootvg:
@@ -659,19 +659,19 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
         results['stderr'] = stderr
 
         if ret != 0:
-            results['msg'] = f'Command \'{ cmd }\' fail with return code { ret }.'
+            results['msg'] = f'Command \'{cmd}\' fail with return code {ret}.'
             module.fail_json(**results)
 
     # Clears the owning VG from the disks
     for hdisk in hdisks:
-        module.log(f'Clearing the owning VG from disk { hdisk }')
+        module.log(f'Clearing the owning VG from disk {hdisk}')
 
         cmd = ['/usr/sbin/chpv', '-C', hdisk]
         ret, stdout, stderr = module.run_command(cmd)
         if ret != 0:
             results['stdout'] = stdout
             results['stderr'] = stderr
-            results['msg'] = f'Command \'{ cmd }\' fail with return code { ret }.'
+            results['msg'] = f'Command \'{cmd}\' fail with return code {ret}.'
             module.fail_json(**results)
 
     results['changed'] = True
@@ -716,7 +716,7 @@ def alt_rootvg_op(module):
     if ret:
         results['stdout'] = stdout
         results['stderr'] = stderr
-        results['msg'] = f'Command \'{ cmd }\' failed with return code { ret }.'
+        results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
         module.fail_json(**results)
 
     results['changed'] = True
@@ -776,7 +776,7 @@ def main():
     else:
         alt_rootvg_op(module)
 
-    results['msg'] += f'alt_disk { action } operation completed successfully'
+    results['msg'] += f'alt_disk {action} operation completed successfully'
     module.exit_json(**results)
 
 

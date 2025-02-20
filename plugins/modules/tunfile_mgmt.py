@@ -195,10 +195,10 @@ def tunchange(module):
             results['cmd' + stanza] = cmd
             if rc != 0:
                 # In case command returns non zero return code, fail case
-                results['msg' + stanza] = f"\nFailed to modify file for { stanza } component."
+                results['msg' + stanza] = f"\nFailed to modify file for {stanza} component."
                 module.fail_json(**results)
             else:
-                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY for { stanza }.\n'
+                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY for {stanza}.\n'
                 results['msg' + stanza] += std_out
 
     if set_default:
@@ -211,10 +211,10 @@ def tunchange(module):
             results['cmd' + stanza] = cmd
             if rc != 0:
                 # In case command returns non zero return code, fail case
-                results['msg' + stanza] = f"\nFailed to modify file: { stanza }"
+                results['msg' + stanza] = f"\nFailed to modify file: {stanza}"
                 module.fail_json(**results)
             else:
-                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY: { stanza }\n'
+                results['msg' + stanza] = f'\nFile is modified SUCCESSFULLY: {stanza}\n'
                 results['msg' + stanza] += std_out
 
 
@@ -249,10 +249,10 @@ def tuncheck(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"File { filename } is INVALID. Check the message for more details."
+        results['msg'] = f"File {filename} is INVALID. Check the message for more details."
         module.fail_json(**results)
     else:
-        results['msg'] = f"File provided is VALID: { filename }"
+        results['msg'] = f"File provided is VALID: {filename}"
 
 
 def tunrestore(module):
@@ -286,10 +286,10 @@ def tunrestore(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"\nFailed to restore tunable parameter from file: { filename }"
+        results['msg'] = f"\nFailed to restore tunable parameter from file: {filename}"
         module.fail_json(**results)
     else:
-        results['msg'] = f'\nTunables have been restored SUCCESSFULLY from file: { filename }'
+        results['msg'] = f'\nTunables have been restored SUCCESSFULLY from file: {filename}'
         results['msg'] += std_out
 
     if make_nextboot:
@@ -334,10 +334,10 @@ def tunsave(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"Failed to save tunable parameters in file: { filename }"
+        results['msg'] = f"Failed to save tunable parameters in file: {filename}"
         module.fail_json(**results)
     else:
-        results['msg'] = f"\nAll tunables have been saved SUCCESSFULLY in file: { filename } \n"
+        results['msg'] = f"\nAll tunables have been saved SUCCESSFULLY in file: {filename} \n"
         results['msg'] += std_out
 
 
@@ -383,7 +383,7 @@ def main():
                 invalid_components += stanza + ', '
 
     if invalid_components:
-        results['msg'] = f"Invalid components are found: { invalid_components }"
+        results['msg'] = f"Invalid components are found: {invalid_components}"
         module.fail_json(**results)
 
     if action == 'save':

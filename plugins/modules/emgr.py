@@ -293,12 +293,12 @@ def param_one_of(one_of_list, required=True, exclusive=True):
             count += 1
             break
     if count == 0 and required:
-        results['msg'] = f'Missing parameter: action is { action } but\
+        results['msg'] = f'Missing parameter: action is {action} but\
                            one of the following is missing: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
     if count > 1 and exclusive:
-        results['msg'] = f'Invalid parameter: action is { action } supports\
+        results['msg'] = f'Invalid parameter: action is {action} supports\
                            only one of the following: '
         results['msg'] += ','.join(one_of_list)
         module.fail_json(**results)
@@ -518,7 +518,7 @@ def main():
         if module.params['extend_fs']:
             cmd += ['-X']
         if action == 'check' and verbose is not None:
-            cmd += ['-v', f'{ verbose }']
+            cmd += ['-v', f'{verbose}']
 
     elif action == 'remove' and module.params['force']:
         # Usage: emgr -R <ifix label> [-w <dir>] [-a <path>] [-X]
@@ -587,7 +587,7 @@ def main():
         if module.params['working_dir']:
             cmd += ['-w', module.params['working_dir']]
         if verbose is not None:
-            cmd += ['-v', f'{ verbose }']
+            cmd += ['-v', f'{verbose}']
         if module.params['extend_fs']:
             cmd += ['-X']
 
@@ -602,7 +602,7 @@ def main():
         elif module.params['ifix_vuid']:
             cmd += ['-u', module.params['ifix_vuid']]
         if verbose is not None:
-            cmd += ['-v', f'{ verbose }']
+            cmd += ['-v', f'{verbose}']
         if module.params['extend_fs']:
             cmd += ['-X']
         if module.params['alternate_dir']:
@@ -661,17 +661,17 @@ def main():
             results['changed'] = False
 
             if not found:
-                results['msg'] = f'Command { cmd } failed with return code { rc }.'
+                results['msg'] = f'Command {cmd} failed with return code {rc}.'
 
             module.fail_json(**results)
 
-        results['msg'] = f'Command { cmd } successful.'
+        results['msg'] = f'Command {cmd} successful.'
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
         elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['ifix_details'] = parse_ifix_details(stdout)
     else:
-        results['msg'] = f'Command { cmd } has no preview mode, execution skipped.'
+        results['msg'] = f'Command {cmd} has no preview mode, execution skipped.'
         results['stdout'] = 'No stdout as execution has been skipped.'
 
     for i in results['ifix_details']:

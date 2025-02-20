@@ -295,7 +295,7 @@ def load_pvs(module, name, LVM):
                 LVM['PVs'][pv]["VG_STATE"] = fields[3]
                 LVM['PVs'][pv]["vg_state"] = fields[3]
 
-            cmd = f"lspv -L { pv }"
+            cmd = f"lspv -L {pv}"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
@@ -399,7 +399,7 @@ def load_vgs(module, name, LVM):
             vg = ln.split()[0].strip()
             if (name != 'all' and name != vg):
                 continue
-            cmd = f"lsvg { vg }"
+            cmd = f"lsvg {vg}"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
@@ -486,7 +486,7 @@ def load_lvs(module, name, LVM):
     else:
         for line in stdout.splitlines():
             vg = line.split()[0].strip()
-            cmd = f"lsvg -l { vg }"
+            cmd = f"lsvg -l {vg}"
             rc, stdout, stderr = module.run_command(cmd)
             if rc != 0:
                 warnings.append(f"Command failed. cmd={cmd} rc={rc} stdout={stdout} stderr={stderr}")
