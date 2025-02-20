@@ -367,10 +367,10 @@ def main():
     result['stderr'] = stderr
 
     if rc != 0:
-        result['msg'] = f'installp { action } failed.'
+        result['msg'] = f'installp {action} failed.'
         module.fail_json(**result)
 
-    result['msg'] = f'installp { action } successful.'
+    result['msg'] = f'installp {action} successful.'
     if action in ['apply', 'commit', 'reject', 'deinstall', 'cleanup']:
         result['changed'] = True
 

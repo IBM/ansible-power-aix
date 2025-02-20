@@ -168,10 +168,10 @@ def main():
     result['stdout'] = stdout
     result['stderr'] = stderr
     if rc != 0:
-        result['msg'] = f'Command \'{ cmd }\' failed with return code { rc }.'
+        result['msg'] = f'Command \'{cmd}\' failed with return code {rc}.'
         module.fail_json(**result)
 
-    result['msg'] = f'Command \'{ cmd }\' successful.'
+    result['msg'] = f'Command \'{cmd}\' successful.'
     result['changed'] = True
     module.exit_json(**result)
 

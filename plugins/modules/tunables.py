@@ -326,7 +326,7 @@ def get_valid_tunables(module):
 
     if unchanged_tunables:
         results["unchanged_tunables"] = "New value of some tunables are same as existing value\n"
-        results["unchanged_tunables"] += f"These tunables are not modified: { unchanged_tunables }"
+        results["unchanged_tunables"] += f"These tunables are not modified: {unchanged_tunables}"
 
     return valid_tunables
 
@@ -442,7 +442,7 @@ def show(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"Failed to display values for tunables: { tunables_to_show }"
+        results['msg'] = f"Failed to display values for tunables: {tunables_to_show}"
         module.fail_json(**results)
     else:
         # Convert the comma separated output into python dictionary for displaying full details
@@ -530,11 +530,11 @@ def reset(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"\nFailed to reset tunable parameter for component: { component }"
+        results['msg'] = f"\nFailed to reset tunable parameter for component: {component}"
         module.fail_json(**results)
     else:
         if tunable_params is not None:
-            results['msg'] = f'Tunables have been reset SUCCESSFULLY: { changed_tunables } \n'
+            results['msg'] = f'Tunables have been reset SUCCESSFULLY: {changed_tunables} \n'
         else:
             if bosboot_tunables:
                 results['msg'] = 'Tunables have been reset SUCCESSFULLY for nextboot.\n'
@@ -669,10 +669,10 @@ def modify(module):
 
     if rc != 0:
         # In case command returns non zero return code, fail case
-        results['msg'] = f"Failed to set new values to tunables for component: { component }"
+        results['msg'] = f"Failed to set new values to tunables for component: {component}"
         module.fail_json(**results)
     else:
-        results['msg'] = f"\nTunables have been changed SUCCESSFULLY: { changed_tunables } \n"
+        results['msg'] = f"\nTunables have been changed SUCCESSFULLY: {changed_tunables} \n"
         results['msg'] += std_out
         if bosboot_tunables:
             results['msg'] += "\n To make the changes take effect, bosboot and reboot is required"

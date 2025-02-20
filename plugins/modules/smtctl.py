@@ -105,7 +105,7 @@ def get_smt_state(module):
     cmd = "smtctl"
     rc, stdout, stderr = module.run_command(cmd)
     if rc != 0:
-        msg = f"Command { cmd } failed."
+        msg = f"Command {cmd} failed."
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     if stdout:
@@ -142,16 +142,16 @@ def smt_set(module):
     opts = ""
 
     if smt_value and chtype and not smt_limit:
-        opts += f"-t { smt_value } -w { chtype }"
+        opts += f"-t {smt_value} -w {chtype}"
 
     elif smt_value and smt_limit:
-        opts += f"-m { smt_limit } -t { smt_value }"
+        opts += f"-m {smt_limit} -t {smt_value}"
 
     elif smt_value:
-        opts += f"-t { smt_value }"
+        opts += f"-t {smt_value}"
 
     elif smt_extra:
-        opts += f"-m { smt_extra }"
+        opts += f"-m {smt_extra}"
 
     elif smt_state == "enabled":
         opts += "-m on"
@@ -162,15 +162,15 @@ def smt_set(module):
     else:
         opts = ""
 
-    cmd = f"smtctl { opts }"
+    cmd = f"smtctl {opts}"
     rc, stdout, stderr = module.run_command(cmd)
 
     if rc != 0:
-        msg = f"Command Execution Failure cmd: { cmd }"
+        msg = f"Command Execution Failure cmd: {cmd}"
         module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
 
     else:
-        msg = f"Command Executed Successfully cmd: { cmd }"
+        msg = f"Command Executed Successfully cmd: {cmd}"
         return True, msg
 
 
@@ -184,14 +184,14 @@ def run_bosboot(module):
     if bos_boot:
         opts += "-a"
 
-        cmd = f"bosboot { opts } "
+        cmd = f"bosboot {opts} "
         rc, stdout, stderr = module.run_command(cmd)
 
         if rc != 0:
-            msg = f"Command Execution Failed cmd - { cmd }"
+            msg = f"Command Execution Failed cmd - {cmd}"
             module.fail_json(msg=msg, rc=rc, stdout=stdout, stderr=stderr)
         else:
-            msg = f"Command Executed Successfully output- { stdout }"
+            msg = f"Command Executed Successfully output- {stdout}"
             return True, msg
 
     return None

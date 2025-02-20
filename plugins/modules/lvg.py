@@ -310,22 +310,22 @@ def make_vg(module, vg_name):
     # this option is ignored in small and big VG
     mirror_pool = module.params["mirror_pool"]
     if mirror_pool:
-        opt += f"-p { mirror_pool } "
+        opt += f"-p {mirror_pool} "
 
     # specify the PP size of the VG
     pp_size = module.params["pp_size"]
     if pp_size:
-        opt += f"-s { pp_size } "
+        opt += f"-s {pp_size} "
 
     # specify the major number of the VG
     major_num = module.params["major_num"]
     if major_num:
-        opt += f"-V { major_num } "
+        opt += f"-V {major_num} "
 
     pvs_option = ' '.join(pvs)
-    cmd = f"mkvg { opt } -y { vg_name } { pvs_option }"
-    success_msg = f"Volume group { vg_name } created."
-    fail_msg = f"Failed to create volume group { vg_name }. Command { cmd } failed."
+    cmd = f"mkvg {opt} -y {vg_name} {pvs_option}"
+    success_msg = f"Volume group {vg_name} created."
+    fail_msg = f"Failed to create volume group {vg_name}. Command {cmd} failed."
     run_cmd(module, cmd, success_msg, fail_msg)
 
 
@@ -347,7 +347,7 @@ def extend_vg(module, vg_name, vg_state, init_props):
     varied_on = vg_state
     if not varied_on:
         result['rc'] = 1
-        result['msg'] = f"Unable to extend volume group { vg_name } because it is not varied on."
+        result['msg'] = f"Unable to extend volume group {vg_name} because it is not varied on."
         module.fail_json(**result)
 
     # fetch initial properties of the volume group, include
@@ -371,12 +371,12 @@ def extend_vg(module, vg_name, vg_state, init_props):
         opt += "-f "
     mirror_pool = module.params['mirror_pool']
     if mirror_pool:
-        opt += f"-p { mirror_pool } "
+        opt += f"-p {mirror_pool} "
 
     pv_list_option = ' '.join(pv_list)
-    cmd = f"extendvg { opt } { vg_name } { pv_list_option }"
-    success_msg = f"Volume group { vg_name } extended.\n"
-    fail_msg = f"Failed to extend volume group { vg_name }. Command { cmd } failed."
+    cmd = f"extendvg {opt} {vg_name} {pv_list_option}"
+    success_msg = f"Volume group {vg_name} extended.\n"
+    fail_msg = f"Failed to extend volume group {vg_name}. Command {cmd} failed."
     run_cmd(module, cmd, success_msg, fail_msg, init_props=init_props)
     return
 
@@ -399,7 +399,7 @@ def change_vg(module, vg_name, init_props):
     mirror_pool = module.params["mirror_pool"]
     if major_num or pp_size or mirror_pool:
         result['msg'] += "Attributes major_num, pp_size or mirror_pool "
-        result['msg'] += f"are not supported while changing volume group { vg_name }\n"
+        result['msg'] += f"are not supported while changing volume group {vg_name}\n"
 
     # get initial vg type
     pattern = r"^(MAX PPs per VG:)\s+(\d+)"
@@ -417,7 +417,7 @@ def change_vg(module, vg_name, init_props):
     # determine if vg type needs to be changed
     vg_type = module.params["vg_type"]
     if init_vg_type == vg_type:
-        result['msg'] += f"Volume group is already { vg_type } VG type."
+        result['msg'] += f"Volume group is already {vg_type} VG type."
     elif vg_type == "big":
         opt += '-B '
     elif vg_type == "scalable":
