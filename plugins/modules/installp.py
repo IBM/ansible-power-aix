@@ -4,6 +4,7 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -242,7 +243,6 @@ stderr:
     sample: 'installp: Device /dev/rfd0 could not be accessed.\nSpecify a valid device name.'
 '''
 
-from __future__ import absolute_import, division, print_function
 import re
 from ansible.module_utils.basic import AnsibleModule
 

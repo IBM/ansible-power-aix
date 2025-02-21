@@ -8,6 +8,8 @@
 # AIX 7.1: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/c_commands/chsec.html
 # AIX 6.1 PDF: https://public.dhe.ibm.com/systems/power/docs/aix/61/aixcmds1_pdf.pdf
 
+from __future__ import absolute_import, division, print_function
+
 DOCUMENTATION = r'''
 ---
 module: password_rules_policies
@@ -376,7 +378,6 @@ attrs:
 '''
 
 
-from __future__ import absolute_import, division, print_function
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
