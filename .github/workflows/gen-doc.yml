@@ -19,7 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.11']
-        ansible-version: ['2.15']
 
     name: generate documenation source files
     steps:
@@ -34,7 +33,6 @@ jobs:
       - name: install document generation requirements
         run: |
           python -m pip install --upgrade pip
-          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
           python -m pip install ansible-doc-extractor
           python -m pip install sphinx
           python -m pip install sphinx_rtd_theme
