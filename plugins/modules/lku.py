@@ -4,10 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -30,19 +26,23 @@ options:
     description:
     - Hostname of the PowerVC managing target node.
     type: str
+    required: true
   PVC_password:
     description:
     - Password of the PowerVC
     type: str
+    required: true
+    no_log: true
   PVC_user:
     description:
     - Username for the PowerVC
     type: str
+    required: true
   directory:
     description:
     - Path of the directory where fixes and filesets are present.
     type: str
-    default: None
+    default: null
   filesets_fixes:
     description:
     - Space separated names of filesets and interim fixes to be installed from provided I(directory).
@@ -50,7 +50,7 @@ options:
     - If you want to install all the updates and interim fixes then give input as all.
     - If you want to install only updates and not interim fixes then give input as update_all.
     type: str
-    default: None
+    default: null
 '''
 
 EXAMPLES = r'''
@@ -85,6 +85,12 @@ stderr':
     returned: If the command failed.
     type: str
 '''
+
+
+from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 result = None
 
@@ -151,7 +157,7 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             PVC_name=dict(type='str', required=True),
-            PVC_password=dict(type='str', required=True),
+            PVC_password=dict(type='str', required=True, no_log=True),
             PVC_user=dict(type='str', required=True),
             directory=dict(type='str', required=False, default=None),
             filesets_fixes=dict(type='str', required=False, default=None),

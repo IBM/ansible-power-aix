@@ -4,11 +4,6 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-import os.path
-import re
-
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
@@ -142,21 +137,21 @@ notes:
 
 EXAMPLES = r'''
 - name: Perform an alternate disk copy of the rootvg to hdisk1
-  alt_disk:
+  ibm.power_aix.alt_disk:
     action: copy
     targets: hdisk1
 
 - name: Perform an alternate disk copy of the rootvg to the smallest disk that can be selected
-  alt_disk:
+  ibm.power_aix.alt_disk:
     action: copy
     disk_size_policy: minimize
 
 - name: Perform a cleanup of any existing alternate disk copy
-  alt_disk:
+  ibm.power_aix.alt_disk:
     action: clean
 
 - name: Perform a cleanup of any existing alternate disk copy and old rootvg
-  alt_disk:
+  ibm.power_aix.alt_disk:
     action: clean
     allow_old_rootvg: true
 '''
@@ -177,6 +172,12 @@ stderr:
     returned: always
     type: str
 '''
+
+
+from __future__ import absolute_import, division, print_function
+
+import os.path
+import re
 
 results = None
 mirrors = -1

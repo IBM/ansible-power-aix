@@ -534,7 +534,7 @@ def main():
             force=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
-            ['targets_disk', 'target_disk_policy']
+            ['target_disk', 'target_disk_policy']
         ],
     )
 

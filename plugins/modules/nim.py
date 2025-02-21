@@ -51,7 +51,7 @@ options:
       clients.
     - C(show) to perform a query on a NIM object.
     type: str
-    choices: [ update,master_setup,check,compare,script,allocate,deallocate,bos_inst, define_script,remove, reset, reboot, maintenance, show, register_client ]
+    choices: [ update,master_setup,check,compare,script,allocate,deallocate,bos_inst, define_script,remove, reset, reboot, maintenance, show, register_client, install_fileset ]
     required: true
   targets:
     description:

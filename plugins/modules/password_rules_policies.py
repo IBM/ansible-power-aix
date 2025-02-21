@@ -8,10 +8,6 @@
 # AIX 7.1: https://www.ibm.com/support/knowledgecenter/en/ssw_aix_71/c_commands/chsec.html
 # AIX 6.1 PDF: https://public.dhe.ibm.com/systems/power/docs/aix/61/aixcmds1_pdf.pdf
 
-from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 DOCUMENTATION = r'''
 ---
 module: password_rules_policies
@@ -56,11 +52,13 @@ options:
     description:
       - Lists the groups the user administrates.
     type: list
+    elements: str
     required: false
   auditclasses:
     description:
       - Lists the user's audit classes.
     type: list
+    elements: str
     required: false
   auth1:
     description:
@@ -68,6 +66,7 @@ options:
       - The auth1 attribute has been deprecated and may not be supported in a future release. The SYSTEM attribute should be used instead.
       - The authentication process will fail if any of the methods specified by the auth1 attribute fail.
     type: list
+    elements: str
     required: false
   auth2:
     description:
@@ -75,6 +74,7 @@ options:
       - The auth2 attribute has been deprecated and may not be supported in a future release. The SYSTEM attribute should be used instead.
       - The authentication process will not fail if any of the methods specified by the auth2 attribute fail.
     type: list
+    elements: str
     required: false
   core_compress:
     description:
@@ -119,6 +119,7 @@ options:
     description:
       - Defines the password dictionaries used by the composition restrictions when checking new passwords.
     type: list
+    elements: str
     required: false
   minloweralpha:
     description:
@@ -146,7 +147,7 @@ options:
       - This attribute is valid only if the system is EFS-enabled.
     type: str
     required: false
-    choices: ['files']
+    choices: ['file']
   efs_allowksmodechangebyuser:
     description:
       - Defines whether the user can change the mode or not.
@@ -264,11 +265,13 @@ options:
     description:
       - Defines the list of projects that the user's processes can be assigned to.
     type: list
+    elements: str
     required: false
   pwdchecks:
     description:
       - Defines the password restriction methods enforced on new passwords.
     type: list
+    elements: str
     required: false
   pwdwarntime:
     description:
@@ -280,7 +283,6 @@ options:
       - Defines the authentication registry where the user is administered.
     type: str
     required: false
-    choices: ['files', 'NIS', 'DCE']
   rlogin:
     description:
       - Permits access to the account from a remote location with the telnet or rlogin commands.
@@ -372,6 +374,12 @@ attrs:
       returned: only when cmd is run
       type: int
 '''
+
+
+from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 result = dict(
     changed=False,
@@ -499,17 +507,17 @@ def main():
             stanza=dict(type='str', required=True),
             account_locked=dict(type='bool'),
             admin=dict(type='bool'),
-            admgroups=dict(type='list'),
-            auditclasses=dict(type='list'),
-            auth1=dict(type='list'),
-            auth2=dict(type='list'),
+            admgroups=dict(type='list', elements='str'),
+            auditclasses=dict(type='list', elements='str'),
+            auth1=dict(type='list', elements='str'),
+            auth2=dict(type='list', elements='str'),
             core_compress=dict(type='str', choices=['on', 'off']),
             core_path=dict(type='str', choices=['on', 'off']),
             core_pathname=dict(type='str'),
             core_naming=dict(type='str', choices=['on', 'off']),
             daemon=dict(type='bool'),
             dce_export=dict(type='bool'),
-            dictionlist=dict(type='list'),
+            dictionlist=dict(type='list', elements='str'),
             minloweralpha=dict(type='str'),
             minupperalpha=dict(type='str'),
             mindigit=dict(type='str'),
@@ -534,8 +542,8 @@ def main():
             mindiff=dict(type='str'),
             minlen=dict(type='str'),
             minother=dict(type='str'),
-            projects=dict(type='list'),
-            pwdchecks=dict(type='list'),
+            projects=dict(type='list', elements='str'),
+            pwdchecks=dict(type='list', elements='str'),
             pwdwarntime=dict(type='str'),
             registry=dict(type='str'),
             rlogin=dict(type='bool'),

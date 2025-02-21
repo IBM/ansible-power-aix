@@ -42,6 +42,7 @@ options:
     - Required for I(action=addpks), I(action=export) and I(action=import).
     type: str
     required: false
+    default: ''
   method_name:
     description:
     - Specifies a name for the PKS method.
@@ -59,6 +60,7 @@ options:
     type: str
     default: ""
     required: false
+    no_log: true
   pks_label:
     description:
     - logical volume ID that is associated with the invalid key that needs to be removed
@@ -694,7 +696,7 @@ def main():
             method_name=dict(type='str', default="initpks"),
             pks_label=dict(type='str'),
             location=dict(type='str'),
-            passphrase=dict(type='str', default=""),
+            passphrase=dict(type='str', default="", no_log=True),
         ),
     )
 

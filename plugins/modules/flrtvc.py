@@ -4,23 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import os
-import re
-import csv
-import threading
-import shutil
-import tarfile
-import zipfile
-import stat
-import time
-import calendar
-
-from collections import OrderedDict
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.urls import open_url
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -55,6 +38,7 @@ options:
     - C(all) has the same behavior as C(None) hence both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all, None ]
+    default: None
   filesets:
     description:
     - Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified
@@ -131,13 +115,13 @@ options:
     - Specifies local server ip/hostname containing ifix patches.
     - When set, urls from frltvc.ksh will replaced with localpatchserver to point to local server.
     type: str
-    default: no
+    default: ''
   localpatchpath:
     description:
     - Specifies local server path containing ifix patches.
     - When set, sub paths from frltvc.ksh containing patches will replaced with localpatchpath to point to local path.
     type: str
-    default: no
+    default: ''
 notes:
   - Refer to the FLRTVC page for detail on the script.
     U(https://esupport.ibm.com/customercare/flrt/sas?page=../jsp/flrtvc.jsp)
@@ -298,6 +282,25 @@ meta:
             ]
         }
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import os
+import re
+import csv
+import threading
+import shutil
+import tarfile
+import zipfile
+import stat
+import time
+import calendar
+
+from collections import OrderedDict
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import open_url
+__metaclass__ = type
+
 
 module = None
 results = None

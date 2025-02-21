@@ -4,11 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import re
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -41,7 +36,6 @@ options:
     - C(present) specifies to create a group if it does not exist, otherwise it changes the
       attributes of the specified group.
     - C(absent) deletes an existing group. Users who are group members are not removed.
-
     type: str
     choices: [ present, absent ]
     required: true
@@ -151,6 +145,13 @@ stderr':
     returned: If the command failed.
     type: str
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 result = None
 
@@ -399,7 +400,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(type='str', required=True, choices=['present', 'absent', 'modify']),
+            state=dict(type='str', required=True, choices=['present', 'absent']),
             name=dict(type='str', required=True, aliases=['group']),
             group_attributes=dict(type='dict'),
             user_list_action=dict(type='str', choices=['add', 'remove']),

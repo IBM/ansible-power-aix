@@ -4,10 +4,6 @@
 # Copyright: (c) 2021- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -98,6 +94,11 @@ msg:
     sample: Command Executed Successfully smtctl -t 8
 
 '''
+
+
+from __future__ import (absolute_import, division, print_function)
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
 
 
 def get_smt_state(module):

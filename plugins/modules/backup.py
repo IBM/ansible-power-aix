@@ -4,11 +4,6 @@
 # Copyright: (c) 2018- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import re
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -225,7 +220,7 @@ notes:
 
 EXAMPLES = r'''
 - name: backup the rootvg with mksysb
-  backup:
+  ibm.power_aix.backup:
     action: create
     type: mksysb
     location: /tmp/backup_rootvg
@@ -233,7 +228,7 @@ EXAMPLES = r'''
     extend_fs: true
 
 - name: install the mksysb image to /dev/hdisk1 using the 64 bits kernel if possible
-  backup:
+  ibm.power_aix.backup:
     action: restore
     type: mksysb
     location: /ESSAI/backup_datavg
@@ -241,7 +236,7 @@ EXAMPLES = r'''
     flags: '-K'
 
 - name: savevg of rootvg to /dev/rmt1
-  backup:
+  ibm.power_aix.backup:
     action: create
     type: savevg
     name: rootvg
@@ -254,7 +249,7 @@ EXAMPLES = r'''
     verbose: true
 
 - name: savevg of datavg structure to /dev/backup_datavg
-  backup:
+  ibm.power_aix.backup:
     action: create
     type: savevg
     name: datavg
@@ -264,13 +259,13 @@ EXAMPLES = r'''
     create_data_file: true
 
 - name: view the vg backup image stored on /dev/hdisk1 with savevg
-  backup:
+  ibm.power_aix.backup:
     action: view
     type: savevg
     location: /dev/hdisk1
 
 - name: restvg to restore datavg structure only to /dev/hdisk2
-  backup:
+  ibm.power_aix.backup:
     action: restore
     type: savevg
     name: datavg
@@ -331,6 +326,13 @@ rc:
     type: int
     sample: 0
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 results = None
 

@@ -49,7 +49,8 @@ options:
     - C(hiper) stands for Corrections to High Impact PERvasive threats.
     - C(all) has the same behavior as C(None) hence both C(sec) and C(hiper) vulnerabilities.
     type: str
-    choices: [ sec, hiper, all, None ]
+    choices: [ sec, hiper, all]
+    default: None
   filesets:
     description:
     - Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified
@@ -1512,7 +1513,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             targets=dict(required=True, type='list', elements='str'),
-            apar=dict(required=False, type='str', choices=['sec', 'hiper', 'all', None], default=None),
+            apar=dict(required=False, type='str', choices=['sec', 'hiper', 'all'], default=None),
             filesets=dict(required=False, type='str'),
             csv=dict(required=False, type='str'),
             path=dict(required=False, type='str', default='/var/adm/ansible'),

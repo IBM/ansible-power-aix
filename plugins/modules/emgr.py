@@ -4,12 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import os
-import re
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -183,11 +177,11 @@ notes:
 
 EXAMPLES = r'''
 - name: List interim fix on the system
-  emgr:
+  ibm.power_aix.emgr:
     action: list
 
 - name: Install ifix package from file generated with epkg
-  emgr:
+  ibm.power_aix.emgr:
     action: install
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
     working_dir: /usr/sys/inst.images
@@ -195,30 +189,30 @@ EXAMPLES = r'''
     extend_fs: true
 
 - name: List a specific ifix data in details
-  emgr:
+  ibm.power_aix.emgr:
     action: list
     ifix_label: IJ22714s1a
     verbosity: 3
 
 - name: Check an ifix
-  emgr:
+  ibm.power_aix.emgr:
     action: check
     ifix_label: IJ22714s1a
 
 - name: Preview ifix commit and display only errors and warnings
-  emgr:
+  ibm.power_aix.emgr:
     action: commit
     ifix_label: IJ22714s1a
     preview: true
     quiet: true
 
 - name: Remove an installed ifix based on its VUID
-  emgr:
+  ibm.power_aix.emgr:
     action: remove
     ifix_vuid: 00F7CD554C00021210023020
 
 - name: Display contents and topology of an ifix
-  emgr:
+  ibm.power_aix.emgr:
     action: display_ifix
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
 '''
@@ -268,6 +262,14 @@ stderr:
     type: str
     sample: 'There is no efix data on this system.'
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import os
+import re
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 module = None
 results = None

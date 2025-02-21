@@ -4,14 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import base64
-import os
-import re
-import tempfile
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -50,6 +42,7 @@ options:
         description:
         - IPv4 tunnels.
         type: list
+        default: []
         elements: dict
         suboptions: &ipcommon
           id:
@@ -182,6 +175,7 @@ options:
         description:
         - IPv6 tunnels.
         type: list
+        default: []
         elements: dict
         suboptions: *ipcommon
 '''
@@ -292,6 +286,15 @@ ansible_facts:
           type: list
           elements: dict
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import base64
+import os
+import re
+import tempfile
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
 
 
 gentun_path = ''

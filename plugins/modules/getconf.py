@@ -4,10 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -22,7 +18,7 @@ short_description: Reports system configuration variable values as facts.
 description:
 - List system configuration variable values.
 - Will not list PathConfiguration or DeviceVariable by default
-- URL: https://www.ibm.com/docs/en/aix/7.3?topic=g-getconf-command
+- U(https://www.ibm.com/docs/en/aix/7.3?topic=g-getconf-command)
 version_added: '1.7.0'
 requirements:
 - AIX >= 7.1 TL3
@@ -70,6 +66,12 @@ ansible_facts:
       type: dict
       elements: dict
 '''
+
+
+from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
+
 
 result = None
 

@@ -4,11 +4,6 @@
 # Copyright: (c) 2024 IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import ipaddress
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
 DOCUMENTATION = r'''
 ---
 module: route
@@ -26,7 +21,7 @@ requirements:
 options:
   action:
     description:
-    - Specifies the action to perform: add, delete, flush, or change.
+    - Specifies the action to perform.
     - C(add) Adds a route.
     - C(flush) Removes all routes.
     - C(delete) Deletes a specific route.
@@ -59,7 +54,7 @@ options:
   arguments:
     description:
     - Additional route-specific arguments like `-weight`, `-policy`, etc., to be appended after the gateway.
-    type: list
+    type: dict
     elements: str
     required: false
   flush:
@@ -86,8 +81,9 @@ options:
     description:
     - List of additional flags for the route command such as `net` or`host`.
     type: str
-    elements: str
     required: false
+    choices: ['host', 'net']
+    default: host
   family:
     description:
     - Specifies the address family, such as `-inet` or `-inet6`.
@@ -167,6 +163,12 @@ cmd:
     returned: always
     type: str
 '''
+
+
+from __future__ import absolute_import, division, print_function
+import ipaddress
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
 
 
 def normalize_route_entry(module, route_entry):
@@ -429,7 +431,7 @@ def main():
             gateway=dict(type='str', required=False),
             netmask=dict(type='str', required=False),
             prefixlen=dict(type='int', required=False),
-            arguments=dict(type='dict'),
+            arguments=dict(type='dict', elements='str'),
             flush=dict(type='bool', required=False),
             numeric=dict(type='bool', required=False),
             ioctl_preference=dict(type='bool', required=False),

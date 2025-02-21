@@ -2,8 +2,6 @@
 
 # Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
@@ -11,7 +9,7 @@ module: sysdumpdev
 
 short_description: Manage system dump settings
 
-version_added: "2.0.3"
+version_added: "2.1.0"
 
 description: This module allows to update and display the system dump settings
 
@@ -135,6 +133,9 @@ msg:
     returned: when failed or no action required
     type: str
 '''
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 

@@ -34,14 +34,15 @@ options:
       C(meta) displays encryption metadata related to devices;
       C(conv) displays status of all the active and stopped conversions;
     type: str
-    choices: [ fact, meta, conv ]
+    choices: [ lv, vg, pv, meta, conv ]
     required: true
   device:
     description:
     - Specifies the devices for which you want the information to be displayed.
     - Required for I(action=lv), I(action=pv) and I(action=meta).
     type: str
-    required: true
+    required: false
+    default: ''
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/docs/en/aix/7.2?topic=h-hdcryptmgr-command).
@@ -110,23 +111,23 @@ changed:
 lv_facts:
     description: Contains logical volume encryption status information.
     returned: For I(action=lv)
-    type: str(If no information is available) or list(If information is available)
+    type: list
 vg_facts:
     description: Contains volume group encryption capability information.
     returned: For I(action=vg)
-    type: str(If no information is available) or list(If information is available)
+    type: list
 pv_facts:
     description: Contains physical volume encryption capability information.
     returned: For I(action=pv)
-    type: str(If no information is available) or list(If information is available)
+    type: list
 meta_facts:
     description: Contains encryption metadata related information.
     returned: For I(action=meta)
-    type: str(If no information is available) or list(If information is available)
+    type: list
 conv_facts:
     description: Contains information about all the active and stopped conversions.
     returned: For I(action=conv)
-    type: str(If no information is available) or list(If information is available)
+    type: list
 '''
 
 from ansible.module_utils.basic import AnsibleModule

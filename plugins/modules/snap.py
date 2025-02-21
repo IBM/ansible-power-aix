@@ -4,18 +4,13 @@
 # Copyright: (c) 2024- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
-import shutil
-__metaclass__ = type
-
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
 DOCUMENTATION = r'''
 ---
-module: snap_command
+module: snap
 author:
 - AIX Development Team (@vivekpandeyibm)
 short_description: Run snap command on AIX.
@@ -43,58 +38,75 @@ options:
     - Gathers all available system information.
     - This is a comprehensive option that includes data across all categories, such as hardware, software, configuration files, and logs.
     type: bool
+    default: false
     required: true
   compress:
     description:
     - Compresses the collected data into a single archive, typically snap.pax.gz.
     - This is useful for easier file management and transport of the snapshot
     type: bool
+    default: false
   reset:
     description:
     - Removes the snap output directory (default /tmp/ibmsupt).
     - This cleans up previously gathered snapshot data, often to make room for a new snapshot
     type: bool
+    default: false
   hacmp:
     description:
     - Gathers HACMP (High Availability Cluster Multiprocessing) error information.
     - This is specific to AIX high-availability cluster environments and helps troubleshoot HA-related errors
     type: bool
+    default: false
+  general_info:
+    description:
+    - Gathers general information.
+    type: bool
+    default: false
   file_system_info:
     description:
     - Gathers file system information, including details on disk usage, mount points, and file system integrity.
     - This is crucial for diagnosing storage and disk-related issues
     type: bool
+    default: false
   live_kernel:
     description:
     - Collects Live kernel update information and saves it in the /tmp/ibmsupt/liveupdate directory.
     type: bool
+    default: false
   collects_dump:
     description:
     - Collects dump and /unix files, along with any live dump data. This is valuable for diagnosing kernel and system crashes
     type: bool
+    default: false
   installation_info:
     description:
     - Gathers installation information, such as installed software packages, patches, and configurations.
     - This helps diagnose installation-related issues.
     type: bool
+    default: false
   kernel_info:
     description:
     - Collects kernel-related data, including kernel configuration and status.
     - This is essential for debugging kernel-specific issues.
     type: bool
+    default: false
   security_info:
     description:
     - Gathers security information, including access controls, permissions, and user data.
     - This is important for diagnosing security issues and auditing.
     type: bool
+    default: false
   workload_manager_info:
     description:
     - Gather workload manager (WLM) information, which includes data related to workload management on the system.
     type: bool
+    default: false
   hardware_info:
     description:
     - Gather hardware information
     type: bool
+    default: false
   ss_filename:
     description:
     - Specifies the filename for the snapsplit operation.
@@ -149,22 +161,22 @@ notes:
 
 EXAMPLES = r'''
 - name: Collect hardware related data
-  ibm.power_aix.snap_command:
+  ibm.power_aix.snap:
     action: "snap"
     option: -h
 
 - name: Clear old snap data
-  ibm.power_aix.snap_command:
+  ibm.power_aix.snap:
     action: "snap"
     option: -r
 
 - name: Collect file system data
-  ibm.power_aix.snap_command:
+  ibm.power_aix.snap:
     action: "snap"
     option: -f
 
 - name: Collect all system data
-  ibm.power_aix.snap_command:
+  ibm.power_aix.snap:
     action: "snap"
     option: -a
 '''
@@ -189,6 +201,14 @@ stderr:
     type: str
 
 '''
+
+
+from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+import shutil
+__metaclass__ = type
+
+
 expectPrompts = {
     "reset": "/usr/bin/expect -c \"spawn snap -r; \
             expect \\\"Do you want me to remove these directories \\(y|n\\): \\\"; \
@@ -367,7 +387,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str', default='snap', choices=['snap', 'snapcore', 'snapsplit']),
-            all_info=dict(type='bool', default=False),
+            all_info=dict(type='bool', default=False, required=True),
             compress=dict(type='bool', default=False),
             general_info=dict(type='bool', default=False),
             live_kernel=dict(type='bool', default=False),
