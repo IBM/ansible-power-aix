@@ -57,7 +57,6 @@ options:
     description:
     - Additional route-specific arguments like `-weight`, `-policy`, etc., to be appended after the gateway.
     type: dict
-    elements: str
     required: false
   flush:
     description:
@@ -432,7 +431,7 @@ def main():
             gateway=dict(type='str', required=False),
             netmask=dict(type='str', required=False),
             prefixlen=dict(type='int', required=False),
-            arguments=dict(type='dict', elements='str'),
+            arguments=dict(type='dict'),
             flush=dict(type='bool', required=False),
             numeric=dict(type='bool', required=False),
             ioctl_preference=dict(type='bool', required=False),

@@ -60,7 +60,6 @@ options:
     type: str
     default: ""
     required: false
-    no_log: true
   pks_label:
     description:
     - logical volume ID that is associated with the invalid key that needs to be removed

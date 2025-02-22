@@ -41,7 +41,7 @@ options:
     - This is a comprehensive option that includes data across all categories, such as hardware, software, configuration files, and logs.
     type: bool
     default: false
-    required: true
+    required: false
   compress:
     description:
     - Compresses the collected data into a single archive, typically snap.pax.gz.
@@ -388,7 +388,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str', default='snap', choices=['snap', 'snapcore', 'snapsplit']),
-            all_info=dict(type='bool', default=False, required=True),
+            all_info=dict(type='bool', default=False),
             compress=dict(type='bool', default=False),
             general_info=dict(type='bool', default=False),
             live_kernel=dict(type='bool', default=False),

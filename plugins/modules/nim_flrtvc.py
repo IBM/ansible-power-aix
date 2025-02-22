@@ -50,7 +50,7 @@ options:
     - C(all) has the same behavior as C(None) hence both C(sec) and C(hiper) vulnerabilities.
     type: str
     choices: [ sec, hiper, all]
-    default: None
+    default: null
   filesets:
     description:
     - Filter filesets for specific phrase. Only fixes that apply to filesets matching the specified

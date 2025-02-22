@@ -210,8 +210,8 @@ notes:
     JFS-mounted file system data will be backed up. Raw logical volume data will NOT be backed up
     using a savevg.
   - C(savevg) only backs up varied-on volume group. The file systems must be mounted.
-  - This M(backup) module only operates on LPAR, for operation on VIOS, please checkout the
-    M(backupios) module in the power-vios collection.
+  - This M(ibm.power_aix.backup) module only operates on LPAR, for operation on VIOS, please checkout the
+    M(ibm.power_vios.backupios) module in the power-vios collection.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/a_commands/alt_disk_mksysb.html),
     U(U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/l_commands/lsmksysb.html),

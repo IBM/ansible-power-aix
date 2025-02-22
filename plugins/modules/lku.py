@@ -34,7 +34,6 @@ options:
     - Password of the PowerVC
     type: str
     required: true
-    no_log: true
   PVC_user:
     description:
     - Username for the PowerVC
