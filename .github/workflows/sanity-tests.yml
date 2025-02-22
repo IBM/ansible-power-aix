@@ -15,20 +15,16 @@ jobs:
   # - makes sure that the collection passes the ansible sanity tests
   ########################################################################
   sanity-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     defaults:
       run:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       fail-fast: false
       matrix:
-        ansible-version: ['2.9', '3', '4', '5', 'devel']
-        python-version: ['3.8']
-      include:
-        - ansible-version: 'devel'
-          python-version: '3.9'
+        python-version: ['3.8', '3.10', '3.11', '3.12']
 
-    name: running sanity tests with ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
+    name: running sanity tests with python ${{ matrix.python-version }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v2
@@ -40,20 +36,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: install ansible ${{ matrix.ansible-version }}
-        if: ${{ matrix.ansible-version != 'devel' }}
-        run: |
-          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
-
-      - name: install ansible ${{ matrix.ansible-version }}
-        if: ${{ matrix.ansible-version == 'devel' }}
-        run: |
-          make install-ansible-devel-branch
-
       - name: install sanity test requirements
         run: |
           make install-sanity-test-requirements
 
-      - name: run sanity test on ansible ${{ matrix.ansible-version }} and python ${{ matrix.python-version }}
+      - name: run sanity test with python ${{ matrix.python-version }}
         run: |
           make sanity-test PYTHON_VERSION=${{ matrix.python-version }}

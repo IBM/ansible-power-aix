@@ -22,8 +22,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.10']
-        python-version: ['3.9']
+        python-version: ['3.8', '3.10', '3.11', '3.12']
 
     name: running module linting test
     steps:
@@ -40,7 +39,6 @@ jobs:
       - name: install linting test requirements
         run: |
           python -m pip install --upgrade pip
-          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
           make install-sanity-test-requirements
 
       - name: run pep8 coding style linter
@@ -59,8 +57,7 @@ jobs:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       matrix:
-        ansible-version: ['2.10']
-        python-version: ['3.9']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     name: running role linting test
     steps:
@@ -77,7 +74,6 @@ jobs:
       - name: install linting test requirements
         run: |
           python -m pip install --upgrade pip
-          make install-ansible ANSIBLE_VERSION=${{ matrix.ansible-version }}
           make install-sanity-test-requirements
 
       - name: run pep8 coding style linter
