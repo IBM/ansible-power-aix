@@ -291,6 +291,7 @@ def main():
             commit=dict(type='bool', default=False),
             dependencies=dict(type='bool', default=True),
             agree_licenses=dict(type='bool', default=False),
+            check_mode=dict(type='bool', default=False),
         ),
         required_if=[]
     )
