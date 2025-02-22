@@ -77,9 +77,9 @@ options:
     - Agrees to all software license agreements which are required for software installation.
     type: bool
     default: no
-check_mode:
-  description:
-  - Performs a preview of an action by running all preinstallation checks for the specified action. No software changes are made.
+  check_mode:
+    description:
+    - Performs a preview of an action by running all preinstallation checks for the specified action. No software changes are made.
 notes:
   - You can refer to the IBM documentation for additional information on the installp command at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_73/i_commands/install_all_updates.html)
