@@ -63,11 +63,11 @@ jobs:
         with:
           name: aix-doc-artifact
           path: .
-      - uses: actions/configure-pages@v4
+      - uses: actions/configure-pages@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           enablement: true
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: .
       - id: deployment
