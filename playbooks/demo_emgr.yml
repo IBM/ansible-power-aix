@@ -1,6 +1,6 @@
 ---
 - name: Emgr on AIX
-  hosts: all
+  hosts: usertest
   gather_facts: false
   vars:
     install_v: true
@@ -25,14 +25,49 @@
 
   tasks:
 
-    - name: List interim fix on the system
+    - name: Install ifix package from file generated with epkg
       ibm.power_aix.emgr:
-        action: list
+        action: install
+        ifix_packages:
+          - /epkgwork/test1/test1.230221.epkg.Z
+          - /epkgwork/test2/test2.230221.epkg.Z
+        working_dir: "{{ work_dir_v }}"
+        extend_fs: true
+        force: "{{ overwrite_v }}"
       register: output
+      when: install_v
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
+      when: install_v
+    - name: Install ifix package from file generated with epkg
+      ibm.power_aix.emgr:
+        action: install
+        ifix_packages:
+          - /epkgwork/test1/test1.230221.epkg.Z
+          - /epkgwork/test2/test2.230221.epkg.Z
+        working_dir: "{{ work_dir_v }}"
+        extend_fs: true
+        force: "{{ overwrite_v }}"
+      register: output
+      when: install_v
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4
+      when: install_v
+    - name: Install ifix package from file generated with epkg
+      ibm.power_aix.emgr:
+        action: install
+        ifix_package: "/epkgwork/test1/test1.230221.epkg.Z"
+        working_dir: "{{ work_dir_v }}"
+        extend_fs: true
+        force: "{{ overwrite_v }}"
+      register: output
+      when: install_v
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4
+      when: install_v
     - name: Install ifix package from file generated with epkg
       ibm.power_aix.emgr:
         action: install
@@ -47,7 +82,6 @@
         var: output
         verbosity: 4
       when: install_v
-
     - name: List a specific ifix data in details
       ibm.power_aix.emgr:
         action: list
@@ -57,7 +91,6 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
     - name: Check an ifix
       ibm.power_aix.emgr:
         action: check
@@ -67,7 +100,29 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
+    - name: Check an ifix as list
+      ibm.power_aix.emgr:
+        action: check
+        ifix_packages:
+          - test1
+          - test2
+      ignore_errors: true
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4
+    - name: Preview ifix commit and display only errors and warnings
+      ibm.power_aix.emgr:
+        action: commit
+        ifix_packages:
+          - test1
+          - test2
+        preview: "{{ preview_v }}"
+        quiet: "{{ quiet_v }}"
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4    
     - name: Preview ifix commit and display only errors and warnings
       ibm.power_aix.emgr:
         action: commit
@@ -78,7 +133,6 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
     - name: Remove an installed ifix based on its VUID
       ibm.power_aix.emgr:
         action: remove
@@ -88,12 +142,34 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
-    - name: Display contents and topology of an ifix
+    - name: Display contents and topology of an ifix for list 
       ibm.power_aix.emgr:
         action: display_ifix
-        ifix_package: "{{ ifix_package_v }}"
+        ifix_packages:
+          - /epkgwork/test1/test1.230221.epkg.Z
+          - /epkgwork/test2/test2.230221.epkg.Z
       register: output
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+    - name: Display contents and topology of an ifix for list 
+      ibm.power_aix.emgr:
+        action: display_ifix
+        ifix_package: "/epkgwork/test1/test1.230221.epkg.Z"
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4
+    - name: Remove an installed ifix based on its VUID in list input testing
+      ibm.power_aix.emgr:
+        action: remove
+        ifix_packages:
+          - test1
+          - test2
+        force: "{{ overwrite_v }}"
+      register: output
+    - ansible.builtin.debug:
+        var: output
+        verbosity: 4
+
+
