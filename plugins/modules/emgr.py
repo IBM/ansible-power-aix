@@ -5,15 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-import os
-import re
-import tempfile
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
 
 DOCUMENTATION = r'''
 ---
@@ -178,12 +169,12 @@ options:
     description:
     - Specifies a list of interim fix package locations or labels.
     - Each entry must be a valid path to an interim fix package file or a label.
-    - Can be used if I(action) has one of the following values: C(install), C(remove), C(check), C(mount), C(unmount), C(display_ifix).
+    - Can be used if I(action) has one of the following values C(install), C(remove), C(check), C(mount), C(unmount), C(display_ifix).
     - Mutually exclusive with I(ifix_label), I(ifix_number), I(ifix_vuid), I(ifix_package), I(list_file).
     - This replaces I(list_file) by directly accepting a list instead of requiring a file.
     - It will create a temporary file containing the list of paths and update the I(list_file) with newly created temporary file for futher execution.
     type: list
-    elements: path
+    elements: str
 notes:
   - System administrators or users with the aix.system.install authorization can run the emgr
     command on a multi-level secure (MLS) system.
@@ -279,7 +270,15 @@ stderr:
     type: str
     sample: 'There is no efix data on this system.'
 '''
+import os
+import re
+import tempfile
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
 
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
 module = None
 results = None
 
@@ -459,7 +458,7 @@ def main():
             quiet=dict(type='bool', default=False),
             bosboot=dict(type='str', choices=['skip', 'load_debugger', 'invoke_debugger']),
             verbose=dict(type='int', choices=[1, 2, 3]),
-            ifix_packages=dict(type='list', elements='str', default=[]),
+            ifix_packages=dict(type='list', elements='str'),
         ),
         required_if=[],
         mutually_exclusive=[['ifix_package', 'ifix_label', 'ifix_number', 'ifix_vuid', 'list_file']],
@@ -493,7 +492,7 @@ def main():
                 results['msg'] = 'This ifix is already installed. Nothing to do.'
 
                 if module.params['ifix_packages']:
-                    delete_temp_file(list_file)
+                    delete_temp_file(module.params['list_file'])
                 module.exit_json(**results)
 
         # Usage: emgr -e <ifix pkg> | -f <lfile> [-w <dir>] [-a <path>] [-bkpIqmoX]
@@ -511,7 +510,7 @@ def main():
                     results['msg'] = 'Invalid parameter: action is install, does not support bosboot set to skip'
 
                     if module.params['ifix_packages']:
-                        delete_temp_file(list_file)
+                        delete_temp_file(module.params['list_file'])
 
                     module.fail_json(**results)
                 if module.params['ifix_package']:   # this test is optional thanks to param_one_of check.
@@ -543,7 +542,7 @@ def main():
             results['msg'] = 'Invalid parameter: action is commit, does not support bosboot set to skip'
 
             if module.params['ifix_packages']:
-                delete_temp_file(list_file)
+                delete_temp_file(module.params['list_file'])
             module.fail_json(**results)
 
         cmd += ['-C']
@@ -601,13 +600,13 @@ def main():
                 results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
 
                 if module.params['ifix_packages']:
-                    delete_temp_file(list_file)
+                    delete_temp_file(module.params['list_file'])
                 module.exit_json(**results)
         if not module.params['ifix_label']:
             results['msg'] = 'Missing parameter: force remove requires: ifix_label'
 
             if module.params['ifix_packages']:
-                delete_temp_file(list_file)
+                delete_temp_file(module.params['list_file'])
 
             module.fail_json(**results)
         cmd += ['-R', module.params['ifix_label']]
@@ -625,7 +624,7 @@ def main():
                 results['msg'] = 'This ifix is NOT installed in the system. Nothing to do.'
 
                 if module.params['ifix_packages']:
-                    delete_temp_file(list_file)
+                    delete_temp_file(module.params['list_file'])
                 module.exit_json(**results)
         param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid', 'list_file'])
         cmd += ['-r']
@@ -713,7 +712,7 @@ def main():
         if rc == 0 and found:
 
             if module.params['ifix_packages']:
-                delete_temp_file(list_file)
+                delete_temp_file(module.params['list_file'])
             module.exit_json(**results)
 
         if rc != 0:
@@ -739,13 +738,15 @@ def main():
                     results['changed'] = True
 
                     if module.params['ifix_packages']:
-                        delete_temp_file(list_file)
+                        delete_temp_file(module.params['list_file'])
                     module.exit_json(**results)
 
             check = compare_counts(success_list, fail_list, stderr)
             if check:
                 results['changed'] = False
-                results['msg'] = f'Ifix {fail_list} already installed(0645-065).'
+                results['msg'] = f'Ifix {fail_list} already installed.'
+                if module.params['ifix_packages']:
+                    delete_temp_file(module.params['list_file'])
                 module.exit_json(**results)
 
             # Ifix was already installed(0645-065).
@@ -760,7 +761,7 @@ def main():
                 results['msg'] = f'Command {cmd} failed with return code {rc}.'
 
             if module.params['ifix_packages']:
-                delete_temp_file(list_file)
+                delete_temp_file(module.params['list_file'])
             module.fail_json(**results)
 
         results['msg'] = f'Command {cmd} successful.'
@@ -778,7 +779,7 @@ def main():
             break
 
     if module.params['ifix_packages']:
-        delete_temp_file(list_file)
+        delete_temp_file(module.params['list_file'])
     module.exit_json(**results)
 
 
