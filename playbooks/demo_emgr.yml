@@ -25,40 +25,12 @@
 
   tasks:
 
-    - name: Install ifix package from file generated with epkg
+    - name: Install ifix package from file generated with epkg using ifix_packages
       ibm.power_aix.emgr:
         action: install
         ifix_packages:
           - /epkgwork/test1/test1.230221.epkg.Z
           - /epkgwork/test2/test2.230221.epkg.Z
-        working_dir: "{{ work_dir_v }}"
-        extend_fs: true
-        force: "{{ overwrite_v }}"
-      register: output
-      when: install_v
-    - ansible.builtin.debug:
-        var: output
-        verbosity: 4
-      when: install_v
-    - name: Install ifix package from file generated with epkg
-      ibm.power_aix.emgr:
-        action: install
-        ifix_packages:
-          - /epkgwork/test1/test1.230221.epkg.Z
-          - /epkgwork/test2/test2.230221.epkg.Z
-        working_dir: "{{ work_dir_v }}"
-        extend_fs: true
-        force: "{{ overwrite_v }}"
-      register: output
-      when: install_v
-    - ansible.builtin.debug:
-        var: output
-        verbosity: 4
-      when: install_v
-    - name: Install ifix package from file generated with epkg
-      ibm.power_aix.emgr:
-        action: install
-        ifix_package: "/epkgwork/test1/test1.230221.epkg.Z"
         working_dir: "{{ work_dir_v }}"
         extend_fs: true
         force: "{{ overwrite_v }}"
@@ -100,7 +72,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-    - name: Check an ifix as list
+    - name: Check an ifix as list using ifix_packages
       ibm.power_aix.emgr:
         action: check
         ifix_packages:
@@ -111,7 +83,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-    - name: Preview ifix commit and display only errors and warnings
+    - name: Preview ifix commit and display only errors and warnings using ifix_packages
       ibm.power_aix.emgr:
         action: commit
         ifix_packages:
@@ -142,7 +114,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-    - name: Display contents and topology of an ifix for list 
+    - name: Display contents and topology of an ifix using ifix_packages
       ibm.power_aix.emgr:
         action: display_ifix
         ifix_packages:
@@ -152,7 +124,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-    - name: Display contents and topology of an ifix for list 
+    - name: Display contents and topology of an ifix
       ibm.power_aix.emgr:
         action: display_ifix
         ifix_package: "/epkgwork/test1/test1.230221.epkg.Z"
@@ -160,7 +132,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-    - name: Remove an installed ifix based on its VUID in list input testing
+    - name: Remove an installed ifix using ifix_packages
       ibm.power_aix.emgr:
         action: remove
         ifix_packages:

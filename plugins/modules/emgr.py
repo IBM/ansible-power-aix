@@ -272,7 +272,6 @@ stderr:
 '''
 import os
 import re
-import tempfile
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
@@ -389,24 +388,29 @@ def is_ifix_installed(module, ifix_package):
         return False
 
 
-def create_temp_file_for_ifix_packages(ifix_packages):
+def create_emgr_temp_file(ifix_packages):
     """
-    Function to create a temporary file and write the list of 'ifix_packages' into it.
-    :param ifix_packages: List of iFix package paths to be written into the file.
+    Function to create a temporary file named 'emgr_tmp_file' in the /tmp directory on AIX
+    and write the list of 'ifix_packages' into it.
+    argument:
+    ifix_packages -List of iFix package paths to be written into the file.
+    return:
+    The full path of the created temporary file.
     """
+    temp_dir = "/tmp"  # Standard temp directory on AIX
+    temp_file_path = os.path.join(temp_dir, "emgr_tmp_file")
 
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-        temp_file_path = temp_file.name
-        # Write the list of ifix package paths to the file
+    with open(temp_file_path, 'w') as temp_file:
         temp_file.write('\n'.join(ifix_packages) + '\n')
+
     return temp_file_path
 
 
 def delete_temp_file(list_file):
     """
     Function to delete the temporary file if 'ifix_packages' is not empty or None.
-
-    :param list_file: Path of the temporary file to be deleted
+    argument:
+    list_file -Path of the temporary file to be deleted
     """
     # Check if file exists before attempting to delete
     if list_file is not None and os.path.exists(list_file):
@@ -417,11 +421,12 @@ def compare_counts(list1, list2, string):
     """
     Function to compare the total count of elements in two lists with
     the occurrences of the pattern '0645-065' in a given string.
-
-    :param list1: First list of elements
-    :param list2: Second list of elements
-    :param string: The input string in which occurrences of '0645-065' are counted
-    :return: True if the total count of list elements matches the pattern count, else False
+    argument:
+    list1 -First list of elements
+    list2 -Second list of elements
+    string -The input string in which occurrences of '0645-065' are counted
+    return:
+    True if the total count of list elements matches the pattern count, else False
     """
     total_list_count = len(list1) + len(list2)
     # Count occurrences of the pattern "0645-065" in the string
@@ -476,7 +481,7 @@ def main():
     ifix_packages = module.params['ifix_packages']
     list_file = module.params['list_file']
     if list_file is None and ifix_packages is not None:
-        module.params['list_file'] = create_temp_file_for_ifix_packages(ifix_packages)
+        module.params['list_file'] = create_emgr_temp_file(ifix_packages)
 
     bosboot_flags = {'skip': '-b', 'load_debugger': '-k', 'invoke_debugger': '-I'}
 
