@@ -5,6 +5,9 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+import re
+from ansible.module_utils.basic import AnsibleModule
+__metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -123,11 +126,6 @@ stderr:
 '''
 
 
-import re
-from ansible.module_utils.basic import AnsibleModule
-__metaclass__ = type
-
-
 def get_chuser_command(module):
     '''
     Returns the 'cmd' needed to run to implement changes on
@@ -173,10 +171,9 @@ def get_chuser_command(module):
 
         if str(user_attrs[attr]) != str(val):
             opts += f"{attr}=\"{val}\" "
-            opts = load_module_opts + opts
 
     if opts:
-        cmd = f"chuser {opts} {name}"
+        cmd = f"chuser {load_module_opts} {opts} {name}"
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
