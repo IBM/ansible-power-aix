@@ -119,17 +119,15 @@
         msg: Bootstrap attempt of dnf on {{ power_aix_bootstrap_aix_host }} has completed
       when: dnf_installed.stat.exists
 
-      # always run this block to remove the filesystem
-      always:
-        - name: Unmount target filesystem "{{ power_aix_bootstrap_target_dir }}"
-          ibm.power_aix.mount:
-            state: umount
-            mount_over_dir: "{{ power_aix_bootstrap_target_dir }}"
+    - name: Unmount target filesystem "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.mount:
+        state: umount
+        mount_over_dir: "{{ power_aix_bootstrap_target_dir }}"
 
-        - name: Remove target filesystem "{{ power_aix_bootstrap_target_dir }}"
-          ibm.power_aix.filesystem:
-            state: absent
-            filesystem: "{{ power_aix_bootstrap_target_dir }}"
+    - name: Remove target filesystem "{{ power_aix_bootstrap_target_dir }}"
+      ibm.power_aix.filesystem:
+        state: absent
+        filesystem: "{{ power_aix_bootstrap_target_dir }}"
 
 #    Block to install dnf }
 - when: (dnf_exists.stdout is not search("false") or dnf_installed.stat.exists) and "proxy" is defined
