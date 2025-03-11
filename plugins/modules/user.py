@@ -121,8 +121,6 @@ stderr:
     returned: If the command failed.
     type: str
 '''
-
-
 import re
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
@@ -173,10 +171,9 @@ def get_chuser_command(module):
 
         if str(user_attrs[attr]) != str(val):
             opts += f"{attr}=\"{val}\" "
-            opts = load_module_opts + opts
 
     if opts:
-        cmd = f"chuser {opts} {name}"
+        cmd = f"chuser {load_module_opts} {opts} {name}"
     if not cmd:
         # No change sare necessary.  It's best to return None instead of an empty string
         cmd = None
