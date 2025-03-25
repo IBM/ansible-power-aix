@@ -39,6 +39,11 @@ options:
     - Username for the PowerVC
     type: str
     required: true
+  PVC_project:
+    description:
+    - Specifies the project for the LKU operation, if not specified will take default project
+    type: str
+    default: null
   directory:
     description:
     - Path of the directory where fixes and filesets are present.
@@ -107,8 +112,12 @@ def authenticate_PVC(module):
     pvc_name = module.params['PVC_name']
     pvc_passwd = module.params['PVC_password']
     pvc_user = module.params['PVC_user']
+    pvc_project = module.params['PVC_project']
 
-    cmd = f'pvcauth -a {pvc_name} -u {pvc_user} -p {pvc_passwd}'
+    if pvc_project is None:
+        cmd = f'pvcauth -a {pvc_name} -u {pvc_user} -p {pvc_passwd}'
+    else:
+        cmd = f'pvcauth -a {pvc_name} -o {pvc_project} -u {pvc_user} -p {pvc_passwd}'
 
     rc, stdout, stderr = module.run_command(cmd)
 
@@ -159,6 +168,7 @@ def main():
             PVC_name=dict(type='str', required=True),
             PVC_password=dict(type='str', required=True, no_log=True),
             PVC_user=dict(type='str', required=True),
+            PVC_project=dict(type='str', required=False, default=None),
             directory=dict(type='str', required=False, default=None),
             filesets_fixes=dict(type='str', required=False, default=None),
         ),
