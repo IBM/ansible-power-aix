@@ -43,12 +43,12 @@ options:
     description:
     - Specifies the project for the LKU operation, if not specified will take default project
     type: str
-    default: None
+    default: null
   directory:
     description:
     - Path of the directory where fixes and filesets are present.
     type: str
-    default: None
+    default: null
   filesets_fixes:
     description:
     - Space separated names of filesets and interim fixes to be installed from provided I(directory).
@@ -56,7 +56,7 @@ options:
     - If you want to install all the updates and interim fixes then give input as all.
     - If you want to install only updates and not interim fixes then give input as update_all.
     type: str
-    default: None
+    default: null
 '''
 
 EXAMPLES = r'''
