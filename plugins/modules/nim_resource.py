@@ -97,7 +97,7 @@ EXAMPLES = r'''
   ibm.power_aix.nim_resource:
     action: create
     name: lpp_730
-    object_type: lpp_resource
+    object_type: lpp_source
     attributes:
       source: /software/AIX7300
       location: /nim1/copy_AIX7300_resource
@@ -107,7 +107,7 @@ EXAMPLES = r'''
   ibm.power_aix.nim_resource:
     action: create
     name: lpp_730
-    object_type: lpp_resource
+    object_type: lpp_source
     attributes:
       location: /nim1/copy_AIX7300_resource
 
