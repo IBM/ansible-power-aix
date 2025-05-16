@@ -539,21 +539,27 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
             if len(metadata_filter_ml) == 4:
                 metadata_filter_ml += "-00"
         else:
+            tl_max = None
+            max_level = max_oslevel(clients_target_oslevel)
+            min_level = min_oslevel(clients_target_oslevel)
+
+            max_level_rmatch = re.match(r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$", max_level)
+            min_level_rmatch = re.match(r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$", min_level)
+
             # search first the highest technical level from client list
-            tl_max = re.match(
-                r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$",
-                max_oslevel(clients_target_oslevel)).group(1)
+            if max_level_rmatch:
+                tl_max = max_level_rmatch.group(1)
 
             # search also the lowest technical level from client list
-            tl_min = re.match(
-                r"^([0-9]{4}-[0-9]{2})(|-[0-9]{2}|-[0-9]{2}-[0-9]{4})$",
-                min_oslevel(clients_target_oslevel)).group(1)
+            if min_level_rmatch:
+                tl_min = min_level_rmatch.group(1)
 
             # warn the user if highest and lowest tl do not belong
             # to the same release
-            if re.match(r"^([0-9]{4})", tl_min).group(1) != re.match(r"^([0-9]{4})", tl_max).group(1):
-                log_mismatch = tl_max[:2]
-                module.log(f"[WARNING] release level mismatch, only AIX {log_mismatch} SP/TL will be downloaded\n\n")
+            if tl_min and re.match(r"^([0-9]{4})", tl_min) and tl_max and re.match(r"^([0-9]{4})", tl_max):
+                if re.match(r"^([0-9]{4})", tl_min).group(1) != re.match(r"^([0-9]{4})", tl_max).group(1):
+                    log_mismatch = tl_max[:2]
+                    module.log(f"[WARNING] release level mismatch, only AIX {log_mismatch} SP/TL will be downloaded\n\n")
 
             # tl_max is used to get metadata then to get latest SP
             metadata_filter_ml = tl_max
@@ -577,16 +583,18 @@ def compute_rq_name(module, suma_params, rq_type, oslevel, clients_target_osleve
         cmd += ['-a', f'DisplayName="{cmd_DisplayName}"']
         cmd += ['-a', f'FilterDir={cmd_FilterDdir}']
 
+        cmd = ' '.join(cmd)
+
         rc, stdout, stderr = module.run_command(cmd)
+
         if rc != 0:
-            msg_cmd = ' '.join(cmd)
-            msg = f"Suma metadata command '{msg_cmd}' failed with return code {rc}"
-            results['cmd'] = ' '.join(cmd)
+            msg = f"Suma metadata command '{cmd}' failed with return code {rc}"
+            results['cmd'] = cmd
             results['stdout'] = stdout
             results['stderr'] = stderr
             results['msg'] = msg
             module.fail_json(**results)
-        module.debug(f"SUMA command '{msg_cmd}' rc:{rc}, stdout:{stdout}")
+        module.debug(f"SUMA command '{cmd}' rc:{rc}, stdout:{stdout}")
 
         # find latest SP build number for the highest TL
         sp_version = None
@@ -677,8 +685,9 @@ def compute_filter_ml(module, clients_target_oslevel, rq_name):
             filter_ml += "-00"
     else:
         for key, value in iter(clients_target_oslevel.items()):
-            if re.match(r"^([0-9]{4})", value).group(1) == rq_name[:4] \
-               and re.match(r"^([0-9]{4}-[0-9]{2}-[0-9]{2})", value).group(1) < rq_name[:10] \
+            if re.match(r"^([0-9]{4})", value) and re.match(r"^([0-9]{4})", value).group(1) == rq_name[:4] \
+               and re.match(r"^([0-9]{4}-[0-9]{2}-[0-9]{2})", value) and \
+               re.match(r"^([0-9]{4}-[0-9]{2}-[0-9]{2})", value).group(1) < rq_name[:10] \
                and (minimum_oslevel is None or value < minimum_oslevel):
                 minimum_oslevel = value
 
@@ -860,9 +869,15 @@ def suma_download(module, suma_params):
 
     # Delete clients with no oslevel value
     removed_oslevel = []
-    for key in [k for (k, v) in clients_oslevel.items() if not v]:
+    for key in [k for (k, v) in clients_oslevel.items() if (not v or v == 'timedout')]:
         removed_oslevel.append(key)
         del clients_oslevel[key]
+
+    # Remove unavailable/timedout clients
+    if removed_oslevel:
+        msg = f"Unavailable/Timedout client: {removed_oslevel}"
+        module.log('[WARNING] ' + msg)
+        results['meta']['messages'].append(msg)
 
     # Check we have at least one oslevel when a target is specified
     if targets_list and not clients_oslevel:
@@ -871,11 +886,6 @@ def suma_download(module, suma_params):
         results['msg'] = msg
         module.fail_json(**results)
     module.debug(f"oslevel cleaned dict: {clients_oslevel}")
-
-    if removed_oslevel:
-        msg = f"Unavailable client: {removed_oslevel}"
-        module.log('[WARNING] ' + msg)
-        results['meta']['messages'].append(msg)
 
     # compute SUMA request type based on oslevel property
     rq_type = compute_rq_type(module, suma_params['req_oslevel'], targets_list)
