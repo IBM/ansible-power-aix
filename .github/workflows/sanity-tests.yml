@@ -15,7 +15,7 @@ jobs:
   # - makes sure that the collection passes the ansible sanity tests
   ########################################################################
   sanity-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: ansible_collections/ibm/power_aix
