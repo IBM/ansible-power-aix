@@ -756,7 +756,9 @@ def expand_targets(targets):
 
 def perform_customization(module, lpp_source, target, is_async):
     """
-    Perform a customization of the given target client, applying the given lpp_source.
+    Applies the provided lpp_source.
+    If I(alt_disk_update_name) is provided, It performs alt_disk_install operation.
+    If not, performs the customization operation.
 
     arguments:
         module     (dict): The Ansible module.
