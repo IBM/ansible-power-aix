@@ -308,7 +308,7 @@ def check_if_exists(module, ps_name):
     arguments:
         module (dict): Ansible generic module.
         ps_name (str): Name of the paging space.
-    
+
     returns:
         0 (int): If The paging space does not exist
         parsed_output (dict): Properties of the paging space if it exists
@@ -327,7 +327,6 @@ def check_if_exists(module, ps_name):
     return parse_ps_details(module, stdout)
 
 
-
 # Action functions
 def list_paging_space(module):
     """
@@ -335,7 +334,7 @@ def list_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module.
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -353,9 +352,9 @@ def list_paging_space(module):
         elif module.params['ps_type']:
             chars = module.params['ps_type']
 
-            if chars=='lv':
+            if chars == 'lv':
                 cmd.append('-t lv')
-            elif chars=='nfs':
+            elif chars == 'nfs':
                 cmd.append('-t nfs')
             else:
                 helper_name = module.params['ps_helper_name']
@@ -394,7 +393,7 @@ def create_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -490,7 +489,7 @@ def modify_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -571,7 +570,7 @@ def remove_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -615,7 +614,7 @@ def activate_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -717,7 +716,7 @@ def activate_paging_space(module):
                         ps_name = item
                         break
 
-                if line [0] == "0517-075":
+                if line[0] == "0517-075":
                     already_active.append(ps_name)
                 else:
                     could_not_activate.append(ps_name)
@@ -790,7 +789,7 @@ def deactivate_paging_space(module):
 
     arguments:
         module (dict): Ansible generic module
-    
+
     returns:
         success_msg (str): Success message in case the command ran successfully,
         fails otherwise.
@@ -811,7 +810,7 @@ def deactivate_paging_space(module):
         for ps in ps_list:
             ps_name = ps
             if '/' in ps:
-                ps_namne = ps.split('/')[-1]
+                ps_name = ps.split('/')[-1]
 
             check_exist = check_if_exists(module, ps_name)
 
@@ -856,7 +855,6 @@ def deactivate_paging_space(module):
         fail_msg = f"Failed to deactivate paging spaces: {module.params['ps_name']}, check stderr for more information. Command: {joined_cmd}"
         success_msg = f"Successfully deactivated the paging space: {module.params['ps_name']}, Command: {joined_cmd}"
 
-
     results['stdout'] = stdout
 
     if rc:
@@ -873,7 +871,7 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            action=dict(type='str', required=True, choices=['list','create','modify','remove','activate','deactivate']),
+            action=dict(type='str', required=True, choices=['list', 'create', 'modify', 'remove', 'activate', 'deactivate']),
             list_all=dict(type='bool', default=False),
             include_summary=dict(type='bool', default=False),
             ps_helper_name=dict(type='str'),
@@ -881,10 +879,10 @@ def main():
             nfs_server_hostname=dict(type='str'),
             nfs_server_pathname=dict(type='str'),
             paging_space_configured_at_sub_restart=dict(type='bool', default=False),
-            checksum_size=dict(type='int', choices=[0,8,16,32]),
+            checksum_size=dict(type='int', choices=[0, 8, 16, 32]),
             activate_immediately=dict(type='bool', default=False),
             logical_partitions=dict(type='int'),
-            ps_type=dict(type='str', choices=['lv','nfs','ps_helper']),
+            ps_type=dict(type='str', choices=['lv', 'nfs', 'ps_helper']),
             volume_group=dict(type='str'),
             pv_name=dict(type='str'),
             logical_partitions_add=dict(type='int'),
@@ -896,7 +894,7 @@ def main():
         ),
         mutually_exclusive=[
             ['ps_name', 'ps_list']
-            ],
+        ],
         required_if=[
             ['action', 'remove', ['ps_name']],
             ['ps_type', 'ps_helper', ['ps_helper_name']]
