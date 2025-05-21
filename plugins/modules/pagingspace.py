@@ -322,7 +322,7 @@ def check_if_exists(module, ps_name):
     # If the command fails, the paging space does not exist
     if rc:
         return False
-    
+
     # If the paging space exists, return the details of the paging space
     return parse_ps_details(module, stdout)
 
@@ -354,9 +354,9 @@ def list_paging_space(module):
             chars = module.params['ps_type']
 
             if chars=='lv':
-                cmd.append(f'-t lv')
+                cmd.append('-t lv')
             elif chars=='nfs':
-                cmd.append(f'-t nfs')
+                cmd.append('-t nfs')
             else:
                 helper_name = module.params['ps_helper_name']
                 cmd.append(f'-t {helper_name}')
@@ -372,7 +372,7 @@ def list_paging_space(module):
     rc, stdout, stderr = module.run_command(joined_cmd)
 
     fail_msg = f"Could not get the required information, command: {joined_cmd}"
-    success_msg = f"Successfully retrieved information about paging spaces. Please check 'paging_space_attributes'"
+    success_msg = "Successfully retrieved information about paging spaces. Please check 'paging_space_attributes'"
 
     results['stdout'] = stdout
 
@@ -410,7 +410,7 @@ def create_paging_space(module):
     # Adding addtional flags to the command
     if module.params['paging_space_configured_at_sub_restart']:
         cmd.append('-a')
-    
+
     if module.params['activate_immediately']:
         cmd.append('-n')
 
@@ -446,7 +446,7 @@ def create_paging_space(module):
                 results['stderr'] = stderr
                 results['msg'] = fail_msg
                 module.fail_json(**results)
-            
+
             results['changed'] = True
             return success_msg
 
@@ -463,7 +463,7 @@ def create_paging_space(module):
         vg = module.params['volume_group']
 
         cmd.append(f'-s {lpar} {vg}')
-    
+
     if module.params['pv_name']:
         cmd.append(module.params['pv_name'])
 
@@ -479,7 +479,7 @@ def create_paging_space(module):
         results['stderr'] = stderr
         results['msg'] = fail_msg
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
@@ -512,11 +512,11 @@ def modify_paging_space(module):
     if module.params['logical_partitions_add']:
         lpar_add = module.params['logical_partitions_add']
         cmd.append(f'-s {lpar_add}')
-    
+
     if module.params['logical_partitions_substract']:
         lpar_sub = module.params['logical_partitions_substract']
         cmd.append(f'-d {lpar_sub}')
-    
+
     if module.params['use_on_next_swapon']:
         cmd.append('-f')
 
@@ -535,10 +535,10 @@ def modify_paging_space(module):
         else:
             cmd.remove('-f')
 
-    if module.params['use_ps_at_next_restart'] == True:
+    if module.params['use_ps_at_next_restart'] is True:
         cmd.append('-a y')
 
-    if module.params['use_ps_at_next_restart'] == False:
+    if module.params['use_ps_at_next_restart'] is False:
         cmd.append('-a n')
 
     if len(cmd) == 1:
@@ -560,7 +560,7 @@ def modify_paging_space(module):
         results['msg'] = fail_msg
         results['stderr'] = stderr
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
@@ -587,7 +587,7 @@ def remove_paging_space(module):
     if module.params['ps_helper_name']:
         helper_name = module.params['ps_helper_name']
         cmd.append(f'-t {helper_name}')
-    
+
     # Paging space that needs to be removed should be provided
     cmd.append(module.params['ps_name'])
 
@@ -604,7 +604,7 @@ def remove_paging_space(module):
         results['msg'] = fail_msg
         results['stderr'] = stderr
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
@@ -634,7 +634,7 @@ def activate_paging_space(module):
                 total_ps += 1
                 if all_ps_info[key]['Active'] == "yes":
                     active_ps.append(key)
-            
+
             if total_ps == len(active_ps):
                 return "All the paging spaces are already in active state, no need to run the command."
         else:
@@ -662,7 +662,7 @@ def activate_paging_space(module):
                 continue
 
             cmd.append(ps)
-        
+
         # Remove the paging spaces that are already active
         for ps in already_active:
             module.params['ps_list'].remove(ps)
@@ -755,7 +755,7 @@ def activate_paging_space(module):
             if len(activated):
                 results['changed'] = True
                 msg += f"Activated the following paging spaces: {activated}."
-            
+
             if len(already_active):
                 msg += f" These were already active: {already_active}"
 
@@ -779,7 +779,7 @@ def activate_paging_space(module):
         results['msg'] = fail_msg
         results['stderr'] = stderr
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
@@ -864,13 +864,12 @@ def deactivate_paging_space(module):
         results['msg'] = fail_msg
         results['stderr'] = stderr
         module.fail_json(**results)
-    
+
     results['changed'] = True
     return success_msg
 
 
 def main():
-    global results
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
