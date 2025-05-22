@@ -7,3 +7,6 @@ power_aix_bootstrap_dnf_src_71_72: dnf_bundle_aix_71_72.tar
 power_aix_bootstrap_dnf_src_73: dnf_bundle_aix_73.tar
 power_aix_bootstrap_dnf_install_script: dnf_installer.sh
 power_aix_bootstrap_proxy: None
+power_aix_bootstrap_local_repo_script: dnf_local.sh
+power_aix_bootstrap_local_repo: false
+power_aix_bootstrap_dnf_mount_path: ''
