@@ -986,7 +986,7 @@ def run_flrtvc(flrtvc_path, params, force):
     emgr_file = os.path.join(workdir, 'emgr.txt')
     if os.path.exists(emgr_file):
         os.remove(emgr_file)
-    
+
     # Wait until threads finish
     # Silly fix of emgr.txt not found race condition issue
     wait_all()
