@@ -16,14 +16,14 @@ jobs:
   # with python version 3.6, and 3.8
   ########################################################################
   compile-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: ansible_collections/ibm/power_aix
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.6', '3.8', '3.9']
+        python-version: ['3.8', '3.9']
         ansible-version: ['2.10']
 
     name: running compile tests with python ${{ matrix.python-version }}
