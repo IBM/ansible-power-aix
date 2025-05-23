@@ -70,14 +70,16 @@
 
     # Check for existence of python and python3 as without it copy can't be used.
     - name: Check if Python is installed
-      ansible.builtin.command: which python
+      ansible.builtin.raw: which python
       register: python_installed
       ignore_errors: true  # Continue even if the command fails
+      changed_when: false
 
     - name: Check if Python3 is installed (for systems that use Python3 as default)
-      ansible.builtin.command: which python3
+      ansible.builtin.raw: which python3
       register: python3_installed
       ignore_errors: true # Continue even if the command fails
+      changed_when: false
 
     - when: not power_aix_bootstrap_local_repo
       block:
@@ -94,21 +96,25 @@
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
         - when: python_installed.rc != 0 and python3_installed.rc != 0
           block:
-            - name: Copy file to {{power_aix_bootstrap_target_dir}}
-              raw: scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_dnf_install_script }} {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
+            - name: Copy file to {{ power_aix_bootstrap_target_dir }}
+              ansible.builtin.raw: >
+                scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_dnf_install_script }}
+                {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
               delegate_to: localhost
+              changed_when: true
 
             - name: Give permissions to the file
-              ansible.builtin.raw: chmod 755 {{power_aix_bootstrap_target_dir}}/{{power_aix_bootstrap_local_repo_script}}
+              ansible.builtin.raw: chmod 755 {{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }}
+              changed_when: true
 
         - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed.
-          ansible.builtin.command: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -y {{ power_aix_bootstrap_target_dir }}"
+          ansible.builtin.raw: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -y {{ power_aix_bootstrap_target_dir }}"
           changed_when: true
           when:
             - yum_exists.stdout is search("true")
 
         - name: Restore dnf bundle at the target if yum is not installed.
-          ansible.builtin.command: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -d {{ power_aix_bootstrap_target_dir }}"
+          ansible.builtin.raw: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_dnf_install_script }} -d {{ power_aix_bootstrap_target_dir }}"
           changed_when: true
           when:
             - yum_exists.stdout is not search("true")
@@ -135,15 +141,22 @@
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
         - when: python_installed.rc != 0 and python3_installed.rc != 0
           block:
-            - name: Copy file to {{power_aix_bootstrap_target_dir}}
-              raw: scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_local_repo_script }} {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
+            - name: Copy file to {{ power_aix_bootstrap_target_dir }}
+              ansible.builtin.raw: >
+                scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_local_repo_script }}
+                {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
               delegate_to: localhost
-            
+              changed_when: true
+
             - name: Give permissions to the file
-              ansible.builtin.raw: chmod 755 {{power_aix_bootstrap_target_dir}}/{{power_aix_bootstrap_local_repo_script}}
+              ansible.builtin.raw: chmod 755 {{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_local_repo_script }}
+              changed_when: true
 
         - name: Restore dnf bundle to upgrade yum to yum4 if yum is installed
-          raw: "{{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_local_repo_script }} {{ power_aix_bootstrap_dnf_repo_mount_path }} {{ power_aix_bootstrap_dnf_bundle_mount_path }}"
+          ansible.builtin.raw: >
+            {{ power_aix_bootstrap_target_dir }}/{{ power_aix_bootstrap_local_repo_script }}
+            {{ power_aix_bootstrap_dnf_repo_mount_path }}
+            {{ power_aix_bootstrap_dnf_bundle_mount_path }}
           changed_when: true
 
     - name: Check if dnf was installed at /opt/freeware/bin
@@ -158,7 +171,7 @@
 
     # Ansible at times does not fetch PATH from the system, rather uses its own ansible_path
     - name: Get full PATH from shell
-      shell: echo $PATH
+      ansible.builtin.raw: echo $PATH
       register: current_path
       changed_when: false
 
@@ -193,7 +206,7 @@
       changed_when: true
 
     - name: Remove "{{ power_aix_bootstrap_target_dir }}"
-      ansible.builtin.raw: rmfs "{{power_aix_bootstrap_target_dir}}"
+      ansible.builtin.raw: rmfs "{{ power_aix_bootstrap_target_dir }}"
       changed_when: true
 
 #    Block to install dnf }
