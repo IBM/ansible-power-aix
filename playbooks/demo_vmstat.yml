@@ -1,0 +1,144 @@
+- name: Run vmstat command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    ansible_remote_tmp: /tmp/vmstatdata
+    concat_v1: 'false'
+
+  tasks:
+    - name: Run vmstat with fork stats
+      ibm.power_aix.vmstat:
+        show_fork_stats: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 2
+        count: 5
+    - name: Run vmstat with show paging stats
+      ibm.power_aix.vmstat:
+        show_paging_stats: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        vmm_stats: true
+        large_page_stats: true
+        interval: 5
+        count: 10
+    - name: Run vmstat with only specific interrupts report
+      ibm.power_aix.vmstat:
+        show_interrupts: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 10
+    - name: Run vmstat with hypervisor flag
+      ibm.power_aix.vmstat:
+        hypervisor_stats: true
+        io_view: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        with_fs_wait: true
+        timestamp: true
+        wide_output: true
+        vmm_stats: true
+        interval: 5
+        count: 5
+    - name: Run vmstat with specific option with wpar name 
+      ibm.power_aix.vmstat:
+        io_view: true
+        with_fs_wait: true
+        timestamp: true
+        wide_output: true
+        large_page_stats: true
+        concatenated_output: "{{ concat_v1 }}"
+        wpar_name: 'ALL'
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with pagesize_stats 
+      ibm.power_aix.vmstat:
+        io_view: true
+        with_fs_wait: true
+        timestamp: true
+        wide_output: true
+        concatenated_output: "{{ concat_v1 }}"
+        pagesize_stats: '4K'
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with page_stats_only 
+      ibm.power_aix.vmstat:
+        io_view: true
+        with_fs_wait: true
+        timestamp: true
+        wide_output: true
+        concatenated_output: "{{ concat_v1 }}"
+        page_stats_only: '4K'
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with scale power 
+      ibm.power_aix.vmstat:
+        scale_power: 2
+        with_fs_wait: true
+        timestamp: true
+        wide_output: true
+        concatenated_output: "{{ concat_v1 }}"
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with large_page_stats
+      ibm.power_aix.vmstat:
+        large_page_stats: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with timestamp
+      ibm.power_aix.vmstat:
+        timestamp: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with pagesize_stats
+      ibm.power_aix.vmstat:
+        pagesize_stats: '4k'
+        timestamp: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with page_stats_only
+      ibm.power_aix.vmstat:
+        page_stats_only: '4k'
+        timestamp: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with wpar_name
+      ibm.power_aix.vmstat:
+        wpar_name: 'ALL'
+        timestamp: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with show_paging_stats and vmm_stats
+      ibm.power_aix.vmstat:
+        show_paging_stats: true
+        vmm_stats: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
+    - name: Run vmstat with specific option with hypervisor_stats and vmm_stats
+      ibm.power_aix.vmstat:
+        hypervisor_stats: true
+        vmm_stats: true
+        recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 5
+        count: 2
