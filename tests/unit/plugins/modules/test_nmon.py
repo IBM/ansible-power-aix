@@ -55,11 +55,11 @@ class TestNMON(unittest.TestCase):
         params["include_disk_vg_section"] = True
         params["include_wlm_section"] = True
         params["sensible_recording_for_one_day"] = True
-        params["sensible_recording_for_one_hour"] = True
+        params["sensible_recording_for_one_hr"] = True
         params["scpu_details"] = 'on'
         params["pcpu_details"] = 'on'
         params["include_top_processes_with_commands"] = True
-        params["sensible_recording_for_one_day_without_top"] = True
+        params["sensible_recording_one_day_without_top"] = True
         params["include_fibre_channel_section"] = True
         params["restrict_commands_in_listing"] = ['db2', 'nmon', 'topas']
         self.module.params = params
@@ -88,8 +88,8 @@ class TestNMON(unittest.TestCase):
         self.module.params["filename"] = None
         self.module.params["spreadsheet_output"] = None
         self.module.params["sensible_recording_for_one_day"] = None
-        self.module.params["sensible_recording_for_one_hour"] = None
-        self.module.params["sensible_recording_for_one_day_without_top"] = None
+        self.module.params["sensible_recording_for_one_hr"] = None
+        self.module.params["sensible_recording_one_day_without_top"] = None
 
         with self.assertRaises(AnsibleFailJson) as result:
             nmon.run_nmon(self.module)
