@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Copyright: (c) 2020- IBM, Inc
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 from __future__ import absolute_import, division, print_function
 
 DOCUMENTATION = r'''
@@ -122,21 +125,27 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Group: foo SUCCESSFULLY created.'
 cmd:
-  description: The full command run.
-  type: str
-stdout:
-  description: Command stdout.
-  type: str
-stderr:
-  description: Command stderr.
-  type: str
+    description: The command executed.
+    returned: always
+    type: str
 rc:
-  description: Return code.
-  type: int
-changed:
-  description: Always true (command executed).
-  type: bool
+    description: The command return code.
+    returned: When the command is executed.
+    type: int
+stdout':
+    description: The standard output.
+    returned: If the command failed.
+    type: str
+stderr':
+    description: The standard error.
+    returned: If the command failed.
+    type: str
 '''
 
 __metaclass__ = type
@@ -306,6 +315,14 @@ def main():
             count=dict(type='int'),
         ),
         supports_check_mode=False
+    )
+
+    result = dict(
+        changed=False,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
     )
 
     cmd = build_vmstat_command(module)
