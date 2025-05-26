@@ -133,7 +133,7 @@ options:
   include_raw_kernal_section:
     description:
     - Includes the RAW Kernel section and the LPAR section in the recording file.
-    - If set, it dumps the raw numbers of the corresponding data structure. 
+    - If set, it dumps the raw numbers of the corresponding data structure.
     - The memory dump is readable and can be used when the command is recording the data.
     type: bool
     default: false
@@ -201,7 +201,7 @@ options:
     - This flag is equivalent to -ft -s 900 -c 96.
     type: bool
     default: false
-  sensible_recording_for_one_hour:
+  sensible_recording_for_one_hr:
     description:
     - Specifies the sensible spreadsheet recording for duration of 1 hour for capacity planning.
     - By default, the recording is done every 30 seconds for 120 times.
@@ -211,7 +211,7 @@ options:
   scpu_details:
     description:
     - Enables or disables recording of Scaled CPU (SCPU) sections, which are nothing but metrics that start with SCPU.
-    - These metrics are based on Scaled Processor Utilization of Resources Register (SPURR). 
+    - These metrics are based on Scaled Processor Utilization of Resources Register (SPURR).
     type: str
     choices: ['on','off']
   pcpu_details:
@@ -225,7 +225,7 @@ options:
     - Includes the top process in the recording with all of the commands of the same name that are added and recorded.
     type: bool
     default: false
-  sensible_recording_for_one_day_without_top:
+  sensible_recording_one_day_without_top:
     description:
     - Specifies the sensible spreadsheet recording for duration of 1day for capacity planning.
     - By default, the recording is done every 900 seconds for 96 times. This flag is equivalent to -f -s 900 -c 96.
@@ -332,182 +332,182 @@ def run_nmon(module):
     f_name = module.params['filename']
     sp_op = module.params['spreadsheet_output']
     sensible_rec_one_day = module.params['sensible_recording_for_one_day']
-    sensible_rec_one_hr = module.params['sensible_recording_for_one_hour']
-    sensible_rec_one_day_no_top = module.params['sensible_recording_for_one_day_without_top']
+    sensible_rec_one_hr = module.params['sensible_recording_for_one_hr']
+    sensible_rec_one_day_no_top = module.params['sensible_recording_one_day_without_top']
 
     # In recording mode, one of the following should be included -f, -F, -x , -X, -z
     if not f_name and not sp_op and not sensible_rec_one_day and not sensible_rec_one_hr and not sensible_rec_one_day_no_top:
-      fail_msg = """Need to provide one of the following: ['filename', 'spreadsheet_output', 'sensible_recording_for_one_day',
-          'sensible_recording_for_one_hour', 'sensible_recording_for_one_day_without_top'] in case of recording mode."""
-      module.fail_json(msg = fail_msg)
+        fail_msg = """Need to provide one of the following: ['filename', 'spreadsheet_output', 'sensible_recording_for_one_day',
+            'sensible_recording_for_one_hr', 'sensible_recording_one_day_without_top'] in case of recording mode."""
+        module.fail_json(msg=fail_msg)
 
     # Fail, if the provided directory doesn't exist
     if module.params['save_to_dir']:
-      op_path = module.params['save_to_dir']
+        op_path = module.params['save_to_dir']
 
       if not os.path.exists(op_path):
-        results['msg'] = "The provided directory does not exist, please check and re-run."
-        module.fail_json(**results)
+          results['msg'] = "The provided directory does not exist, please check and re-run."
+          module.fail_json(**results)
 
     # Check if the file already exists on the system.
     # If it exists, either delete it or fail as per the provided attributes.
     if module.params['output_path']:
-      op_path = module.params['output_path']
+        op_path = module.params['output_path']
 
-      # If it's a directory, check for it's existence
-      if os.path.isdir(op_path):
-        if not os.path.exists(op_path):
-          results['msg'] = "The provided directory does not exist, please check and re-run."
-          module.fail_json(**results)
-      else:
-        # Get the folder path from the provided output path
-        folder_path = '/'
-        if '/' in op_path:
-          folder_path += '/' + '/'.join(op_path.split('/')[:-1])
+        # If it's a directory, check for it's existence
+        if os.path.isdir(op_path):
+            if not os.path.exists(op_path):
+                results['msg'] = "The provided directory does not exist, please check and re-run."
+                module.fail_json(**results)
+        else:
+          # Get the folder path from the provided output path
+          folder_path = '/'
+            if '/' in op_path:
+                folder_path += '/' + '/'.join(op_path.split('/')[:-1])
 
-        # Check if there are any previous files with same prefix
-        pattern = os.path.join(folder_path, f"{op_path}*")
-        matching_files = glob.glob(pattern)
+            # Check if there are any previous files with same prefix
+            pattern = os.path.join(folder_path, f"{op_path}*")
+            matching_files = glob.glob(pattern)
 
-        if matching_files:
-          if not module.params['delete_previous']:
-            results['msg'] = f"The file(s) ({op_path}) are already present in the provided location,"
-            results['msg'] += " please remove them or set 'delete_previous' to True, and re-run."
-            module.fail_json(**results)
-          else:
-            for file_path in matching_files:
-              os.remove(file_path)
+            if matching_files:
+                if not module.params['delete_previous']:
+                    results['msg'] = f"The file(s) ({op_path}) are already present in the provided location,"
+                    results['msg'] += " please remove them or set 'delete_previous' to True, and re-run."
+                    module.fail_json(**results)
+                else:
+                    for file_path in matching_files:
+                      os.remove(file_path)
 
     # Basic nmon command
     cmd = ['/usr/bin/nmon']
 
     # Adding flags as per the requirements
     if sp_op:
-      cmd.append(' -f')
+        cmd.append(' -f')
 
     if f_name:
-      cmd.append(f" -F {f_name}")
+        cmd.append(f" -F {f_name}")
 
     if sensible_rec_one_day:
-      cmd.append(' -x')
+        cmd.append(' -x')
 
     if sensible_rec_one_hr:
-      cmd.append(' -X')
+        cmd.append(' -X')
 
     if sensible_rec_one_day_no_top:
-      cmd.append(' -z')
+        cmd.append(' -z')
 
     if module.params['file_containing_disk_groups']:
-      cmd.append(f" -g {module.params['file_containing_disk_groups']}")
+        cmd.append(f" -g {module.params['file_containing_disk_groups']}")
 
     if module.params['disklist']:
       d_list = ','.join(module.params['disklist'])
-      cmd.append(f" -k {d_list}")
+        cmd.append(f" -k {d_list}")
 
     if module.params['save_to_dir']:
-      cmd.append(f" -m {module.params['save_to_dir']}")
+        cmd.append(f" -m {module.params['save_to_dir']}")
 
     if module.params['disks_per_line']:
-      cmd.append(f" -l {module.params['disks_per_line']}")
+        cmd.append(f" -l {module.params['disks_per_line']}")
 
     if module.params['timestamp_size']:
-      t_size = module.params['timestamp_size']
-      if t_size < 4 or t_size >16:
-        results['msg'] = f"Value of timestamp_size should be between 4-16. Provided value - {t_size}"
-        module.fail_json(**results)
+        t_size = module.params['timestamp_size']
+        if t_size < 4 or t_size > 16:
+            results['msg'] = f"Value of timestamp_size should be between 4-16. Provided value - {t_size}"
+            module.fail_json(**results)
 
-      cmd.append(f" -w {module.params['timestamp_size']}")
+        cmd.append(f" -w {module.params['timestamp_size']}")
 
     if module.params['percentage_of_process_threshold']:
-      cmd.append(f" -I {module.params['percentage_of_process_threshold']}")
+        cmd.append(f" -I {module.params['percentage_of_process_threshold']}")
 
     if module.params['priority']:
-      cmd.append(f" -Z {module.params['priority']}")
+        cmd.append(f" -Z {module.params['priority']}")
 
     if module.params['runname']:
-      cmd.append(f" -r {module.params['runname']}")
+        cmd.append(f" -r {module.params['runname']}")
 
     if module.params['interval_seconds']:
-      cmd.append(f" -s {module.params['interval_seconds']}")
+        cmd.append(f" -s {module.params['interval_seconds']}")
 
     if module.params['output_path']:
-      cmd.append(f" -o {module.params['output_path']}")
+        cmd.append(f" -o {module.params['output_path']}")
 
     if module.params['restrict_commands_in_listing']:
-      cmd_list = ':'.join(module.params['restrict_commands_in_listing'])
-      cmd.append(f" -C {cmd_list}")
+        cmd_list = ':'.join(module.params['restrict_commands_in_listing'])
+        cmd.append(f" -C {cmd_list}")
 
     if module.params['include_async']:
-      cmd.append(' -A')
+        cmd.append(' -A')
 
     if module.params['number_of_snapshots']:
-      cmd.append(f" -c {module.params['number_of_snapshots']}")
+        cmd.append(f" -c {module.params['number_of_snapshots']}")
 
     if module.params['include_disk_service_time']:
-      cmd.append(' -d')
+        cmd.append(' -d')
 
     if module.params['skip_disk_config']:
-      cmd.append(' -D')
+        cmd.append(' -D')
 
     if module.params['skip_ess_config']:
-      cmd.append(' -E')
+        cmd.append(' -E')
 
     if module.params['use_greenwhich_time']:
-      cmd.append(' -G')
+        cmd.append(' -G')
 
     if module.params['report_thread_level_stats']:
-      cmd.append(' -i')
+        cmd.append(' -i')
 
     if module.params['skip_JFS_section']:
-      cmd.append(' -J')
+        cmd.append(' -J')
 
     if module.params['include_raw_kernal_section']:
-      cmd.append(' -K')
+        cmd.append(' -K')
 
     if module.params['include_large_page_analysis']:
-      cmd.append(' -L')
+        cmd.append(' -L')
 
     if module.params['include_mempages_section']:
-      cmd.append(' -M')
+        cmd.append(' -M')
 
     if module.params['include_nfs_section']:
-      cmd.append(' -N')
+        cmd.append(' -N')
 
     if module.params['include_nfsv4_section']:
-      cmd.append(' -NN')
+        cmd.append(' -NN')
 
     if module.params['include_sea_vios_section']:
-      cmd.append(' -O')
+        cmd.append(' -O')
 
     if module.params['include_paging_space_section']:
-      cmd.append(' -P')
+        cmd.append(' -P')
 
     if module.params['include_wlm_section_with_subclasses']:
-      cmd.append(' -S')
+        cmd.append(' -S')
 
     if module.params['include_top_processes']:
-      cmd.append(' -t')
+        cmd.append(' -t')
 
     if module.params['include_top_processes_and_save_cli_agrs']:
-      cmd.append(' -T')
+        cmd.append(' -T')
 
     if module.params['include_disk_vg_section']:
-      cmd.append(' -V')
+        cmd.append(' -V')
 
     if module.params['include_wlm_section']:
-      cmd.append(' -W')
+        cmd.append(' -W')
 
     if module.params['scpu_details']:
-      cmd.append(f" -y SCPU={module.params['scpu_details']}")
+        cmd.append(f" -y SCPU={module.params['scpu_details']}")
 
     if module.params['pcpu_details']:
-      cmd.append(f" -y PCPU={module.params['pcpu_details']}")
+        cmd.append(f" -y PCPU={module.params['pcpu_details']}")
 
     if module.params['include_top_processes_with_commands']:
-      cmd.append(' -Y')
+        cmd.append(' -Y')
 
     if module.params['include_fibre_channel_section']:
-      cmd.append(' -^')
+        cmd.append(' -^')
 
     # Run the generated command
     rc, stdout, stderr = module.run_command(cmd)
@@ -518,11 +518,11 @@ def run_nmon(module):
     success_msg = f'Successfully ran the following command: {joined_cmd}'
 
     if rc:
-      results['rc'] = rc
-      results['msg'] = fail_msg
-      results['stdout'] = stdout
-      results['stderr'] = stderr
-      module.fail_json(**results)
+        results['rc'] = rc
+        results['msg'] = fail_msg
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        module.fail_json(**results)
 
     return success_msg
 
@@ -564,20 +564,20 @@ def main():
             include_disk_vg_section=dict(type='bool', default=False),
             include_wlm_section=dict(type='bool', default=False),
             sensible_recording_for_one_day=dict(type='bool', default=False),
-            sensible_recording_for_one_hour=dict(type='bool', default=False),
-            scpu_details=dict(type='str', choices=['on','off']),
-            pcpu_details=dict(type='str', choices=['on','off']),
+            sensible_recording_for_one_hr=dict(type='bool', default=False),
+            scpu_details=dict(type='str', choices=['on', 'off']),
+            pcpu_details=dict(type='str', choices=['on', 'off']),
             include_top_processes_with_commands=dict(type='bool', default=False),
-            sensible_recording_for_one_day_without_top=dict(type='bool', default=False),
+            sensible_recording_one_day_without_top=dict(type='bool', default=False),
             include_fibre_channel_section=dict(type='bool', default=False),
             restrict_commands_in_listing=dict(type='list', elements='str'),
             delete_previous=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
-            ['filename', 'spreadsheet_output', 'sensible_recording_for_one_day', 'sensible_recording_for_one_hour', 'sensible_recording_for_one_day_without_top'],
-            ['include_top_processes_and_save_cli_agrs','include_top_processes','include_top_processes_with_commands']
+            ['filename', 'spreadsheet_output', 'sensible_recording_for_one_day', 'sensible_recording_for_one_hr', 'sensible_recording_one_day_without_top'],
+            ['include_top_processes_and_save_cli_agrs', 'include_top_processes', 'include_top_processes_with_commands']
             ],
-    )
+      )
 
     results['msg'] = run_nmon(module)
 
