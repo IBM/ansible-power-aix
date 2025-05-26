@@ -125,21 +125,27 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+msg:
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'Group: foo SUCCESSFULLY created.'
 cmd:
-  description: The full command run.
-  type: str
-stdout:
-  description: Command stdout.
-  type: str
-stderr:
-  description: Command stderr.
-  type: str
+    description: The command executed.
+    returned: always
+    type: str
 rc:
-  description: Return code.
-  type: int
-changed:
-  description: Always true (command executed).
-  type: bool
+    description: The command return code.
+    returned: When the command is executed.
+    type: int
+stdout':
+    description: The standard output.
+    returned: If the command failed.
+    type: str
+stderr':
+    description: The standard error.
+    returned: If the command failed.
+    type: str
 '''
 
 __metaclass__ = type
@@ -318,7 +324,7 @@ def main():
         stdout='',
         stderr='',
     )
-    
+
     cmd = build_vmstat_command(module)
     rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
 
