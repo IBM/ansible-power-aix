@@ -4,6 +4,8 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -304,7 +306,6 @@ changed:
     returned: always
     type: bool
 '''
-from __future__ import absolute_import, division, print_function
 import os
 import glob
 
@@ -532,7 +533,7 @@ def main():
         argument_spec=dict(
             filename=dict(type='str'),
             file_containing_disk_groups=dict(type='str'),
-            disklist=dict(type='list', elements: 'str'),
+            disklist=dict(type='list', elements='str'),
             save_to_dir=dict(type='str'),
             disks_per_line=dict(type='int'),
             timestamp_size=dict(type='int'),
