@@ -4,9 +4,6 @@
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-import os
-import glob
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -21,7 +18,7 @@ module: nmon
 short_description: Health Monitoring
 description:
 - This module allows to record local system statistics of a logical partition (LPAR).
-version_added: '2.2.0'
+version_added: '2.1.0'
 requirements:
 - AIX
 - Python >= 3.6
@@ -42,6 +39,7 @@ options:
     description:
     - Specifies a list of disks to be recorded.
     type: list
+    elements: str
   save_to_dir:
     description:
     - Changes the directory before the command saves the data to a file.
@@ -240,6 +238,7 @@ options:
     description:
     - Restricts the process that are listed
     type: list
+    elements: str
   delete_previous:
     description:
     - Deletes previous nmon files with the same name before creating the new one.
@@ -305,6 +304,9 @@ changed:
     returned: always
     type: bool
 '''
+from __future__ import absolute_import, division, print_function
+import os
+import glob
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -525,13 +527,12 @@ def run_nmon(module):
 
 
 def main():
-    global results
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
             filename=dict(type='str'),
             file_containing_disk_groups=dict(type='str'),
-            disklist=dict(type='list'),
+            disklist=dict(type='list', elements: 'str'),
             save_to_dir=dict(type='str'),
             disks_per_line=dict(type='int'),
             timestamp_size=dict(type='int'),
@@ -568,7 +569,7 @@ def main():
             include_top_processes_with_commands=dict(type='bool', default=False),
             sensible_recording_for_one_day_without_top=dict(type='bool', default=False),
             include_fibre_channel_section=dict(type='bool', default=False),
-            restrict_commands_in_listing=dict(type='list'),
+            restrict_commands_in_listing=dict(type='list', elements='str'),
             delete_previous=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
