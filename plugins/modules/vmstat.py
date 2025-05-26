@@ -311,6 +311,14 @@ def main():
         supports_check_mode=False
     )
 
+    result = dict(
+        changed=False,
+        msg='',
+        cmd='',
+        stdout='',
+        stderr='',
+    )
+    
     cmd = build_vmstat_command(module)
     rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
 
