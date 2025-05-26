@@ -130,7 +130,7 @@ options:
     - Specifies that the I(checksum_size) will be used for the next swapon of the paging space.
     - This option has no effect if I(checksum_size) is not specified or paging space is not swapped on.
     type: bool
-    default: None
+    default: false
   activate_all_ps:
     description:
     - Specifies that all the paging spaces available need to be activated.
