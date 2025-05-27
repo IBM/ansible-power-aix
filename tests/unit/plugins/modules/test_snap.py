@@ -36,6 +36,15 @@ class TestSnapCommand(unittest.TestCase):
         params["security_info"] = False
         params["workload_manager_info"] = False
         params["hardware_info"] = False
+        params["ss_filename"] = None
+        params["ss_size"] = None
+        params["ss_rejoining"] = False
+        params["ss_machinename"] = None
+
+        params["sc_output_dir"] = None
+        params["sc_remove_core"] = False
+        params["sc_core_file"] = None
+        params["sc_program_name"] = None
         self.module.params = params
 
         # Mock command return values
@@ -123,6 +132,68 @@ class TestSnapCommand(unittest.TestCase):
 
         result = snap.run_snap_command_with_expect(self.module)
         self.assertEqual(result['msg'], "Command executed successfully.")
+
+    def test_build_snapsplit_with_filename_only(self):
+        self.module.params['ss_filename'] = 'core.snap'
+        cmd = snap.build_snapsplit_command(self.module)
+        self.assertEqual(cmd, ['snapsplit', ' -f core.snap'])
+
+    def test_build_snapsplit_with_all_options(self):
+        self.module.params.update({
+            'ss_filename': 'core.snap',
+            'ss_size': '1',
+            'ss_machinename': 'host123'
+        })
+        cmd = snap.build_snapsplit_command(self.module)
+        self.assertEqual(cmd, ['snapsplit', ' -s 1', ' -H host123', ' -f core.snap'])
+
+    def test_build_snapsplit_rejoining_with_timestamp_and_host(self):
+        self.module.params.update({
+            'ss_rejoining': True,
+            'ss_timestamp': '20240502',
+            'ss_machinename': 'host123'
+        })
+        cmd = snap.build_snapsplit_command(self.module)
+        self.assertEqual(cmd, ['snapsplit', '-u', ' -T 20240502', ' -H host123'])
+
+    def test_build_snapsplit_invalid_minimal(self):
+        # No valid params
+        cmd = snap.build_snapsplit_command(self.module)
+        self.assertEqual(cmd, ['snapsplit'])
+    
+    def test_snapcore_with_only_core_file(self):
+        self.module.params['sc_core_file'] = 'core.123'
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore', 'core.123'])
+
+    def test_snapcore_with_all_options(self):
+        self.module.params.update({
+            'sc_output_dir': '/tmp/snapcore_out',
+            'sc_remove_core': True,
+            'sc_core_file': 'core.123',
+            'sc_program_name': 'myprog'
+        })
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore', '-d /tmp/snapcore_out', '-r', 'core.123', 'myprog'])
+
+    def test_snapcore_with_output_dir_only(self):
+        self.module.params['sc_output_dir'] = '/output/dir'
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore', '-d /output/dir'])
+
+    def test_snapcore_with_remove_flag_only(self):
+        self.module.params['sc_remove_core'] = True
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore', '-r'])
+
+    def test_snapcore_with_program_name_only(self):
+        self.module.params['sc_program_name'] = 'myapp'
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore', 'myapp'])
+
+    def test_snapcore_with_no_params(self):
+        cmd = snap.build_snapcore_command(self.module)
+        self.assertEqual(cmd, ['snapcore'])
 
 
 if __name__ == '__main__':
