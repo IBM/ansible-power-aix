@@ -124,6 +124,11 @@ options:
     - When set, sub paths from frltvc.ksh containing patches will replaced with localpatchpath to point to local path.
     type: str
     default: ''
+  proxy_server:
+    description:
+    - Specifies the proxy server that will be used as the medium to access internet for getting information about fixes.
+    type: str
+    default: ''
 notes:
   - Refer to the FLRTVC page for detail on the script.
     U(https://esupport.ibm.com/customercare/flrt/sas?page=../jsp/flrtvc.jsp)
@@ -1012,6 +1017,8 @@ def run_flrtvc(flrtvc_path, params, force):
         cmd += ['-f', params['apar_csv']]
     if params['filesets']:
         cmd += ['-g', params['filesets']]
+    if params['proxy_server']:
+        cmd += ['-r', params['proxy_server']]
 
     # Run flrtvc in compact mode
     debug_cmd = ' '.join(cmd)
@@ -1298,6 +1305,7 @@ def main():
             protocol=dict(required=False, type='str', choices=['https', 'http', 'ftp']),
             localpatchserver=dict(required=False, type='str', default=""),
             localpatchpath=dict(required=False, type='str', default=""),
+            proxy_server=dict(required=False, type='str', default=""),
             flrtvczip=dict(required=False, type='str', default='https://esupport.ibm.com/customercare/sas/f/flrt3/FLRTVC-latest.zip'),
         ),
         supports_check_mode=True
@@ -1332,7 +1340,8 @@ def main():
                      'filesets': module.params['filesets'],
                      'dst_path': module.params['path'],
                      'save_report': module.params['save_report'],
-                     'verbose': module.params['verbose']}
+                     'verbose': module.params['verbose'],
+                     'proxy_server': module.params['proxy_server']}
     force = module.params['force']
     clean = module.params['clean']
     check_only = module.params['check_only']
