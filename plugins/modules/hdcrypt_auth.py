@@ -904,7 +904,7 @@ def main():
             password=dict(type="str", default=None, no_log=True),
             auth_detail=dict(type="str"),
             auth_index=dict(type="int"),
-            device=dict(type="str", default=""),
+            device=dict(type="str", default=None),
             auto_key_protection=dict(type="bool", default=False),
             force=dict(type="bool", default=False),
         ),
