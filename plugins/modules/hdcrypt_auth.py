@@ -44,6 +44,7 @@ options:
     - Specifies the device for which you want to manage the authentication methods.
     type: str
     required: false
+    default: null
   auth_name:
     description:
     - Specifies the name of the authentication method.
@@ -121,7 +122,7 @@ EXAMPLES = r"""
         device: testlv
         auth_name: test_pks
         auth_type: pks
-  
+
     - name: Delete a passphrase auth method
       ibm.power_aix.hdcrypt_auth:
         action: delete
@@ -707,7 +708,7 @@ def auth_delete(module):
     if rc:
         if rc == 5:
             results["msg"] = (
-                f"Could not delete the auth method, incorrect password provided."
+                "Could not delete the auth method, incorrect password provided."
             )
         else:
             results["msg"] = fail_msg
@@ -900,7 +901,7 @@ def main():
             ),
             auth_type=dict(type="str", choices=["pwd", "keyfile", "pks"]),
             auth_name=dict(type="str", default=None),
-            password=dict(type="str", default=None),
+            password=dict(type="str", default=None, no_log=True),
             auth_detail=dict(type="str"),
             auth_index=dict(type="int"),
             device=dict(type="str", default=""),
