@@ -38,7 +38,6 @@ options:
       - C(O) errlogger command messages
       - C(U) undetermined
     type: str
-    choices: [ H, S, O, U ]
   consolidate_duplicates:
     description:
       - Consolidate duplicate errors .The detailed error report, obtained with the -a flag, reports the number, and first and last times of the duplicates
@@ -110,8 +109,13 @@ options:
     description:
       - Limits the error report to error types specified by the valid error_types variables.
       - The error types can be each separated by a , (comma), or enclosed in " " (double quotation marks) and separated by a , or a space character
+      - C(INFO) Information
+      - C(PEND) Pending
+      - C(PERF) Performance related entries
+      - C(PERM) Permanent
+      - C(TEMP) Temporary
+      - C(UNKN) Unknown
     type: str
-    choices: [ INFO, PEND, PERF, PERM, TEMP, UNKN ]
   recorded_output:
     description:
       - Folder path to command output in machine.
