@@ -1,0 +1,137 @@
+- name: Run errpt command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    ansible_remote_tmp: /tmp/errptdata
+    concat_v1: 'false'
+
+  tasks:
+    - name: Run errpt with detailed output
+      ibm.power_aix.errpt:
+        detailed: true
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with short detail output
+      ibm.power_aix.errpt:
+        short_detail: true
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with error class list
+      ibm.power_aix.errpt:
+        error_class: "H,O,S,U"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with consolidated duplicates
+      ibm.power_aix.errpt:
+        consolidate_duplicates: true
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with start date
+      ibm.power_aix.errpt:
+        start_date: "0512000025"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with end date
+      ibm.power_aix.errpt:
+        end_date: "0522150525"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with ASCII format
+      ibm.power_aix.errpt:
+        ascii_format: true
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with specific input error log file
+      ibm.power_aix.errpt:
+        input_log: "/var/adm/ras/errlog"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with specific diagnostic log file
+      ibm.power_aix.errpt:
+        diag_log: "/var/adm/ras/diag_log"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+
+    - name: Run errpt with sequence_numbers
+      ibm.power_aix.errpt:
+        sequence_number: "120,119"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+
+    - name: Run errpt with exclude error IDs
+      ibm.power_aix.errpt:
+        exclude_errids: "192AC075,192AC074"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with include error IDs
+      ibm.power_aix.errpt:
+        include_errids: "192AC071"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with include labels
+      ibm.power_aix.errpt:
+        include_labels: "PARTID_BOOT_REASON"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with exclude labels
+      ibm.power_aix.errpt:
+        exclude_labels: "PARTID_BOOT_REASON"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with error type
+      ibm.power_aix.errpt:
+        error_types: "INFO, PEND, PERF, PERM, TEMP"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with machine details
+      ibm.power_aix.errpt:
+        machine: "00FB29314C00"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with node name
+      ibm.power_aix.errpt:
+        node: "p9zpa-ansible-nim2"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with specific resource names
+      ibm.power_aix.errpt:
+        resource_names: "SYSPROC,errdemon"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run errpt with detailed output include other options
+      ibm.power_aix.errpt:
+        detailed: true
+        ascii_format: true
+        include_errids: "192AC071"
+        sequence_number: "119"
+        machine: "00FB29314C00"
+        node: "p9zpa-ansible-nim2"
+        resource_names: "errdemon"
+        start_date: "0512000025"
+        end_date: "0522150525"
+        error_types: "TEMP"
+        input_log: "/var/adm/ras/errlog"
+        diag_log: "/var/adm/ras/diag_log"
+        recorded_output: "/tmp/errptdata/errpt_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
