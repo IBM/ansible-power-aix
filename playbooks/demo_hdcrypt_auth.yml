@@ -1,0 +1,109 @@
+---
+- name: "Demo hdcrypt auth"
+  hosts: "{{ hosts_val }}"
+  gather_facts: false
+  vars:
+    hosts_val: all
+    device_val: testlv
+
+  tasks:
+
+    - name: "Initialize a authentication method"
+      ibm.power_aix.hdcrypt_auth:
+        action: initialize
+        device: "{{ device }}"
+        auth_name: initpwd
+        password: testpass
+      no_log: True
+
+    - name: Add a phasphrase authentication method
+      ibm.power_aix.hdcrypt_auth:
+        action: add
+        device: "{{ device }}"
+        auth_name: pwd1
+        auth_type: pwd
+        password: 'Test1234567*'
+      no_log: True
+
+    - name: Add a keyfile authentication method
+      ibm.power_aix.hdcrypt_auth:
+        action: add
+        device: "{{ device }}"
+        auth_name: testfile1
+        auth_type: keyfile
+        auth_detail: /testkey
+
+    - name: Unlock using passphrase
+      ibm.power_aix.hdcrypt_auth:
+        action: unlock
+        device: "{{ device }}"
+        auth_type: pwd
+        password: 'testpass'
+      no_log: True
+
+    - name: Unlock using keyfile authentication method
+      ibm.power_aix.hdcrypt_auth:
+        action: unlock
+        device: "{{ device }}"
+        auth_type: keyfile
+        auth_name: testfile1
+        auth_detail: /testkey
+
+    - name: Check auth method passphrase
+      ibm.power_aix.hdcrypt_auth:
+        action: check
+        device: "{{ device }}"
+        auth_name: pwd_strong
+        auth_type: pwd
+        password: 'Test1234567*'
+      no_log: True
+
+    - name: Check auth method keyfile
+      ibm.power_aix.hdcrypt_auth:
+        action: check
+        device: "{{ device }}"
+        auth_name: testfile1
+        auth_type: keyfile
+        auth_detail: /testkey
+
+    - name: Delete a keyfile auth method
+      ibm.power_aix.hdcrypt_auth:
+        action: delete
+        device: "{{ device }}"
+        auth_type: keyfile
+        auth_name: testfile1
+        auth_detail: /testkey
+
+    - name: Add pks authentication method
+      ibm.power_aix.hdcrypt_auth:
+        action: add
+        device: "{{ device }}"
+        auth_name: test_pks
+        auth_type: pks
+
+    - name: Check pks authentication method
+      ibm.power_aix.hdcrypt_auth:
+        action: check
+        device: "{{ device }}"
+        auth_name: test_pks
+        auth_type: pks
+
+    - name: Delete pks auth method
+      ibm.power_aix.hdcrypt_auth:
+        action: delete
+        device: "{{ device }}"
+        auth_type: pks
+        auth_name: test_pks
+
+    - name: Delete a passphrase auth method
+      ibm.power_aix.hdcrypt_auth:
+        action: delete
+        device: "{{ device }}"
+        auth_type: pwd
+        auth_name: pwd1
+        password: "Test1234567*"
+      no_log: True
+
+    - name: Set recovery password for rootvg
+      ibm.power_aix.hdcrypt_auth:
+        action: setrvgpwd
