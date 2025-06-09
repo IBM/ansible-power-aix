@@ -77,7 +77,7 @@ def aix_getstdalgo(module):
         return ''
     try:
         algo = stdout.splitlines()[1].split(':')[1]
-    except:
+    except Exception as e:
         return ''
     return algo
 
@@ -87,11 +87,11 @@ def aix_algorithm(algorithm):
         return ''
     if algorithm.startswith('ssha'):
         # standard cost for SHA algorithms is 06
-        return f"{{%s}}06" % algorithm
+        return f"{{{algorithm}}}06"
     if algorithm.startswith('sblowfish'):
         # standard cost for blowfish is 08
-        return f"{{%s}}08" % algorithm
-    return f"{{%s}}" % algorithm
+        return f"{{{algorithm}}}08"
+    return f"{{{algorithm}}}"
 
 
 def aix_password(module):
@@ -101,10 +101,10 @@ def aix_password(module):
         algorithm = module.params['algorithm']
     algorithm = aix_algorithm(algorithm)
     if module.params['salt'] is None:
-        salt = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(16))
+        salt = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for i in range(16))
     else:
         salt = module.params['salt']
-    mysalt = f"%s$%s$" % (algorithm, salt)
+    mysalt = f"{algorithm}${salt}$"
     return aix_crypt(module.params['password'], mysalt)
 
 
@@ -118,7 +118,7 @@ def run_module():
     if platform.system() != 'AIX':
         module.fail_json(
             rc=1,
-            msg=f"Invalid operating system (%s). The module can be used only on AIX" % platform.system()
+            msg=f"Invalid operating system ({platform.system()}). The module can be used only on AIX"
         )
     result = dict(
         changed = False,
@@ -134,5 +134,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
