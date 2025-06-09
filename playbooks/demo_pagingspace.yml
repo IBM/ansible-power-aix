@@ -9,7 +9,7 @@
     - name: Create a lv paging space
       ibm.power_aix.pagingspace:
         action: create
-        activate_immediately: True
+        activate_immediately: true
         ps_type: lv
         volume_group: rootvg
         logical_partitions: 2
@@ -36,7 +36,7 @@
         action: modify
         logical_partitions_add: 2
         checksum_size: 8
-        use_on_next_swapon: True
+        use_on_next_swapon: true
         ps_name: paging00
 
     - name: Activate all paging spaces

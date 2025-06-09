@@ -14,7 +14,7 @@
         device: "{{ device }}"
         auth_name: initpwd
         password: testpass
-      no_log: True
+      no_log: true
 
     - name: Add a phasphrase authentication method
       ibm.power_aix.hdcrypt_auth:
@@ -23,7 +23,7 @@
         auth_name: pwd1
         auth_type: pwd
         password: 'Test1234567*'
-      no_log: True
+      no_log: true
 
     - name: Add a keyfile authentication method
       ibm.power_aix.hdcrypt_auth:
@@ -39,7 +39,7 @@
         device: "{{ device }}"
         auth_type: pwd
         password: 'testpass'
-      no_log: True
+      no_log: true
 
     - name: Unlock using keyfile authentication method
       ibm.power_aix.hdcrypt_auth:
@@ -56,7 +56,7 @@
         auth_name: pwd_strong
         auth_type: pwd
         password: 'Test1234567*'
-      no_log: True
+      no_log: true
 
     - name: Check auth method keyfile
       ibm.power_aix.hdcrypt_auth:
@@ -102,8 +102,5 @@
         auth_type: pwd
         auth_name: pwd1
         password: "Test1234567*"
-      no_log: True
+      no_log: true
 
-    - name: Set recovery password for rootvg
-      ibm.power_aix.hdcrypt_auth:
-        action: setrvgpwd

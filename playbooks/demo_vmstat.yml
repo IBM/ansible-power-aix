@@ -44,7 +44,7 @@
         vmm_stats: true
         interval: 5
         count: 5
-    - name: Run vmstat with specific option with wpar name 
+    - name: Run vmstat with specific option with wpar name
       ibm.power_aix.vmstat:
         io_view: true
         with_fs_wait: true
@@ -56,7 +56,7 @@
         recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
         interval: 5
         count: 2
-    - name: Run vmstat with specific option with pagesize_stats 
+    - name: Run vmstat with specific option with pagesize_stats
       ibm.power_aix.vmstat:
         io_view: true
         with_fs_wait: true
@@ -67,7 +67,7 @@
         recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
         interval: 5
         count: 2
-    - name: Run vmstat with specific option with page_stats_only 
+    - name: Run vmstat with specific option with page_stats_only
       ibm.power_aix.vmstat:
         io_view: true
         with_fs_wait: true
@@ -78,7 +78,7 @@
         recorded_output: "/tmp/vmstatdata/vmstat_output.txt"
         interval: 5
         count: 2
-    - name: Run vmstat with specific option with scale power 
+    - name: Run vmstat with specific option with scale power
       ibm.power_aix.vmstat:
         scale_power: 2
         with_fs_wait: true

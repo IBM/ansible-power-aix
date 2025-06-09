@@ -94,7 +94,7 @@
       register: output
     - ansible.builtin.debug:
         var: output
-        verbosity: 4    
+        verbosity: 4
     - name: Preview ifix commit and display only errors and warnings
       ibm.power_aix.emgr:
         action: commit
@@ -143,5 +143,3 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
-
-
