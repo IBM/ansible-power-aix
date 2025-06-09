@@ -16,14 +16,14 @@ description:
 options:
   password:
     description: A password to encrypt.
-    type: string
+    type: str
     required: true
   algorithm:
     description:
       - Password encryption algorithm from /etc/security/pwdalg.cfg.
       - If not specified, the filter tries to find the default encryption algorithm.
       - If it fails, crypt is used.
-    type: string
+    type: str
     choices: [ smd5, ssha1, ssha256, ssha512, sblowfish, crypt ]
     required: false
   salt:
@@ -31,13 +31,13 @@ options:
       - A string used to encrypt the password.
       - If no salt is provided, a new random salt is generated.
     required: false
-    type: string
+    type: str
 
 author:
   - Andrey Klyachkin (@aklyachkin)
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Encrypt password with default encryption algorithm and random salt
   ibm.power_aix.password_hash:
     password: mypassword
@@ -48,10 +48,11 @@ EXAMPLES = '''
     algorithm: ssha512
 '''
 
-RETURN = '''
+RETURN = r'''
   _value:
     description: The encrypted password
-    type: string
+    returned: always
+    type: str
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -64,9 +65,9 @@ import string
 
 def aix_crypt(password, salt):
     libc = "/usr/lib/libc.a(shr_64.o)"
-    libc_fn=ctypes.CDLL(libc)
-    libc_fn.crypt.argtypes=(ctypes.c_char_p, ctypes.c_char_p)
-    libc_fn.crypt.restype=ctypes.c_char_p
+    libc_fn = ctypes.CDLL(libc)
+    libc_fn.crypt.argtypes = (ctypes.c_char_p, ctypes.c_char_p)
+    libc_fn.crypt.restype = ctypes.c_char_p
     hash = libc_fn.crypt(password.encode('UTF-8'), salt.encode('UTF-8'))
     return hash.decode('UTF-8')
 
@@ -77,7 +78,7 @@ def aix_getstdalgo(module):
         return ''
     try:
         algo = stdout.splitlines()[1].split(':')[1]
-    except Exception as e:
+    except Exception:
         return ''
     return algo
 
@@ -109,21 +110,22 @@ def aix_password(module):
 
 
 def run_module():
-    module_args = dict(
-        password = dict(type=str, required=True),
-        algorithm = dict(type=str, choices=[ 'crypt', 'smd5', 'sblowfish', 'ssha1', 'ssha256', 'ssha512' ], required=False),
-        salt = dict(type=str, required=False)
-    )
-    module = AnsibleModule(argument_spec = module_args)
+    module = AnsibleModule(
+        argument_spec=dict(
+        password = dict(type='str', required=True, no_log=True),
+        algorithm = dict(type='str', choices=[ 'crypt', 'smd5', 'sblowfish', 'ssha1', 'ssha256', 'ssha512' ], required=False),
+        salt = dict(type='str', required=False)
+    ))
+
     if platform.system() != 'AIX':
         module.fail_json(
             rc=1,
             msg=f"Invalid operating system ({platform.system()}). The module can be used only on AIX"
         )
     result = dict(
-        changed = False,
-        hash = aix_password(module),
-        rc = 0
+        changed=False,
+        hash=aix_password(module),
+        rc=0
     )
     module.exit_json(**result)
 
