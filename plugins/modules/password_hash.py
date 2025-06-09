@@ -113,7 +113,7 @@ def run_module():
     module = AnsibleModule(
         argument_spec=dict(
             password=dict(type='str', required=True, no_log=True),
-            algorithm=dict(type='str', choices=[ 'crypt', 'smd5', 'sblowfish', 'ssha1', 'ssha256', 'ssha512' ], required=False),
+            algorithm=dict(type='str', choices=['crypt', 'smd5', 'sblowfish', 'ssha1', 'ssha256', 'ssha512'], required=False),
             salt=dict(type='str', required=False)
         ),
         supports_check_mode=False
