@@ -5,6 +5,27 @@
 Releases
 ========
 
+Version 2.1.1
+-------------
+Notes
+   * Updated shellcheck warnings reported by Red hat automation hub.
+   * For latest feature inclusions, see notes for version 2.1.0 below.
+
+
+Availability
+  * `Automation Hub v2.1.1`_
+  * `Galaxy v2.1.1`_
+  * `GitHub v2.1.1`_
+
+.. _Automation Hub v2.1.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.1.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.1.1.tar.gz
+
+.. _GitHub v2.1.1:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.1.1.tar.gz
+
 Version 2.1.0
 -------------
 Notes
