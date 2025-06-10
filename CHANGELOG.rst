@@ -30,18 +30,18 @@ Notes
 
 
 Availability
-  * `Automation Hub v2.0.3`_
-  * `Galaxy v2.0.3`_
-  * `GitHub v2.0.3`_
+  * `Automation Hub v2.1.0`_
+  * `Galaxy v2.1.0`_
+  * `GitHub v2.1.0`_
 
-.. _Automation Hub v2.0.3:
+.. _Automation Hub v2.1.0:
    https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
 
-.. _Galaxy v2.0.3:
-   https://galaxy.ansible.com/download/ibm-power_aix-2.0.3.tar.gz
+.. _Galaxy v2.1.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.1.0.tar.gz
 
-.. _GitHub v2.0.3:
-   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.3.tar.gz
+.. _GitHub v2.1.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.1.0.tar.gz
 
 Version 2.0.3
 -------------
