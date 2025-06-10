@@ -254,36 +254,36 @@ notes:
 """
 
 EXAMPLES = r"""
-    - name: Generate the nmon recording in the current directory for two hours, capturing data every 30 seconds
-      ibm.power_aix.nmon:
-        spreadsheet_output: true
-        interval_seconds: 30
-        number_of_snapshots: 240
-        output_path: /nmonfiles/
+- name: Generate the nmon recording in the current directory for two hours, capturing data every 30 seconds
+  ibm.power_aix.nmon:
+    spreadsheet_output: true
+    interval_seconds: 30
+    number_of_snapshots: 240
+    output_path: /nmonfiles/
 
-    - name: Generate nmon recording that includes raw kernal section
-      ibm.power_aix.nmon:
-        spreadsheet_output: true
-        interval_seconds: 30
-        number_of_snapshots: 2
-        include_raw_kernal_section: true
-        output_path: /nmonfiles/kernal_data
+- name: Generate nmon recording that includes raw kernal section
+  ibm.power_aix.nmon:
+    spreadsheet_output: true
+    interval_seconds: 30
+    number_of_snapshots: 2
+    include_raw_kernal_section: true
+    output_path: /nmonfiles/kernal_data
 
-    - name: Generate nmon recording that includes live page analysis
-      ibm.power_aix.nmon:
-        spreadsheet_output: true
-        interval_seconds: 30
-        number_of_snapshots: 4
-        include_large_page_analysis: true
-        output_path: /nmonfiles/livepage_data
+- name: Generate nmon recording that includes live page analysis
+  ibm.power_aix.nmon:
+    spreadsheet_output: true
+    interval_seconds: 30
+    number_of_snapshots: 4
+    include_large_page_analysis: true
+    output_path: /nmonfiles/livepage_data
 
-    - name: Generate nmon recording that includes nfsv4 section in the recording mode
-      ibm.power_aix.nmon:
-        spreadsheet_output: true
-        interval_seconds: 30
-        number_of_snapshots: 2
-        include_nfsv4_section: true
-        output_path: /nmonfiles/nfsv4_data
+- name: Generate nmon recording that includes nfsv4 section in the recording mode
+  ibm.power_aix.nmon:
+    spreadsheet_output: true
+    interval_seconds: 30
+    number_of_snapshots: 2
+    include_nfsv4_section: true
+    output_path: /nmonfiles/nfsv4_data
 """
 
 RETURN = r"""

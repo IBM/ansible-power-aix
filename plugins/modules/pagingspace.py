@@ -154,61 +154,61 @@ notes:
 """
 
 EXAMPLES = r"""
-    - name: List paging space summary
-      ibm.power_aix.pagingspace:
-        action: list
-        include_summary: true
+- name: List paging space summary
+  ibm.power_aix.pagingspace:
+    action: list
+    include_summary: true
 
-    - name: List all the paging spaces
-      ibm.power_aix.pagingspace:
-        action: list
-        list_all: true
-        include_summary: true
-        output_list_format: true
+- name: List all the paging spaces
+  ibm.power_aix.pagingspace:
+    action: list
+    list_all: true
+    include_summary: true
+    output_list_format: true
 
-    - name: Create a lv paging space
-      ibm.power_aix.pagingspace:
-        action: create
-        activate_immediately: false
-        ps_type: lv
-        volume_group: rootvg
-        logical_partitions: 2
+- name: Create a lv paging space
+  ibm.power_aix.pagingspace:
+    action: create
+    activate_immediately: false
+    ps_type: lv
+    volume_group: rootvg
+    logical_partitions: 2
 
-    - name: Create nfs paging space
-      ibm.power_aix.pagingspace:
-        action: create
-        activate_immediately: true
-        ps_type: nfs
-        nfs_server_hostname: hostname
-        nfs_server_pathname: pathname
+- name: Create nfs paging space
+  ibm.power_aix.pagingspace:
+    action: create
+    activate_immediately: true
+    ps_type: nfs
+    nfs_server_hostname: hostname
+    nfs_server_pathname: pathname
 
-    - name: Modify a particular paging space, add lpars and change checksum size
-      ibm.power_aix.pagingspace:
-        action: modify
-        logical_partitions_add: 2
-        checksum_size: 8
-        use_on_next_swapon: True
-        ps_name: paging00
+- name: Modify a particular paging space, add lpars and change checksum size
+  ibm.power_aix.pagingspace:
+    action: modify
+    logical_partitions_add: 2
+    checksum_size: 8
+    use_on_next_swapon: true
+    ps_name: paging00
 
-    - name: Activate all paging spaces
-      ibm.power_aix.pagingspace:
-        action: activate
-        activate_all_ps: true
+- name: Activate all paging spaces
+  ibm.power_aix.pagingspace:
+    action: activate
+    activate_all_ps: true
 
-    - name: Activate a paging space
-      ibm.power_aix.pagingspace:
-        action: activate
-        ps_name: /dev/paging00
+- name: Activate a paging space
+  ibm.power_aix.pagingspace:
+    action: activate
+    ps_name: /dev/paging00
 
-    - name: Deactivate a paging space
-      ibm.power_aix.pagingspace:
-        action: deactivate
-        ps_name: /dev/paging00
+- name: Deactivate a paging space
+  ibm.power_aix.pagingspace:
+    action: deactivate
+    ps_name: /dev/paging00
 
-    - name: Remove a paging space
-      ibm.power_aix.pagingspace:
-        action: remove
-        ps_name: paging00
+- name: Remove a paging space
+  ibm.power_aix.pagingspace:
+    action: remove
+    ps_name: paging00
 """
 
 RETURN = r"""

@@ -118,7 +118,7 @@ EXAMPLES = r'''
 
 - name: Run vmstat with showing paging stat
   vmstat_command:
-    show_paging_stats : true
+    show_paging_stats: true
     wpar_name: "ALL"
     interval: 1
     count: 3

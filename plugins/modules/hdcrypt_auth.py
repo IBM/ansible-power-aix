@@ -93,89 +93,88 @@ notes:
 """
 
 EXAMPLES = r"""
-    - name: "Initialize a authentication method"
-      ibm.power_aix.hdcrypt_auth:
-        action: initialize
-        device: testlv
-        auth_name: initpwd
-        password: testpass
+- name: "Initialize a authentication method"
+  ibm.power_aix.hdcrypt_auth:
+    action: initialize
+    device: testlv
+    auth_name: initpwd
+    password: testpass
 
-    - name: Add a phasphrase authentication method
-      ibm.power_aix.hdcrypt_auth:
-        action: add
-        device: testlv
-        auth_name: pwd2
-        auth_type: pwd
-        password: 'testpass'
+- name: Add a phasphrase authentication method
+  ibm.power_aix.hdcrypt_auth:
+    action: add
+    device: testlv
+    auth_name: pwd2
+    auth_type: pwd
+    password: 'testpass'
 
-    - name: Add a keyfile authentication method
-      ibm.power_aix.hdcrypt_auth:
-        action: add
-        device: testlv
-        auth_name: file_2
-        auth_type: keyfile
-        auth_detail: /key2
+- name: Add a keyfile authentication method
+  ibm.power_aix.hdcrypt_auth:
+    action: add
+    device: testlv
+    auth_name: file_2
+    auth_type: keyfile
+    auth_detail: /key2
 
-    - name: Add a pks authentication method
-      ibm.power_aix.hdcrypt_auth:
-        action: add
-        device: testlv
-        auth_name: test_pks
-        auth_type: pks
+- name: Add a pks authentication method
+  ibm.power_aix.hdcrypt_auth:
+    action: add
+    device: testlv
+    auth_name: test_pks
+    auth_type: pks
 
-    - name: Delete a passphrase auth method
-      ibm.power_aix.hdcrypt_auth:
-        action: delete
-        device: testlv
-        auth_type: pwd
-        auth_name: pwd5
-        password: "testpass"
+- name: Delete a passphrase auth method
+  ibm.power_aix.hdcrypt_auth:
+    action: delete
+    device: testlv
+    auth_type: pwd
+    auth_name: pwd5
+    password: "testpass"
 
-    - name: Delete a pks auth method
-      ibm.power_aix.hdcrypt_auth:
-        action: delete
-        device: testlv
-        auth_type: pks
-        auth_name: test_pks
+- name: Delete a pks auth method
+  ibm.power_aix.hdcrypt_auth:
+    action: delete
+    device: testlv
+    auth_type: pks
+    auth_name: test_pks
 
-    - name: Delete a keyfile auth method
-      ibm.power_aix.hdcrypt_auth:
-        action: delete
-        device: testlv
-        auth_type: keyfile
-        auth_name: file_2
-        auth_detail: /key2
+- name: Delete a keyfile auth method
+  ibm.power_aix.hdcrypt_auth:
+    action: delete
+    device: testlv
+    auth_type: keyfile
+    auth_name: file_2
+    auth_detail: /key2
 
-    - name: Unlock using keyfile authentication method
-      ibm.power_aix.hdcrypt_auth:
-        action: unlock
-        device: testlv
-        auth_type: keyfile
-        auth_detail: /key2
+- name: Unlock using keyfile authentication method
+  ibm.power_aix.hdcrypt_auth:
+    action: unlock
+    device: testlv
+    auth_type: keyfile
+    auth_detail: /key2
 
-    - name: Check auth method passphrase
-      ibm.power_aix.hdcrypt_auth:
-        action: check
-        device: testlv
-        auth_name: pwd5
-        auth_type: pwd
-        password: 'testpass'
+- name: Check auth method passphrase
+  ibm.power_aix.hdcrypt_auth:
+    action: check
+    device: testlv
+    auth_name: pwd5
+    auth_type: pwd
+    password: 'testpass'
 
-    - name: Check auth method passphrase using keyfile
-      ibm.power_aix.hdcrypt_auth:
-        action: check
-        device: testlv
-        auth_name: file2
-        auth_type: keyfile
-        auth_detail: /key2
+- name: Check auth method passphrase using keyfile
+  ibm.power_aix.hdcrypt_auth:
+    action: check
+    device: testlv
+    auth_name: file2
+    auth_type: keyfile
+    auth_detail: /key2
 
-    - name: Check pks authentication method using pks
-      ibm.power_aix.hdcrypt_auth:
-        action: check
-        device: testlv
-        auth_name: test_pks
-        auth_type: pks
-
+- name: Check pks authentication method using pks
+  ibm.power_aix.hdcrypt_auth:
+    action: check
+    device: testlv
+    auth_name: test_pks
+    auth_type: pks
 """
 
 RETURN = r"""

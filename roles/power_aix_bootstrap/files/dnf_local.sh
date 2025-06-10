@@ -8,7 +8,7 @@
 export LANG=C
 
 # Check if we are running this as the root user.
-if [[ "$(id -u)" != "0" ]]
+if [ "$(id -u)" != "0" ]
 then
     echo "This script must be run as root."
     exit 1
@@ -21,15 +21,15 @@ aix_ver=$(/usr/bin/lslpp -qLc bos.rte | /usr/bin/awk -F':' '{print $3}')
 af1=$(echo "$aix_ver" | /usr/bin/cut -d"." -f1)
 af2=$(echo "$aix_ver" | /usr/bin/cut -d"." -f2)
 af3=$(echo "$aix_ver" | /usr/bin/cut -d"." -f3)
-if [[ "$oslvl" = "7.1.0.0" ]]
+if [ "$oslvl" = "7.1.0.0" ]
 then
-    if [[ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) || ( ! $af3 -ge 3 ) ]]
+    if [ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) || ( ! $af3 -ge 3 ) ]
     then
         echo "dnf and dependencies can be installed on AIX 7.1.3 and higher versions."
         exit 1
     fi
 else
-    if [[ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) ]]
+    if [ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) ]
     then
          echo "dnf and dependencies can be installed on AIX 7.1.3 and higher versions."
          exit 1
@@ -81,7 +81,7 @@ then
 fi
 
 # Check openssl version.
-function print_openssl_err {
+print_openssl_err() {
     echo "Please install openssl 1.1.x and higher version."
     echo "You can download and install latest openssl from AIX web download site"
     echo "https://www-01.ibm.com/marketing/iwm/platform/mrs/assets?source=aixbp"
@@ -92,7 +92,7 @@ f1=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f1)
 f2=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f2)
 #f3=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f3)
 #f4=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f4)
-if [[ ( ! $f1 -ge 1 ) ]] || [[ ( $f1 -eq  1 ) &&  ( ! $f2 -ge 1 ) ]]
+if [ ( ! $f1 -ge 1 ) ] || [ ( $f1 -eq  1 ) &&  ( ! $f2 -ge 1 ) ]
 then
     print_openssl_err
 fi
@@ -103,7 +103,7 @@ os_f1=$(echo "$oslvl" | /usr/bin/cut -d"." -f1)
 os_f2=$(echo "$oslvl" | /usr/bin/cut -d"." -f2)
 os_f3=$(echo "$oslvl" | /usr/bin/cut -d"." -f3)
 os_f4=$(echo "$oslvl" | /usr/bin/cut -d"." -f4)
-if [[ ( $os_f1 -ge 7 ) && ( $os_f2 -ge 3 ) && ( $os_f3 -ge 0 ) && ( $os_f4 -ge 0 ) ]]
+if [ ( $os_f1 -ge 7 ) && ( $os_f2 -ge 3 ) && ( $os_f3 -ge 0 ) && ( $os_f4 -ge 0 ) ]
 then
     aix_730_plus=1
 fi
@@ -114,9 +114,9 @@ fi
 # 170M for bundle which includes rpm.rte (40M) and rpm packages (130M).
 # rpm packages extracted.
 
-if [[ $aix_730_plus -eq 1 ]]
+if [ $aix_730_plus -eq 1 ]
 then
-    typeset -i total_req=$(echo "(512)" | bc)
+    total_req=$(echo "(512)" | bc)
     tmp_free=$(/usr/bin/df -m /tmp | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
     if [[ $tmp_free -le $total_req ]]
     then
@@ -125,9 +125,9 @@ then
         exit 1
     fi
 else
-    typeset -i total_req=$(echo "(512)" | bc)
+    total_req=$(echo "(512)" | bc)
     tmp_free=$(/usr/bin/df -m /tmp | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
-    if [[ $tmp_free -le $total_req ]]
+    if [ $tmp_free -le $total_req ]
     then
         echo "Please make sure /tmp has around 512MB of free space to download and"
         echo "extract files from dnf_bundle."
@@ -151,7 +151,7 @@ fi
 
 # Check if /opt is having enough space to install the packages from dnf_bundle.
 # Currently we need around 457MB of free space in /opt filesystem.
-typeset -i total_opt=$(echo "(512)" | bc)
+total_opt=$(echo "(512)" | bc)
 opt_free=$(/usr/bin/df -m /opt | /usr/bin/sed -e /Filesystem/d | /usr/bin/head -1 | /usr/bin/awk '{print $3}')
 if [[ $opt_free -le $total_opt ]]
 then
@@ -169,7 +169,7 @@ cd "$tmppath"
 
 #aix_ver=`oslevel -s | awk -F- '{printf "%.1f",$1/1000}'`
 
-if [[ $aix_730_plus -eq 1 ]]
+if [ $aix_730_plus -eq 1 ]
 then
     echo ""
     echo "Copying dnf_bundle_aix_73.tar to $tmppath ..... "
@@ -188,7 +188,7 @@ else
 fi
 #end of perl download
 
-if [[ $aix_730_plus -eq 1 ]]
+if [ $aix_730_plus -eq 1 ]
 then
     printf "\nExtracting dnf_bundle_aix_73.tar ..."
     /usr/bin/tar -xvf dnf_bundle_aix_73.tar
@@ -199,11 +199,11 @@ fi
 
 ./install_dnf.sh "$yum4" "$yum3_instd" 2
 rc=$?
-if [[ $rc -eq 0 ]]
+if [ $rc -eq 0 ]
 then
     cd - >/dev/null 2>&1
     rm -rf "$tmppath"
-elif [[ $rc -ne 0 ]]
+elif [ $rc -ne 0 ]
 then
     echo "Please check the failure error, correct it and retry again."
     cd ~
