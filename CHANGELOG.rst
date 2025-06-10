@@ -5,6 +5,44 @@
 Releases
 ========
 
+Version 2.1.0
+-------------
+Notes
+   * errpt: NEW MODULE to run the errpt command to report logged system errors
+   * nmon: NEW MODULE to record system statistics.
+   * pagingspace: NEW MODULE to manage paging space
+   * vmstat: NEW MODULE to invoke AIX's vmstat utility with full flag support
+   * password_hash: NEW MODULE to encrypt password with AIX encryption methods. Also, closes issue #548
+   * hdcrypt_auth: NEW MODULE to manage authentication methods for logical volumes
+   * NEW demo playbooks: vmstat.yml, pagingspace.yml, nmon, errpt, hdcrypt_auth
+   * flrtvc.py: Fix for a race condition which reported emgr.txt not found. Fix for issue #579
+   * flrtvc.py: Added support for proxy server
+   * power_aix_bootstrap role: Added support for bootstraping using dnf local repo
+   * snap: Added support for snapcore and snapsplit
+   * emgr: Feature to accept list of files as list and not just as file, github issue #385
+   * user: Fixed regression issue #637
+   * LKU: Option to specify project name along with default project is included. Issue #634
+   * nim_resource: Fix for issue #644
+   * nim_suma: Fixes https://community.ibm.com/community/user/discussion/not-able-to-download-service-pack-through-ansible-automation-platform
+   * alt_disk_install: Documentation update
+   * Fix for issue #635
+   * Includes fix for various linting issues reported by galaxy, automation hub for v 2.0.3
+
+
+Availability
+  * `Automation Hub v2.0.3`_
+  * `Galaxy v2.0.3`_
+  * `GitHub v2.0.3`_
+
+.. _Automation Hub v2.0.3:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.0.3:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.0.3.tar.gz
+
+.. _GitHub v2.0.3:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.0.3.tar.gz
+
 Version 2.0.3
 -------------
 Notes
@@ -14,7 +52,7 @@ Notes
    * Enhancement in lvm_facts to include information from lslv command for logical volumes.
    * Fixed sorting issue in flrtvc module.
    * Updated NIM module to accept license.
-   * Crical fixes in tunable module to include -K option for live update flag in AIX 7.3
+   * Critical fixes in tunable module to include -K option for live update flag in AIX 7.3
 
 Availability
   * `Automation Hub v2.0.3`_

@@ -119,6 +119,7 @@ Authors:
 - Gomathi Mohan <gommohan@in.ibm.com>
 - Pedro V. Torres <pvtorres@us.ibm.com>
 - Shreyansh Chamola <shreyansh.chamola@ibm.com>
+- Vivek Pandey <vivek.pandey12@ibm.com>
 
 [coc]: https://help.github.com/en/github/building-a-strong-community/adding-a-code-of-conduct-to-your-project
 [issues]: https://github.com/IBM/ansible-power-aix/issues/new
