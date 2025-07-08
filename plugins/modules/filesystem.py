@@ -447,9 +447,21 @@ def chfs(module, filesystem):
         opts = nfs_opts(module)
         device = module.params["device"]
         nfs_server = module.params["nfs_server"]
+
+        # Idempotency check added for issue #672
+        if not opts:
+            result['msg'] = "All the provided attributes are already set."
+            module.exit_json(**result)
+
         cmd = f"chnfsmnt {opts} -f {filesystem} -d {device} -h {nfs_server}"
     else:
         opts = fs_opts(module)
+
+        # Idempotency check added for issue #672
+        if not opts:
+            result['msg'] = "All the provided attributes are already set."
+            module.exit_json(**result)
+
         cmd = f"chfs {opts} {filesystem}"
 
     result["cmd"] = cmd
