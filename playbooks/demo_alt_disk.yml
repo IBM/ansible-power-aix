@@ -3,14 +3,15 @@
   hosts: "{{host_name}}"
   gather_facts: false
   vars:
-    host_name: all
+    host_name: alttest
     targets: hdisk1
 
   tasks:
-    - name: Perform an alternate disk copy of the rootvg to hdisk1
+    - name: Perform an alternate disk copy of the rootvg to hdisk3
       ibm.power_aix.alt_disk:
         action: copy
-        targets: hdisk1
+        targets: hdisk3
+        force: true
 
     - name: Perform an alternate disk copy of the rootvg to the nearest disk that can be selected
       ibm.power_aix.alt_disk:
@@ -32,3 +33,12 @@
       ibm.power_aix.alt_disk:
         action: clean
         allow_old_rootvg: true
+
+    - name: Perform an alternate disk wakeup of the rootvg to hdisk3
+      ibm.power_aix.alt_disk:
+        action: wakeup
+        targets: hdisk3
+    - name: Perform an alternate disk sleep of the rootvg
+      ibm.power_aix.alt_disk:
+        action: sleep
+        rebuild_boot_image: true

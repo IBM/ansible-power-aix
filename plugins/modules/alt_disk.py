@@ -30,8 +30,10 @@ options:
     - C(copy) to perform and alternate disk copy.
     - C(clean) to cleanup an existing alternate disk copy.
     - C(install) to install filesets, fixes in existing alternate disk.
+    - C(wakeup) to performs a wake-up on the root volume group located on the target_disk.
+    - C(sleep) to sleep the alternate root volume group that experienced the previous "wake" operation.
     type: str
-    choices: [ copy, clean, install ]
+    choices: [ copy, clean, install, wakeup, sleep]
     default: copy
   targets:
     description:
@@ -117,6 +119,12 @@ options:
     - Allows the removal or cleanup of existing old rootvg as well.
     type: bool
     default: no
+  rebuild_boot_image:
+    description:
+    - Rebuilds the alternate boot image before putting the volume group to sleep.
+    type: bool
+    default: false
+
 notes:
   - M(ibm.power_aix.alt_disk) only backs up mounted file systems. Mount all file
     systems that you want to back up.
@@ -171,8 +179,6 @@ stderr:
     returned: always
     type: str
 '''
-
-
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
@@ -723,13 +729,102 @@ def alt_rootvg_op(module):
     results['changed'] = True
 
 
+def alt_rootvg_wakeup(module):
+    """
+    Performs a wake-up operation on the root volume group located on the target disk.
+    arguments:
+        module  (dict): The Ansible module
+    """
+
+    found_altdisk_for_wakeup = False
+    hdisks = module.params['targets']
+    if not hdisks:
+        results['msg'] = 'Please provide the target disk for the wake-up operation'
+        module.fail_json(**results)
+
+    pvs = get_pvs(module)
+    if pvs is None:
+        module.fail_json(**results)
+
+    found_altdisk = False
+
+    if hdisks:
+        # Check that all specified disks exist and belong to altinst_rootvg
+        for hdisk in hdisks:
+            if (hdisk not in pvs) or (pvs[hdisk]['vg'] != 'altinst_rootvg'):
+                results['msg'] = f'Specified disk \'{hdisk}\' is not an alternate install rootvg'
+                module.fail_json(**results)
+
+            if pvs[hdisk]['vg'] == 'altinst_rootvg':
+                if pvs[hdisk]['status'] == '':
+                    found_altdisk_for_wakeup = True
+                found_altdisk = True
+
+    if not found_altdisk_for_wakeup:  # preserve idempotency
+        results['msg'] += "The alternate install rootvg has already been woken up. "
+        return
+    if found_altdisk:
+        cmd = ['/usr/sbin/alt_rootvg_op', '-W', '-d', ' '.join(hdisks)]
+        ret, stdout, stderr = module.run_command(cmd)
+        if ret:
+            results['stdout'] = stdout
+            results['stderr'] = stderr
+            results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
+            module.fail_json(**results)
+
+    results['changed'] = True
+
+
+def alt_rootvg_sleep(module):
+    """
+    Puts an alternate root volume group that was previously woken up back to sleep
+    and optionally rebuilds the boot image.
+    arguments:
+        module  (dict): The Ansible module
+    """
+    pvs = get_pvs(module)
+    if pvs is None:
+        module.fail_json(**results)
+    found_altdisk = False
+    found_altdisk_for_sleep = False
+    # Retrieve the list of disks that belong to altinst_rootvg
+    hdisks = []
+    for pv, value in pvs.items():
+        if value['vg'] == 'altinst_rootvg':
+            if value['status'] == 'active':
+                found_altdisk_for_sleep = True
+            found_altdisk = True
+            hdisks.append(pv)
+        module.debug(f'{pv}: {value}')
+    if not hdisks:
+        results['msg'] = 'There is no alternate install rootvg found'
+        module.fail_json(**results)
+    if not found_altdisk_for_sleep:  # preserve idempotency
+        results['msg'] += "alternate install rootvg is already in sleep mode. "
+        return
+
+    if found_altdisk:
+        cmd = ['/usr/sbin/alt_rootvg_op', '-S']
+        if module.params.get('rebuild_boot_image'):
+            cmd.append('-t')
+        ret, stdout, stderr = module.run_command(cmd)
+        if ret:
+            module.fail_json(
+                msg=f"Command '{' '.join(cmd)}' failed with return code {ret}.",
+                stdout=stdout,
+                stderr=stderr
+            )
+
+    results['changed'] = True
+
+
 def main():
     global results
 
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str',
-                        choices=['copy', 'clean', 'install'], default='copy'),
+                        choices=['copy', 'clean', 'install', 'wakeup', 'sleep'], default='copy'),
             targets=dict(type='list', elements='str'),
             disk_size_policy=dict(type='str',
                                   choices=['minimize', 'upper', 'lower', 'nearest']),
@@ -746,6 +841,7 @@ def main():
             first_boot_script=dict(type='str'),
             resolvconf=dict(type='str'),
             allow_old_rootvg=dict(type='bool', default=False),
+            rebuild_boot_image=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
             ['targets', 'disk_size_policy']
@@ -774,6 +870,10 @@ def main():
         alt_disk_copy(module, module.params, targets, allow_old_rootvg)
     elif action == 'clean':
         alt_disk_clean(module, targets, allow_old_rootvg)
+    elif action == 'wakeup':
+        alt_rootvg_wakeup(module)
+    elif action == 'sleep':
+        alt_rootvg_sleep(module)
     else:
         alt_rootvg_op(module)
 
