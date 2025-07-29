@@ -738,6 +738,7 @@ def alt_rootvg_wakeup(module):
 
     found_altdisk_for_wakeup = False
     hdisks = module.params['targets']
+    sleeping_hdisks = []
     if not hdisks:
         results['msg'] = 'Please provide the target disk for the wake-up operation'
         module.fail_json(**results)
@@ -755,16 +756,16 @@ def alt_rootvg_wakeup(module):
                 results['msg'] = f'Specified disk \'{hdisk}\' is not an alternate install rootvg'
                 module.fail_json(**results)
 
-            if pvs[hdisk]['vg'] == 'altinst_rootvg':
-                if pvs[hdisk]['status'] == '':
-                    found_altdisk_for_wakeup = True
-                found_altdisk = True
+            if pvs[hdisk]['status'] == '':
+                found_altdisk_for_wakeup = True
+                sleeping_hdisks.append(hdisk)
+            found_altdisk = True
 
     if not found_altdisk_for_wakeup:  # preserve idempotency
         results['msg'] += "The alternate install rootvg has already been woken up. "
         return
     if found_altdisk:
-        cmd = ['/usr/sbin/alt_rootvg_op', '-W', '-d', ' '.join(hdisks)]
+        cmd = ['/usr/sbin/alt_rootvg_op', '-W', '-d', ' '.join(sleeping_hdisks)]
         ret, stdout, stderr = module.run_command(cmd)
         if ret:
             results['stdout'] = stdout
