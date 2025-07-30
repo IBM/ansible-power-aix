@@ -413,7 +413,7 @@ def parse_group_details(module, stdout):
         key, val = attr.split("=")
 
         parsed_details[key] = val
-    
+
     return parsed_details
 
 
