@@ -176,19 +176,32 @@ def modify_group(module):
     user_list_type = module.params['user_list_type']
 
     if module.params['group_attributes']:
+
+        init_props = parse_group_details(module, get_group_attributes(module))
+        same_attrs = 0
+        total_attrs = 0
+
         for attr, val in module.params['group_attributes'].items():
-            if attr == 'load_module':
-                load_module_opts = f"-R {val} "
-            else:
-                opts += f"{attr}={val} "
-        if load_module_opts is not None:
-            opts = load_module_opts + opts
+
+            if attr == "admin" and val not in ["true", "false"]:
+                if val:
+                    val = "true"
+                else:
+                    val = "false"
+
+            total_attrs += 1
+            if attr in init_props.keys() and init_props[attr] == str(val):
+                same_attrs += 1
+                continue
+            opts += f"{attr}={val} "
+
+        if same_attrs == total_attrs:
+            result['msg'] = "No need to modify anything, all the attributes are already set."
+            module.exit_json(**result)
 
         if module.params['load_module']:
             load_module_op = f" -R {module.params['load_module']} "
         cmd = f"chgroup {load_module_op} {opts} {name}"
-
-        init_props = get_group_attributes(module)
 
         rc, stdout, stderr = module.run_command(cmd)
 
@@ -197,22 +210,11 @@ def modify_group(module):
         result['stdout'] = stdout
         result['stderr'] = stderr
         if rc != 0:
-            # User is not in member list. (Not a problem: idempotency)
-            pattern = "3004-692"
-            found = re.search(pattern, stderr)
+            result['msg'] += f"\nFailed to modify attributes for group: {name}."
+            module.fail_json(**result)
 
-            if not found:
-                result['msg'] += f"\nFailed to modify attributes for group: {name}."
-                module.fail_json(**result)
-            else:
-                result['rc'] = 0
-
-        if init_props != get_group_attributes(module):
-            result['changed'] = True
-            msg = f"\nGroup: {name} attributes SUCCESSFULLY set."
-        else:
-            msg = f"\nGroup: {name} attributes were not changed."
-            result['changed'] = False
+        result['changed'] = True
+        msg = f"\nGroup: {name} attributes SUCCESSFULLY set."
 
     if module.params['user_list_action']:
         cmd = "chgrpmem "
@@ -391,6 +393,28 @@ def get_group_attributes(module):
     rc, out, err = module.run_command(cmd)
 
     return out
+
+
+def parse_group_details(module, stdout):
+    """
+    Parses the output from lsgroup command.
+    arguments:
+        module(dict): The Ansible module
+        stdout(str): Output of lsps command
+    return:
+        parsed_details(dict): Contains all the set attribute value pairs"
+    """
+
+    parsed_details = dict()
+
+    stdout = stdout.split()[1:]
+
+    for attr in stdout:
+        key, val = attr.split("=")
+
+        parsed_details[key] = val
+    
+    return parsed_details
 
 
 def main():
