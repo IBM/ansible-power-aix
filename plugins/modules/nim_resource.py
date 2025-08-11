@@ -316,7 +316,7 @@ def res_create(nim_cmd, module):
     attributes = module.params['attributes']
 
     if object_type:
-        if object_type == "res_group":
+        if object_type == "res_group" or object_type == "standalone":
             cmd = nim_cmd + ' -o define '
         else:
             cmd = nim_cmd + ' -a server=master -o define '
