@@ -297,12 +297,13 @@ def modify_user(module):
 
     # Change user password
     if module.params['password'] is not None:
-        msg_pass = change_password(module)
+        msg_pass, chg = change_password(module)
         if msg is not None:
             msg += msg_pass
         else:
             msg = msg_pass
-        changed = True
+        if not changed:
+            changed = chg
 
     if msg is None:
         msg = "No changes were made."
@@ -347,7 +348,7 @@ def create_user(module):
         msg = f"Username is created SUCCESSFULLY: {name}"
 
     if module.params['password'] is not None:
-        msg_pass = change_password(module)
+        msg_pass, chg = change_password(module)
         msg += msg_pass
     return msg
 
@@ -431,6 +432,13 @@ def change_password(module):
     change_passwd_on_login = module.params['change_passwd_on_login']
     load_module = module.params['load_module']
 
+    if load_module == 'files':
+        cmd = f"grep -p {name} /etc/security/passwd | awk '/password/ {{print $NF}}'"
+        pass_rc, pass_out, pass_err = module.run_command(cmd, use_unsafe_shell=True)
+        if pass_rc == 0 and pass_out.strip() == passwd:
+            # password hash is the same
+            return f"\nPassword is not changed for the user: {name}", False
+
     if change_passwd_on_login:
         cmd = f"echo \'{name}:{passwd}\' | chpasswd -e"
     else:
@@ -444,7 +452,7 @@ def change_password(module):
     else:
         msg = f"\nPassword is set successfully for the user: {name}"
 
-    return msg
+    return msg, True
 
 
 def main():
