@@ -28,7 +28,7 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = False
     _VALID_ARGS = frozenset(('post_reboot_delay', 'pre_reboot_delay', 'test_command', 'reboot_timeout'))
 
-    boot_time_command = 'who -b'
+    boot_time_command = 'whoami'
     reboot_command = 'shutdown -r'
     DEFAULT_PRE_REBOOT_DELAY = 0
     DEFAULT_POST_REBOOT_DELAY = 0
@@ -112,6 +112,13 @@ class ActionModule(ActionBase):
                         self._connection.reset()
                     except AttributeError:
                         pass
+                    # Added sleep so that the connection gets time to reset
+                    time.sleep(10)
+                else:
+                    raise
+            else:
+                # Added sleep so that the connection gets time to reset
+                time.sleep(5)
         raise TimedOutException("Connection reset failed while validating the reboot.")
 
     def run(self, tmp=None, task_vars=None):
