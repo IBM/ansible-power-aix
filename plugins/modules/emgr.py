@@ -474,7 +474,7 @@ def main():
         msg='',
         stdout='',
         stderr='',
-        oslevel = '',
+        oslevel='',
         ifix_details=[],
         reboot_required=False,
     )
