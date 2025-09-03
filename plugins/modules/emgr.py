@@ -474,6 +474,7 @@ def main():
         msg='',
         stdout='',
         stderr='',
+        oslevel='',
         ifix_details=[],
         reboot_required=False,
     )
@@ -774,6 +775,17 @@ def main():
             results['changed'] = True
         elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['ifix_details'] = parse_ifix_details(stdout)
+
+        # Adding system oslevel to output
+        rc, stdout, stderr = module.run_command('usr/bin/oslevel -s')
+
+        if rc:
+            results['msg'] = "Failed to retrieve the oslevel from the system. Check stderr for more details."
+            results['stderr'] = stderr
+            module.fail_json(**results)
+
+        results['oslevel'] = stdout.rstrip()
+
     else:
         results['msg'] = f'Command {cmd} has no preview mode, execution skipped.'
         results['stdout'] = 'No stdout as execution has been skipped.'
