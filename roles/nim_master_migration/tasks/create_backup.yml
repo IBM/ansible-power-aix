@@ -1,33 +1,33 @@
 ---
 - name: Retrieve path from {{ nim_master_migration_db_filename }}
   ansible.builtin.set_fact:
-    db_backup_path: "{{ nim_master_migration_db_filename | dirname }}"
+    nim_master_migration_db_backup_path: "{{ nim_master_migration_db_filename | dirname }}"
 
-- name: "Verify atleast 10Mb of space is available in '{{ db_backup_path }}'"
-  ansible.builtin.raw: "/usr/bin/df -m {{ db_backup_path }}"
-  register: output
+- name: "Verify atleast 10Mb of space is available in '{{ nim_master_migration_db_backup_path }}'"
+  ansible.builtin.raw: "/usr/bin/df -m {{ nim_master_migration_db_backup_path }}"
+  register: nim_master_migration_output
   changed_when: false
 
 - name: Check for failure in getting the free space
   ansible.builtin.fail:
     msg: "Following command failed : df -m"
-  when: output.rc != 0
+  when: nim_master_migration_output.rc != 0
 
-- name: "Get the free size of {{ db_backup_path }}"
+- name: "Get the free size of {{ nim_master_migration_db_backup_path }}"
   ansible.builtin.set_fact:
-    free_space: "{{ output.stdout_lines[1].split()[2] }}"
+    nim_master_migration_free_space: "{{ nim_master_migration_output.stdout_lines[1].split()[2] }}"
 
 - name: "Fail if space is not enough"
   ansible.builtin.fail:
     msg: Not enough space to take a backup
-  when: (free_space | int) < 10
+  when: (nim_master_migration_free_space | int) < 10
 
 - name: Take backup of Database present on "{{ nim_master_migration_master_b }}"
   ansible.builtin.raw: /usr/lpp/bos.sysmgt/nim/methods/m_backup_db "{{ nim_master_migration_db_filename }}"
-  register: command
-  changed_when: command.rc == 0
+  register: nim_master_migration_command
+  changed_when: nim_master_migration_command.rc == 0
 
 - name: Check for failure in taking backup of DB
   ansible.builtin.fail:
     msg: "Could not create database backup"
-  when: command.rc != 0
+  when: nim_master_migration_command.rc != 0

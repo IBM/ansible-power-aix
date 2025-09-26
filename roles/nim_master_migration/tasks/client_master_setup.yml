@@ -12,23 +12,23 @@
   ansible.builtin.command:
     'nim -o define -t standalone -a platform=chrp -a if1="find_net {{ nim_master_migration_master_b }} 0" -a
     cable_type1=bnc {{ nim_master_migration_master_b_hostname }}'
-  register: command
-  changed_when: command.rc == 0
+  register: nim_master_migration_command
+  changed_when: nim_master_migration_command.rc == 0
 
 - name: Check for failure in Registering 'nim_master_migration_master_b' as a client machine for {{ nim_master_migration_master_a }}
   ansible.builtin.fail:
     msg: Could not register "{{ nim_master_migration_master_b }}" as a client "{{ nim_master_migration_master_a }}"
-  when: command.rc != 0
+  when: nim_master_migration_command.rc != 0
 
 # This command will initialise Master B machine as a client to Master A machine
 
 - name: Registering 'nim_master_migration_master_a' as NIM master on {{ nim_master_migration_master_b }}
   ansible.builtin.raw: niminit -a name={{ nim_master_migration_master_b_hostname }} -a master={{ nim_master_migration_master_a }}
   delegate_to: "{{ nim_master_migration_master_b }}"
-  register: command
-  changed_when: command.rc == 0
+  register: nim_master_migration_command
+  changed_when: nim_master_migration_command.rc == 0
 
 - name: Check for failure in registering 'nim_master_migration_master_a' as NIM master on {{ nim_master_migration_master_b }}
   ansible.builtin.fail:
     msg: Could not register {{ nim_master_migration_master_a }} as NIM master on {{ nim_master_migration_master_b }}
-  when: command.rc != 0
+  when: nim_master_migration_command.rc != 0
