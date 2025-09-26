@@ -2,12 +2,12 @@
 ---
 - name: Verify the host is at least aix 7.3, to install dependent tools.
   ansible.builtin.raw: /usr/bin/oslevel  | /usr/bin/awk -F '.' ' { print $1 $2 }'
-  register: output
+  register: power_aix_vioshc_output
   changed_when: false
 
 - name: Install dependent tools for vioshc
   ansible.builtin.include_tasks: vioshc_dep_install.yml
-  when: (output.stdout_lines[0] | int) >= 73
+  when: (power_aix_vioshc_output.stdout_lines[0] | int) >= 73
 
 - name: Install vioshc.py onto target
   ansible.builtin.copy:
