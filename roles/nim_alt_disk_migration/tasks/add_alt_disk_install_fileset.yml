@@ -9,13 +9,13 @@
     - ansible.builtin.command: >
         nim -o cust -a lpp_source={{ nim_mast_lpp | default(nim_alt_disk_migration_lpp_source) }}
         -a filesets=bos.alt_disk_install.rte {{ nim_alt_disk_migration_spot }}
-      register: spot_fileset_install
-      changed_when: spot_fileset_install.rc == 0
+      register: nim_alt_disk_migration_spot_fileset_install
+      changed_when: nim_alt_disk_migration_spot_fileset_install.rc == 0
 
     - ansible.builtin.fail:
         msg: >
           Installation of 'bos.alt_disk_install.rte' on {{ nim_alt_disk_migration_spot }} failed
-      when: spot_fileset_install is failed
+      when: nim_alt_disk_migration_spot_fileset_install is failed
 
     - ansible.builtin.debug:
         msg: >

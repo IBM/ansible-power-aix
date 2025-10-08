@@ -23,7 +23,7 @@
     filesets: bos.alt_disk_install.rte
 
 - ansible.builtin.set_fact:
-    nim_master_fileset_levels: >
+    nim_alt_disk_migration_nim_master_fileset_levels: >
       {{ ansible_facts['filesets']['bos.alt_disk_install.rte']['levels'].keys() | list }}
 
 - name: Check if 'bos.alt_disk_install.rte is installed in NIM master
@@ -33,7 +33,7 @@
 - ansible.builtin.debug:
     msg: >
       'bos.alt_disk_install.rte' in NIM master is at
-      level {{ nim_master_fileset_levels }}
+      level {{ nim_alt_disk_migration_nim_master_fileset_levels }}
 
 ############################################################
 ############################################################
@@ -44,23 +44,23 @@
     name: "{{ nim_alt_disk_migration_lpp_source }}"
     showres:
       fetch_contents: true
-  register: lpp_source_query
+  register: nim_alt_disk_migration_lpp_source_query
 
 - name: Check if 'bos.alt_disk_install.rte is in in {{ nim_alt_disk_migration_lpp_source }}
   block:
     - ansible.builtin.set_fact:
-        lpp_source_fileset: "{{ lpp_source_query['nim_resources'][nim_alt_disk_migration_lpp_source]['contents'] }}"
+        nim_alt_disk_migration_lpp_source_fileset: "{{ nim_alt_disk_migration_lpp_source_query['nim_resources'][nim_alt_disk_migration_lpp_source]['contents'] }}"
 
     - ansible.builtin.fail:
         msg: Fileset 'bos.alt_disk_install.rte' not in in {{ nim_alt_disk_migration_lpp_source }}
-      when: lpp_source_fileset['bos.alt_disk_install.rte'] is not defined
+      when: nim_alt_disk_migration_lpp_source_fileset['bos.alt_disk_install.rte'] is not defined
 
     - ansible.builtin.debug:
         msg: '"defined"'
-      when: lpp_source_fileset['bos.alt_disk_install.rte'] is defined
+      when: nim_alt_disk_migration_lpp_source_fileset['bos.alt_disk_install.rte'] is defined
 
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_fileset['bos.alt_disk_install.rte'] }}"
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ nim_alt_disk_migration_lpp_source_fileset['bos.alt_disk_install.rte'] }}"
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level: "{{ nim_alt_disk_migration_lpp_source_fileset_level['level'] | first }}"
 
@@ -84,42 +84,42 @@
         name: "{{ nim_alt_disk_migration_spot }}"
         showres:
           fetch_contents: true
-      register: spot_query
+      register: nim_alt_disk_migration_spot_query
 
     # if 'bos.alt_disk_install.rte' is not installed in SPOT then install it
     - ansible.builtin.set_fact:
-        spot_fileset: "{{ spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
+        nim_alt_disk_migration_spot_fileset: "{{ nim_alt_disk_migration_spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
 
     - ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
-      when: spot_fileset['bos.alt_disk_install.rte'] is not defined
+      when: nim_alt_disk_migration_spot_fileset['bos.alt_disk_install.rte'] is not defined
 
     - ibm.power_aix.nim_resource:
         action: show
         name: "{{ nim_alt_disk_migration_spot }}"
         showres:
           fetch_contents: true
-      register: spot_query
+      register: nim_alt_disk_migration_spot_query
 
     - ansible.builtin.set_fact:
-        spot_fileset: "{{ spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
+        nim_alt_disk_migration_spot_fileset: "{{ nim_alt_disk_migration_spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
     - ansible.builtin.set_fact:
-        spot_fileset_level: "{{ spot_fileset['bos.alt_disk_install.rte']['level'] | first }}"
+        nim_alt_disk_migration_spot_fileset_level: "{{ nim_alt_disk_migration_spot_fileset['bos.alt_disk_install.rte']['level'] | first }}"
 
     - ansible.builtin.debug:
         msg: >
           'bos.alt_disk_install.rte' in {{ nim_alt_disk_migration_spot }} is at
-          level '{{ spot_fileset_level }}'
+          level '{{ nim_alt_disk_migration_spot_fileset_level }}'
 - name: Check if 'bos.alt_disk_install.rte' fileset level matches between NIM master and {{ nim_alt_disk_migration_lpp_source }}
   block:
     - ansible.builtin.set_fact:
-        nim_master_fileset_level: >
-          {{ nim_master_fileset_levels.0 }}
+        nim_alt_disk_migration_nim_master_fileset_level: >
+          {{ nim_alt_disk_migration_nim_master_fileset_levels.0 }}
     - ansible.builtin.set_fact:
-        nim_master_fileset_level_major_num: "{{ nim_master_fileset_level.split('.')[0] }}"
-        nim_master_fileset_level_minor_num: "{{ nim_master_fileset_level.split('.')[1] }}"
+        nim_alt_disk_migration_nim_master_fileset_level_major_num: "{{ nim_alt_disk_migration_nim_master_fileset_level.split('.')[0] }}"
+        nim_alt_disk_migration_nim_master_fileset_level_minor_num: "{{ nim_alt_disk_migration_nim_master_fileset_level.split('.')[1] }}"
     - ansible.builtin.set_fact:
-        nim_master_fileset_level: >
-          {{ nim_master_fileset_level_major_num + nim_master_fileset_level_minor_num + '00' }}
+        nim_alt_disk_migration_nim_master_fileset_level: >
+          {{ nim_alt_disk_migration_nim_master_fileset_level_major_num + nim_alt_disk_migration_nim_master_fileset_level_minor_num + '00' }}
 
     - ansible.builtin.set_fact:
         lpp_source_fileset_level_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
@@ -132,9 +132,9 @@
         msg: >
           NIM master and {{ nim_alt_disk_migration_lpp_source }} 'bos.alt_disk_install.rte'
           fileset level
-          {{ nim_alt_disk_migration_lpp_source_fileset_level }} > {{ nim_master_fileset_level }}
+          {{ nim_alt_disk_migration_lpp_source_fileset_level }} > {{ nim_alt_disk_migration_nim_master_fileset_level }}
           fileset levels invalid - LPP Source cannot be higher than NIM Master
-      when: nim_alt_disk_migration_lpp_source_fileset_level > nim_master_fileset_level
+      when: nim_alt_disk_migration_lpp_source_fileset_level > nim_alt_disk_migration_nim_master_fileset_level
 
 ############################################################
 ############################################################
@@ -149,24 +149,24 @@
     - ansible.builtin.fail:
         msg: >
           NIM master and {{ nim_alt_disk_migration_spot }} 'bos.alt_disk_install.rte'
-          {{ spot_fileset_level }} not in {{ nim_master_fileset_levels }}
+          {{ nim_alt_disk_migration_spot_fileset_level }} not in {{ nim_alt_disk_migration_nim_master_fileset_levels }}
           fileset levels do not match
-          Install 'bos.alt_disk_install.rte' from {{ nim_master_fileset_level }} into {{ nim_alt_disk_migration_spot }}
-      when: spot_fileset_level not in nim_master_fileset_levels
+          Install 'bos.alt_disk_install.rte' from {{ nim_alt_disk_migration_nim_master_fileset_level }} into {{ nim_alt_disk_migration_spot }}
+      when: nim_alt_disk_migration_spot_fileset_level not in nim_alt_disk_migration_nim_master_fileset_levels
 - name: Check if 'bos.alt_disk_install.rte' fileset level matches between lpp_source spot.
   when: nim_alt_disk_migration_spot != ""
   block:
     - ansible.builtin.set_fact:
-        spot_fileset_level_major_num: "{{ spot_fileset_level.split('.')[0] }}"
-        spot_fileset_level_minor_num: "{{ spot_fileset_level.split('.')[1] }}"
+        nim_alt_disk_migration_spot_fileset_level_major_num: "{{ nim_alt_disk_migration_spot_fileset_level.split('.')[0] }}"
+        nim_alt_disk_migration_spot_fileset_level_minor_num: "{{ nim_alt_disk_migration_spot_fileset_level.split('.')[1] }}"
     - ansible.builtin.set_fact:
-        spot_fileset_level: >
-          {{ spot_fileset_level_major_num + spot_fileset_level_minor_num + '00' }}
+        nim_alt_disk_migration_spot_fileset_level: >
+          {{ nim_alt_disk_migration_spot_fileset_level_major_num + nim_alt_disk_migration_spot_fileset_level_minor_num + '00' }}
 
     - ansible.builtin.fail:
         msg: >
           {{ nim_alt_disk_migration_lpp_source }} and {{ nim_alt_disk_migration_spot }} 'bos.alt_disk_install.rte'
-          {{ spot_fileset_level }} < {{ nim_alt_disk_migration_lpp_source_fileset_level }}
+          {{ nim_alt_disk_migration_spot_fileset_level }} < {{ nim_alt_disk_migration_lpp_source_fileset_level }}
           fileset levels are not supported - LPP Source cannot be higher than SPOT
 
-      when: spot_fileset_level < nim_alt_disk_migration_lpp_source_fileset_level
+      when: nim_alt_disk_migration_spot_fileset_level < nim_alt_disk_migration_lpp_source_fileset_level

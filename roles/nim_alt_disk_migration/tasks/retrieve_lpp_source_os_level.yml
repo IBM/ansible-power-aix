@@ -26,22 +26,22 @@
     set -o pipefail
     nim -o showres {{ nim_alt_disk_migration_lpp_source }} | grep 'bos.mp64'
   changed_when: false
-  register: lpp_source_query
+  register: nim_alt_disk_migration_lpp_source_query
   failed_when:
-    - lpp_source_query.rc != 0
-    - lpp_source_query.stderr != ''
+    - nim_alt_disk_migration_lpp_source_query.rc != 0
+    - nim_alt_disk_migration_lpp_source_query.stderr != ''
 
 - name: Check if 'bos.mp64 is in {{ nim_alt_disk_migration_lpp_source }}
   ansible.builtin.fail:
     msg: Fileset 'bos.mp64' not in in {{ nim_alt_disk_migration_lpp_source }}
-  when: lpp_source_query.stdout == ''  # noqa empty-string-compare
+  when: nim_alt_disk_migration_lpp_source_query.stdout == ''  # noqa empty-string-compare
 
 - block:
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level_pattern: (\s+bos\.mp64\s+)([0-9\.]+)
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level:
-          "{{ lpp_source_query.stdout | regex_search(nim_alt_disk_migration_lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
+          "{{ nim_alt_disk_migration_lpp_source_query.stdout | regex_search(nim_alt_disk_migration_lpp_source_fileset_level_pattern, '\\2') | join('\n') }}"
 
 - ansible.builtin.debug:
     msg: >
@@ -51,10 +51,10 @@
 - name: Preprocess 'bos.mp64' fileset release level
   block:
     - ansible.builtin.set_fact:
-        lpp_source_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
-        lpp_source_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
+        nim_alt_disk_migration_lpp_source_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
+        nim_alt_disk_migration_lpp_source_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_lpp_source_fileset_level: "{{ lpp_source_major_num + lpp_source_minor_num + '00' }}"
+        nim_alt_disk_migration_lpp_source_fileset_level: "{{ nim_alt_disk_migration_lpp_source_major_num + nim_alt_disk_migration_lpp_source_minor_num + '00' }}"
 
 - name: Save bos.mp version on file, last task in retrieve_lpp_source_oslevel.
   ansible.builtin.copy:  # noqa risky-file-permissions

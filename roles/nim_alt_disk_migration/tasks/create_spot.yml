@@ -14,11 +14,11 @@
   block:
     - ibm.power_aix.nim_resource:
         action: show
-        name: "{{ lnim_alt_disk_migration_pp_source }}"
-      register: lpp_source_query
+        name: "{{ nim_alt_disk_migration_lpp_source }}"
+      register: nim_alt_disk_migration_lpp_source_query
 
     - ansible.builtin.set_fact:
-        lpp_source_info: "{{ lpp_source_query.nim_resources.values() | first }}"
+        lpp_source_info: "{{ nim_alt_disk_migration_lpp_source_query.nim_resources.values() | first }}"
         location_pattern: (/\S+)(?=/)
 
     - ansible.builtin.set_fact:
@@ -45,10 +45,10 @@
     attributes:
       source: "{{ nim_alt_disk_migration_lpp_source }}"
       location: "{{ lpp_source_location }}"
-  register: result
+  register: nim_alt_disk_migration_result
 
 - name: If SPOT resource already exists then query if 'bos.alt_disk_install.rte is installed'
-  when: result.stderr.find( "0042-081" ) != -1
+  when: nim_alt_disk_migration_result.stderr.find( "0042-081" ) != -1
 
   block:
     - ansible.builtin.debug:
@@ -61,15 +61,15 @@
           fetch_contents: true
           max_retries: "{{ nim_alt_disk_migration_dflt_max_retries }}"
           retry_wait_time: "{{ nim_alt_disk_migration_dflt_retry_wait_time }}"
-      register: spot_query
+      register: nim_alt_disk_migration_spot_query
 - name: Set SPOT resource to be used
   block:
     - ansible.builtin.set_fact:
-        spot: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
+        nim_alt_disk_migration_spot: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
     - ansible.builtin.set_fact:
-        spot_fileset: "{{ spot_query['nim_resources'][spot]['contents'] }}"
+        nim_alt_disk_migration_spot_fileset: "{{ nim_alt_disk_migration_spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
 
 - ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
   when: >
-    result.stderr.find( "0042-081" ) == -1 or
-    spot_fileset['bos.alt_disk_install.rte'] is not defined
+    nim_alt_disk_migration_result.stderr.find( "0042-081" ) == -1 or
+    nim_alt_disk_migration_spot_fileset['bos.alt_disk_install.rte'] is not defined
