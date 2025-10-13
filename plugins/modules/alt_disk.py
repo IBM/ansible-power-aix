@@ -67,6 +67,11 @@ options:
     - When I(action=copy), specifies to run bootlist after the alternate disk copy.
     type: bool
     default: no
+  skip_disk_bootability_checks:
+    description:
+    - When I(action=copy), skips disk bootability checks.
+    type: bool
+    default: no
   remain_nim_client:
     description:
     - When I(action=copy), specifies to copy the C(/.rhosts) and C(/etc/niminfo) files to the
@@ -575,6 +580,8 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
     cmd = ['alt_disk_copy', '-d', ' '.join(hdisks)]
     if not params['bootlist']:
         cmd += ['-B']
+    if params['skip_disk_bootability_checks']:
+        cmd += ['-g']
     if params['remain_nim_client']:
         cmd += ['-n']
     if params['device_reset']:
@@ -838,6 +845,7 @@ def main():
             force=dict(type='bool', default=False),
             bootlist=dict(type='bool', default=False),
             remain_nim_client=dict(type='bool', default=False),
+            skip_disk_bootability_checks=dict(type='bool', default=False),
             device_reset=dict(type='bool', default=False),
             first_boot_script=dict(type='str'),
             resolvconf=dict(type='str'),
