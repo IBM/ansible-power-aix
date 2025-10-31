@@ -123,11 +123,11 @@
           {{ nim_alt_disk_migration_nim_master_fileset_level_major_num + nim_alt_disk_migration_nim_master_fileset_level_minor_num + '00' }}
 
     - ansible.builtin.set_fact:
-        lpp_source_fileset_level_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
-        lpp_source_fileset_level_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
+        nim_alt_disk_migration_lpp_source_fileset_level_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
+        nim_alt_disk_migration_lpp_source_fileset_level_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset_level: >
-          {{ lpp_source_fileset_level_major_num + lpp_source_fileset_level_minor_num + '00' }}
+          {{ nim_alt_disk_migration_lpp_source_fileset_level_major_num + nim_alt_disk_migration_lpp_source_fileset_level_minor_num + '00' }}
 
     - ansible.builtin.fail:
         msg: >

@@ -18,11 +18,12 @@
       register: nim_alt_disk_migration_lpp_source_query
 
     - ansible.builtin.set_fact:
-        lpp_source_info: "{{ nim_alt_disk_migration_lpp_source_query.nim_resources.values() | first }}"
-        location_pattern: (/\S+)(?=/)
+        nim_alt_disk_migration_lpp_source_info: "{{ nim_alt_disk_migration_lpp_source_query.nim_resources.values() | first }}"
+        nim_alt_disk_migration_location_pattern: (/\S+)(?=/)
 
     - ansible.builtin.set_fact:
-        lpp_source_location: "{{ lpp_source_info.location | regex_search(location_pattern, '\\0') | join('\n') }}"
+        nim_alt_disk_migration_lpp_source_location:
+          "{{ nim_alt_disk_migration_lpp_source_info.location | regex_search(nim_alt_disk_migration_location_pattern, '\\0') | join('\n') }}"
 
 ############################################################
 # NOTE: if SPOT is not specified then create a SPOT
@@ -44,7 +45,7 @@
     object_type: spot
     attributes:
       source: "{{ nim_alt_disk_migration_lpp_source }}"
-      location: "{{ lpp_source_location }}"
+      location: "{{ nim_alt_disk_migration_lpp_source_location }}"
   register: nim_alt_disk_migration_result
 
 - name: If SPOT resource already exists then query if 'bos.alt_disk_install.rte is installed'
