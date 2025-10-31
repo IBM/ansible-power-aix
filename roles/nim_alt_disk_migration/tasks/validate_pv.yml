@@ -61,8 +61,10 @@
         nim_alt_disk_migration_pv_available_cond3: "{{ nim_alt_disk_migration_pv_availability_output.stdout == '' }}"
         nim_alt_disk_migration_pv_available_cond4: "{{ nim_alt_disk_migration_pv_availability_output.rc == 0 }}"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_pv_available:
-          "{{ nim_alt_disk_migration_pv_available_cond1 or (nim_alt_disk_migration_pv_available_cond2 and nim_alt_disk_migration_pv_available_cond3 and nim_alt_disk_migration_pv_available_cond4) }}"
+        nim_alt_disk_migration_pv_available: >-
+          {{ nim_alt_disk_migration_pv_available_cond1 or
+          (nim_alt_disk_migration_pv_available_cond2 and nim_alt_disk_migration_pv_available_cond3
+          and nim_alt_disk_migration_pv_available_cond4) }}
 
 - name: Validate specified physical volume
   block:
