@@ -54,7 +54,8 @@
         nim_alt_disk_migration_lpp_source_major_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[0] }}"
         nim_alt_disk_migration_lpp_source_minor_num: "{{ nim_alt_disk_migration_lpp_source_fileset_level.split('.')[1] }}"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_lpp_source_fileset_level: "{{ nim_alt_disk_migration_lpp_source_major_num + nim_alt_disk_migration_lpp_source_minor_num + '00' }}"
+        nim_alt_disk_migration_lpp_source_fileset_level:
+          "{{ nim_alt_disk_migration_lpp_source_major_num + nim_alt_disk_migration_lpp_source_minor_num + '00' }}"
 
 - name: Save bos.mp version on file, last task in retrieve_lpp_source_oslevel.
   ansible.builtin.copy:  # noqa risky-file-permissions

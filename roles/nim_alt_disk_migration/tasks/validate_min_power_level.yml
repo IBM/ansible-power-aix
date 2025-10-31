@@ -11,7 +11,8 @@
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_processor_type_pattern: "(?<=Processor Type: PowerPC_POWER)([0-9]+)"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_processor_type: "{{ nim_alt_disk_migration_prtconf_output.stdout | regex_search(nim_alt_disk_migration_processor_type_pattern, '\\1') | join('\n') }}"
+        nim_alt_disk_migration_processor_type:
+          "{{ nim_alt_disk_migration_prtconf_output.stdout | regex_search(nim_alt_disk_migration_processor_type_pattern, '\\1') | join('\n') }}"
 
 - name: Validate Processor Type Level
   ansible.builtin.fail:

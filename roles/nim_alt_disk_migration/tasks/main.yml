@@ -378,8 +378,6 @@
               -s {{ nim_alt_disk_migration_spot }} {{ nim_alt_disk_migration_nimadm_options }} -Y -d {{ nim_alt_disk_migration_client_target_disk | quote }}
 
         - name: Migrate to alternate disk  # noqa no-changed-when
-          # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -d {{ nim_alt_disk_migration_client_target_disk }} -Y"
-          # command: "/usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ lpp_source }} -s {{ spot }} -Y -d {{ nim_alt_disk_migration_client_target_disk | quote }}"
           ansible.builtin.command: >
             /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }} -s {{ nim_alt_disk_migration_spot }}
             {{ nim_alt_disk_migration_nimadm_options }} -Y -d {{ nim_alt_disk_migration_client_target_disk | quote }}
@@ -451,7 +449,8 @@
 
 - ansible.builtin.set_fact:
     nim_alt_disk_migration_msg1:
-      - "{{ nim_alt_disk_migration_msg1 }} \n- Migration of {{ nim_alt_disk_migration_nim_client }} to {{ nim_alt_disk_migration_lpp_source_fileset_level }} NOT Completed"
+      - "{{ nim_alt_disk_migration_msg1 }} \n- Migration of {{ nim_alt_disk_migration_nim_client }} to"
+      - " {{ nim_alt_disk_migration_lpp_source_fileset_level }} NOT Completed"
       - "    Skipping call to nimadm due to nim_alt_disk_migration_debug_skip_nimadm (debug preview action only)"
       - "    /usr/sbin/nimadm -c {{ nim_alt_disk_migration_nim_client }} -l {{ nim_alt_disk_migration_lpp_source }}"
       - " -s {{ nim_alt_disk_migration_spot }} {{ nim_alt_disk_migration_nimadm_options }} -Y -d {{ nim_alt_disk_migration_client_target_disk | quote }}"

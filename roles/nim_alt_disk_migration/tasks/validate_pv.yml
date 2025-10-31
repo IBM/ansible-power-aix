@@ -49,17 +49,20 @@
         nim_alt_disk_migration_used_pp_pattern: (?<=USED PPs:)[\s0-9]+[\(]([0-9]+)
         # 0516-320 /usr/sbin/getlvodm: Physical volume hdisk1 is not assigned to
         #        a volume group.
-        nim_alt_disk_migration_pv_available_cond1: "{% if nim_alt_disk_migration_pv_availability_output.stderr.find('0516-320') != -1 %} true {% else %} false {% endif %}"
+        nim_alt_disk_migration_pv_available_cond1:
+          "{% if nim_alt_disk_migration_pv_availability_output.stderr.find('0516-320') != -1 %} true {% else %} false {% endif %}"
     - ansible.builtin.set_fact:
         # in megabytes
-        nim_alt_disk_migration_used_pps: "{{ nim_alt_disk_migration_used_pp_output.stdout | regex_search(nim_alt_disk_migration_used_pp_pattern, '\\1') | join('\n') }}"
+        nim_alt_disk_migration_used_pps:
+          "{{ nim_alt_disk_migration_used_pp_output.stdout | regex_search(nim_alt_disk_migration_used_pp_pattern, '\\1') | join('\n') }}"
         nim_alt_disk_migration_pv_size: "{{ nim_alt_disk_migration_pv_size_output.stdout }}"
         nim_alt_disk_migration_pv_available_cond1: "{{ nim_alt_disk_migration_pv_available_cond1 | trim }}"
         nim_alt_disk_migration_pv_available_cond2: "{{ nim_alt_disk_migration_pv_availability_output.stderr == '' }}"
         nim_alt_disk_migration_pv_available_cond3: "{{ nim_alt_disk_migration_pv_availability_output.stdout == '' }}"
         nim_alt_disk_migration_pv_available_cond4: "{{ nim_alt_disk_migration_pv_availability_output.rc == 0 }}"
     - ansible.builtin.set_fact:
-        nim_alt_disk_migration_pv_available: "{{ nim_alt_disk_migration_pv_available_cond1 or (nim_alt_disk_migration_pv_available_cond2 and nim_alt_disk_migration_pv_available_cond3 and nim_alt_disk_migration_pv_available_cond4) }}"
+        nim_alt_disk_migration_pv_available:
+          "{{ nim_alt_disk_migration_pv_available_cond1 or (nim_alt_disk_migration_pv_available_cond2 and nim_alt_disk_migration_pv_available_cond3 and nim_alt_disk_migration_pv_available_cond4) }}"
 
 - name: Validate specified physical volume
   block:
