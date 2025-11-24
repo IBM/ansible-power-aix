@@ -717,6 +717,7 @@ def main():
 
         if rc == 0 and found:
 
+            results['msg'] = "There is no efix data on this system."
             if module.params['ifix_packages']:
                 delete_temp_file(module.params['list_file'])
             module.exit_json(**results)
@@ -727,10 +728,12 @@ def main():
             success_list = []
             fail_list = []
 
-            if module.params['list_file'] and res_line:
+            if res_line:
                 summary_line = res_line.group(0)
                 stdout_lines = (stdout.split(summary_line)[1]).splitlines()[1:-1]
                 for line in stdout_lines:
+                    if "Return Status:" in line:
+                        break
                     line = line.split()
                     if len(line):
                         if line[-1] == "SUCCESS":
@@ -738,22 +741,26 @@ def main():
                         if line[-1] == "FAILURE":
                             fail_list.append(line[1])
 
-                if len(success_list):
-                    results['msg'] = f"Action - {module.params['action']} performed successfuly on {', '.join(success_list)}."
-                    results['msg'] += f" Failed for the following: {', '.join(fail_list)}."
-                    results['changed'] = True
-
-                    if module.params['ifix_packages']:
-                        delete_temp_file(module.params['list_file'])
-                    module.exit_json(**results)
-
             check = compare_counts(success_list, fail_list, stderr)
             if check:
                 results['changed'] = False
-                results['msg'] = f'Ifix {fail_list} already installed.'
-                if module.params['ifix_packages']:
+                results['msg'] = f"Ifix {' '.join(fail_list)} already installed."
+                if module.params['ifix_packages'] or module.params['list_file']:
                     delete_temp_file(module.params['list_file'])
                 module.exit_json(**results)
+
+            if len(fail_list):
+                results['msg'] = f"Action '{module.params['action']}'"
+                if len(success_list):
+                    results['msg'] = f" performed successfuly on {', '.join(success_list)},"
+                results['msg'] += f" failed for the following: {', '.join(fail_list)}."
+                results['msg'] += " Please check stderr, stdout for more information."
+                results['changed'] = True
+
+                if module.params['ifix_packages'] or module.params['list_file']:
+                    delete_temp_file(module.params['list_file'])
+                # module.exit_json(**results)
+                module.fail_json(**results)
 
             # Ifix was already installed(0645-065).
             # Ifix with label to remove is not there (0645-066).
@@ -766,18 +773,18 @@ def main():
             if not found:
                 results['msg'] = f'Command {cmd} failed with return code {rc}.'
 
-            if module.params['ifix_packages']:
+            if module.params['ifix_packages'] or module.params['list_file']:
                 delete_temp_file(module.params['list_file'])
             module.fail_json(**results)
 
-        results['msg'] = f'Command {cmd} successful.'
+        results['msg'] = f"Command {' '.join(cmd)} successful."
         if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
         elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['ifix_details'] = parse_ifix_details(stdout)
 
         # Adding system oslevel to output
-        rc, stdout, stderr = module.run_command('usr/bin/oslevel -s')
+        rc, stdout, stderr = module.run_command('/usr/bin/oslevel -s')
 
         if rc:
             results['msg'] = "Failed to retrieve the oslevel from the system. Check stderr for more details."
