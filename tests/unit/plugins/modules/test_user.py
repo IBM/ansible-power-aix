@@ -100,8 +100,10 @@ class TestCreateUser(unittest.TestCase):
         rc, stdout, stderr = 0, "sample stdout", "sample stderr"
 
         self.module.run_command.side_effect = [
-            (rc, self.lsuser_output1, stderr),
-            (rc, stdout, stderr)
+            (rc, self.lsuser_output1, stderr),  # lsuser -f -> current attrs
+            (rc, stdout, stderr),               # chuser -> pretend success
+            (0, "not_the_same_hash", ""),       # grep -> shows password differs so chpasswd will run
+            (0, "", "")                         # chpasswd -> success
         ]
 
         msg, changed = user.modify_user(self.module)
@@ -130,9 +132,10 @@ class TestCreateUser(unittest.TestCase):
         self.assertTrue(testResult['failed'])
 
     def test_success_change_password(self):
-        msg = user.change_password(self.module)
+        msg, changed = user.change_password(self.module)
         testMsg = "\nPassword is set successfully for the user: %s" % self.module.params['name']
         self.assertEqual(msg, testMsg)
+        self.assertTrue(changed)
 
     def test_fail_change_password(self):
         rc, stdout, stderr = 1, "sample stdout", "sample stderr"
