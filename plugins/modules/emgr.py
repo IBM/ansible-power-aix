@@ -710,7 +710,7 @@ def main():
         if not ifix:
             results['msg'] = "You need to provide 'ifix_package' to run emgr_sec."
             module.fail_json(**results)
-        
+
         cmd = ["emgr_sec"]
         cmd.append(f"{ifix}")
 
@@ -720,7 +720,7 @@ def main():
         if not tar:
             results['msg'] = "You need to provide 'tar_file' to run emgr_sec_patch."
             module.fail_json(**results)
-        
+
         cmd = ["emgr_sec_patch"]
         cmd.append(f"{tar}")
 
