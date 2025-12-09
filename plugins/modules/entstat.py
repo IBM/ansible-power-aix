@@ -9,6 +9,8 @@ from __future__ import absolute_import, division, print_function
 DOCUMENTATION = r'''
 ---
 module: entstat
+author:
+  - AIX Development Team (@vivekpandeyibm)
 short_description: Collects Ethernet device statistics using the entstat command on AIX
 version_added: "2.1.0"
 description:
