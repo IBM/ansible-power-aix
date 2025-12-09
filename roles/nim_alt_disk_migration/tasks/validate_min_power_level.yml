@@ -4,16 +4,17 @@
     /usr/lpp/bos.sysmgt/nim/methods/c_rsh {{ nim_alt_disk_migration_nim_client }}
     '/usr/sbin/prtconf'
   changed_when: false
-  register: prtconf_output
+  register: nim_alt_disk_migration_prtconf_output
 
-- name: Parse and Processor Type
+- name: Parse and get processor type
   block:
     - ansible.builtin.set_fact:
-        processor_type_pattern: "(?<=Processor Type: PowerPC_POWER)([0-9]+)"
+        nim_alt_disk_migration_processor_type_pattern: "(?<=Processor Type: PowerPC_POWER)([0-9]+)"
     - ansible.builtin.set_fact:
-        processor_type: "{{ prtconf_output.stdout | regex_search(processor_type_pattern, '\\1') | join('\n') }}"
+        nim_alt_disk_migration_processor_type:
+          "{{ nim_alt_disk_migration_prtconf_output.stdout | regex_search(nim_alt_disk_migration_processor_type_pattern, '\\1') | join('\n') }}"
 
 - name: Validate Processor Type Level
   ansible.builtin.fail:
     msg: LPAR Processor Type must be at least PowerPC_POWER8 or higher
-  when: processor_type | int < 8
+  when: nim_alt_disk_migration_processor_type | int < 8

@@ -3,16 +3,16 @@
   ibm.power_aix.nim:
     action: check
     targets: "{{ nim_alt_disk_migration_nim_client }}"
-  register: nim_check
+  register: nim_alt_disk_migration_nim_check
 - ansible.builtin.debug:
-    var: nim_check.nim_node.standalone[nim_alt_disk_migration_nim_client]
+    var: nim_alt_disk_migration_nim_check.nim_node.standalone[nim_alt_disk_migration_nim_client]
 - name: Parse OS level
   ansible.builtin.set_fact:
-    full_client_oslevel: >
-      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_check.nim_node.standalone) |
+    nim_alt_disk_migration_full_client_oslevel: >
+      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_alt_disk_migration_nim_check.nim_node.standalone) |
       map(attribute='oslevel') | list | join('\n') }}`
-    client_oslevel: >
-      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_check.nim_node.standalone) |
+    nim_alt_disk_migration_client_oslevel: >
+      `{{ [nim_alt_disk_migration_nim_client] | map('extract', nim_alt_disk_migration_nim_check.nim_node.standalone) |
       map(attribute='oslevel') | list | join('\n') | regex_search('[0-9]+') }}`
 
 ############################################################
@@ -26,7 +26,7 @@
 - name: Determine if OS level was successfully fetched
   ansible.builtin.fail:
     msg: OS level not successfully fetched, make sure NIM master/client is properly setup
-  when: full_client_oslevel == "timedout"
+  when: nim_alt_disk_migration_full_client_oslevel == "timedout"
 
 ############################################################
 # NOTE: The parsed OS level from the previous task will be
@@ -36,6 +36,6 @@
 - name: Fail if OS level is less than 7.1
   ansible.builtin.fail:
     msg: Client LPAR must be AIX 7.1 or higher.
-  when: client_oslevel < "7100"
+  when: nim_alt_disk_migration_client_oslevel < "7100"
 - ansible.builtin.debug:
-    msg: Client LPAR '{{ nim_alt_disk_migration_nim_client }}' is at AIX level '{{ full_client_oslevel }}'
+    msg: Client LPAR '{{ nim_alt_disk_migration_nim_client }}' is at AIX level '{{ nim_alt_disk_migration_full_client_oslevel }}'
