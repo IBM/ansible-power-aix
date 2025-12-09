@@ -13,43 +13,43 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-author:
-- AIX Development Team (@pbfinley1911)
 module: nim
 short_description: Performs NIM operations - server setup, install packages, update SP or TL.
-description:
-- Performs operations on Network Installation Management (NIM) objects.
-- It allows to configure the NIM master server, manage NIM objects, perform various operations on
-  NIM clients such as software or Base Operating System (BOS) installation, SP or TL updates using
-  existing NIM resources, reboot, etc.
 version_added: '0.4.0'
+author:
+  - AIX Development Team (@pbfinley1911)
+description:
+  - Performs operations on Network Installation Management (NIM) objects.
+  - It allows to configure the NIM master server, manage NIM objects, perform various operations on
+    NIM clients such as software or Base Operating System (BOS) installation, SP or TL updates using
+    existing NIM resources, reboot, and more.
 requirements:
-- AIX >= 7.1 TL3
-- Python >= 3.6
-- User with root authority to run the nim command.
-- 'Privileged user with authorization:
-  B(aix.system.install,aix.system.nim.config.server,aix.system.nim.stat)'
+  - AIX >= 7.1 TL3
+  - Python >= 3.6
+  - User with root authority to run the C(nim) command.
+  - 'Privileged user with authorization:
+    B(aix.system.install,aix.system.nim.config.server,aix.system.nim.stat)'
 options:
   action:
     description:
-    - Specifies the action to perform.
-    - C(update) to update NIM standalone clients with a specified C(lpp_source).
-    - C(master_setup) to setup a NIM master.
-    - C(register_client) to register new nim client to nim master
-    - C(check) to retrieve the B(Cstate) and B(oslevel) of each NIM client; results in I(nim_node).
-    - C(compare) to compare installation inventories of the NIM clients.
-    - C(script) to apply a script to customize NIM clients.
-    - C(allocate) to allocate a resource to specified NIM clients.
-    - C(deallocate) to deallocate a resource for specified NIM clients.
-    - C(install_fileset) to install filesets from the provided installp bundle.
-    - C(bos_inst) to install BOS image to a given list of NIM clients.
-    - C(define_script) to define a script NIM resource.
-    - C(remove) to remove a specified NIM resource.
-    - C(reset) to reset the B(Cstate) of a NIM client.
-    - C(reboot) to reboot the given NIM clients if they are running.
-    - C(maintenance) to perform a maintenance operation that commits filesets on NIM standalone
-      clients.
-    - C(show) to perform a query on a NIM object.
+      - Specifies the action to perform.
+      - C(update) to update NIM standalone clients with a specified C(lpp_source).
+      - C(master_setup) to setup a NIM master.
+      - C(register_client) to register new NIM client to NIM master.
+      - C(check) to retrieve the B(Cstate) and B(oslevel) of each NIM client; results in I(nim_node).
+      - C(compare) to compare installation inventories of the NIM clients.
+      - C(script) to apply a script to customize NIM clients.
+      - C(allocate) to allocate a resource to specified NIM clients.
+      - C(deallocate) to deallocate a resource for specified NIM clients.
+      - C(install_fileset) to install filesets from the provided installp bundle.
+      - C(bos_inst) to install BOS image to a given list of NIM clients.
+      - C(define_script) to define a script NIM resource.
+      - C(remove) to remove a specified NIM resource.
+      - C(reset) to reset the B(Cstate) of a NIM client.
+      - C(reboot) to reboot the given NIM clients if they are running.
+      - C(maintenance) to perform a maintenance operation that commits filesets on NIM standalone
+        clients.
+      - C(show) to perform a query on a NIM object.
     type: str
     choices:
       - update
@@ -71,83 +71,85 @@ options:
     required: true
   targets:
     description:
-    - Specifies the NIM clients to perform the action on.
-    - C(foo*) specifies all the NIM clients with name starting by 'foo'.
-    - C(foo[2:4]) specifies the NIM clients among foo2, foo3 and foo4.
-    - C(*) or C(ALL) specifies all the NIM clients.
-    - C(vios) or C(standalone) specifies all the NIM clients of this type.
+      - Specifies the NIM clients to perform the action on.
+      - C(foo*) specifies all the NIM clients with name starting by C(foo).
+      - C(foo[2:4]) specifies the NIM clients among C(foo2), C(foo3) and C(foo4).
+      - C(*) or C(ALL) specifies all the NIM clients.
+      - C(vios) or C(standalone) specifies all the NIM clients of this type.
     type: list
     elements: str
   new_targets:
     description:
-    - Specifies the new targets to be registered as nim client.
-    - Specifies <machine full name>-<login id>-<password> as a list in same format.
-    - Required when I(action) is register_client
+      - Specifies the new targets to be registered as NIM client.
+      - Each element must be of the form C(<machine full name>-<login id>-<password>).
+      - Required when I(action=register_client).
     type: list
     elements: str
   lpp_source:
     description:
-    - Indicates the name of the B(lpp_source) NIM resource to apply to the targets.
-    - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified; based on the NIM
-      server resources, nim will determine the actual oslevel necessary to update the targets;
-      the update operation will be synchronous independently from C(asynchronous) value.
+      - Indicates the name of the B(lpp_source) NIM resource to apply to the targets.
+      - C(latest_tl), C(latest_sp), C(next_tl) and C(next_sp) can be specified; based on the NIM
+        server resources, NIM will determine the actual oslevel necessary to update the targets;
+        the update operation will be synchronous independently from C(asynchronous) value.
     type: str
+  source_type:
+    description:
+      - Type of BOS source to use for C(bos_inst).
+    type: str
+    choices: [rte, mksysb, spot]
+    default: mksysb
   installp_bundle:
     description:
-    - Specifies the installp bundle containing names of the filesets that need to be installed.
+      - Specifies the installp bundle containing names of the filesets that need to be installed.
     type: str
   device:
     description:
-    - The device or directory where to find the lpp source to install.
+      - The device or directory where to find the lpp source to install.
+      - Required for I(action=master_setup).
     type: str
   script:
     description:
-    - NIM script resource.
+      - NIM script resource.
     type: str
   resource:
     description:
-    - NIM resource.
+      - NIM resource.
     type: str
   location:
     description:
-    - Specifies the full path name of the script resource file.
+      - Specifies the full path name of the script resource file.
     type: str
   group:
     description:
-    - NIM group resource.
+      - NIM group resource.
     type: str
   asynchronous:
     description:
-    - If set to C(no), NIM client will be completely installed before starting the installation of
-      another NIM client.
+      - If set to C(no), NIM client will be completely installed before starting the installation of
+        another NIM client.
     type: bool
-    default: no
+    default: false
   force:
     description:
-    - Forces action.
+      - Forces action. Semantics depend on I(action).
     type: bool
-    default: no
+    default: false
   boot_client:
     description:
-    - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
+      - If set to C(no), the NIM server will not attempt to reboot the client when the action is C(bos_inst).
     type: bool
-    default: yes
+    default: true
   object_type:
     description:
-    - Specifies which NIM object type to query for action C(show). Ignored for any other action.
-    - If not set for C(show), then all NIM objects in the target machine will be queried.
+      - Specifies which NIM object type to query for action C(show). Ignored for any other action.
+      - If not set for C(show), then all NIM objects in the target machine will be queried.
     type: str
     default: all
   alt_disk_update_name:
     description:
-    - Specifies name of the alternate disk where installation takes place
+      - Specifies name of the alternate disk where installation takes place for C(update) with
+        alternate disk update.
     type: str
-  source_type:
-    description:
-    - Specifies the type of source to be used in case of (action=bos_inst).
-    type: str
-    choices = [ rte, mksysb, spot ]
-    default: mksysb
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
