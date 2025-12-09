@@ -3,19 +3,19 @@
   ansible.builtin.stat:
     path: "{{ nim_master_migration_db_filename }}"
   delegate_to: "{{ nim_master_migration_master_b }}"
-  register: filestatus
+  register: nim_master_migration_filestatus
 
 - name: Run the following tasks if the file does not exist
-  when: not filestatus.stat.exists
+  when: not nim_master_migration_filestatus.stat.exists
   block:
     - name: Copy file from controller node to {{ nim_master_migration_master_b }}
       ansible.builtin.copy:
         src: "{{ nim_master_migration_db_file_controller }}"
         dest: "{{ nim_master_migration_db_filename }}"
         mode: '0777'
-      register: syncfile
+      register: nim_master_migration_syncfile
 
     - name: Check nimsh_status  # noqa: no-handler
       ansible.builtin.debug:
         msg: Backup file transferred successfully
-      when: syncfile.changed
+      when: nim_master_migration_syncfile.changed
