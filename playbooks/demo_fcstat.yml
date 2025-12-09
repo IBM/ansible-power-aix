@@ -1,0 +1,71 @@
+---
+- name: Run fcstat command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: fcstat
+    user_name: aixguest
+    password_val: Password
+    concat_v1: 'True'
+    output_dir: "/tmp/fcstatdata"
+
+  tasks:
+
+    - name: Run fcstat with default stats on fcs0
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        recorded_output: "{{ output_dir }}/fcstat_output1.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run fcstat with reset stats
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        reset_stats: true
+        recorded_output: "{{ output_dir }}/fcstat_output2.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run fcstat in remove delay
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        remove_delay: true
+        recorded_output: "{{ output_dir }}/fcstat_output3.txt"
+        concatenated_output: "{{ concat_v1 }}"     
+
+    - name: Run fcstat with all_statistics option
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        all_statistics: true
+        recorded_output: "{{ output_dir }}/fcstat_output5.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run fcstat with all_statistics and remove_delay
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        all_statistics: true
+        remove_delay: true
+        recorded_output: "{{ output_dir }}/fcstat_output6.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run fcstat time-series with 5 second interval
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        interval: 2
+        count: 15
+        recorded_output: "{{ output_dir }}/fcstat_timeseries.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run fcstat time-series for SCSI protocol
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        interval: 2
+        count: 15
+        protocol: scsi
+        recorded_output: "{{ output_dir }}/fcstat_scsi_timeseries1.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run fcstat time-series with interval 1 (single report)
+      ibm.power_aix.fcstat:
+        device_name: fcs0
+        interval: 1
+        count: 5
+        recorded_output: "{{ output_dir }}/fcstat_single.txt"
+        concatenated_output: "{{ concat_v1 }}"
