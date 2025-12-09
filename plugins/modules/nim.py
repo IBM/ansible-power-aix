@@ -142,6 +142,12 @@ options:
     description:
     - Specifies name of the alternate disk where installation takes place
     type: str
+  source_type:
+    description:
+    - Specifies the type of source to be used in case of (action=bos_inst).
+    type: str
+    choices = [ rte, mksysb, spot ]
+    default: mksysb
 notes:
   - You can refer to the IBM documentation for additional information on the NIM concept and command
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
@@ -1666,7 +1672,8 @@ def nim_bos_inst(module, params):
     module.debug(f'NIM - Target list: {res_targets}')
 
     cmd = ['nim', '-o', 'bos_inst',
-           '-a', 'source=mksysb',
+           '-a', 'source=' + params['source_type'],
+           '-a', 'accept_licenses=yes',
            '-a', 'group=' + params['group']]
     if params['script'] and params['script'].strip():
         cmd += ['-a', 'script=' + params['script']]
@@ -2131,6 +2138,7 @@ def main():
             boot_client=dict(type='bool', default=True),
             object_type=dict(type='str', default='all'),
             alt_disk_update_name=dict(type='str'),
+            source_type = dict(type='str', choices=['rte', 'mksysb', 'spot'], default='mksysb')
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
@@ -2193,6 +2201,7 @@ def main():
     object_type = module.params['object_type']
     alt_disk_update_name = module.params['alt_disk_update_name']
     installp_bundle = module.params['installp_bundle']
+    source_type = module.params["source_type"]
 
     params = {}
 
@@ -2254,6 +2263,7 @@ def main():
         params['group'] = group
         params['script'] = script
         params['boot_client'] = boot_client
+        params['source_type'] = source_type
         nim_bos_inst(module, params)
 
     elif action == 'define_script':
