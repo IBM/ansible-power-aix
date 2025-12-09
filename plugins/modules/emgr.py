@@ -233,12 +233,12 @@ EXAMPLES = r'''
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
 
 - name: Run emgr_sec_patch
-    ibm.power_aix.emgr:
+  ibm.power_aix.emgr:
     action: emgr_sec_patch
     tar_file: /nim_fix2.tar
 
 - name: Run emgr_sec
-    ibm.power_aix.emgr:
+  ibm.power_aix.emgr:
     action: emgr_sec
     ifix_package: /nim_fix2/IJ55897m1a.251112.epkg.Z
 '''
@@ -825,11 +825,10 @@ def main():
         if action in ['install', 'commit', 'mount', 'unmount', 'remove', 'emgr_sec'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
         elif action == "emgr_sec_patch":
-            emgr_matches = len(re.findall(r'calling\s+emgr\s+-p\s+-e\b', stdout))
+            # emgr_matches = len(re.findall(r'calling\s+emgr\s+-p\s+-e\b', stdout))
             skipped_matches = len(re.findall(r'(?i)\bSkipping ifix\b', stdout))
             already_installed = len(re.findall(r'(?i)\balready\s+installed\b', stdout))
             installing = len(re.findall(r'(?im)^\s*Installing ifix\b', stdout))
-
 
             if not installing and (skipped_matches or already_installed):
                 results['changed'] = False
