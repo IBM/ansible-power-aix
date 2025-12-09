@@ -37,8 +37,11 @@ options:
     - C(display_ifix) displays the contents and topology of specified interim fix. This option is
       useful with C(verbose).
     - C(list) lists interim fix data.
+    - C(emgr_sec) validates the digital signatures and installs the interim fix.
+    - C(emgr_sec_patch) installs individual security interim fixes that are archived in the tar format.
     type: str
-    choices: [ install, commit, check, mount, unmount, remove, view_package, display_ifix, list ]
+    choices: [ install, commit, check, mount, unmount, remove,
+              view_package, display_ifix, list, emgr_sec, emgr_sec_patch ]
     default: list
   ifix_package:
     description:
@@ -165,6 +168,11 @@ options:
     - Can be used if I(action) has one of following values C(list), C(check), C(view_package).
     type: int
     choices: [ 1, 2, 3 ]
+  tar_file:
+    description:
+    - Specifies the tar file containing ifixes, that are to be used with the
+      emgr_sec_patch command.
+    type: str
   ifix_packages:
     description:
     - Specifies a list of interim fix package locations or labels.
@@ -185,11 +193,11 @@ notes:
 
 EXAMPLES = r'''
 - name: List interim fix on the system
-  emgr:
+  ibm.power_aix.emgr:
     action: list
 
 - name: Install ifix package from file generated with epkg
-  emgr:
+  ibm.power_aix.emgr:
     action: install
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
     working_dir: /usr/sys/inst.images
@@ -197,32 +205,42 @@ EXAMPLES = r'''
     extend_fs: true
 
 - name: List a specific ifix data in details
-  emgr:
+  ibm.power_aix.emgr:
     action: list
     ifix_label: IJ22714s1a
     verbosity: 3
 
 - name: Check an ifix
-  emgr:
+  ibm.power_aix.emgr:
     action: check
     ifix_label: IJ22714s1a
 
 - name: Preview ifix commit and display only errors and warnings
-  emgr:
+  ibm.power_aix.emgr:
     action: commit
     ifix_label: IJ22714s1a
     preview: true
     quiet: true
 
 - name: Remove an installed ifix based on its VUID
-  emgr:
+  ibm.power_aix.emgr:
     action: remove
     ifix_vuid: 00F7CD554C00021210023020
 
 - name: Display contents and topology of an ifix
-  emgr:
+  ibm.power_aix.emgr:
     action: display_ifix
     ifix_package: /usr/sys/inst.images/IJ22714s1a.200212.AIX72TL04SP00-01.epkg.Z
+
+- name: Run emgr_sec_patch
+    ibm.power_aix.emgr:
+    action: emgr_sec_patch
+    tar_file: /nim_fix2.tar
+
+- name: Run emgr_sec
+    ibm.power_aix.emgr:
+    action: emgr_sec
+    ifix_package: /nim_fix2/IJ55897m1a.251112.epkg.Z
 '''
 
 RETURN = r'''
@@ -429,6 +447,10 @@ def compare_counts(list1, list2, string):
     True if the total count of list elements matches the pattern count, else False
     """
     total_list_count = len(list1) + len(list2)
+
+    if total_list_count == 0:
+        return False
+
     # Count occurrences of the pattern "0645-065" in the string
     pattern_count = len(re.findall(r'0645-065', string))
     if total_list_count == pattern_count:
@@ -445,7 +467,8 @@ def main():
         supports_check_mode=True,
         argument_spec=dict(
             action=dict(type='str', default='list', choices=['install', 'commit', 'check', 'mount', 'unmount',
-                                                             'remove', 'view_package', 'display_ifix', 'list']),
+                                                             'remove', 'view_package', 'display_ifix', 'list',
+                                                             'emgr_sec', 'emgr_sec_patch']),
             ifix_package=dict(type='path'),
             ifix_label=dict(type='str'),
             ifix_number=dict(type='str'),
@@ -463,6 +486,7 @@ def main():
             quiet=dict(type='bool', default=False),
             bosboot=dict(type='str', choices=['skip', 'load_debugger', 'invoke_debugger']),
             verbose=dict(type='int', choices=[1, 2, 3]),
+            tar_file=dict(type='str'),
             ifix_packages=dict(type='list', elements='str'),
         ),
         required_if=[],
@@ -680,6 +704,26 @@ def main():
         if module.params['extend_fs']:
             cmd += ['-X']
 
+    elif action == "emgr_sec":
+        ifix = module.params['ifix_package']
+
+        if not ifix:
+            results['msg'] = "You need to provide 'ifix_package' to run emgr_sec."
+            module.fail_json(**results)
+        
+        cmd = ["emgr_sec"]
+        cmd.append(f"{ifix}")
+
+    elif action == "emgr_sec_patch":
+        tar = module.params['tar_file']
+
+        if not tar:
+            results['msg'] = "You need to provide 'tar_file' to run emgr_sec_patch."
+            module.fail_json(**results)
+        
+        cmd = ["emgr_sec_patch"]
+        cmd.append(f"{tar}")
+
     else:   # action=list
         # Usage: emgr -l [-L <label> | -n <ifix number> | -u <VUID>] [-v{1-3}X] [-a <path>]
         param_one_of(['ifix_label', 'ifix_number', 'ifix_vuid'], required=False)
@@ -778,8 +822,23 @@ def main():
             module.fail_json(**results)
 
         results['msg'] = f"Command {' '.join(cmd)} successful."
-        if action in ['install', 'commit', 'mount', 'unmount', 'remove'] and not module.params['preview'] and not module.check_mode and (rc == 0):
+        if action in ['install', 'commit', 'mount', 'unmount', 'remove', 'emgr_sec'] and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['changed'] = True
+        elif action == "emgr_sec_patch":
+            emgr_matches = len(re.findall(r'calling\s+emgr\s+-p\s+-e\b', stdout))
+            skipped_matches = len(re.findall(r'(?i)\bSkipping ifix\b', stdout))
+            already_installed = len(re.findall(r'(?i)\balready\s+installed\b', stdout))
+            installing = len(re.findall(r'(?im)^\s*Installing ifix\b', stdout))
+
+
+            if not installing and (skipped_matches or already_installed):
+                results['changed'] = False
+                results['msg'] += " All the fixes are already present, no need to do anything."
+            else:
+                results['changed'] = True
+
+            # module.exit_json(**results)
+
         elif action == 'list' and not module.params['preview'] and not module.check_mode and (rc == 0):
             results['ifix_details'] = parse_ifix_details(stdout)
 
