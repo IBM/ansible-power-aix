@@ -2140,7 +2140,7 @@ def main():
             boot_client=dict(type='bool', default=True),
             object_type=dict(type='str', default='all'),
             alt_disk_update_name=dict(type='str'),
-            source_type = dict(type='str', choices=['rte', 'mksysb', 'spot'], default='mksysb')
+            source_type=dict(type='str', choices=['rte', 'mksysb', 'spot'], default='mksysb')
         ),
         required_if=[
             ['action', 'update', ['targets', 'lpp_source']],
