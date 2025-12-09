@@ -23,13 +23,13 @@ af2=$(echo "$aix_ver" | /usr/bin/cut -d"." -f2)
 af3=$(echo "$aix_ver" | /usr/bin/cut -d"." -f3)
 if [ "$oslvl" = "7.1.0.0" ]
 then
-    if [ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) || ( ! $af3 -ge 3 ) ]
+    if [ "$af1" -lt 7 ] || [ "$af2" -lt 1 ] || [ "$af3" -lt 3 ]
     then
         echo "dnf and dependencies can be installed on AIX 7.1.3 and higher versions."
         exit 1
     fi
 else
-    if [ ( ! $af1 -ge 7 ) || ( ! $af2 -ge 1 ) ]
+    if [ "$af1" -lt 7 ] || [ "$af2" -lt 1 ]
     then
          echo "dnf and dependencies can be installed on AIX 7.1.3 and higher versions."
          exit 1
@@ -75,7 +75,7 @@ fi
 # Verify if few more paths of the iso/tar exists within mnt path.
 if [ ! -e "${mnt_path}/AIX_Toolbox" ] || [ ! -e "${mnt_path}/AIX_Toolbox_noarch" ]
 then
-    echo "Some of required paths likes AIX_Toolbox and AIX_Toolbox_noarch"
+    echo "Some of required paths like AIX_Toolbox and AIX_Toolbox_noarch"
     echo "don't exists in the $mnt_path path."
     exit 1
 fi
@@ -92,8 +92,8 @@ f1=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f1)
 f2=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f2)
 #f3=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f3)
 #f4=$(echo "$ssl_ver" | /usr/bin/cut -d"." -f4)
-if [ ( ! $f1 -ge 1 ) ] || [ ( $f1 -eq  1 ) &&  ( ! $f2 -ge 1 ) ]
-then
+
+if [ "$f1" -lt 1 ] || { [ "$f1" -eq 1 ] && [ "$f2" -lt 1 ]; }; then
     print_openssl_err
 fi
 
@@ -103,7 +103,8 @@ os_f1=$(echo "$oslvl" | /usr/bin/cut -d"." -f1)
 os_f2=$(echo "$oslvl" | /usr/bin/cut -d"." -f2)
 os_f3=$(echo "$oslvl" | /usr/bin/cut -d"." -f3)
 os_f4=$(echo "$oslvl" | /usr/bin/cut -d"." -f4)
-if [ ( $os_f1 -ge 7 ) && ( $os_f2 -ge 3 ) && ( $os_f3 -ge 0 ) && ( $os_f4 -ge 0 ) ]
+
+if [ "$os_f1" -ge 7 ] && [ "$os_f2" -ge 3 ] && [ "$os_f3" -ge 0 ] && [ "$os_f4" -ge 0 ]
 then
     aix_730_plus=1
 fi
@@ -118,7 +119,8 @@ if [ $aix_730_plus -eq 1 ]
 then
     total_req=$(echo "(512)" | bc)
     tmp_free=$(/usr/bin/df -m /tmp | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
-    if [[ $tmp_free -le $total_req ]]
+
+    if [ "$tmp_free" -le "$total_req" ]
     then
         echo "Please make sure /tmp has around 512MB of free space to download and"
         echo "extract files from dnf_bundle."
@@ -197,7 +199,7 @@ else
     /usr/bin/tar -xvf dnf_bundle_aix_71_72.tar
 fi
 
-./install_dnf.sh "$yum4" "$yum3_instd" 2
+./install_dnf.sh "$arg" "$yum4" "$yum3_instd" 2
 rc=$?
 if [ $rc -eq 0 ]
 then
@@ -230,6 +232,7 @@ echo "gpgcheck=1"
 echo "installonly_limit=3"
 echo "clean_requirements_on_remove=True"
 echo "best=True"
+echo "optional_metadata_types=filelists"
 echo ""
 echo "plugins=1"
 echo ""

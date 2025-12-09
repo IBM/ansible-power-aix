@@ -98,10 +98,17 @@
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
         - when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
           block:
+            - name: Prepare remote target variables
+              ansible.builtin.set_fact:
+                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env','USER')) }}"
+                power_aix_bootstrap_target_host: "{{ (ansible_host | default(inventory_hostname)) | regex_replace('.*@', '') }}"
+
             - name: Copy file to {{ power_aix_bootstrap_target_dir }}
+              # Using regex replace, catering to different styles of managing inventories.
+              # Using defaults, for cases when ansible_user and ansible_host are not defined or can't be fetched.
               ansible.builtin.raw: >
                 scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_dnf_install_script }}
-                {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
+                {{ power_aix_bootstrap_target_user }}@{{ power_aix_bootstrap_target_host }}:{{ power_aix_bootstrap_target_dir }}
               delegate_to: localhost
               changed_when: true
 
@@ -143,10 +150,17 @@
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
         - when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
           block:
+            - name: Prepare remote target variables
+              ansible.builtin.set_fact:
+                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env','USER')) }}"
+                power_aix_bootstrap_target_host: "{{ (ansible_host | default(inventory_hostname)) | regex_replace('.*@', '') }}"
+
             - name: Copy file to {{ power_aix_bootstrap_target_dir }}
+              # Using regex replace, catering to different styles of managing inventories.
+              # Using defaults, for cases when ansible_user and ansible_host are not defined or can't be fetched.
               ansible.builtin.raw: >
                 scp ./roles/power_aix_bootstrap/files/{{ power_aix_bootstrap_local_repo_script }}
-                {{ inventory_hostname }}:{{ power_aix_bootstrap_target_dir }}
+                {{ power_aix_bootstrap_target_user }}@{{ power_aix_bootstrap_target_host }}:{{ power_aix_bootstrap_target_dir }}
               delegate_to: localhost
               changed_when: true
 
