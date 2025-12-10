@@ -26,31 +26,31 @@ options:
       - Show general configuration information about the LPAR.
       - Enables additional options like -W, -x, -s, -P to be appended for detailed views.
     type: bool
-    default: False
+    default: false
   wpar_output:
     description:
       - Lists details of the workload partition (WPAR) configuration..
       - This flag is valid only when used with -i (config_info) or by itself..
       - If the command is run from the global environment, the WPAR Key value is 0
     type: bool
-    default: False
+    default: false
   security_mode:
     description:
       - Includes extended security and environment information (-x).
     type: bool
-    default: False
+    default: false
   service_info:
     description:
       - Displays statistics related to Service partition ID, Number of configured LPARs .
       - This flag is valid only when used with -i (config_info) or by itself.
     type: bool
-    default: False
+    default: false
   energy_tuning:
     description:
       - Displays information about the energy management tuning parameters.
       - This flag is valid only when used with -i (config_info) or by itself.
     type: bool
-    default: False
+    default: false
   detailed_cpu_stats:
     description:
       - Shows the detailed CPU utilization statistics.
@@ -58,64 +58,64 @@ options:
         the lparstat command shows the breakdown by category of the unaccounted turbo cycles along with the dedicated,
         donating or shared utilization columns: %user, %sys, %idle, %wait, %entc, %idon, %bdon, %istol and %bstol.
     type: bool
-    default: False
+    default: false
   memory_stats:
     description:
       - Displays detailed memory-related statistics for the LPAR.
       - reports on multiple aspects of memory, including Logical memory, Physical memory, /O memory entitlement, Memory pool information.
     type: bool
-    default: False
+    default: false
   io_memory_pools:
     description:
       - Displays detailed information about the I/O memory entitlement pools of the LPAR..
       - This flag is valid only when used with the -m (memory_stats) option.
     type: bool
-    default: False
+    default: false
   page_coalescing:
     description:
       - Displays information about the page coalescing statistics of the LPAR.
       - This flag can only be used together with the -m (memory_stats) option.
       - When combined with the -w flag, outputs all the I/O memory entitlement pool metrics in a single line.
     type: bool
-    default: False
+    default: false
   page_coalescing_wide:
     description:
       - Appends '-w' to the '-p' option to outputs all the I/O memory entitlement pool metrics in a single line..
       - Only applicable when -p is used.
     type: bool
-    default: False
+    default: false
   reset_once:
     description:
       - Resets the high watermark for I/O memory entitlement once at the start (-r).
       - Must be used with both -m and -e flags.
     type: bool
-    default: False
+    default: false
   reset_each_interval:
     description:
       - Resets the high watermark for I/O memory at the beginning of each interval (-R).
       - Must be used with -m and -e. Overrides -r if both specified.
       - If both -r (reset_once) and -R (reset_each_interval) are specified, the -R flag takes precedence.
     type: bool
-    default: False
+    default: false
   hypervisor_stat_short:
     description:
       - Display a short summary of hypervisor statistics (-h).
       - This flag is for quick insight into hypervisor activity.
     type: bool
-    default: False
+    default: false
   hypervisor_stat_long:
     description:
       - Show full and extended hypervisor help text (-H).
       - Used for detailed understanding of statistics gathered.
     type: bool
-    default: False
+    default: false
   export_xml:
     description:
       - Generates the command output in XML format using the -X flag.
       - By default, the XML file is created with the name `lparstat_DDMMYYHHMM.xml`, where the timestamp represents the date and time of execution.
       - Allows the use of -o to specify an output filename.
     type: bool
-    default: False
+    default: false
   output_file:
     description:
       - Path to the file where command output will be saved.
@@ -127,19 +127,19 @@ options:
       - Useful on SPURR-capable processors to measure true CPU usage under power-saving or turbo modes
       - Can be extended with 'w' for detailed power usage.
     type: bool
-    default: False
+    default: false
   spurr_based_metrics_wide:
     description:
       - Appends '-w' to the -E flag for wide-format Reports utilization metrics based on the Scaled SPURR.
       - Valid only when spurr_based_metrics is True.
     type: bool
-    default: False
+    default: false
   timestamp:
     description:
       - Display timestamp information using -t.
       - Useful in correlating usage with system layout changes.
     type: bool
-    default: False
+    default: false
   interval:
     description:
       - Specifies the interval (in seconds) between lparstat readings.
