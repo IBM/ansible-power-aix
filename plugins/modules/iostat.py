@@ -14,7 +14,7 @@ author:
 short_description: Run the AIX iostat command to monitor system I/O statistics.
 description:
   - Enables Ansible to invoke AIX's iostat utility with comprehensive flag support.
-version_added: "2.1.0"
+version_added: "2.2.0"
 requirements:
   - AIX >= 7.1
 options:
@@ -155,6 +155,10 @@ options:
       - If set to false, the file will be overwritten with fresh output.
     type: bool
     required: true
+  recorded_output:
+    description:
+      - Path to file where command output should be written.
+    type: str
 
 notes:
   - You can refer to the IBM documentation for additional information on the vmstat command at
