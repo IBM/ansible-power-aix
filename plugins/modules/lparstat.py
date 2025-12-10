@@ -172,6 +172,48 @@ notes:
     U(https://www.ibm.com/docs/en/aix/7.3.0?topic=l-lparstat-command).
 '''
 
+EXAMPLES = r'''
+- name: Run lparstat with basic configuration info
+  ibm.power_aix.lparstat:
+    config_info: true
+
+- name: Run lparstat with WPAR and service information
+  ibm.power_aix.lparstat:
+    config_info: true
+    wpar_output: true
+    service_info: true
+    energy_tuning: true
+
+- name: Run detailed memory and I/O stats with page coalescing
+  ibm.power_aix.lparstat:
+    memory_stats: true
+    io_memory_pools: true
+    page_coalescing: true
+    page_coalescing_wide: true
+    reset_once: true
+
+- name: Collect SPURR-based CPU metrics
+  ibm.power_aix.lparstat:
+    spurr_based_metrics: true
+    spurr_based_metrics_wide: true
+
+- name: Gather repeated interval samples
+  ibm.power_aix.lparstat:
+    detailed_cpu_stats: true
+    interval: 2
+    count: 5
+
+- name: Export output in XML format
+  ibm.power_aix.lparstat:
+    export_xml: true
+    output_file: "/tmp/lparstat_report.xml"
+
+- name: Record output to a file with append mode
+  ibm.power_aix.lparstat:
+    config_info: true
+    recorded_output: "/tmp/lparstat_output.txt"
+    concatenated_output: true
+'''
 
 RETURN = r'''
 msg:
