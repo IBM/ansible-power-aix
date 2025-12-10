@@ -18,7 +18,7 @@ description:
   - This module runs the AIX ps command to collect detailed information about running processes and kernel threads.
   - It provides multiple filtering and formatting options including PID, user, group, workload class, and thread-level details.
   - Supports mutual exclusiveness validation among key display modes and ensures correctness of flag combinations.
-version_added: "2.1.0"
+version_added: "2.2.0"
 requirements:
   - AIX >= 7.1
 options:
@@ -392,7 +392,8 @@ def main():
                 try:
                     os.makedirs(output_dir, exist_ok=True)
                 except Exception as e:
-                    module.fail_json(msg=f"Failed to create directory {output_dir}: {str(e)}", **result)
+                    result['msg']=f"Failed to create directory {output_dir}: {str(e)}"
+                    module.fail_json(**result)
 
             mode = 'a' if should_concat else 'w'  # 'a' = append, 'w' = overwrite
             with open(output_file, mode) as f:
