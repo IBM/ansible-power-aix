@@ -150,7 +150,7 @@ class TestIostatModule(unittest.TestCase):
     def test_valid_block_io(self):
         self.module.params.update({'block_io': True, 'interval': 2})
         cmd = iostat.build_iostat_command(self.module)
-        self.assertEqual(cmd, ['iostat', '-b', '2'])
+        self.assertEqual(cmd, ['iostat', '-b', '2', '5'])
 
     def test_valid_adapter_report(self):
         self.module.params.update({'adapter_report': True})
@@ -224,7 +224,7 @@ class TestIostatModule(unittest.TestCase):
             'interval': 5
         })
         cmd = iostat.build_iostat_command(self.module)
-        self.assertEqual(cmd, ['iostat', '-a', 'hdisk0', '5'])
+        self.assertEqual(cmd, ['iostat', '-a', 'hdisk0', '5', '5'])
 
     def test_extended_drive_with_scale_and_override(self):
         self.module.params.update({
@@ -243,7 +243,7 @@ class TestIostatModule(unittest.TestCase):
             'options_override': 'ell=on'
         })
         cmd = iostat.build_iostat_command(self.module)
-        self.assertEqual(cmd, ['iostat', '-b', '-z', '-O', 'ell=on', '2'])
+        self.assertEqual(cmd, ['iostat', '-b', '-z', '-O', 'ell=on', '2', '5'])
 
     def test_block_io_with_nonzero_stats(self):
         self.module.params.update({
@@ -252,7 +252,7 @@ class TestIostatModule(unittest.TestCase):
             'nonzero_stats': True
         })
         cmd = iostat.build_iostat_command(self.module)
-        self.assertEqual(cmd, ['iostat', '-b', '-V', '1'])
+        self.assertEqual(cmd, ['iostat', '-b', '-V', '1', '5'])
 
     def test_reset_io_and_nonzero_stats(self):
         self.module.params.update({'reset_io': True, 'nonzero_stats': True})
@@ -294,7 +294,7 @@ class TestIostatModule(unittest.TestCase):
             'interval': 2
         })
         cmd = iostat.build_iostat_command(self.module)
-        self.assertEqual(cmd, ['iostat', '-z', 'hdisk0', '2'])
+        self.assertEqual(cmd, ['iostat', '-z', 'hdisk0', '2', '5'])
 
     def test_valid_show_timestamp_with_drives_and_count(self):
         self.module.params.update({
