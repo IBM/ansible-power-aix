@@ -18,8 +18,6 @@ description:
   - Provides Ansible automation support for managing AIX audit subsystem using the audit command.
   - The module supports start, shutdown, on, off, and query operations with validation for WPAR and fullpath/panic options.
   - It reads configuration from /etc/security/audit/config and related audit configuration files.
-author:
-  - AIX Development Team (@vivekpandeyibm)
 version_added: "2.2.0"
 requirements:
   - AIX >= 7.1
@@ -27,8 +25,7 @@ options:
   action:
     description:
       - Defines the audit operation to perform.
-      - C(start) Starts the audit subsystem. This option reads the instructions in the configuration files and performs the role auditing,object auditing
-          event auditing, bin auditing, stream auditing, fullpath auditing, user auditing, audit logging, audit ranges
+      - C(start) Starts the audit subsystem. This option reads the instructions in the configuration files and performs the auditing
       - C(shutdown) Stops the collection of audit records and resets the configuration information by removing the definition of classes from the kernel tables
       - C(off) Suspends the auditing system, but leaves the configuration valid. Data collection pauses until you give the 'audit on' command
       - C(on) Restarts the auditing system after a suspension.
