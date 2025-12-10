@@ -392,7 +392,7 @@ def main():
                 try:
                     os.makedirs(output_dir, exist_ok=True)
                 except Exception as e:
-                    result['msg']=f"Failed to create directory {output_dir}: {str(e)}"
+                    result['msg'] = f"Failed to create directory {output_dir}: {str(e)}"
                     module.fail_json(**result)
 
             mode = 'a' if should_concat else 'w'  # 'a' = append, 'w' = overwrite
