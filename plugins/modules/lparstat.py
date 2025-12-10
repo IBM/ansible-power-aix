@@ -11,15 +11,15 @@ DOCUMENTATION = r'''
 ---
 module: lparstat
 author:
-    - AIX Development Team (@vivekpandeyibm)
+  - AIX Development Team (@vivekpandeyibm)
 short_description: Collects LPAR statistics using the lparstat command on AIX
 description:
   - This module allows you to gather LPAR configuration and utilization statistics using the AIX lparstat command.
   - Supports various reporting flags and handles mutual exclusiveness among them.
   - Can record and store output to a file.
-version_added: "2.1.0"
+version_added: "2.2.0"
 requirements:
-    - AIX >= 7.1
+  - AIX >= 7.1
 options:
   config_info:
     description:
