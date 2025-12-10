@@ -104,7 +104,7 @@ timezone_details:
 
 from ansible.module_utils.basic import AnsibleModule
 import re
-import os.path
+# import os.path
 
 results = dict(
     changed=False,
@@ -479,7 +479,7 @@ def list_versions(module):
         "stdout": stdout,
         # omit stderr on success to avoid failed_when rules tripping
         "timezone_details": {
-            "available_versions": [v for _, v in available],
+            "available_versions": [v for k, v in available],
             "current_version": current.group(1) if current else "Unknown",
         },
     }
