@@ -11,160 +11,185 @@ DOCUMENTATION = r'''
 ---
 module: netstat
 author:
-    - AIX Development Team (@vivekpandeyibm)
-short_description: Collect network statistics using netstat on AIX
+  - AIX Development Team (@vivekpandeyibm)
+short_description: Collect network statistics using the AIX netstat command
 description:
-  - This module allows you to gather network statistics using the AIX netstat command.
-  - Supports all reporting flags, mutual exclusiveness, and output recording.
-version_added: "2.1.0"
+  - This module gathers detailed network statistics using the AIX C(netstat) command.
+  - Supports all reporting flags, mutual exclusiveness validation, repeated sampling,
+    and recording the command output to a file.
+version_added: "2.2.0"
 requirements:
-    - AIX >= 7.1
+  - AIX >= 7.1
+
 options:
   numeric_network_address:
     description:
-      - Display network addresses as numbers (-n).
-      - When this flag is not specified, the netstat command interprets addresses where possible and displays them symbolically.
-      - This flag can be used with any of the display formats.
+      - Display network addresses numerically using C(-n).
+      - When omitted, symbolic hostnames may appear.
     type: bool
-    default: False
+    default: false
+
   pcb_address:
     description:
-      - Shows the address of any protocol control blocks associated with the sockets (-A).
-      - This flag acts with the default display and is used for debugging purposes.
+      - Show protocol control block (PCB) addresses using C(-A).
     type: bool
-    default: False
+    default: false
+
   all_sockets_state:
     description:
-      - Show state of all sockets (-a).
-      - If this flag is not specified, sockets that are used by server processes that are not bound to an interface are not shown.
+      - Display the state of all sockets using C(-a).
     type: bool
-    default: False
+    default: false
+
   socket_options:
     description:
-      - Show detailed socket info with -a (-o).
+      - Show detailed socket options along with C(-a) using C(-o).
     type: bool
-    default: False
+    default: false
+
   routing_table:
     description:
-      - Show routing tables (-r).
-      - When used with the '-s' flag, the '-r' flag shows routing statistics
+      - Display routing tables using C(-r).
     type: bool
-    default: False
+    default: false
+
   show_route_details:
     description:
-      - Show routing tables with costs including the user-configured and current costs of each route (-C).
-      - It also shows the weight and policy information associated with each route
+      - Display routing details including metrics and policy information using C(-C).
     type: bool
-    default: False
+    default: false
+
   packet_counts:
     description:
-      - Shows the number of packets received, transmitted, and dropped in the communications subsystem (-D).
+      - Show communications subsystem packet counts using C(-D).
     type: bool
-    default: False
+    default: false
+
   display_configured_interfaces:
     description:
-      - Shows the state of all configured interfaces (-i).
+      - Display all configured interfaces using C(-i).
     type: bool
-    default: False
+    default: false
+
   interface_name:
     description:
-      - Shows the state of the configured interface specified by the 'interface_name' variable. (-I).
+      - Display information for a specific interface using C(-I <interface>).
     type: str
+
   protocol:
     description:
-      - Shows statistics about the value specified for the 'protocol' variable (-p).
+      - Display statistics for the given protocol using C(-p).
     type: str
+
   memory_stats:
     description:
-      - Shows statistics recorded by the memory management routines. (-m).
+      - Display memory management statistics using C(-m).
     type: bool
-    default: False
+    default: false
+
   mbuf_pool_stats:
     description:
-      - Shows network memory's mbuf cluster pool statistics. (-M).
+      - Display mbuf cluster pool statistics using C(-M).
     type: bool
-    default: False
+    default: false
+
   protocol_stats:
     description:
-      - Shows statistics for each protocol. (-s).
+      - Display protocol statistics using C(-s).
     type: bool
-    default: False
+    default: false
+
   concise_protocol_stats:
     description:
-      - Displays all the non-zero protocol statistics and provides a concise display (-ss).
+      - Display only non-zero protocol statistics using C(-ss).
     type: bool
-    default: False
+    default: false
+
   domain_sockets:
     description:
-      - Displays information about domain sockets. (-u).
+      - Display information about domain sockets using C(-u).
     type: bool
-    default: False
+    default: false
+
   display_adapter_statistics:
     description:
-      - Shows statistics for CDLI-based communications adapters. (-v).
-      - This flag causes the netstat command to run the statistics commands for the netstat, tokstat, and fddistat commands
+      - Display adapter statistics for CDLI adapters using C(-v).
     type: bool
-    default: False
+    default: false
+
   virtual_interface_and_multicast:
     description:
-      - Shows Virtual Interface Table and Multicast Forwarding Cache information (-g).
-      - If used in conjunction with the '-s' flag, it will show the multicast routing information.
+      - Display virtual interface table and multicast forwarding cache using C(-g).
     type: bool
-    default: False
+    default: false
+
   ras_artifacts:
     description:
-      - Displays all reliability, availability, and serviceability (RAS) artifacts for the specified protocol (-K).
+      - Display reliability, availability, and serviceability (RAS) artifacts using C(-K <protocol>).
     type: str
+
   ras_file:
     description:
-      - Output file for RAS artifacts with '-K' (-F).
+      - File path to store RAS output when using C(-F).
     type: str
+
   ras_suppress_nonzero:
     description:
-      - Suppresses the printing of non-zero counter values when you use the -K flag to display the RAS artifacts for a specific protocol(-b).
+      - Suppress non-zero counters in RAS output using C(-b).
     type: bool
-    default: False
+    default: false
+
   interactive_mode:
     description:
-      - Starts the user interactive mode. (-w).
+      - Start interactive mode using C(-w).
     type: bool
-    default: False
+    default: false
+
   clear_stats:
     description:
-      - Zc	Clear network buffer cache statistics.
-      - Zi	Clear interface statistics.
-      - Zm	Clear network memory allocator statistics.
-      - Zs	Clear protocol statistics
+      - Clear statistics using C(-Z).
+      - C(c) clears network buffer statistics.
+      - C(i) clears interface statistics.
+      - C(m) clears memory allocator statistics.
+      - C(s) clears protocol statistics.
     type: str
     choices: ["c", "i", "m", "s"]
+
   address_family:
     description:
-      - Limits reports of statistics or address control blocks to those items specified by the AddressFamily variable (-f).
+      - Limit reports to a specific address family using C(-f).
     type: str
     choices: ["inet", "inet6", "unix"]
+
   interval:
     description:
-      - Specifies the interval (in seconds) between lparstat readings.
-      - Used to gather repeated samples over time.
+      - Time in seconds between repeated netstat samples.
     type: int
+
   count:
     description:
-      - Number of reports to generate at the specified interval.
-      - Must be used together with the interval option.
+      - Number of samples to collect along with interval.
     type: int
-   recorded_output:
+
+  recorded_output:
     description:
-      - Folder path to command output in machine .
+      - File path to record command output.
     type: str
+
   concatenated_output:
     description:
-      - Controls whether the output of the vmstat command is appended to the output file or is overwrited.
-      - If set to true, output will be appended to the file.
-      - If set to false, the file will be overwritten with fresh output.
+      - If true, append output to file; if false, overwrite file.
     type: bool
     required: true
+
+  cache_stats:
+    description:
+      - Display network buffer cache statistics using C(-c).
+    type: bool
+    default: false
+
 notes:
-  - You can refer to the IBM documentation for additional information on the lparstat command at
+  - You can refer to the IBM documentation for additional information on the netstat command at
     U(https://www.ibm.com/docs/en/aix/7.3.0?topic=l-netstat-command).
 '''
 
