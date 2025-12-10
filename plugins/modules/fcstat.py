@@ -12,7 +12,7 @@ module: fcstat
 author:
   - AIX Development Team (@vivekpandeyibm)
 short_description: Collects Fibre Channel adapter statistics using the fcstat command on AIX
-version_added: "2.1.0"
+version_added: "2.2.0"
 description:
   - This module allows you to gather statistics from Fibre Channel (FC) adapters using the AIX fcstat command.
   - Supports device-generic and device-specific reporting, diagnostic mode, reset, and time-series reporting.
