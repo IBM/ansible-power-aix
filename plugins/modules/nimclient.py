@@ -35,18 +35,50 @@ options:
   action:
     description:
     - Specifies which action needs to be performed.
-      C(list_versions) lists the available timezone versions and the current version;
-      C(update_timezone) updates the timezone database;
-      C(print_updated_zones) prints the updated zones from the system;
+      C(list) executes the lsnim command on the master, listing all the resources.
+      C(perform_nim_op) specifies to perform NIM related operations with I(operation).
+      C(other_op) specifies to perform Non - NIM related operations.
     type: str
-    choices: [ list_versions, update_timezones, print_updated_zones ]
+    choices: [ list, perform_nim_op, other_op ]
     required: true
-  timezone:
+  operation:
     description:
-    - Specifies the timezone database that the system needs to be updated to.
-    - Required for I(action=update_timezone).
+    - Specifies which operation needs to be performed.
+      C(allocate) allocates a resource for use.
+      C(bos_inst) performs a BOS installation.
+      C(change) changes an object's attributes.
+      C(check) checks the status of a NIM object.
+      C(cust) performs software customization.
+      C(deallocate) deallocates the resource
+      C(diag) enables a machine to boot a diagnostic image.
+      C(maint_boot) enables a machine to boot in maintenance mode.
+      C(reset) resets an object's NIM state.
+      C(showres) displays the contents of a NIM resource.
     type: str
     required: false
+    choices: [ allocate, bos_inst, change, check, cust, deallocate, diag, maint_boot, reset, showres ]
+  master_push_perm:
+    description:
+    - C(enable) enables the NIM master to push commands.
+    - C(disable) removes the NIM master's permissions to push commands.
+    type: str
+    choices: [ enable, disable ]
+  crypt_auth_perm:
+    description:
+    - C(enable) enables SSL authentication during NIM master push operations
+    - C(disable) disables SSL authentication and uses standard nimsh security
+      during NIM master push operations.
+    type: str
+    choices: [ enable, disable ]
+  set_master_date:
+    description:
+    - To Set the Date and Time to That of the NIM Master
+    type: bool
+  attributes:
+    description:
+    - Passes information to NIM operations.
+    type: list
+    elements: str
 notes:
   - You can refer to the Community blog for additional information on the commands used at
     U(https://community.ibm.com/community/user/blogs/ravindra-shinde/2024/12/13/time-zone-update-tool-tz).
@@ -137,8 +169,8 @@ timezone_details:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-import re
-import os.path
+# import re
+# import os.path
 
 results = dict(
     changed=False,
@@ -171,19 +203,21 @@ def parsed_info(stdout):
     stdout_lines = stdout.strip().splitlines()
 
     for line in stdout_lines[1:]:
-        line = line.split()
+        fields = line.split()
 
-        if not line:
+        # Ignore empty or malformed lines that don't have enough fields
+        # Test expects "badline" to be ignored, "resA lpp_source file" to be parsed.
+        if len(fields) < 3:
             continue
 
-        name = line[0]
-        object_class = line[1]
-        object_type = line[2]
+        name = fields[0]
+        object_class = fields[1]
+        location = fields[2]
 
-        niminfo[name] = dict()
-
-        niminfo[name]["object_class"] = object_class
-        niminfo[name]["object_type"] = object_type
+        niminfo[name] = {
+            "class": object_class,
+            "location": location,
+        }
 
     return niminfo
 
