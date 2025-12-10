@@ -128,10 +128,6 @@ options:
     description:
       - Specifies the file name for the XML output.
     type: str
-  recored_output:
-    description:
-      - folder path to command output in machine .
-    type: str
   drives:
     description:
       - List of drives to include in the report.
