@@ -230,21 +230,23 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-cmd:
-  description: Full ps command executed.
-  type: str
-stdout:
-  description: Standard output of ps command.
-  type: str
-stderr:
-  description: Error output, if any.
-  type: str
-rc:
-  description: Return code of ps command execution.
-  type: int
 msg:
-  description: Summary message about execution result.
-  type: str
+    description: The execution message.
+    returned: always
+    type: str
+    sample: 'ps comamnd executed SUCCESSFULLY'
+rc:
+    description: The return code.
+    returned: If the command failed.
+    type: int
+stdout:
+    description: The standard output.
+    returned: If the command failed.
+    type: str
+stderr:
+    description: The standard error.
+    returned: If the command failed.
+    type: str
 '''
 
 from ansible.module_utils.basic import AnsibleModule
