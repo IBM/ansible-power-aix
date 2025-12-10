@@ -5,13 +5,16 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
+}
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 author:
 - Shreyansh Chamola (@schamola)
@@ -47,9 +50,9 @@ options:
 notes:
   - You can refer to the Community blog for additional information on the commands used at
     U(https://community.ibm.com/community/user/blogs/ravindra-shinde/2024/12/13/time-zone-update-tool-tz).
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: List all available NIM resources
   ibm.power_aix.nimclient:
     action: list
@@ -100,9 +103,9 @@ EXAMPLES = r'''
   ibm.power_aix.nimclient:
     action: perform_nim_op
     operation: reset
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 msg:
     description: The execution message.
     returned: always
@@ -131,7 +134,7 @@ timezone_details:
     description: Contains the details related to timezone.
     returned: If I(action=list_versions) or I(action=print_updated_zones)
     type: dict
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 import re
@@ -139,11 +142,11 @@ import os.path
 
 results = dict(
     changed=False,
-    cmd='',
-    msg='',
-    rc='',
-    stdout='',
-    stderr='',
+    cmd="",
+    msg="",
+    rc="",
+    stdout="",
+    stderr="",
     nim_info={},
 )
 
@@ -151,13 +154,14 @@ results = dict(
 # Helper Functions
 ####################################################################################
 
+
 def parsed_info(stdout):
     """
     Utility function to return parsed information about the resources.
 
     arguments:
       stdout  (str) - standard output of the command.
-    
+
     returns:
       niminfo (dict) - Dictionary containing resource information in parsed manner.
     """
@@ -167,20 +171,19 @@ def parsed_info(stdout):
     stdout_lines = stdout.strip().splitlines()
 
     for line in stdout_lines[1:]:
-      line = line.split()
+        line = line.split()
 
-      if not line:
-        continue
+        if not line:
+            continue
 
-      name = line[0]
-      object_class = line[1]
-      object_type = line[2]
+        name = line[0]
+        object_class = line[1]
+        object_type = line[2]
 
+        niminfo[name] = dict()
 
-      niminfo[name] = dict()
-
-      niminfo[name]["object_class"] = object_class
-      niminfo[name]["object_type"] = object_type
+        niminfo[name]["object_class"] = object_class
+        niminfo[name]["object_type"] = object_type
 
     return niminfo
 
@@ -188,6 +191,7 @@ def parsed_info(stdout):
 ####################################################################################
 # Action Functions
 ####################################################################################
+
 
 def list_info(module):
     """
@@ -198,7 +202,7 @@ def list_info(module):
 
     returns:
       payload (dict): Contains information about the command execution.
-  
+
     note:
       - In case of command failure, module exits with fail_json.
     """
@@ -235,7 +239,7 @@ def list_info(module):
 
 
 def nim_operations(module):
-  """
+    """
     Perform a NIM operation.
 
     arguments:
@@ -243,51 +247,51 @@ def nim_operations(module):
 
     returns:
       payload (dict): Contains information about the command execution.
-  
+
     note:
       - In case of command failure, module exits with fail_json.
-  """
+    """
 
-  cmd = ["nimclient"]
+    cmd = ["nimclient"]
 
-  op = module.params['operation']
-  cmd.append(f"-o {op}")
+    op = module.params["operation"]
+    cmd.append(f"-o {op}")
 
-  attrs = module.params['attributes']
+    attrs = module.params["attributes"]
 
-  if attrs:
-    attrs = "-a " + ' -a '.join(attrs) + " "
-    cmd.append(attrs)
+    if attrs:
+        attrs = "-a " + " -a ".join(attrs) + " "
+        cmd.append(attrs)
 
-  cmd = ' '.join(cmd)
+    cmd = " ".join(cmd)
 
-  rc, stdout, stderr = module.run_command(cmd)
+    rc, stdout, stderr = module.run_command(cmd)
 
-  if rc != 0:
-      return {
-          "failed": True,
-          "msg": f"Failed to run the following command: {cmd}",
-          "rc": rc,
-          "stderr": stderr,
-          "cmd": cmd,
-      }
-  
-  payload = {
-    "changed": True,
-    "msg": f"Successfully ran the following command: {cmd}.",
-    "rc": 0,
-    "stdout": stdout,
-    "cmd": cmd,
-  }
+    if rc != 0:
+        return {
+            "failed": True,
+            "msg": f"Failed to run the following command: {cmd}",
+            "rc": rc,
+            "stderr": stderr,
+            "cmd": cmd,
+        }
 
-  if op == "showres":
-    payload["changed"] = False
+    payload = {
+        "changed": True,
+        "msg": f"Successfully ran the following command: {cmd}.",
+        "rc": 0,
+        "stdout": stdout,
+        "cmd": cmd,
+    }
 
-  return payload
+    if op == "showres":
+        payload["changed"] = False
+
+    return payload
 
 
 def other_operations(module):
-  """
+    """
     Performs non - NIM related operations on the system.
 
     arguments:
@@ -295,52 +299,52 @@ def other_operations(module):
 
     returns:
       payload (dict): Contains information about the command execution.
-  
+
     note:
       - In case of command failure, module exits with fail_json.
-  """
+    """
 
-  cmd = ["nimclient"]
+    cmd = ["nimclient"]
 
-  push_perm = module.params['master_push_perm']
-  crypto_perm = module.params['crypto_auth_perm']
-  set_master_date = module.params['set_master_date']
+    push_perm = module.params["master_push_perm"]
+    crypto_perm = module.params["crypto_auth_perm"]
+    set_master_date = module.params["set_master_date"]
 
-  if push_perm:
-    if push_perm == "enable":
-        cmd.append("-p")
-    else:
-        cmd.append("-P")
+    if push_perm:
+        if push_perm == "enable":
+            cmd.append("-p")
+        else:
+            cmd.append("-P")
 
-  if crypto_perm:
-    if crypto_perm == "enable":
-        cmd.append("-c")
-    else:
-        cmd.append("-C")
+    if crypto_perm:
+        if crypto_perm == "enable":
+            cmd.append("-c")
+        else:
+            cmd.append("-C")
 
-  if set_master_date:
-    cmd.append("-d")
+    if set_master_date:
+        cmd.append("-d")
 
-  rc, stdout, stderr = module.run_command(cmd)
+    rc, stdout, stderr = module.run_command(cmd)
 
-  if rc != 0:
-      return {
-          "failed": True,
-          "msg": f"Failed to run the command: {' '.join(cmd)}.",
-          "rc": rc,
-          "stderr": stderr,
-          "cmd": cmd,
-      }
+    if rc != 0:
+        return {
+            "failed": True,
+            "msg": f"Failed to run the command: {' '.join(cmd)}.",
+            "rc": rc,
+            "stderr": stderr,
+            "cmd": cmd,
+        }
 
-  payload = {
-    "changed": True,
-    "msg": f"Successfully ran the following command: {' '.join(cmd)}.",
-    "rc": 0,
-    "stdout": stdout,
-    "cmd": cmd,
-  }
+    payload = {
+        "changed": True,
+        "msg": f"Successfully ran the following command: {' '.join(cmd)}.",
+        "rc": 0,
+        "stdout": stdout,
+        "cmd": cmd,
+    }
 
-  return payload
+    return payload
 
 
 ####################################################################################
@@ -353,38 +357,55 @@ def main():
     module = AnsibleModule(
         supports_check_mode=False,
         argument_spec=dict(
-            action=dict(type='str', choices=['list', 'perform_nim_op', 'other_op'], required=True),
-            operation=dict(type='str',
-                            choices=['allocate', 'bos_inst', 'change',
-                                     'check', 'cust', 'deallocate', 'diag',
-                                     'maint_boot', 'reset', 'showres']),
-            master_push_perm=dict(type='str', choices=['enable', 'disable'], required=False),
-            crypto_auth_perm=dict(type='str', choices=['enable', 'disable'], required=False),
-            set_master_date=dict(type='bool', default=False),
-            attributes=dict(type='list', elements='str'),
+            action=dict(
+                type="str",
+                choices=["list", "perform_nim_op", "other_op"],
+                required=True,
+            ),
+            operation=dict(
+                type="str",
+                choices=[
+                    "allocate",
+                    "bos_inst",
+                    "change",
+                    "check",
+                    "cust",
+                    "deallocate",
+                    "diag",
+                    "maint_boot",
+                    "reset",
+                    "showres",
+                ],
+            ),
+            master_push_perm=dict(
+                type="str", choices=["enable", "disable"], required=False
+            ),
+            crypto_auth_perm=dict(
+                type="str", choices=["enable", "disable"], required=False
+            ),
+            set_master_date=dict(type="bool", default=False),
+            attributes=dict(type="list", elements="str"),
             # lsnim_params=dict(type='str'),
         ),
-        required_if=[
-            ['action', 'perform_nim_op', ['operation']]
-        ]
+        required_if=[["action", "perform_nim_op", ["operation"]]],
     )
 
-    action = module.params['action']
+    action = module.params["action"]
 
     if action == "list":
         results = list_info(module)
 
-    elif action == 'perform_nim_op':
+    elif action == "perform_nim_op":
         results = nim_operations(module)
 
     else:
-      results = other_operations(module)
+        results = other_operations(module)
 
     if results.get("failed"):
         module.fail_json(**results)
     else:
-      module.exit_json(**results)
+        module.exit_json(**results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
