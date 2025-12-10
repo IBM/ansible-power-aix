@@ -6,13 +6,6 @@
     host_name: all
 
   tasks:
-    # - name: Perform LLU in preview mode
-    #   ibm.power_aix.llvupdate:
-    #     action: preview
-
-    - name: Copy libpath
-      raw: cp -f /llutest/libc.a.bkp /llutest/libc.a
-
     - name: Perform LLU in preview mode
       ibm.power_aix.llvupdate:
         action: preview
@@ -25,33 +18,33 @@
     - name: Perform LLU on one process
       ibm.power_aix.llvupdate:
         action: update
-        processes_to_include: 9568718
+        processes_to_include: 6226328
       register: include_proc
 
     - name: Print result
       ansible.builtin.debug:
         var: include_proc
 
-    # - name: Perform LLU on every process except one
-    #   ibm.power_aix.llvupdate:
-    #     action: update
-    #     include_all: true
-    #     processes_to_exclude: 13828604
-    #   register: exclude_proc
+    - name: Perform LLU on every process except one
+      ibm.power_aix.llvupdate:
+        action: update
+        include_all: true
+        processes_to_exclude: 13828604
+      register: exclude_proc
     
-    # - name: Print result
-    #   ansible.builtin.debug:
-    #     var: exclude_proc
+    - name: Print result
+      ansible.builtin.debug:
+        var: exclude_proc
 
-    # - name: Perform LLU on multiple processes
-    #   ibm.power_aix.llvupdate:
-    #     action: update
-    #     processes_to_include: 12845566, 9568716    
-    #   register: multiple_proc
+    - name: Perform LLU on multiple processes
+      ibm.power_aix.llvupdate:
+        action: update
+        processes_to_include: 12845566, 9568716    
+      register: multiple_proc
 
-    # - name: Print result
-    #   ansible.builtin.debug:
-    #     var: multiple_proc
+    - name: Print result
+      ansible.builtin.debug:
+        var: multiple_proc
 
     - name: Perform LLU on all applicable processes.
       ibm.power_aix.llvupdate:
