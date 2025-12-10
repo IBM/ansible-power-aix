@@ -63,7 +63,7 @@ options:
     - C(disable) removes the NIM master's permissions to push commands.
     type: str
     choices: [ enable, disable ]
-  crypt_auth_perm:
+  crypto_auth_perm:
     description:
     - C(enable) enables SSL authentication during NIM master push operations
     - C(disable) disables SSL authentication and uses standard nimsh security
@@ -74,14 +74,15 @@ options:
     description:
     - To Set the Date and Time to That of the NIM Master
     type: bool
+    default: false
   attributes:
     description:
     - Passes information to NIM operations.
     type: list
     elements: str
 notes:
-  - You can refer to the Community blog for additional information on the commands used at
-    U(https://community.ibm.com/community/user/blogs/ravindra-shinde/2024/12/13/time-zone-update-tool-tz).
+  - You can refer to the IBM documenation for additional information on the commands used at
+    U(https://www.ibm.com/docs/en/aix/7.1.0?topic=n-nimclient-command).
 """
 
 EXAMPLES = r"""
