@@ -12,7 +12,7 @@ module: entstat
 author:
   - AIX Development Team (@vivekpandeyibm)
 short_description: Collects Ethernet device statistics using the entstat command on AIX
-version_added: "2.1.0"
+version_added: "2.2.0"
 description:
   - This module allows you to gather statistics from Ethernet devices using the AIX entstat command.
   - Supports device-generic statistics, device-specific reporting, reset, and debug trace toggle.
