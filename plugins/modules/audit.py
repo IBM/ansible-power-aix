@@ -44,8 +44,7 @@ options:
     type: bool
     default: false
 notes:
-  - Refer to IBM documentation for more details:
-    U(https://www.ibm.com/docs/en/aix/7.3?topic=a-audit-command)
+  - Refer to IBM documentation for more details U(https://www.ibm.com/docs/en/aix/7.3?topic=a-audit-command)
 '''
 
 EXAMPLES = r'''
