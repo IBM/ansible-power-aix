@@ -5,7 +5,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -46,6 +45,7 @@ options:
       each process and stops the operation for any process that does not complete the
       update operation within the timeout period.
     type: list
+    elements: str
   include_all:
     description:
     - Scans all the processes and initiates the Live Library Update operation for all LLU-capable processes
@@ -56,6 +56,7 @@ options:
     description:
     - Performs LLU operation on all LLU-capable processes except the ones provided using this flag.
     type: list
+    elements: str
   logfile:
     description:
     - Specifies the log file that you want to use.
@@ -101,7 +102,7 @@ EXAMPLES = r"""
 - name: Perform LLU on multiple processes
   ibm.power_aix.llvupdate:
     action: update
-    processes_to_include: 12845566, 9568716    
+    processes_to_include: 12845566, 9568716
 
 - name: Perform LLU on every process except one
   ibm.power_aix.llvupdate:
@@ -138,6 +139,7 @@ cmd:
   type: str
 """
 
+from ansible.module_utils.basic import AnsibleModule
 import re
 
 module = None
@@ -257,6 +259,7 @@ def preview_llu(module):
 
     results["stdout"] = stdout
     results["cmd"] = " ".join(cmd)
+    results["rc"] = rc
 
     if rc:
         results["stderr"] = stderr
@@ -327,6 +330,7 @@ def perform_llu(module):
 
     results["stdout"] = stdout
     results["cmd"] = " ".join(cmd)
+    results["rc"] = rc
 
     if rc:
         if "No process requires a Live library Update operation." in stdout:
@@ -334,11 +338,14 @@ def perform_llu(module):
             return msg
 
         results["stderr"] = stderr
-        results["msg"] = "LLU operation failed!"
+        base_msg = "LLU operation failed!"
 
-        if module.params["auto_cleanup"]:
-            msg += " " + perform_cleanup(module)
+        # If auto_cleanup is enabled, run it and append its message
+        if module.params.get("auto_cleanup"):
+            cleanup_msg = perform_cleanup(module)
+            base_msg += f" {cleanup_msg}"
 
+        results["msg"] = base_msg
         module.fail_json(**results)
 
     fail, success = parse_output(stdout)
@@ -389,7 +396,7 @@ def perform_cleanup(module):
 
     success_msg = "Successfuly cleaned the kernel state and processes."
     no_change_msg = "No cleanup is required."
-    fail_msg = f"Failed to clean the kernel state and processes. "
+    fail_msg = "Failed to clean the kernel state and processes. "
     fail_msg += "Please check stderr for more information."
 
     if "No clean up is required" in stdout:
@@ -421,9 +428,9 @@ def main():
             action=dict(
                 type="str", choices=["update", "preview", "clean"], required=True
             ),
-            processes_to_include=dict(type="list"),
+            processes_to_include=dict(type="list", elements="str"),
             include_all=dict(type="bool", default=False),
-            processes_to_exclude=dict(type="list"),
+            processes_to_exclude=dict(type="list", elements="str"),
             logfile=dict(type="str"),
             retries=dict(type="int"),
             timeout=dict(type="int"),
@@ -489,7 +496,7 @@ def main():
         if "failed" in results["msg"]:
             module.fail_json(**results)
 
-    results["msg"] += f" Action '{ action }' performed successfully."
+    results["msg"] += f" Action '{action}' performed successfully."
 
     module.exit_json(**results)
 
