@@ -413,7 +413,8 @@ def main():
                 try:
                     os.makedirs(output_dir, exist_ok=True)
                 except Exception as e:
-                    module.fail_json(msg=f"Failed to create directory {output_dir}: {str(e)}", **result)
+                    result['msg'] = f"Failed to create directory {output_dir}: {str(e)}"
+                    module.fail_json(**result)
             mode = 'a' if module.params['concatenated_output'] else 'w'
             with open(module.params['recorded_output'], mode) as f:
                 f.write(stdout + '\n')
