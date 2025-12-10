@@ -199,25 +199,23 @@ def parsed_info(stdout):
       niminfo (dict) - Dictionary containing resource information in parsed manner.
     """
 
-    niminfo = dict()
+    niminfo = {}
 
     stdout_lines = stdout.strip().splitlines()
 
+    # Skip header line (first line)
     for line in stdout_lines[1:]:
-        fields = line.split()
+        parts = line.split()
 
-        # Ignore empty or malformed lines that don't have enough fields
-        # Test expects "badline" to be ignored, "resA lpp_source file" to be parsed.
-        if len(fields) < 3:
+        # Ignore empty or malformed lines
+        if len(parts) < 3:
             continue
 
-        name = fields[0]
-        object_class = fields[1]
-        location = fields[2]
+        name, object_class, resource = parts[0], parts[1], parts[2]
 
         niminfo[name] = {
-            "class": object_class,
-            "location": location,
+            "object_class": object_class,
+            "resource": resource,
         }
 
     return niminfo
