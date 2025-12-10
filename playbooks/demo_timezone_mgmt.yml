@@ -1,0 +1,25 @@
+---
+- name: Demo timezone management
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: all
+
+  tasks:
+    # - name: List all available versions of timezones
+    #   ibm.power_aix.timezone_mgmt:
+    #     action: list_versions
+
+    - name: Update timezone
+      ibm.power_aix.timezone_mgmt:
+        action: update_timezone
+        timezone: 2026a
+
+    # - name: Fetch updated zones
+    #   ibm.power_aix.timezone_mgmt:
+    #     action: print_updated_zones
+    
+    # - name: Update timezone using locally stored DB
+    #   ibm.power_aix.timezone_mgmt:
+    #     action: update_timezone_offline
+    #     db_location: /tzcode2025a.tar.gz
