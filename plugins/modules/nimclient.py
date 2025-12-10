@@ -215,7 +215,7 @@ def parsed_info(stdout):
 
         niminfo[name] = {
             "object_class": object_class,
-            "resource": resource,
+            "object_type": resource,
         }
 
     return niminfo
