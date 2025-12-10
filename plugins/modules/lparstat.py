@@ -14,189 +14,164 @@ author:
   - AIX Development Team (@vivekpandeyibm)
 short_description: Collects LPAR statistics using the lparstat command on AIX
 description:
-  - This module allows you to gather LPAR configuration and utilization statistics using the AIX lparstat command.
-  - Supports various reporting flags and handles mutual exclusiveness among them.
-  - Can record and store output to a file.
+  - Gather LPAR configuration, CPU, memory, hypervisor, and performance statistics using the AIX lparstat command.
 version_added: "2.2.0"
 requirements:
   - AIX >= 7.1
+
 options:
+
   config_info:
     description:
-      - Show general configuration information about the LPAR.
-      - Enables additional options like -W, -x, -s, -P to be appended for detailed views.
+      - Show general LPAR configuration information (-i).
     type: bool
     default: false
+
   wpar_output:
     description:
-      - Lists details of the workload partition (WPAR) configuration..
-      - This flag is valid only when used with -i (config_info) or by itself..
-      - If the command is run from the global environment, the WPAR Key value is 0
+      - Show Workload Partition (WPAR) information (-W).
     type: bool
     default: false
-  security_mode:
-    description:
-      - Includes extended security and environment information (-x).
-    type: bool
-    default: false
+
   service_info:
     description:
-      - Displays statistics related to Service partition ID, Number of configured LPARs .
-      - This flag is valid only when used with -i (config_info) or by itself.
+      - Display service partition statistics (-s).
     type: bool
     default: false
+
   energy_tuning:
     description:
-      - Displays information about the energy management tuning parameters.
-      - This flag is valid only when used with -i (config_info) or by itself.
+      - Show energy tuning parameters (-P).
     type: bool
     default: false
+
+  security_mode:
+    description:
+      - Display extended security and environment information (-x).
+    type: bool
+    default: false
+
   detailed_cpu_stats:
     description:
-      - Shows the detailed CPU utilization statistics.
-      - When the turbo-mode accounting is disabled,
-        the lparstat command shows the breakdown by category of the unaccounted turbo cycles along with the dedicated,
-        donating or shared utilization columns: %user, %sys, %idle, %wait, %entc, %idon, %bdon, %istol and %bstol.
+      - Show detailed CPU statistics (-d).
     type: bool
     default: false
+
   memory_stats:
     description:
-      - Displays detailed memory-related statistics for the LPAR.
-      - reports on multiple aspects of memory, including Logical memory, Physical memory, /O memory entitlement, Memory pool information.
+      - Display comprehensive memory statistics (-m).
     type: bool
     default: false
+
   io_memory_pools:
     description:
-      - Displays detailed information about the I/O memory entitlement pools of the LPAR..
-      - This flag is valid only when used with the -m (memory_stats) option.
+      - Display I/O memory entitlement pool statistics (-e).
     type: bool
     default: false
+
   page_coalescing:
     description:
-      - Displays information about the page coalescing statistics of the LPAR.
-      - This flag can only be used together with the -m (memory_stats) option.
-      - When combined with the -w flag, outputs all the I/O memory entitlement pool metrics in a single line.
+      - Display page coalescing statistics (-p).
     type: bool
     default: false
+
   page_coalescing_wide:
     description:
-      - Appends '-w' to the '-p' option to outputs all the I/O memory entitlement pool metrics in a single line..
-      - Only applicable when -p is used.
+      - Wide output for page coalescing statistics (-w).
     type: bool
     default: false
+
   reset_once:
     description:
-      - Resets the high watermark for I/O memory entitlement once at the start (-r).
-      - Must be used with both -m and -e flags.
+      - Reset I/O memory entitlement high watermark once (-r).
     type: bool
     default: false
+
   reset_each_interval:
     description:
-      - Resets the high watermark for I/O memory at the beginning of each interval (-R).
-      - Must be used with -m and -e. Overrides -r if both specified.
-      - If both -r (reset_once) and -R (reset_each_interval) are specified, the -R flag takes precedence.
+      - Reset I/O memory entitlement high watermark at each interval (-R).
     type: bool
     default: false
+
   hypervisor_stat_short:
     description:
-      - Display a short summary of hypervisor statistics (-h).
-      - This flag is for quick insight into hypervisor activity.
+      - Show short hypervisor statistics (-h).
     type: bool
     default: false
+
   hypervisor_stat_long:
     description:
-      - Show full and extended hypervisor help text (-H).
-      - Used for detailed understanding of statistics gathered.
+      - Show detailed hypervisor statistics (-H).
     type: bool
     default: false
+
   export_xml:
     description:
-      - Generates the command output in XML format using the -X flag.
-      - By default, the XML file is created with the name `lparstat_DDMMYYHHMM.xml`, where the timestamp represents the date and time of execution.
-      - Allows the use of -o to specify an output filename.
+      - Export output in XML format (-X).
     type: bool
     default: false
+
   output_file:
     description:
-      - Path to the file where command output will be saved.
-      - Used with -X for structured XML output or general logging.
+      - Path to the output file for XML or stored results.
     type: str
+
   spurr_based_metrics:
     description:
-      - Reports utilization metrics based on the Scaled Processor Utilization Resource Register (SPURR).
-      - Useful on SPURR-capable processors to measure true CPU usage under power-saving or turbo modes
-      - Can be extended with 'w' for detailed power usage.
+      - Report SPURR-based CPU utilization (-E).
     type: bool
     default: false
+
   spurr_based_metrics_wide:
     description:
-      - Appends '-w' to the -E flag for wide-format Reports utilization metrics based on the Scaled SPURR.
-      - Valid only when spurr_based_metrics is True.
+      - Wide-format SPURR metrics (-Ew).
     type: bool
     default: false
+
   timestamp:
     description:
-      - Display timestamp information using -t.
-      - Useful in correlating usage with system layout changes.
+      - Include timestamp in output (-t).
     type: bool
     default: false
+
+  micro_partition:
+    description:
+      - Display micro-partitioning statistics (-G).
+    type: bool
+    default: false
+
+  utilization:
+    description:
+      - Display CPU utilization (-u).
+    type: bool
+    default: false
+
   interval:
     description:
-      - Specifies the interval (in seconds) between lparstat readings.
-      - Used to gather repeated samples over time.
+      - Interval (seconds) between samples.
     type: int
+
   count:
     description:
-      - Number of reports to generate at the specified interval.
-      - Must be used together with the interval option.
+      - Number of samples collected.
     type: int
+
   concatenated_output:
     description:
-      - Controls whether the output of the vmstat command is appended to the output file or is overwrited.
-      - If set to true, output will be appended to the file.
-      - If set to false, the file will be overwritten with fresh output.
+      - Whether to append output to the recorded file.
     type: bool
     required: true
+
   recorded_output:
     description:
-      - Folder path to command output in machine .
+      - Path to store recorded output.
     type: str
+
 notes:
-  - You can refer to the IBM documentation for additional information on the lparstat command at
+  - Refer to IBM documentation for more information at
     U(https://www.ibm.com/docs/en/aix/7.3.0?topic=l-lparstat-command).
 '''
 
-EXAMPLES = r'''
-- name: Run lparstat with default stats
-  ibm.power_aix.lparstat:
-    config_info: true
-
-- name: Run lparstat with extended info and WPAR config
-  ibm.power_aix.lparstat:
-    config_info: true
-    wpar_output: true
-    extended_output: true
-    service_info: true
-    energy_tuning: true
-
-- name: Run lparstat for multiple LPARs with event and pool utilization
-  ibm.power_aix.lparstat:
-    memory_stats: true
-    io_memory_pools: true
-    page_coalescing: true
-    page_coalescing_wide: true
-    reset_once: true
-
-- name: Run lparstat with XML output and export to file
-  ibm.power_aix.lparstat:
-    export_xml: true
-    output_file: '/tmp/lparstat_report.xml'
-
-- name: Run lparstat with interval and count
-  ibm.power_aix.lparstat:
-    interval: 2
-    count: 5
-'''
 
 RETURN = r'''
 msg:
