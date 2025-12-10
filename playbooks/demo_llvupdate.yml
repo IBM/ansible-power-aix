@@ -1,0 +1,74 @@
+---
+- name: Demo Live library update
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: all
+
+  tasks:
+    # - name: Perform LLU in preview mode
+    #   ibm.power_aix.llvupdate:
+    #     action: preview
+
+    - name: Copy libpath
+      raw: cp -f /llutest/libc.a.bkp /llutest/libc.a
+
+    - name: Perform LLU in preview mode
+      ibm.power_aix.llvupdate:
+        action: preview
+      register: preview
+    
+    - name: Print result
+      ansible.builtin.debug:
+        var: preview
+
+    - name: Perform LLU on one process
+      ibm.power_aix.llvupdate:
+        action: update
+        processes_to_include: 9568718
+      register: include_proc
+
+    - name: Print result
+      ansible.builtin.debug:
+        var: include_proc
+
+    # - name: Perform LLU on every process except one
+    #   ibm.power_aix.llvupdate:
+    #     action: update
+    #     include_all: true
+    #     processes_to_exclude: 13828604
+    #   register: exclude_proc
+    
+    # - name: Print result
+    #   ansible.builtin.debug:
+    #     var: exclude_proc
+
+    # - name: Perform LLU on multiple processes
+    #   ibm.power_aix.llvupdate:
+    #     action: update
+    #     processes_to_include: 12845566, 9568716    
+    #   register: multiple_proc
+
+    # - name: Print result
+    #   ansible.builtin.debug:
+    #     var: multiple_proc
+
+    - name: Perform LLU on all applicable processes.
+      ibm.power_aix.llvupdate:
+        action: update
+        include_all: true
+        auto_cleanup: true
+      register: all_proc
+    
+    - name: Print result
+      ansible.builtin.debug:
+        var: all_proc
+
+    - name: Clean up kernal state and uncleaned processes
+      ibm.power_aix.llvupdate:
+        action: clean
+      register: cleanup
+          
+    - name: Print result
+      ansible.builtin.debug:
+        var: cleanup
