@@ -27,12 +27,12 @@ options:
       - Defines the audit operation to perform.
       - C(start) Starts the audit subsystem. This option reads the instructions in the configuration files and performs the auditing
       - C(shutdown) Stops the collection of audit records and resets the configuration information by removing the definition of classes from the kernel tables
-      - C("off") Suspends the auditing system, but leaves the configuration valid. Data collection pauses until you give the 'audit on' command
-      - C("on") Restarts the auditing system after a suspension.
+      - C(off) Suspends the auditing system, but leaves the configuration valid. Data collection pauses until you give the 'audit on' command
+      - C(on) Restarts the auditing system after a suspension.
       - C(query) Queries the auditing status of the audit subsystem.
     required: true
     type: str
-    choices: [ start, shutdown, on, off, query ]
+    choices: [ 'start', 'shutdown', 'on', 'off', 'query' ]
   panic:
     description:
       - Used only with C(action=on). Enables panic mode (system halts if bin data cannot be written).
