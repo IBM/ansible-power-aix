@@ -1,0 +1,76 @@
+---
+- name: Demo playbook for nimclient
+  hosts: "{{host_name}}"
+  gather_facts: false
+  vars:
+    host_name: all
+
+  tasks:
+    - name: List all available NIM resources
+      ibm.power_aix.nimclient:
+        action: list
+
+    - name: Enable crypto auth permission
+      ibm.power_aix.nimclient:
+        action: other_op
+        crypto_auth_perm: enable
+
+    - name: Disable crypto auth permission
+      ibm.power_aix.nimclient:
+        action: other_op
+        crypto_auth_perm: disable
+
+    - name: Enable master push auth permission
+      ibm.power_aix.nimclient:
+        action: other_op
+        master_push_perm: enable
+
+    - name: Disable master push auth permission
+      ibm.power_aix.nimclient:
+        action: other_op
+        master_push_perm: disable
+
+    - name: Set same date as master
+      ibm.power_aix.nimclient:
+        action: other_op
+        set_master_date: True
+
+    - name: perform bos_inst
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: bos_inst
+
+    - name: allocate a lpp_source and spot
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: allocate
+        attributes:
+          - lpp_source=2342B_73D
+          - spot=2342B_73D_SPOT
+
+    - name: deallocate lpp_source and spot
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: deallocate
+        attributes:
+          - lpp_source=2342B_73D
+          - spot=2342B_73D_SPOT
+
+    - name: Show contents of a resource
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: showres
+        attributes:
+          - resource=2342B_73D
+
+    - name: Enable the system to boot in maintenance mode using a SPOT
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: maint_boot
+        attributes:
+          - spot=2342B_73D_SPOT
+
+    - name: Reset the state of client
+      ibm.power_aix.nimclient:
+        action: perform_nim_op
+        operation: reset
