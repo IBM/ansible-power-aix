@@ -1,0 +1,263 @@
+- name: Run iostat command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    concat_v1: 'True'
+    output_dir: "/tmp/iostatdata2"
+
+  tasks:
+    - name: Run iostat with adapter report and timestamp
+      ibm.power_aix.iostat:
+        adapter_report: true
+        extended_drive: true
+        long_list: true
+        reset_ext_stats: true
+        system_throughput: true
+        nonzero_stats: true
+        reset_io: true
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 10
+        count: 2
+    - name: Run iostat with xml_output
+      ibm.power_aix.iostat:
+        xml_output: true
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run iostat with xml_output and output file 
+      ibm.power_aix.iostat:
+        xml_output: true
+        xml_output_path: "{{ output_dir }}/xml_iostat_output.txt"
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with xml_output and drives options 
+      ibm.power_aix.iostat:
+        xml_output: true
+        drives: 'hdisk0'
+        xml_output_path: "{{ output_dir }}/xml_iostat_output.txt"
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run iostat with block_io report
+      ibm.power_aix.iostat:
+        block_io: true
+        show_timestamp: true
+        extended_drive: true
+        nonzero_stats: true
+        reset_io: true
+        options_override: "ellipsis=on"
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 2
+        count: 1
+    - name: Run iostat with adapter report
+      ibm.power_aix.iostat:
+        adapter_report: true
+        no_tty_cpu :  true
+        extended_drive: true
+        reset_ext_stats: true
+        long_list: true
+        path_utilization: true
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        interval: 2
+        count: 1
+    - name: Run iostat with no_tty_cpu and no_disk
+      ibm.power_aix.iostat:
+        no_tty_cpu: true
+        system_throughput: true
+        no_disk: true
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with no_tty_cpu and drives
+      ibm.power_aix.iostat:
+        no_tty_cpu: true
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        
+    - name: Run iostat with extended_drive and drives, wpar
+      ibm.power_aix.iostat:
+        extended_drive: true
+        wpar_stats: 'ALL'
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      
+    - name: Run iostat with fs_utilization and options_override 
+      ibm.power_aix.iostat:
+        fs_utilization: true
+        filesystems: "/"
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+        
+    - name: Run iostat with fs_only and wpar_stats
+      ibm.power_aix.iostat:
+        fs_only: true
+        wpar_stats: 'ALL'
+        filesystems: "/"
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+  
+    - name: Run iostat with long_list and options_override , wpar_stats
+      ibm.power_aix.iostat:
+        long_list: true
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with path_utilization and reset_io, scale_power
+      ibm.power_aix.iostat:
+        path_utilization: true
+        reset_io: true
+        options_override: "ellipsis=on"
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run iostat with reset_ext_stats and extended_drive, options_override
+      ibm.power_aix.iostat:
+        reset_ext_stats: true
+        options_override: "ellipsis=on"
+        extended_drive: true
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with no_disk and show_timestamp, show_timestamp 
+      ibm.power_aix.iostat:
+        no_disk: true
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with system_throughput and options_override and drives
+      ibm.power_aix.iostat:
+        system_throughput: true
+        options_override: "ellipsis=on"
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with show_timestamp and wpar_stats, options_override
+      ibm.power_aix.iostat:
+        show_timestamp: true
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with nonzero_stats and show_timestamp, options_override
+      ibm.power_aix.iostat:
+        nonzero_stats: true
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with reset_io and show_timestamp, options_override
+      ibm.power_aix.iostat:
+        reset_io: true
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run iostat with scale_power and drives
+      ibm.power_aix.iostat:
+        scale_power: 2
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with options_override and wpar_stats, scale_power
+      ibm.power_aix.iostat:
+        options_override: "ellipsis=on"
+        wpar_stats: 'ALL'
+        show_timestamp: true
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with wpar_stats, show_timestamp, scale_power, options_override
+      ibm.power_aix.iostat:
+        wpar_stats: 'ALL'
+        show_timestamp: true
+        options_override: "ellipsis=on"
+        scale_power: 2
+        drives: hdisk0
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    
+    - name: Run iostat with fs_only and wpar_stats, filesystems, options_override
+      ibm.power_aix.iostat:
+        fs_only: true
+        filesystems: "/"
+        wpar_stats: 'ALL'
+        options_override: "ellipsis=on"
+        show_timestamp: true
+        interval: 2
+        count: 1
+        recorded_output: "{{ output_dir }}/iostat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+  
+
+
+
+
