@@ -1,0 +1,56 @@
+---
+- name: Run entstat command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    concat_v1: 'True'
+    output_dir: "/tmp/entstatdata"
+
+  tasks:
+
+    - name: Run entstat with default stats on ent0
+      ibm.power_aix.entstat:
+        device_name: ent0
+        reset_stats: true
+        recorded_output: "{{ output_dir }}/entstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run entstat with device-specific statistics
+      ibm.power_aix.entstat:
+        device_name: ent0
+        device_statistics: true
+        recorded_output: "{{ output_dir }}/entstat_output1.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run entstat with reset statistics
+      ibm.power_aix.entstat:
+        device_name: ent0
+        reset_stats: true
+        recorded_output: "{{ output_dir }}/entstat_output2.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run entstat with debug trace option
+      ibm.power_aix.entstat:
+        device_name: ent0
+        debug_trace: true
+        recorded_output: "{{ output_dir }}/entstat_output3.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run entstat with device-specific stats and reset
+      ibm.power_aix.entstat:
+        device_name: ent0
+        device_statistics: true
+        reset_stats: true
+        recorded_output: "{{ output_dir }}/entstat_output4.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run entstat with device-specific stats and debug trace
+      ibm.power_aix.entstat:
+        device_name: ent0
+        device_statistics: true
+        debug_trace: true
+        recorded_output: "{{ output_dir }}/entstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
