@@ -40,6 +40,7 @@
         var: output
         verbosity: 4
       when: install_v
+
     - name: Install ifix package from file generated with epkg
       ibm.power_aix.emgr:
         action: install
@@ -54,6 +55,7 @@
         var: output
         verbosity: 4
       when: install_v
+
     - name: List a specific ifix data in details
       ibm.power_aix.emgr:
         action: list
@@ -63,6 +65,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Check an ifix
       ibm.power_aix.emgr:
         action: check
@@ -72,6 +75,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Check an ifix as list using ifix_packages
       ibm.power_aix.emgr:
         action: check
@@ -83,6 +87,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Preview ifix commit and display only errors and warnings using ifix_packages
       ibm.power_aix.emgr:
         action: commit
@@ -95,6 +100,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Preview ifix commit and display only errors and warnings
       ibm.power_aix.emgr:
         action: commit
@@ -105,6 +111,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Remove an installed ifix based on its VUID
       ibm.power_aix.emgr:
         action: remove
@@ -114,6 +121,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Display contents and topology of an ifix using ifix_packages
       ibm.power_aix.emgr:
         action: display_ifix
@@ -124,6 +132,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Display contents and topology of an ifix
       ibm.power_aix.emgr:
         action: display_ifix
@@ -132,6 +141,7 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
     - name: Remove an installed ifix using ifix_packages
       ibm.power_aix.emgr:
         action: remove
@@ -143,3 +153,13 @@
     - ansible.builtin.debug:
         var: output
         verbosity: 4
+
+    - name: Run emgr_sec_patch
+      ibm.power_aix.emgr:
+        action: emgr_sec_patch
+        tar_file: /nim_fix2.tar
+    
+    - name: Run emgr_sec
+      ibm.power_aix.emgr:
+        action: emgr_sec
+        ifix_package: /nim_fix2/IJ55897m1a.251112.epkg.Z
