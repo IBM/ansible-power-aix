@@ -5,6 +5,60 @@
 Releases
 ========
 
+Version 2.2.0
+-------------
+Notes
+  * llvupdate: NEW MODULE to perform the Live Library Update (LLU) operation for the specified processes without a downtime for workloads.
+  * clvupdate: NEW module to clean up failed live update operations.
+  * nimclient: NEW MODULE for allowing Network Installation Management (NIM) operations to be performed from a NIM client.
+  * timezone_mgmt: NEW MODULE for managing timezone for AIX systems .
+  * audit: NEW MODULE to run the audit command to Controls system auditing
+  * fcstat: NEW MODULE to collect the log of physical or virtual Fibre Channel device driver.
+  * iostat: NEW MODULE to invoke iostat utility with full flag support
+  * lparstat: NEW MODULE to invoke AIX's lparstat utility with full flag support
+  * netstat: NEW MODULE to collect Routing Table Information statistics
+  * ps: NEW MODULE to collect the status of processes log
+  * entstat: NEW MODULE to collect the Ethernet device driver statistics.
+  * NEW demo playbooks: audit.yml, fcstat.yml, iostat.yml, lparstat.yml, netstat.yml, ps.yml , entstat.yml
+  * New Playbooks - demo_llvupdate.yml, demo_nimclient.yml, demo_timezone_mgmt.yml, demo_clvupdate.yml
+  * emgr: Added support for emgr_sec, emgr_sec_patch, also added system os level in output.
+  * nim: Added support for explicit source type in case of bos_inst operation. Fixes #676
+  * dnf_bootstrap: Fix for issue #677
+  * nim_adm: Fix for #688
+  * emgr: Fix for issue #698
+  * Group: Fix for issue #670
+  * reboot: Fix for issue #679 #676
+  * filesystem: Fix for issue #672
+  * Role linting failures - dnf_bootstrap, nim_adm, vioshc, nim_master_migration, LKU
+  * alt_disk: Feature for Add wakeup and sleep action to alt_disk module #681
+
+Technolgy-Preview
+  * The following EDA components are provided as Technology Preview and are NOT intended for production use:
+  *  - /plugins/event_source/aix_cpu_watch - watch over CPU utilization and emmit
+     - event in case of surpassing a pre-defined threshold.
+     - A demo rulebook is also shipped as /playbooks/eda/demo_aix_cpu_watch.yml
+  * These components:
+     - Have limited validation
+     - Are subject to change
+     - Do not carry full IBM support
+     - May change or be removed in future releases
+     - Provided as Technology Preview for early evaluation only
+     - Not recommended for production use
+
+Availability
+  * `Automation Hub v2.2.0`_
+  * `Galaxy v2.2.0`_
+  * `GitHub v2.2.0`_
+
+.. _Automation Hub v2.2.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.2.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.2.0.tar.gz
+
+.. _GitHub v2.2.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.2.0.tar.gz
+
 Version 2.1.1
 -------------
 Notes
