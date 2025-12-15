@@ -1,0 +1,188 @@
+- name: Run lparstat command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    output_dir: "/tmp/lparstatdata2"
+    concat_v1: 'true'
+
+  tasks:
+    - name: Run lparstat with config info
+      ibm.power_aix.lparstat:
+        config_info: true
+        wpar_output: true
+        energy_tuning: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with config info
+      ibm.power_aix.lparstat:
+        config_info: true
+        wpar_output: true
+        service_info: true
+        energy_tuning: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with memory_stats, io_memory_pools and reset_each_interval info
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        reset_each_interval: true
+        io_memory_pools: true
+        timestamp: true
+        interval: 2
+        count: 2
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with hypervisor_stat_short options
+      ibm.power_aix.lparstat:
+        hypervisor_stat_short: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with hypervisor_stat_long
+      ibm.power_aix.lparstat:
+        hypervisor_stat_long: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with XML export
+      ibm.power_aix.lparstat:
+        export_xml: true
+        timestamp: true
+        output_file: '{{ output_dir }}/lparstat_output5.xml'
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with spurr based metrics and wide mode
+      ibm.power_aix.lparstat:
+        spurr_based_metrics: true
+        spurr_based_metrics_wide: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with memory_stats
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with detailed_cpu_stats
+      ibm.power_aix.lparstat:
+        detailed_cpu_stats: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with interval and count
+      ibm.power_aix.lparstat:
+        timestamp: true
+        interval: 5
+        count: 3
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with reset each interval
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        page_coalescing: true
+        io_memory_pools: true
+        reset_each_interval: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run lparstat with timestamp
+      ibm.power_aix.lparstat:
+        timestamp: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with wpar_output
+      ibm.power_aix.lparstat:
+        wpar_output: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with service_info
+      ibm.power_aix.lparstat:
+        service_info: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with energy_tuning
+      ibm.power_aix.lparstat:
+        energy_tuning: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with micro_partition
+      ibm.power_aix.lparstat:
+        micro_partition: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with utilization
+      ibm.power_aix.lparstat:
+        utilization: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with security_mode
+      ibm.power_aix.lparstat:
+        security_mode: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with detailed_cpu_stats
+      ibm.power_aix.lparstat:
+        detailed_cpu_stats: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with memory_stats , io_memory_pools , reset_each_interval
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        io_memory_pools: true
+        reset_each_interval: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with memory_stats , io_memory_pools , reset_once
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        io_memory_pools: true
+        reset_once: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with memory_stats , page_coalescing , page_coalescing_wide
+      ibm.power_aix.lparstat:
+        memory_stats: true
+        page_coalescing: true
+        page_coalescing_wide: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with spurr_based_metrics
+      ibm.power_aix.lparstat:
+        spurr_based_metrics: true
+        spurr_based_metrics_wide: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run lparstat with spurr_based_metrics with timestamp
+      ibm.power_aix.lparstat:
+        spurr_based_metrics: true
+        spurr_based_metrics_wide: true
+        timestamp: true
+        recorded_output: "{{ output_dir }}/lparstat_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
