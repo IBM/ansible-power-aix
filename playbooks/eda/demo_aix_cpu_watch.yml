@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# Technology Preview (Beta)
+#
+# This rulebook demonstrates Event-Driven Ansible (EDA) for monitoring
+# CPU utilization on AIX systems.
+#
+# - Intended for evaluation and feedback only
+# - Not recommended for production use
+# - Interfaces and behavior may change in future releases
+# =============================================================================
+
+- name: AIX CPU Watch (Technology Preview)
+  hosts: localhost
+
+  sources:
+    - ibm.power_aix.aix_cpu_watch:
+        hosts:
+          - host: aix.example.com
+            username: root
+            # Use either key_path or password based auth
+            key_path: /path/to/private_key
+        interval: 10
+        threshold: 50.0
+        emit_only_above: true
+
+  rules:
+    - name: Alert when CPU crosses threshold
+      condition: >
+        event.cpu is defined and
+        event.crossed is defined and
+        event.crossed == true
+      throttle:
+        once_within: 5 minutes
+        group_by_attributes:
+          - host
+      actions:
+        - print_event:
+            pretty: true
+        - run_playbook:
+            name: playbooks/notify_high_cpu.yml
+        - run_playbook:
+            name: playbooks/notify_email.yml
+        - run_playbook:
+            name: playbooks/act_on_aix.yml
+
+    - name: Emit errors from source plugin
+      condition: event.severity is defined and event.severity == "error"
+      actions:
+        - print_event:
+            pretty: true
+        - run_playbook:
+            name: playbooks/notify_source_error.yml
+
