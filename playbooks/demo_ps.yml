@@ -1,0 +1,276 @@
+---
+- name: Run ps command with various options on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    output_dir: "/tmp/psdata"
+    concat_v1: true
+
+  tasks:
+  - name: Test all_processes (-A)
+    ibm.power_aix.ps:
+      all_processes: true
+      recorded_output: "{{ output_dir }}/single_all_processes.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test processes_on_terminals (-a)
+    ibm.power_aix.ps:
+      processes_on_terminals: true
+      recorded_output: "{{ output_dir }}/single_terminals.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test exclude_session_leaders (-d)
+    ibm.power_aix.ps:
+      exclude_session_leaders: true
+      recorded_output: "{{ output_dir }}/single_exclude_leaders.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test exclude_kernel (-e)
+    ibm.power_aix.ps:
+      exclude_kernel: true
+      recorded_output: "{{ output_dir }}/single_exclude_kernel.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test full_list (-f)
+    ibm.power_aix.ps:
+      full_list: true
+      recorded_output: "{{ output_dir }}/single_full_list.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test long_list (-l)
+    ibm.power_aix.ps:
+      long_list: true
+      recorded_output: "{{ output_dir }}/single_long_list.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test kernel_processes (-k)
+    ibm.power_aix.ps:
+      kernel_processes: true
+      recorded_output: "{{ output_dir }}/single_kernel_process.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test kernel_threads_processes (-m)
+    ibm.power_aix.ps:
+      kernel_threads_processes: true
+      recorded_output: "{{ output_dir }}/single_kernel_threads.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test all_64bit (-M)
+    ibm.power_aix.ps:
+      all_64bit: true
+      recorded_output: "{{ output_dir }}/single_all_64bit.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test no_thread_stats (-N)
+    ibm.power_aix.ps:
+      no_thread_stats: true
+      recorded_output: "{{ output_dir }}/single_no_thread.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test groups (-G)
+    ibm.power_aix.ps:
+      groups: "0,1"
+      recorded_output: "{{ output_dir }}/single_groups.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test process_groups (-g)
+    ibm.power_aix.ps:
+      process_groups: "0,1"
+      recorded_output: "{{ output_dir }}/single_pgroups.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test alt_name_list (-n)
+    ibm.power_aix.ps:
+      alt_name_list: "/unix"
+      recorded_output: "{{ output_dir }}/single_altname.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test pids (-p)
+    ibm.power_aix.ps:
+      pids: "1,2"
+      recorded_output: "{{ output_dir }}/single_pid.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test project (-P)
+    ibm.power_aix.ps:
+      project: true
+      recorded_output: "{{ output_dir }}/single_project.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test ttys (-t)
+    ibm.power_aix.ps:
+      ttys: "pts/0"
+      recorded_output: "{{ output_dir }}/single_tty.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test all_users (-U)
+    ibm.power_aix.ps:
+      all_users: "root,daemon"
+      recorded_output: "{{ output_dir }}/single_allusers.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test users_in_current_env (-u)
+    ibm.power_aix.ps:
+      users_in_current_env: "root"
+      recorded_output: "{{ output_dir }}/single_users_env.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test tree_pid (-T)
+    ibm.power_aix.ps:
+      tree_pid: 1
+      recorded_output: "{{ output_dir }}/single_tree.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test descendants (-L)
+    ibm.power_aix.ps:
+      descendants: "1"
+      recorded_output: "{{ output_dir }}/single_desc.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test full_names (-X)
+    ibm.power_aix.ps:
+      full_names: true
+      recorded_output: "{{ output_dir }}/single_fullnames.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test page_sizes_settings (-Z)
+    ibm.power_aix.ps:
+      page_sizes_settings: true
+      recorded_output: "{{ output_dir }}/single_pagesize.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test sysv_format (-F)
+    ibm.power_aix.ps:
+      sysv_format: "pid,ppid,pri,nice,time,comm"
+      recorded_output: "{{ output_dir }}/single_sysv.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test output_format (-o)
+    ibm.power_aix.ps:
+      output_format: "pid,user,pcpu,comm"
+      recorded_output: "{{ output_dir }}/single_custom.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test combination of all_processes and long_list
+    ibm.power_aix.ps:
+      all_processes: true
+      long_list: true
+      recorded_output: "{{ output_dir }}/double_all_long.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test exclude_kernel and full_list
+    ibm.power_aix.ps:
+      exclude_kernel: true
+      full_list: true
+      recorded_output: "{{ output_dir }}/double_exclude_full.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test all_users and ttys
+    ibm.power_aix.ps:
+      all_users: "root,daemon"
+      ttys: "pts/0"
+      recorded_output: "{{ output_dir }}/double_users_tty.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test kernel_threads and custom_format
+    ibm.power_aix.ps:
+      kernel_threads_processes: true
+      output_format: "pid,tid,user,etime,comm"
+      recorded_output: "{{ output_dir }}/double_thread_format.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test sysv_format and project
+    ibm.power_aix.ps:
+      sysv_format: "pid,ppid,pri,nice,time,comm"
+      project: true
+      recorded_output: "{{ output_dir }}/double_sysv_project.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test page_sizes and kernel_processes
+    ibm.power_aix.ps:
+      page_sizes_settings: true
+      kernel_processes: true
+      recorded_output: "{{ output_dir }}/double_page_kernel.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test all_processes, full_list, and project
+    ibm.power_aix.ps:
+      all_processes: true
+      full_list: true
+      project: true
+      recorded_output: "{{ output_dir }}/triple_all_full_project.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test output_format, all_users, and groups
+    ibm.power_aix.ps:
+      output_format: "pid,user,pcpu"
+      all_users: "root"
+      groups: "0"
+      recorded_output: "{{ output_dir }}/triple_custom_users_groups.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test sysv_format, full_names, and 64-bit
+    ibm.power_aix.ps:
+      sysv_format: "pid,ppid,pri,nice,comm"
+      full_names: true
+      all_64bit: true
+      recorded_output: "{{ output_dir }}/triple_sysv_full64.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test kernel_processes and exclude_kernel conflict
+    ibm.power_aix.ps:
+      kernel_processes: true
+      exclude_kernel: true
+      recorded_output: "{{ output_dir }}/mutual_exclude_kernel.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test full_list and long_list conflict
+    ibm.power_aix.ps:
+      full_list: true
+      long_list: true
+      recorded_output: "{{ output_dir }}/mutual_full_long.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test sysv_format and output_format conflict
+    ibm.power_aix.ps:
+      sysv_format: "pid,ppid,pri"
+      output_format: "pid,user,pcpu"
+      recorded_output: "{{ output_dir }}/mutual_format_conflict.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Test no_thread_stats and kernel_threads_processes conflict
+    ibm.power_aix.ps:
+      no_thread_stats: true
+      kernel_threads_processes: true
+      recorded_output: "{{ output_dir }}/mutual_thread_conflict.txt"
+      concatenated_output: "{{ concat_v1 }}"
+
+  - name: Run ps with every available option enabled
+    ibm.power_aix.ps:
+      all_processes: true
+      processes_on_terminals: true
+      exclude_session_leaders: true
+      exclude_kernel: true
+      full_list: true
+      long_list: true
+      kernel_processes: true
+      kernel_threads_processes: true
+      all_64bit: true
+      no_thread_stats: true
+      groups: "0,1"
+      process_groups: "0,1"
+      pids: "1,2,3"
+      descendants: "1"
+      ttys: "pts/0"
+      users_in_current_env: "root"
+      all_users: "root,daemon"
+      alt_name_list: "/unix"
+      sysv_format: "pid,ppid,pri,nice,time,comm"
+      output_format: "pid,user,pcpu,pmem,comm"
+      project: true
+      full_names: true
+      page_sizes_settings: true
+      tree_pid: 1
+      recorded_output: "{{ output_dir }}/mega_all_options.txt"
+      concatenated_output: "{{ concat_v1 }}"
