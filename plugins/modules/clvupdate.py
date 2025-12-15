@@ -10,7 +10,7 @@ DOCUMENTATION = r'''
 ---
 module: clvupdate
 short_description: Run the AIX clvupdate command to clean up failed Live Update operations
-version_added: "2.3.0"
+version_added: "2.2.0"
 author:
   - "Nitish K Mishra (@nitismis)"
 description:
@@ -292,4 +292,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
