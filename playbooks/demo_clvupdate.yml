@@ -1,0 +1,64 @@
+---
+- name: Clean failed liveupdate operation by clvupdate module on AIX
+  hosts: aix
+  gather_facts: no
+  become: true
+
+  vars:
+    # Set this to true if you only want to unlock LU and NOT do full cleanup
+    lu_unlock_only: false
+
+    # Set this to true if the partition rebooted after LU failure
+    lu_ignore_state: false
+
+    # Set this to true if LU status is stuck but processes are not running
+    lu_ignore_status: false
+
+    # Optional alternate liveupdate.cf file
+    alt_liveupdate_cf: ""
+
+    # Optional alternate HMC details (only if default HMC is unreachable)
+    alt_hmc_host: ""
+    alt_hmc_user: ""
+
+  tasks:
+
+    - name: Show pre-check info
+      ansible.builtin.debug:
+        msg:
+          - "Starting clvupdate"
+          - "Target Host: {{ inventory_hostname }}"
+          - "Unlock Only        : {{ lu_unlock_only }}"
+          - "Ignore Kernel State: {{ lu_ignore_state }}"
+          - "Ignore Kernel Status: {{ lu_ignore_status }}"
+          - "Alternate CF File  : {{ alt_liveupdate_cf | default('N/A') }}"
+          - "Alternate HMC Host : {{ alt_hmc_host | default('N/A') }}"
+
+    - name: Run clvupdate cleanup
+      ibm.power_aix.clvupdate:
+        unlock_only: "{{ lu_unlock_only }}"
+        ignore_state: "{{ lu_ignore_state }}"
+        ignore_status: "{{ lu_ignore_status }}"
+        alt_cf_file: "{{ alt_liveupdate_cf | default(omit) }}"
+        alt_hmc_hostname: "{{ alt_hmc_host | default(omit) }}"
+        alt_hmc_username: "{{ alt_hmc_user | default(omit) }}"
+      register: clvupdate_result
+
+    - name: Show clvupdate output
+      ansible.builtin.debug:
+        var: clvupdate_result
+
+    - name: Fail if clvupdate returned non-zero rc
+      ansible.builtin.fail:
+        msg: |
+          clvupdate failed on {{ inventory_hostname }}
+          RC: {{ clvupdate_result.rc }}
+          STDERR: {{ clvupdate_result.stderr }}
+      when: clvupdate_result.rc is defined and clvupdate_result.rc != 0
+
+    - name: Success confirmation
+      ansible.builtin.debug:
+        msg:
+          - "clvupdate executed successfully"
+          - "Command: {{ clvupdate_result.cmd }}"
+
