@@ -1,0 +1,277 @@
+---
+- name: Netstat module full option tests
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: integration
+    output_dir: "/tmp/netstatdata"
+    concat_v1: true
+
+  tasks:
+
+    - name: Run netstat with all sockets, socket options and numeric address
+      ibm.power_aix.netstat:
+        all_sockets_state: true
+        socket_options: true
+        numeric_network_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test1.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with routing table, protocol tcp and address family inet
+      ibm.power_aix.netstat:
+        routing_table: true
+        protocol: tcp
+        address_family: inet
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test2.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with ras artifacts tcp, ras file and suppress nonzero
+      ibm.power_aix.netstat:
+        ras_artifacts: tcp
+        ras_file: "{{ output_dir }}/tcp_ras.log"
+        ras_suppress_nonzero: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test3.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with domain sockets, memory stats and pcb address
+      ibm.power_aix.netstat:
+        domain_sockets: true
+        memory_stats: true
+        pcb_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test4.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with show route details, routing table and numeric address
+      ibm.power_aix.netstat:
+        show_route_details: true
+        routing_table: true
+        numeric_network_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test5.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with display interfaces, interface name ent0 and packet counts
+      ibm.power_aix.netstat:
+        display_configured_interfaces: true
+        interface_name: ent0
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test6.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with virtual interface and cache stats
+      ibm.power_aix.netstat:
+        virtual_interface_and_multicast: true
+        cache_stats: true
+        recorded_output: "{{ output_dir }}/test7.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with ras artifacts udp, ras file and interactive mode
+      ibm.power_aix.netstat:
+        ras_artifacts: udp
+        ras_file: "{{ output_dir }}/udp_ras.log"
+        interactive_mode: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test8.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with display adapter statistics, numeric and pcb address
+      ibm.power_aix.netstat:
+        display_adapter_statistics: true
+        numeric_network_address: true
+        pcb_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test9.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with memory stats, mbuf pool stats and protocol tcp
+      ibm.power_aix.netstat:
+        memory_stats: true
+        mbuf_pool_stats: true
+        protocol: tcp
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test11.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with virtual interface, routing table and packet counts
+      ibm.power_aix.netstat:
+        virtual_interface_and_multicast: true
+        packet_counts: true
+        recorded_output: "{{ output_dir }}/test12.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with ras artifacts tcp, ras file and protocol stats
+      ibm.power_aix.netstat:
+        ras_artifacts: tcp
+        ras_file: "{{ output_dir }}/tcp_ras2.log"
+        protocol_stats: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test13.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with all sockets, pcb address and address family unix
+      ibm.power_aix.netstat:
+        all_sockets_state: true
+        pcb_address: true
+        address_family: unix
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test14.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with concise protocol stats, domain sockets and pcb address
+      ibm.power_aix.netstat:
+        concise_protocol_stats: true
+        domain_sockets: true
+        pcb_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test15.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with clear interface stats, memory stats and numeric address
+      ibm.power_aix.netstat:
+        clear_stats: "i"
+        clear_stats: "m"
+        clear_stats: "s"
+        recorded_output: "{{ output_dir }}/test16.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with clear memory stats, domain sockets and address family inet
+      ibm.power_aix.netstat:
+        clear_stats: "m"
+        recorded_output: "{{ output_dir }}/test17.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with clear protocol stats, routing table and pcb address
+      ibm.power_aix.netstat:
+        clear_stats: "s"
+        recorded_output: "{{ output_dir }}/test18.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with display interfaces, data link stat and protocol tcp
+      ibm.power_aix.netstat:
+        display_configured_interfaces: true
+        protocol: tcp
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test19.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with ras artifacts udp, ras file and address family inet
+      ibm.power_aix.netstat:
+        ras_artifacts: udp
+        ras_file: "{{ output_dir }}/udp_ras2.log"
+        address_family: inet
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test20.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with protocol_stats and concise_protocol_stats
+      ibm.power_aix.netstat:
+        protocol_stats: true
+        concise_protocol_stats: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test21.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with clear stats and routing table
+      ibm.power_aix.netstat:
+        clear_stats: "c"
+        recorded_output: "{{ output_dir }}/test22.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with clear stats and ras artifacts
+      ibm.power_aix.netstat:
+        clear_stats: "s"
+        recorded_output: "{{ output_dir }}/test23.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with all sockets and routing table together
+      ibm.power_aix.netstat:
+        all_sockets_state: true
+        routing_table: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test24.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with clear stats and protocol stats
+      ibm.power_aix.netstat:
+        clear_stats: "s"
+        recorded_output: "{{ output_dir }}/test25.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with clear stats and domain sockets
+      ibm.power_aix.netstat:
+        clear_stats: "m"
+        recorded_output: "{{ output_dir }}/test26.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with clear stats and cache stats
+      ibm.power_aix.netstat:
+        clear_stats: "c"
+        recorded_output: "{{ output_dir }}/test29.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      ignore_errors: true
+
+    - name: Run netstat with ras artifacts tcp, ras file, interactive and suppress nonzero
+      ibm.power_aix.netstat:
+        ras_artifacts: tcp
+        ras_file: "{{ output_dir }}/tcp_ras3.log"
+        interactive_mode: true
+        ras_suppress_nonzero: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test31.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with packet counts, memory stats and pcb address
+      ibm.power_aix.netstat:
+        memory_stats: true
+        pcb_address: true
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test32.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Run netstat with concise protocol stats, memory stats and address family inet6
+      ibm.power_aix.netstat:
+        concise_protocol_stats: true
+        memory_stats: true
+        address_family: inet6
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test35.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Run netstat with concise protocol stats, memory stats and address family inet4
+      ibm.power_aix.netstat:
+        concise_protocol_stats: true
+        interactive_mode: true
+        memory_stats: true
+        address_family: inet
+        interval: 1
+        count: 2
+        recorded_output: "{{ output_dir }}/test35.txt"
+        concatenated_output: "{{ concat_v1 }}"
