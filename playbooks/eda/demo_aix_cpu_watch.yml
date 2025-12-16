@@ -51,4 +51,3 @@
             pretty: true
         - run_playbook:
             name: playbooks/notify_source_error.yml
-

@@ -325,7 +325,7 @@ class AIXCPUWatch:
                         # Use the last non-empty line (tail -1 already, but be safe)
                         lines = [line for line in out.splitlines() if line.strip()][-1]
                         if not lines:
-                          raise ValueError("vmstat returned no data")
+                            raise ValueError("vmstat returned no data")
                         cpu = _compute_cpu_usage_from_vmstat(lines)
                         crossed = cpu["usage"] >= threshold
                         if (not emit_only_above) or crossed:
