@@ -102,7 +102,6 @@
     - name: Run lparstat with timestamp
       ibm.power_aix.lparstat:
         timestamp: true
-        timestamp: true
         recorded_output: "{{ output_dir }}/lparstat_output.txt"
         concatenated_output: "{{ concat_v1 }}"
     - name: Run lparstat with wpar_output
@@ -185,4 +184,3 @@
         timestamp: true
         recorded_output: "{{ output_dir }}/lparstat_output.txt"
         concatenated_output: "{{ concat_v1 }}"
-

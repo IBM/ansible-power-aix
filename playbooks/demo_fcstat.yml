@@ -23,13 +23,13 @@
         reset_stats: true
         recorded_output: "{{ output_dir }}/fcstat_output2.txt"
         concatenated_output: "{{ concat_v1 }}"
-    
+
     - name: Run fcstat in remove delay
       ibm.power_aix.fcstat:
         device_name: fcs0
         remove_delay: true
         recorded_output: "{{ output_dir }}/fcstat_output3.txt"
-        concatenated_output: "{{ concat_v1 }}"     
+        concatenated_output: "{{ concat_v1 }}"
 
     - name: Run fcstat with all_statistics option
       ibm.power_aix.fcstat:

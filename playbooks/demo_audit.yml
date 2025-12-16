@@ -19,21 +19,21 @@
 
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
-        action: off
+        action: 'off'
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
-        action: off
+        action: 'off'
 
     - name: Restart the audit system (audit on)
       ibm.power_aix.audit:
-        action: on
+        action: 'on'
     - name: Restart the audit system with panic mode
       ibm.power_aix.audit:
-        action: on
+        action: 'on'
         panic: true
     - name: Restart the audit system with fullpath mode
       ibm.power_aix.audit:
-        action: on
+        action: 'on'
         fullpath: true
     - name: Query audit subsystem status
       ibm.power_aix.audit:
