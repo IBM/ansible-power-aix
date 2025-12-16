@@ -103,7 +103,7 @@ EXAMPLES = r"""
 - name: Set same date as master
   ibm.power_aix.nimclient:
     action: other_op
-    set_master_date: True
+    set_master_date: true
 
 - name: perform bos_inst
   ibm.power_aix.nimclient:

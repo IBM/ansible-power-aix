@@ -10,7 +10,7 @@
       ibm.power_aix.llvupdate:
         action: preview
       register: preview
-    
+
     - name: Print result
       ansible.builtin.debug:
         var: preview
@@ -31,7 +31,7 @@
         include_all: true
         processes_to_exclude: 13828604
       register: exclude_proc
-    
+
     - name: Print result
       ansible.builtin.debug:
         var: exclude_proc
@@ -39,7 +39,7 @@
     - name: Perform LLU on multiple processes
       ibm.power_aix.llvupdate:
         action: update
-        processes_to_include: 12845566, 9568716    
+        processes_to_include: 12845566, 9568716
       register: multiple_proc
 
     - name: Print result
@@ -52,7 +52,7 @@
         include_all: true
         auto_cleanup: true
       register: all_proc
-    
+
     - name: Print result
       ansible.builtin.debug:
         var: all_proc
@@ -61,7 +61,7 @@
       ibm.power_aix.llvupdate:
         action: clean
       register: cleanup
-          
+
     - name: Print result
       ansible.builtin.debug:
         var: cleanup

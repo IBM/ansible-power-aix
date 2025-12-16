@@ -100,7 +100,7 @@
           block:
             - name: Prepare remote target variables
               ansible.builtin.set_fact:
-                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env','USER')) }}"
+                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
                 power_aix_bootstrap_target_host: "{{ (ansible_host | default(inventory_hostname)) | regex_replace('.*@', '') }}"
 
             - name: Copy file to {{ power_aix_bootstrap_target_dir }}
@@ -152,7 +152,7 @@
           block:
             - name: Prepare remote target variables
               ansible.builtin.set_fact:
-                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env','USER')) }}"
+                power_aix_bootstrap_target_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
                 power_aix_bootstrap_target_host: "{{ (ansible_host | default(inventory_hostname)) | regex_replace('.*@', '') }}"
 
             - name: Copy file to {{ power_aix_bootstrap_target_dir }}
