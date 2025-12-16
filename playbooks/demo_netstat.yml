@@ -145,8 +145,6 @@
     - name: Run netstat with clear interface stats, memory stats and numeric address
       ibm.power_aix.netstat:
         clear_stats: "i"
-        clear_stats: "m"
-        clear_stats: "s"
         recorded_output: "{{ output_dir }}/test16.txt"
         concatenated_output: "{{ concat_v1 }}"
 
@@ -189,21 +187,18 @@
         count: 2
         recorded_output: "{{ output_dir }}/test21.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with clear stats and routing table
       ibm.power_aix.netstat:
         clear_stats: "c"
         recorded_output: "{{ output_dir }}/test22.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with clear stats and ras artifacts
       ibm.power_aix.netstat:
         clear_stats: "s"
         recorded_output: "{{ output_dir }}/test23.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with all sockets and routing table together
       ibm.power_aix.netstat:
@@ -213,28 +208,24 @@
         count: 2
         recorded_output: "{{ output_dir }}/test24.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with clear stats and protocol stats
       ibm.power_aix.netstat:
         clear_stats: "s"
         recorded_output: "{{ output_dir }}/test25.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with clear stats and domain sockets
       ibm.power_aix.netstat:
         clear_stats: "m"
         recorded_output: "{{ output_dir }}/test26.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with clear stats and cache stats
       ibm.power_aix.netstat:
         clear_stats: "c"
         recorded_output: "{{ output_dir }}/test29.txt"
         concatenated_output: "{{ concat_v1 }}"
-      ignore_errors: true
 
     - name: Run netstat with ras artifacts tcp, ras file, interactive and suppress nonzero
       ibm.power_aix.netstat:

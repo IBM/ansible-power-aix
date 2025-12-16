@@ -54,11 +54,11 @@ EXAMPLES = r'''
 
 - name: Turn auditing off
   audit:
-    action: off
+    action: 'off'
 
 - name: Restart audit with panic mode
   audit:
-    action: on
+    action: 'on'
     panic: true
 
 - name: Query audit subsystem status
