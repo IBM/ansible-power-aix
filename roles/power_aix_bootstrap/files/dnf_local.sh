@@ -197,8 +197,7 @@ else
     /usr/bin/tar -xvf dnf_bundle_aix_71_72.tar
 fi
 
-# shellcheck disable=SC2154
-./install_dnf.sh "$arg" "$yum4" "$yum3_instd" 2
+./install_dnf.sh "$mnt_path" "$yum4" "$yum3_instd" 2
 rc=$?
 if [ $rc -eq 0 ]
 then
