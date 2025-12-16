@@ -5,6 +5,26 @@
 Releases
 ========
 
+Version 2.2.1
+-------------
+Notes
+   * Updated shellcheck/lintings warnings reported by Red hat automation hub.
+   * For latest feature inclusions, see notes for version 2.2.0 below.
+
+Availability
+  * `Automation Hub v2.2.1`_
+  * `Galaxy v2.2.1`_
+  * `GitHub v2.2.1`_
+
+.. _Automation Hub v2.2.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.2.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.2.1.tar.gz
+
+.. _GitHub v2.2.1:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.2.1.tar.gz
+
 Version 2.2.0
 -------------
 Notes
@@ -32,7 +52,7 @@ Notes
   * Role linting failures - dnf_bootstrap, nim_adm, vioshc, nim_master_migration, LKU
   * alt_disk: Feature for Add wakeup and sleep action to alt_disk module #681
 
-Technolgy-Preview
+Technology-Preview
   * The following EDA components are provided as Technology Preview and are NOT intended for production use:
   *  - /plugins/event_source/aix_cpu_watch - watch over CPU utilization and emmit
      - event in case of surpassing a pre-defined threshold.
