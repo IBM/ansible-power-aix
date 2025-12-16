@@ -33,14 +33,14 @@
     - name: Set same date as master
       ibm.power_aix.nimclient:
         action: other_op
-        set_master_date: True
+        set_master_date: true
 
-    - name: perform bos_inst
+    - name: Perform bos_inst
       ibm.power_aix.nimclient:
         action: perform_nim_op
         operation: bos_inst
 
-    - name: allocate a lpp_source and spot
+    - name: Allocate a lpp_source and spot
       ibm.power_aix.nimclient:
         action: perform_nim_op
         operation: allocate
@@ -48,7 +48,7 @@
           - lpp_source=2342B_73D
           - spot=2342B_73D_SPOT
 
-    - name: deallocate lpp_source and spot
+    - name: Deallocate lpp_source and spot
       ibm.power_aix.nimclient:
         action: perform_nim_op
         operation: deallocate

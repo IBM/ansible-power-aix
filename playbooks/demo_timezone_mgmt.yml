@@ -18,7 +18,7 @@
     - name: Fetch updated zones
       ibm.power_aix.timezone_mgmt:
         action: print_updated_zones
-    
+
     - name: Update timezone using locally stored DB
       ibm.power_aix.timezone_mgmt:
         action: update_timezone_offline

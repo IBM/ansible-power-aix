@@ -1,7 +1,7 @@
 ---
 - name: Clean failed liveupdate operation by clvupdate module on AIX
   hosts: aix
-  gather_facts: no
+  gather_facts: false
   become: true
 
   vars:
@@ -61,4 +61,3 @@
         msg:
           - "clvupdate executed successfully"
           - "Command: {{ clvupdate_result.cmd }}"
-

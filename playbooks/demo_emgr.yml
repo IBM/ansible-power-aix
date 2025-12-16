@@ -158,7 +158,7 @@
       ibm.power_aix.emgr:
         action: emgr_sec_patch
         tar_file: /nim_fix2.tar
-    
+
     - name: Run emgr_sec
       ibm.power_aix.emgr:
         action: emgr_sec
