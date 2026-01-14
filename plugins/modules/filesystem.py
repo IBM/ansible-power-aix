@@ -102,6 +102,16 @@ options:
     description:
     - Specifies a Network File System (NFS) server for NFS filesystem.
     type: str
+  nfs_version:
+    description:
+    - Specifies the NFS version to be used during NFS mount.
+    type: str
+    choices: [ any, 2, 3, 4 ]
+  nfs_sec_methods:
+    description:
+    - List of security methods to be used when attempting mount.
+    type: list
+    elements: str
 notes:
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chfsmnt.html),
@@ -391,7 +401,7 @@ def nfs_opts(module):
 
     if mgroup:
         opts += f"-m {mgroup} "
-    
+
     if nfs_version:
         opts += f"-K {nfs_version} "
 
