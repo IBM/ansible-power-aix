@@ -106,7 +106,7 @@ options:
     description:
     - Specifies the NFS version to be used during NFS mount.
     type: str
-    choices: [ any, 2, 3, 4 ]
+    choices: [ 'any', '2', '3', '4' ]
   nfs_sec_methods:
     description:
     - List of security methods to be used when attempting mount.
