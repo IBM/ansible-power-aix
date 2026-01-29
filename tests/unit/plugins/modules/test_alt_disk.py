@@ -17,7 +17,7 @@ def reset_results_and_module():
 
     # make a mock module object used by functions
     module = mock.Mock()
-    module.params = {}
+    module.params = {'phases_to_execute': None}
     module.log = mock.Mock()
     module.debug = mock.Mock()
     module.fail_json = mock.Mock(side_effect=RuntimeError("fail_json called"))
