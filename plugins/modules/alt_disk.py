@@ -139,7 +139,7 @@ options:
     - C(23) phases 2 and phases 3 to execute
     - C(all) all phases to execute (default)
     type: str
-    choices: [ 1, 2, 3, 12, 23, all ]
+    choices: [ '1', '2', '3', '12', '23', 'all' ]
 
 notes:
   - M(ibm.power_aix.alt_disk) only backs up mounted file systems. Mount all file
