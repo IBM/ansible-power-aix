@@ -28,6 +28,7 @@
     - name: Perform a cleanup of any existing alternate disk copy
       ibm.power_aix.alt_disk:
         action: clean
+        targets: hdisk3
 
     - name: Perform a cleanup of any existing alternate disk copy and old rootvg
       ibm.power_aix.alt_disk:
@@ -38,7 +39,46 @@
       ibm.power_aix.alt_disk:
         action: wakeup
         targets: hdisk3
+  
     - name: Perform an alternate disk sleep of the rootvg
       ibm.power_aix.alt_disk:
         action: sleep
         rebuild_boot_image: true
+
+    - name: Perform an alternate disk copy with phases and disk_size_policy
+      ibm.power_aix.alt_disk:
+        action: copy
+        phases_to_execute: 'all'
+        disk_size_policy: nearest
+        bootlist: true
+        force: true
+
+    - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
+      ibm.power_aix.alt_disk:
+        action: copy
+        targets: hdisk2
+        phases_to_execute: '1'
+        bootlist: true
+        force: true
+
+    - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
+      ibm.power_aix.alt_disk:
+        action: copy
+        targets: hdisk2
+        phases_to_execute: '2'
+        bootlist: true
+
+    - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
+      ibm.power_aix.alt_disk:
+        action: copy
+        targets: hdisk2
+        phases_to_execute: '12'
+        bootlist: true
+        force: true
+
+    - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
+      ibm.power_aix.alt_disk:
+        action: copy
+        targets: hdisk2
+        phases_to_execute: '3'
+        bootlist: true

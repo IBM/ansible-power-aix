@@ -129,6 +129,16 @@ options:
     - Rebuilds the alternate boot image before putting the volume group to sleep.
     type: bool
     default: false
+  phases_to_execute:
+    description:
+    - When I(action=copy), specifies the phase or phases to execute during this invocation of alt_disk_copy.
+    - C(1) only phases 1 to execute
+    - C(2) only phases 2 to execute
+    - C(3) only phases 3 to execute
+    - C(12) phases 1 and phases 2 to execute
+    - C(23) phases 2 and phases 3 to execute
+    - C(all) all phases to execute (default)
+    type: str
 
 notes:
   - M(ibm.power_aix.alt_disk) only backs up mounted file systems. Mount all file
@@ -192,6 +202,21 @@ import re
 
 results = None
 mirrors = -1
+
+
+def get_last_phase_number():
+    filepath = "/var/adm/ras/alt_disk_inst.log"
+    try:
+        with open(filepath, 'r') as file:
+            lines = file.readlines()
+
+        for line in reversed(lines):
+            match = re.search(r'Phase\s+(\d+)', line)
+            if match:
+                return int(match.group(1))
+        return 0  # No phase number found
+    except FileNotFoundError:
+        return 0
 
 
 def get_pvs(module):
@@ -297,6 +322,7 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
     # check an alternate disk does not already exist
     found_altdisk = ''
     found_oldrootvg = ''
+    phase = module.params['phases_to_execute']
     for pv in pvs:
         if pvs[pv]['vg'] == 'altinst_rootvg':
             found_altdisk = pv
@@ -305,6 +331,35 @@ def find_valid_altdisk(module, hdisks, rootvg_info, disk_size_policy, force, all
         if allow_old_rootvg and pvs[pv]['vg'] == 'old_rootvg':
             found_oldrootvg = pv
             break
+    # phases to execute during this invocation
+
+    if found_altdisk and phase and not module.params['force']:
+        old_phase = get_last_phase_number()  # 1 / 2 / 3
+        if phase == "all":
+            if old_phase == 3:
+                results['msg'] = f"All phases already completed for disk {hdisks}. Nothing to do."
+                results['changed'] = False
+                module.exit_json(**results)
+            else:
+                return
+        if (old_phase == 1 and phase in ("2", "23")) or (old_phase == 2 and phase == "3"):
+            return
+
+        # block if ANY requested phase already completed
+        elif any(int(p) <= old_phase for p in phase if p.isdigit()):
+            results['msg'] = f"Phase {phase} is not allowed because phase {old_phase} is already completed for disk {hdisks}."
+            results['changed'] = False
+            module.exit_json(**results)
+        elif old_phase == 1 and phase == "3":
+            results['msg'] = f"After phase 1, only phase 2 or 23 is allowed. You are trying phase {phase}."
+            module.fail_json(**results)
+    elif found_altdisk and (phase not in ('1', '12', 'all')) and module.params['force']:
+        results['msg'] = 'The force option can only be used when phases_to_execute is set to one of the following: 1, 12 or all'
+        module.fail_json(**results)
+    elif not found_altdisk and phase in ("2", "23", "3"):
+        results['msg'] = f"Phase 1 has not been executed. Cannot run phase {phase} directly."
+        module.fail_json(**results)
+
     if found_altdisk or found_oldrootvg:
         if not force:
             if found_altdisk:
@@ -590,6 +645,8 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
         cmd += ['-x', params['first_boot_script']]
     if params['resolvconf']:
         cmd += ['-R', params['resolvconf']]
+    if params['phases_to_execute']:
+        cmd += ['-P', params['phases_to_execute']]
 
     ret, stdout, stderr = module.run_command(cmd)
     results['rc'] = ret
@@ -851,6 +908,7 @@ def main():
             resolvconf=dict(type='str'),
             allow_old_rootvg=dict(type='bool', default=False),
             rebuild_boot_image=dict(type='bool', default=False),
+            phases_to_execute=dict(type='str', choices=['1', '2', '3', '12', '23', 'all']),
         ),
         mutually_exclusive=[
             ['targets', 'disk_size_policy']
