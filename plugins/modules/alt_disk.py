@@ -749,6 +749,53 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
     results['changed'] = True
 
 
+def check_phases_to_execute(module):
+    """
+    check if it is alloweded the execute phases
+
+    """
+    # get pv list
+    hdisks = module.params['existing_altinst_rootvg']
+    pvs = get_pvs(module)
+    if pvs is None:
+        module.fail_json(**results)
+    # check an alternate disk does not already exist
+    found_altdisk = ''
+    phase = module.params['phases_to_execute']
+    for pv in pvs:
+        if pvs[pv]['vg'] == 'altinst_rootvg':
+            found_altdisk = pv
+            break
+    # phases to execute during this invocation
+
+    if found_altdisk and phase and not module.params['force']:
+        old_phase = get_last_phase_number()  # 1 / 2 / 3
+        if phase == "all":
+            if old_phase == 3:
+                results['msg'] = f"All phases already completed for disk {hdisks}. Nothing to do."
+                results['changed'] = False
+                module.exit_json(**results)
+            else:
+                return
+        if (old_phase == 1 and phase in ("2", "23")) or (old_phase == 2 and phase == "3"):
+            return
+
+        # block if ANY requested phase already completed
+        elif any(int(p) <= old_phase for p in phase if p.isdigit()):
+            results['msg'] = f"Phase {phase} is not allowed because phase {old_phase} is already completed for disk {hdisks}."
+            results['changed'] = False
+            module.exit_json(**results)
+        elif old_phase == 1 and phase == "3":
+            results['msg'] = f"After phase 1, only phase 2 or 23 is allowed. You are trying phase {phase}."
+            module.fail_json(**results)
+    elif found_altdisk and (phase not in ('1', '12', 'all')) and module.params['force']:
+        results['msg'] = 'The force option can only be used when phases_to_execute is set to one of the following: 1, 12 or all'
+        module.fail_json(**results)
+    elif not found_altdisk and phase in ("2", "23", "3"):
+        results['msg'] = f"Phase 1 has not been executed. Cannot run phase {phase} directly."
+        module.fail_json(**results)
+
+
 def alt_rootvg_op(module):
     """
     alt_rootvg_op operation
@@ -757,6 +804,8 @@ def alt_rootvg_op(module):
     """
 
     cmd = ['alt_disk_copy']
+    phase = module.params['phases_to_execute']
+    action = module.params['action']
 
     if not module.params['image_location']:
         msg = 'Please provide the image location.'
@@ -767,6 +816,13 @@ def alt_rootvg_op(module):
         msg = 'Please provide bundle_name or apar_fixes or filesets'
         results['msg'] = msg
         module.fail_json(**results)
+    if module.params['phases_to_execute']:
+        if phase in ("1", "2", "23"):
+            results['msg'] = f"Phase {phase} is not allowed in action {action}."
+            results['changed'] = False
+            module.exit_json(**results)
+
+        check_phases_to_execute(module)
 
     if module.params['bundle_name']:
         cmd += ['-b', module.params['bundle_name']]
@@ -777,6 +833,9 @@ def alt_rootvg_op(module):
     else:
         cmd += ['-w', module.params['filesets']]
 
+    if module.params['phases_to_execute']:
+        cmd += ['-P', module.params['phases_to_execute']]
+
     if module.params['installp_flags']:
         cmd += ['-I', module.params['installp_flags']]
 
@@ -784,6 +843,11 @@ def alt_rootvg_op(module):
     cmd += ['-d', module.params['existing_altinst_rootvg']]
 
     ret, stdout, stderr = module.run_command(cmd)
+
+    results['rc'] = ret
+    results['cmd'] = ' '.join(cmd)
+    results['stdout'] = stdout
+    results['stderr'] = stderr
 
     if ret:
         results['stdout'] = stdout
