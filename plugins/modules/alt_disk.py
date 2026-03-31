@@ -751,13 +751,15 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
 
 def check_phases_to_execute(module):
     """
-    check if it is alloweded the execute phases
-
+    Check which phases need to execute :
+    arguments:
+        module  (dict): The Ansible module
     """
     # get pv list
     hdisks = module.params['existing_altinst_rootvg']
     pvs = get_pvs(module)
     if pvs is None:
+        results['msg'] = "pvs is null so no need to execute."
         module.fail_json(**results)
     # check an alternate disk does not already exist
     found_altdisk = ''
@@ -774,7 +776,7 @@ def check_phases_to_execute(module):
             if old_phase == 3:
                 results['msg'] = f"All phases already completed for disk {hdisks}. Nothing to do."
                 results['changed'] = False
-                module.exit_json(**results)
+                module.fail_json(**results)
             else:
                 return
         if (old_phase == 1 and phase in ("2", "23")) or (old_phase == 2 and phase == "3"):
@@ -784,7 +786,7 @@ def check_phases_to_execute(module):
         elif any(int(p) <= old_phase for p in phase if p.isdigit()):
             results['msg'] = f"Phase {phase} is not allowed because phase {old_phase} is already completed for disk {hdisks}."
             results['changed'] = False
-            module.exit_json(**results)
+            module.fail_json(**results)
         elif old_phase == 1 and phase == "3":
             results['msg'] = f"After phase 1, only phase 2 or 23 is allowed. You are trying phase {phase}."
             module.fail_json(**results)
@@ -820,7 +822,7 @@ def alt_rootvg_op(module):
         if phase in ("1", "2", "23"):
             results['msg'] = f"Phase {phase} is not allowed in action {action}."
             results['changed'] = False
-            module.exit_json(**results)
+            module.fail_json(**results)
 
         check_phases_to_execute(module)
 
