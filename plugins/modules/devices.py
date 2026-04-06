@@ -275,11 +275,30 @@ def get_device_state(module, device):
     return None
 
 
+def parse_lsattr(output):
+    """
+    Helper to convert lsattr output into a key-value dictionary.
+    param output: lsattr output
+    return: dictionary containing all the key-value pairs.
+    """
+    attrs = {}
+    for line in output.strip().splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            key = parts[0]
+            val = parts[1]
+            attrs[key] = val
+    return attrs
+
+
 def get_device_attributes(module, device):
     """
     Fetches the current attributes from a device.
     param name: device name
-    return: standard output of lsatter -El <device> command.
+    return: standard output of lsattr -El <device> command.
+    note: In case of chtype=both, it additionally checks output of lsattr -Pl <device>
+          and merges the outputs. For attributes where effective (-El) and permanent (-Pl)
+          values differ, the permanent value is used in the merged output.
     """
     global results
 
@@ -300,6 +319,41 @@ def get_device_attributes(module, device):
         results['msg'] = f"Failed to fetch attributes from device {device}. \
                         Command {cmd} failed."
         module.fail_json(**results)
+
+    # Check both effective and permanent values for chtype that modifies ODM
+    if module.params['chtype'] in ["both", "reboot"]:
+        cmd2 = f"lsattr -Pl {device}"
+        rc2, stdout2, stderr2 = module.run_command(cmd2)
+        if rc2 != 0:
+            results['cmd'] = cmd2
+            results['rc'] = rc2
+            results['stdout'] = stdout2
+            results['stderr'] = stderr2
+            results['msg'] = f"Failed to fetch attributes from device {device}. \
+                            Command {cmd2} failed."
+            module.fail_json(**results)
+
+        # Parse both outputs into dictionaries
+        dict_e = parse_lsattr(stdout)
+        dict_p = parse_lsattr(stdout2)
+
+        # Merge the outputs: use permanent values where they differ from effective
+        # This ensures idempotency checking compares against the permanent (ODM) value
+        merged_lines = []
+        for line in stdout.strip().splitlines():
+            parts = line.split()
+            if len(parts) >= 2:
+                key = parts[0]
+                # If the key exists in permanent and differs, use permanent value
+                if key in dict_p and key in dict_e and dict_e[key] != dict_p[key]:
+                    # Replace the effective value with permanent value in the line
+                    parts[1] = dict_p[key]
+                merged_lines.append(' '.join(parts))
+            else:
+                merged_lines.append(line)
+
+        return '\n'.join(merged_lines)
+
     return stdout
 
 
