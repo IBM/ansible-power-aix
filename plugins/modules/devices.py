@@ -247,7 +247,7 @@ def check_idempotency(module, init_props, attributes, msg):
         msg += '\n'
 
     return attributes, msg
-
+    
 
 def get_device_state(module, device):
     """
@@ -296,7 +296,7 @@ def get_device_attributes(module, device):
     Fetches the current attributes from a device.
     param name: device name
     return: standard output of lsattr -El <device> command.
-    note: In case of chtype=both, it additionally checks output of lsattr -Pl <device>
+    note: In case of chtype=both/reset/reboot it additionally checks output of lsattr -Pl <device>
           and merges the outputs. For attributes where effective (-El) and permanent (-Pl)
           values differ, the permanent value is used in the merged output.
     """
@@ -321,7 +321,7 @@ def get_device_attributes(module, device):
         module.fail_json(**results)
 
     # Check both effective and permanent values for chtype that modifies ODM
-    if module.params['chtype'] in ["both", "reboot"]:
+    if module.params['chtype'] in ["both", "reboot", "reset"]:
         cmd2 = f"lsattr -Pl {device}"
         rc2, stdout2, stderr2 = module.run_command(cmd2)
         if rc2 != 0:
@@ -351,7 +351,7 @@ def get_device_attributes(module, device):
                 merged_lines.append(' '.join(parts))
             else:
                 merged_lines.append(line)
-
+        # Return the merged output
         return '\n'.join(merged_lines)
 
     return stdout
@@ -429,6 +429,9 @@ def chdev(module, device):
     if init_props != get_device_attributes(module, device):
         msg += f"Modification of Device attributes completed for device {device}"
         rc = True
+    else:
+        msg += f"Command ran successfully but no changes were made to the system."
+        rc = False
 
     return rc, msg
 
