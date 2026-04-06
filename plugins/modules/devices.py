@@ -247,7 +247,7 @@ def check_idempotency(module, init_props, attributes, msg):
         msg += '\n'
 
     return attributes, msg
-    
+
 
 def get_device_state(module, device):
     """
@@ -430,7 +430,7 @@ def chdev(module, device):
         msg += f"Modification of Device attributes completed for device {device}"
         rc = True
     else:
-        msg += f"Command ran successfully but no changes were made to the system."
+        msg += "Command ran successfully but no changes could be made to the system."
         rc = False
 
     return rc, msg
