@@ -10,7 +10,7 @@
     - name: Perform an alternate disk copy of the rootvg to hdisk3
       ibm.power_aix.alt_disk:
         action: copy
-        targets: hdisk3
+        targets: hdisk2
         force: true
 
     - name: Perform an alternate disk copy of the rootvg to the nearest disk that can be selected
@@ -57,15 +57,15 @@
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '1'
+        phases_to_execute: '12'
         bootlist: true
-        force: true
+        #force: true
 
     - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '2'
+        phases_to_execute: '3'
         bootlist: true
 
     - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
@@ -82,3 +82,19 @@
         targets: hdisk2
         phases_to_execute: '3'
         bootlist: true
+
+    - name: Run install action on existing altinst_rootvg with phases option 
+      ibm.power_aix.alt_disk:
+        action: install
+        existing_altinst_rootvg: hdisk2
+        phases_to_execute: '12'
+        filesets: "printers.msg.en_US.rte"
+        image_location: /mnt/2534B_73H/installp/ppc
+
+    - name: Run install action on existing altinst_rootvg with phases option 
+      ibm.power_aix.alt_disk:
+        action: install
+        existing_altinst_rootvg: hdisk2
+        phases_to_execute: '3'
+        filesets: "printers.ibm6180.rte"
+        image_location: /mnt/2534B_73H/installp/ppc
