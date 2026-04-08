@@ -34,13 +34,30 @@ options:
     description:
     - When I(state=available), specifies the device attribute-value pairs used
       for changing specific attribute values.
+    - When I(device=default), specifies the default attribute values to set for device class/subclass/type.
     type: dict
   device:
     description:
     - Specifies the device logical name in the Customized Devices object class.
     - C(all) specifies to configure all devices when I(state=available).
+    - C(default) switches to device defaults mode, requiring I(device_class), I(subclass), I(device_type), and I(state=available).
     type: str
     default: all
+  device_class:
+    description:
+    - Specifies the device class for setting device defaults.
+    - Required when I(device=default).
+    type: str
+  subclass:
+    description:
+    - Specifies the device subclass for setting device defaults.
+    - Required when I(device=default).
+    type: str
+  device_type:
+    description:
+    - Specifies the device type for setting device defaults.
+    - Required when I(device=default).
+    type: str
   force:
     description:
     - Forces the change/unconfigure operation to take place on a locked device.
@@ -90,6 +107,8 @@ options:
     choices: [ unconfigure, stop ]
     default: unconfigure
 notes:
+  - When using I(device=default) to set device defaults, only I(state=available) or I(state=present) are supported.
+    Device defaults are applied when devices are configured or after system reboot.
   - You can refer to the IBM documentation for additional information on the commands used at
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/cfgmgr.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/c_commands/chdev.html),
@@ -157,6 +176,26 @@ EXAMPLES = r'''
 - name: Discover new devices (configure all devices)
   devices:
     device: "all"
+    state: available
+
+- name: Set default queue_depth for virtual SCSI disks
+  devices:
+    device: default
+    device_class: disk
+    subclass: vscsi
+    device_type: vdisk
+    attributes:
+      queue_depth: 64
+    state: available
+- name: Set default algorithm for FCP mpioosdisk devices
+  devices:
+    device: default
+    device_class: disk
+    subclass: fcp
+    device_type: mpioosdisk
+    attributes:
+      algorithm: shortest_queue
+      queue_depth: 32
     state: available
 '''
 
@@ -552,6 +591,181 @@ def rmdev(module, device, state):
     return True, msg
 
 
+def check_device_defaults_idempotency(module):
+    """
+    Checks if the device defaults are already set to the desired values (idempotency check).
+    Args:
+        module: Ansible module argument spec
+    Returns:
+        tuple: (needs_change, attributes_to_change, message)
+            - needs_change: Boolean indicating if changes are needed
+            - attributes_to_change: Dictionary of attributes that need to be changed
+            - message: String message about the check result
+    Note:
+        Exits with fail_json in case of error
+    """
+    global results
+    results = dict(
+        changed=False,
+        msg='',
+        stdout='',
+        stderr='',
+    )
+    # Read parameters from module
+    device_class = module.params['device_class']
+    subclass = module.params['subclass']
+    device_type = module.params['device_type']
+    attributes = module.params['attributes']
+    # Build the uniquetype identifier
+    uniquetype = f"{device_class}/{subclass}/{device_type}"
+    # Build command to query current defaults
+    cmd = ['chdef', '-H']
+    rc, stdout, stderr = module.run_command(cmd)
+    results['cmd'] = ' '.join(cmd)
+    results['rc'] = rc
+    results['stdout'] = stdout
+    results['stderr'] = stderr
+    if rc != 0:
+        results['msg'] = f"Failed to query device defaults. Command '{' '.join(cmd)}' failed."
+        module.fail_json(**results)
+    # Parse chdef -H output to extract current defaults
+    current_defaults = {}
+    needs_change = False
+    if stdout:
+        lines = stdout.strip().split('\n')
+        # Skip header line if present
+        for line in lines:
+            if line.startswith('attribute'):
+                continue  # Skip header
+            parts = line.split()
+            if len(parts) >= 4:
+                attr_name = parts[0]
+                new_default = parts[1]
+                # orig_default = parts[2]
+                attr_uniquetype = parts[3]
+                # Check if this line matches our uniquetype
+                if attr_uniquetype == uniquetype and attr_name in attributes:
+                    current_defaults[attr_name] = new_default
+    # Check if any attributes need to be changed
+    attributes_to_change = {}
+    unchanged_attributes = []
+    for attr, desired_value in attributes.items():
+        current_value = current_defaults.get(attr)
+        if current_value is None:
+            # Attribute not in defaults, needs to be set
+            attributes_to_change[attr] = desired_value
+            needs_change = True
+        elif str(current_value) != str(desired_value):
+            # Attribute exists but has different value
+            attributes_to_change[attr] = desired_value
+            needs_change = True
+        else:
+            # Attribute already at desired value
+            unchanged_attributes.append(attr)
+    # Build message
+    msg = ""
+    if not needs_change:
+        msg = f"All device defaults for {uniquetype} are already at the required level."
+        results['msg'] = msg
+        results['stdout'] = stdout
+        module.exit_json(**results)
+    if unchanged_attributes:
+        msg = "Following attributes for {} are already set and will be ignored: {}. ".format(uniquetype, ', '.join(unchanged_attributes))
+    return needs_change, attributes_to_change, msg
+
+
+def chdef_device_defaults(module):
+    """
+    Changes device defaults using the chdef command.
+    Args:
+        module: Ansible module argument spec
+    Returns:
+        tuple: (changed, message)
+            - changed: Boolean indicating if changes were made
+            - message: String message about the operation result
+    Note:
+        Exits with fail_json in case of error
+    """
+    global results
+    results = dict(
+        changed=False,
+        msg='',
+        stdout='',
+        stderr='',
+    )
+    # Read parameters from module
+    device_class = module.params['device_class']
+    subclass = module.params['subclass']
+    device_type = module.params['device_type']
+    # Build the uniquetype identifier
+    uniquetype = f"{device_class}/{subclass}/{device_type}"
+    # Check idempotency first
+    needs_change, attributes_to_change, msg = check_device_defaults_idempotency(module)
+    if not needs_change:
+        return False, msg
+    # Build command to count affected devices
+    count_cmd = ['lsdev', '-Cc', device_class]
+    # Add optional flags only if specified
+    if module.params['subclass']:
+        count_cmd.extend(['-s', subclass])
+    if module.params['device_type']:
+        count_cmd.extend(['-t', device_type])
+    rc, stdout, stderr = module.run_command(count_cmd)
+    affected_count = 0
+    if rc == 0 and stdout:
+        # Count non-empty lines
+        affected_count = len([line for line in stdout.strip().split('\n') if line.strip()])
+    # Fail if no devices match the specified class/subclass/type
+    if affected_count == 0:
+        msg = f"No devices found matching class/subclass/type: {uniquetype}\n"
+        msg += "Cannot set defaults for non-existent device type.\n"
+        msg += f"Command executed: {' '.join(count_cmd)}"
+        results['msg'] = msg
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        module.fail_json(**results)
+    # Build chdef command for each attribute
+    changed_attributes = []
+    failed_attributes = []
+    for attr, value in attributes_to_change.items():
+        # Build chdef command - start with base command
+        cmd = ['chdef']
+        # Add attribute flag (required)
+        cmd.extend(['-a', f"{attr}={value}"])
+        if module.params['device_class']:
+            cmd.extend(['-c', device_class])
+        if module.params['subclass']:
+            cmd.extend(['-s', subclass])
+        if module.params['device_type']:
+            cmd.extend(['-t', device_type])
+        rc, stdout, stderr = module.run_command(cmd)
+        results['cmd'] = ' '.join(cmd)
+        results['rc'] = rc
+        results['stdout'] = stdout
+        results['stderr'] = stderr
+        if rc != 0:
+            failed_attributes.append(attr)
+            msg += f"Failed to set default for attribute '{attr}'. Command '{' '.join(cmd)}' failed.\n"
+            msg += f"Error: {stderr}\n"
+        else:
+            # Check if chdef reported a change
+            if f"{attr} changed" in stdout or stdout.strip():
+                changed_attributes.append(attr)
+            else:
+                # Even if no explicit "changed" message, consider it changed if command succeeded
+                changed_attributes.append(attr)
+    # Build final message
+    if failed_attributes:
+        msg += f"Failed to set defaults for attributes: {', '.join(failed_attributes)}\n"
+        module.fail_json(**results)
+    if changed_attributes:
+        msg += "Successfully changed device defaults for {}:".format(uniquetype)
+        msg += " Attributes: {}".format(', '.join(changed_attributes))
+        msg += " Affected devices: {} (changes apply after reboot or device reconfiguration)".format(affected_count)
+        return True, msg
+    return False, msg
+
+
 def main():
     module = AnsibleModule(
         supports_check_mode=False,
@@ -565,6 +779,9 @@ def main():
             chtype=dict(type='str', default='both', choices=['reboot', 'current', 'both', 'reset']),
             parent_device=dict(type='str'),
             rmtype=dict(type='str', default='unconfigure', choices=['unconfigure', 'stop']),
+            device_class=dict(type='str'),
+            subclass=dict(type='str'),
+            device_type=dict(type='str'),
         ),
     )
 
@@ -577,7 +794,29 @@ def main():
         state = 'removed'
 
     attributes = module.params["attributes"]
+    device_class = module.params.get("device_class")
+    subclass = module.params.get("subclass")
+    device_type = module.params.get("device_type")
+
     msg = ""
+
+    # Check if this is a device defaults operation (device='default')
+    if device == 'default':
+        # Device defaults only make sense with state='available' or 'present'
+        if state not in ['available', 'present']:
+            msg = "device='default' only supports state='available' or 'present'. "
+            msg += f"Got state='{module.params['state']}' which is invalid for setting device defaults."
+            module.fail_json(msg=msg)
+        # This is a device defaults operation using chdef
+        if not device_class or not subclass or not device_type:
+            msg = "device_class, subclass, and device_type are required when device='default'."
+            module.fail_json(msg=msg)
+        if not attributes:
+            msg = "Attributes must be specified when device='default'."
+            module.fail_json(msg=msg)
+        # Call the chdef function
+        changed, msg = chdef_device_defaults(module)
+        module.exit_json(changed=changed, msg=msg)
 
     if attributes:
         # Modify Device attributes.
