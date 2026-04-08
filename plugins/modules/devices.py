@@ -670,7 +670,7 @@ def check_device_defaults_idempotency(module):
         results['stdout'] = stdout
         module.exit_json(**results)
     if unchanged_attributes:
-        msg = "Following attributes for {} are already set and will be ignored: {}. ".format(uniquetype, ', '.join(unchanged_attributes))
+        msg = "Following attributes for {0} are already set and will be ignored: {1}. ".format(uniquetype, ', '.join(unchanged_attributes))
     return needs_change, attributes_to_change, msg
 
 
@@ -759,9 +759,9 @@ def chdef_device_defaults(module):
         msg += f"Failed to set defaults for attributes: {', '.join(failed_attributes)}\n"
         module.fail_json(**results)
     if changed_attributes:
-        msg += "Successfully changed device defaults for {}:".format(uniquetype)
-        msg += " Attributes: {}".format(', '.join(changed_attributes))
-        msg += " Affected devices: {} (changes apply after reboot or device reconfiguration)".format(affected_count)
+        msg += "Successfully changed device defaults for {0}:".format(uniquetype)
+        msg += " Attributes: {0}".format(', '.join(changed_attributes))
+        msg += " Affected devices: {0} (changes apply after reboot or device reconfiguration)".format(affected_count)
         return True, msg
     return False, msg
 
