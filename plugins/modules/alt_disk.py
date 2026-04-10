@@ -194,6 +194,12 @@ stderr:
     description: The standard error.
     returned: always
     type: str
+targets:
+    description: List of disk names affected by the operation.
+    returned: always
+    type: list
+    elements: str
+    sample: ['hdisk1', 'hdisk2']
 '''
 from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
@@ -659,6 +665,7 @@ def alt_disk_copy(module, params, hdisks, allow_old_rootvg):
         # an error occured during alt_disk_copy
         results['msg'] = f'Failed to copy {hdisks}: return code {ret}.'
         module.fail_json(**results)
+    results['targets'] = list(hdisks)
     results['changed'] = True
 
 
@@ -746,6 +753,7 @@ def alt_disk_clean(module, hdisks, allow_old_rootvg):
             results['msg'] = f'Command \'{cmd}\' fail with return code {ret}.'
             module.fail_json(**results)
 
+    results['targets'] = hdisks
     results['changed'] = True
 
 
@@ -776,7 +784,7 @@ def check_phases_to_execute(module):
             if old_phase == 3:
                 results['msg'] = f"All phases already completed for disk {hdisks}. Nothing to do."
                 results['changed'] = False
-                module.fail_json(**results)
+                module.exit_json(**results)
             else:
                 return
         if (old_phase == 1 and phase in ("2", "23")) or (old_phase == 2 and phase == "3"):
@@ -786,7 +794,7 @@ def check_phases_to_execute(module):
         elif any(int(p) <= old_phase for p in phase if p.isdigit()):
             results['msg'] = f"Phase {phase} is not allowed because phase {old_phase} is already completed for disk {hdisks}."
             results['changed'] = False
-            module.fail_json(**results)
+            module.exit_json(**results)
         elif old_phase == 1 and phase == "3":
             results['msg'] = f"After phase 1, only phase 2 or 23 is allowed. You are trying phase {phase}."
             module.fail_json(**results)
@@ -857,6 +865,7 @@ def alt_rootvg_op(module):
         results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
         module.fail_json(**results)
 
+    results['targets'] = [module.params['existing_altinst_rootvg']]
     results['changed'] = True
 
 
@@ -904,6 +913,7 @@ def alt_rootvg_wakeup(module):
             results['msg'] = f'Command \'{cmd}\' failed with return code {ret}.'
             module.fail_json(**results)
 
+    results['targets'] = sleeping_hdisks
     results['changed'] = True
 
 
@@ -947,6 +957,7 @@ def alt_rootvg_sleep(module):
                 stderr=stderr
             )
 
+    results['targets'] = hdisks
     results['changed'] = True
 
 
@@ -987,6 +998,7 @@ def main():
         msg='',
         stdout='',
         stderr='',
+        targets=[],
     )
 
     # Make sure we are not running on a VIOS.
@@ -1011,7 +1023,7 @@ def main():
     else:
         alt_rootvg_op(module)
 
-    results['msg'] += f'alt_disk {action} operation completed successfully'
+    results['msg'] += f"alt_disk {action} operation completed successfully on disk {results['targets']}"
     module.exit_json(**results)
 
 
