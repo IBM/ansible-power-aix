@@ -27,8 +27,10 @@ requirements:
 attributes:
   check_mode:
     support: full
+    description: Supports check mode for preview of changes without making actual modifications.
   diff_mode:
     support: none
+    description: Does not support diff mode as package state changes are binary (installed/not installed).
 options:
   action:
     description:
