@@ -24,6 +24,11 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 3.6
 - 'Privileged user with authorization: B(aix.system.install)'
+attributes:
+  check_mode:
+    support: full
+  diff_mode:
+    support: none
 options:
   action:
     description:
