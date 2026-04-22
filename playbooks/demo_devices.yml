@@ -1,0 +1,40 @@
+---
+- name: Device Defaults Management on AIX
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: alttest
+
+  tasks:
+
+    - name: Set default queue_depth for virtual SCSI disks
+      ibm.power_aix.devices:
+        device: default
+        device_class: disk
+        subclass: vscsi
+        device_type: vdisk
+        attributes:
+          queue_depth: 3
+          reserve_policy: no_reserve
+        state: available
+
+    - name: Set multiple defaults for virtual SCSI disks
+      ibm.power_aix.devices:
+        device: default
+        device_class: disk
+        subclass: vscsi
+        device_type: vdisk
+        attributes:
+          queue_depth: 31
+          reserve_policy: single_path
+        state: available
+    - name: Set multiple defaults for virtual SCSI disks
+      ibm.power_aix.devices:
+        device: default
+        device_class: disk
+        subclass: vscsi
+        device_type: vdisk
+        attributes:
+          queue_depth: 32
+        state: available
+
