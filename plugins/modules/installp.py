@@ -24,6 +24,13 @@ requirements:
 - AIX >= 7.1 TL3
 - Python >= 3.6
 - 'Privileged user with authorization: B(aix.system.install)'
+attributes:
+  check_mode:
+    support: full
+    description: Supports check mode for preview of changes without making actual modifications.
+  diff_mode:
+    support: none
+    description: Does not support diff mode as package state changes are binary (installed/not installed).
 options:
   action:
     description:
