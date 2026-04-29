@@ -173,7 +173,7 @@ if [ $aix_730_plus -eq 1 ]
 then
     echo ""
     echo "Copying dnf_bundle_aix_73.tar to $tmppath ..... "
-    if /usr/bin/cp "$bundle_path"/dnf_bundle_aix_73.tar "$tmppath"; then
+    if ! /usr/bin/cp "$bundle_path"/dnf_bundle_aix_73.tar "$tmppath"; then
         echo "Copy of dnf_bundle_aix_73.tar to $tmppath failed."
         exit 1
     fi
@@ -181,7 +181,7 @@ else
     echo ""
     echo "Copying dnf_bundle_aix_71_72.tar to $tmppath ....."
     
-    if /usr/bin/cp "$bundle_path"/dnf_bundle_aix_71_72.tar "$tmppath"; then
+    if ! /usr/bin/cp "$bundle_path"/dnf_bundle_aix_71_72.tar "$tmppath"; then
         echo "Copy of dnf_bundle_aix_71_72.tar to $tmppath failed."
         exit 1
     fi
