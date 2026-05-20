@@ -10,7 +10,7 @@
     group: system
     mode: "0664"
   when: inetd_state == 'enabled' and inetd_services
-  notify: restart inetd
+  notify: Restart inetd
 
 - name: Disable inetd services
   ansible.builtin.replace:
@@ -22,4 +22,4 @@
     group: system
     mode: "0664"
   when: inetd_state == 'disabled' and inetd_services
-  notify: restart inetd
+  notify: Restart inetd
