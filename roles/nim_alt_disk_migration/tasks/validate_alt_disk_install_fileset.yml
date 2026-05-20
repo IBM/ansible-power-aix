@@ -46,14 +46,14 @@
       fetch_contents: true
   register: nim_alt_disk_migration_lpp_source_query
 
-- name: Check if 'bos.alt_disk_install.rte is in in {{ nim_alt_disk_migration_lpp_source }}
+- name: Check if 'bos.alt_disk_install.rte is in {{ nim_alt_disk_migration_lpp_source }}
   block:
     - ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_fileset:
           "{{ nim_alt_disk_migration_lpp_source_query['nim_resources'][nim_alt_disk_migration_lpp_source]['contents'] }}"
 
     - ansible.builtin.fail:
-        msg: Fileset 'bos.alt_disk_install.rte' not in in {{ nim_alt_disk_migration_lpp_source }}
+        msg: Fileset 'bos.alt_disk_install.rte' not in {{ nim_alt_disk_migration_lpp_source }}
       when: nim_alt_disk_migration_lpp_source_fileset['bos.alt_disk_install.rte'] is not defined
 
     - ansible.builtin.debug:

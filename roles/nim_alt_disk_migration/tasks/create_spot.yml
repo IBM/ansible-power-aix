@@ -7,7 +7,7 @@
 # - if 'false then it will skip the automatic creation
 # of a SPOT resource from a nim_alt_disk_migration_lpp_source if 'dflt_spot'
 # already exists
-# 2. Add feature to specify an existin SPOT resource
+# 2. Add feature to specify an existing SPOT resource
 ############################################################
 
 - name: Fetch the location of the nim_alt_disk_migration_lpp_source
