@@ -405,26 +405,26 @@ def validate_for_log_capture(module):
     user_trail_path = module.params.get('audit_trail_path')
 
     if not os.path.exists(config_file):
-        module.fail_json(msg="Config file not found: {}".format(config_file))
+        module.fail_json(msg="Config file not found: {0}".format(config_file))
 
     try:
         binmode_on, config_trail_path = read_audit_config(config_file)
     except Exception as e:
-        module.fail_json(msg="Cannot read config file: {}".format(str(e)))
+        module.fail_json(msg="Cannot read config file: {0}".format(str(e)))
 
     if not binmode_on:
-        module.fail_json(msg="Binary mode is off. Set 'binmode = on' in {}".format(config_file))
+        module.fail_json(msg="Binary mode is off. Set 'binmode = on' in {0}".format(config_file))
 
     trail_path = user_trail_path if user_trail_path else config_trail_path
 
     if not trail_path:
-        module.fail_json(msg="Trail path not configured. Add 'trail = /path' in {}".format(config_file))
+        module.fail_json(msg="Trail path not configured. Add 'trail = /path' in {0}".format(config_file))
 
     if not os.path.exists(trail_path):
-        module.fail_json(msg="Trail path does not exist: {}".format(trail_path))
+        module.fail_json(msg="Trail path does not exist: {0}".format(trail_path))
 
     if not os.access(trail_path, os.R_OK):
-        module.fail_json(msg="Trail path not readable: {}".format(trail_path))
+        module.fail_json(msg="Trail path not readable: {0}".format(trail_path))
 
     return trail_path
 
@@ -540,7 +540,7 @@ def capture_audit_logs(module, result):
         try:
             os.makedirs(output_dir, exist_ok=True)
         except Exception as e:
-            result['msg'] = "Failed to create directory {}: {}".format(output_dir, str(e))
+            result['msg'] = "Failed to create directory {0}: {1}".format(output_dir, str(e))
             module.fail_json(**result)
 
     mode = 'w'  # Always overwrite to avoid duplicate data
@@ -565,9 +565,9 @@ def capture_audit_logs(module, result):
                     successful_files += 1
                 else:
                     failed_files.append(trail_file)
-                    f.write("Error reading {}: {}\n".format(trail_file, stderr))
+                    f.write("Error reading {0}: {1}\n".format(trail_file, stderr))
 
-        result['msg'] += " Audit logs from {} trail file(s) {} to '{}' using command: '{}'.".format(
+        result['msg'] += " Audit logs from {0} trail file(s) {1} to '{2}' using command: '{3}'.".format(
             successful_files, mode_text, output_file, auditpr_cmd
         )
         # Add auditpr command to result
@@ -575,12 +575,12 @@ def capture_audit_logs(module, result):
             result['auditpr_cmd'] = auditpr_cmd
 
         if failed_files:
-            result['msg'] += " Warning: {} file(s) failed: {}".format(
+            result['msg'] += " Warning: {0} file(s) failed: {1}".format(
                 len(failed_files), ', '.join([os.path.basename(f) for f in failed_files])
             )
 
     except Exception as e:
-        result['msg'] += " Error saving logs: {}".format(str(e))
+        result['msg'] += " Error saving logs: {0}".format(str(e))
 
     return result
 
@@ -617,7 +617,7 @@ def main():
     # Validate capture_delay range
     if capture_delay < MIN_CAPTURE_DELAY or capture_delay > MAX_CAPTURE_DELAY:
         module.fail_json(
-            msg="Parameter 'capture_delay' must be between {} and {} seconds. Got: {}".format(
+            msg="Parameter 'capture_delay' must be between {0} and {1} seconds. Got: {2}".format(
                 MIN_CAPTURE_DELAY, MAX_CAPTURE_DELAY, capture_delay
             )
         )
@@ -626,7 +626,7 @@ def main():
     if recorded_output and not should_capture_logs(action):
         module.fail_json(
             msg="Parameter 'recorded_output' is only supported with actions: 'query', 'shutdown', or 'off'. "
-                "Current action '{}' does not support log capture.".format(action)
+                "Current action '{0}' does not support log capture.".format(action)
         )
 
     # Validate configuration if log capture is requested
