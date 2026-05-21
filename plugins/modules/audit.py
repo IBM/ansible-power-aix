@@ -77,7 +77,8 @@ options:
   auditpr_fields:
     description:
       - Comma-separated list of fields to display in auditpr output.
-      - "Available fields: E(event), l(login), R(result), t(time), c(command), r(real_user), p(pid), P(ppid), T(tid), h(host), W(wpar)"
+      - "Available fields: C(E) (event), C(l) (login), C(R) (result), C(t) (time), C(c) (command), C(r) (real_user), C(p) (pid), C(P) (ppid), C(T) (tid),
+         C(h) (host), C(W) (wpar)"
     type: str
     default: 'E,l,R,t,c,r,p,P,T,h,W'
   auditpr_message:
