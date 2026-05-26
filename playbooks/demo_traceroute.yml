@@ -1,0 +1,320 @@
+- name: Run traceroute command with various options on AIX (Complete Test Suite)
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: traceroute
+    user_name: root
+    password_val: Password
+    ansible_user: "{{ user_name }}"
+    ansible_remote_tmp: /tmp/traceroutedata
+    concat_v1: true
+
+  tasks:
+
+    - name: Run basic traceroute
+      ibm.power_aix.traceroute:
+        host: google.com
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test numeric option (-n)
+      ibm.power_aix.traceroute:
+        host: google.com
+        numeric: true
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test max_ttl option (-m)
+      ibm.power_aix.traceroute:
+        host: google.com
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test queries option (-q)
+      ibm.power_aix.traceroute:
+        host: google.com
+        queries: 5
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test port option (-p)
+      ibm.power_aix.traceroute:
+        host: google.com
+        port: 40000
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test verbose option (-v)
+      ibm.power_aix.traceroute:
+        host: google.com
+        verbose: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test debug option (-d)
+      ibm.power_aix.traceroute:
+        host: google.com
+        debug: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test wait_time option (-w)
+      ibm.power_aix.traceroute:
+        host: google.com
+        max_ttl: 5
+        wait_time: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test packet_size option
+      ibm.power_aix.traceroute:
+        host: google.com
+        packet_size: 120
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+  
+    - name: Get configured IP addresses on the system
+      ansible.builtin.shell: |
+        ifconfig -a | grep 'inet ' | awk '{print $2}' | grep -v '127.0.0.1' | head -1
+      register: system_ip
+      changed_when: false
+
+    - name: Test source_address option (-s)
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_source_address.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      when: system_ip.stdout != ''
+
+    - name: Test tos option (-t)
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 16
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_tos.txt"
+        concatenated_output: "{{ concat_v1 }}"
+    - name: Get default gateway (local IP for bypass_routing test)
+      ansible.builtin.shell: |
+        netstat -rn | grep default | awk '{print $2}' | head -1
+      register: local_gateway
+      changed_when: false
+
+    - name: Test bypass_routing option (-r)
+      ibm.power_aix.traceroute:
+        host: "{{ local_gateway.stdout }}"
+        bypass_routing: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_bypass_routing.txt"
+        concatenated_output: "{{ concat_v1 }}"
+  
+    - name: Test bypass_routing option (-r)
+      ibm.power_aix.traceroute:
+        host: google.com
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_bypass_routing.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test tos option (-t) with value 16 (minimize delay)
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 16
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+
+    - name: Test tos option (-t) with value 8 (maximize throughput)
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 8
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test tos option (-t) with value 4 (maximize reliability)
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 4
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test tos option (-t) with value 2 (minimize cost)
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 2
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test tos with numeric output
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 16
+        numeric: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Test tos with verbose mode
+      ibm.power_aix.traceroute:
+        host: google.com
+        tos: 8
+        verbose: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - source_address + tos
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        tos: 16
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      tags:
+        - combination
+
+    - name: Combination - source_address + tos + numeric
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        tos: 8
+        numeric: true
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      tags:
+        - combination
+
+    - name: Combination - source_address + tos + verbose + queries
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        tos: 4
+        verbose: true
+        queries: 3
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      tags:
+        - combination
+
+    - name: Combination - source_address + tos + wait_time + packet_size
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        tos: 16
+        wait_time: 5
+        packet_size: 256
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      tags:
+        - combination
+
+    - name: Combination - source_address + tos + port + queries
+      ibm.power_aix.traceroute:
+        host: google.com
+        source_address: "{{ system_ip.stdout }}"
+        tos: 8
+        port: 35000
+        queries: 4
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+      tags:
+        - combination
+
+    - name: Combination - numeric + max_ttl + queries
+      ibm.power_aix.traceroute:
+        host: google.com
+        numeric: true
+        max_ttl: 5
+        queries: 3
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - verbose + wait_time + packet_size
+      ibm.power_aix.traceroute:
+        host: google.com
+        verbose: true
+        wait_time: 4
+        packet_size: 256
+        max_ttl: 5
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - numeric + max_ttl + port + queries
+      ibm.power_aix.traceroute:
+        host: google.com
+        numeric: true
+        max_ttl: 5
+        port: 35000
+        queries: 4
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - debug + verbose + wait_time
+      ibm.power_aix.traceroute:
+        host: google.com
+        debug: true
+        verbose: true
+        max_ttl: 5
+        wait_time: 6
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - numeric + max_ttl + queries + wait_time + packet_size
+      ibm.power_aix.traceroute:
+        host: google.com
+        numeric: true
+        max_ttl: 5
+        queries: 5
+        wait_time: 5
+        packet_size: 512
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Combination - all common options
+      ibm.power_aix.traceroute:
+        host: google.com
+        numeric: true
+        max_ttl: 5
+        queries: 3
+        port: 40000
+        wait_time: 4
+        verbose: true
+        tos: 16
+        debug: true
+        packet_size: 128
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
+    - name: Comprehensive test - all parameters including source_address and tos
+      ibm.power_aix.traceroute:
+        host: "{{ local_gateway.stdout }}"
+        source_address: "{{ system_ip.stdout }}"
+        tos: 16
+        numeric: true
+        max_ttl: 5
+        queries: 4
+        port: 40000
+        wait_time: 5
+        bypass_routing: true
+        verbose: true
+        debug: true
+        packet_size: 256
+        recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
+        concatenated_output: "{{ concat_v1 }}"
+
