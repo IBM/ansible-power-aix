@@ -1137,44 +1137,84 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
             # download and open tar file
             if download(url, dst, resize_fs):
-                with tarfile.open(dst, mode='r', encoding="utf-8") as tar:
-
-                    # find all epkg in tar file
-                    epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
-                    out['2.discover'].extend(epkgs)
-                    debug_len = len(epkgs)
-                    module.debug(f'found {debug_len} epkg.Z file in tar file')
-
-                    # extract epkg
+                if zipfile.is_zipfile(dst):
+                    module.debug(f'{dst} detected as zip archive, extracting as zip')
                     tar_dir = os.path.join(dst_path, 'tardir')
                     if not os.path.exists(tar_dir):
                         os.makedirs(tar_dir)
-                    for epkg in epkgs:
-                        for attempt in range(3):
-                            try:
-                                tar.extract(epkg, tar_dir)
-                            except (OSError, IOError, tarfile.TarError) as exc:
-                                if resize_fs:
-                                    increase_fs(tar_dir)
-                                else:
-                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}'
+                    try:
+                        with zipfile.ZipFile(dst) as zfile:
+                            epkgs = [f for f in zfile.namelist() if re.search(r'(\b[\w.-]+\.epkg\.Z\b)$', f)]
+                            out['2.discover'].extend(epkgs)
+                            module.debug(f'found {len(epkgs)} epkg.Z file in zip archive')
+                            for epkg in epkgs:
+                                try:
+                                    zfile.extract(epkg, tar_dir)
+                                    out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                                except (OSError, IOError) as exc:
+                                    msg = f'Cannot extract {epkg} from zip to {tar_dir}'
                                     module.log(msg)
                                     module.log(f'EXCEPTION {exc}')
                                     results['meta']['messages'].append(msg)
-                                    break
-                            else:
-                                break
-                        else:
-                            msg = f'Cannot extract tar file {epkg} to {tar_dir}'
-                            module.log(msg)
-                            results['meta']['messages'].append(msg)
-                            continue
-                        out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                    except (zipfile.BadZipFile, zipfile.LargeZipFile, RuntimeError) as exc:
+                        msg = f'Cannot open {dst} as zip archive'
+                        module.log(msg)
+                        module.log(f'EXCEPTION {exc}')
+                        results['meta']['messages'].append(msg)
+                elif tarfile.is_tarfile(dst):
+                    try:
+                        with tarfile.open(dst, mode='r', encoding="utf-8") as tar:
+
+                            # find all epkg in tar file
+                            epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
+                            out['2.discover'].extend(epkgs)
+                            debug_len = len(epkgs)
+                            module.debug(f'found {debug_len} epkg.Z file in tar file')
+
+                            # extract epkg
+                            tar_dir = os.path.join(dst_path, 'tardir')
+                            if not os.path.exists(tar_dir):
+                                os.makedirs(tar_dir)
+                            for epkg in epkgs:
+                                for attempt in range(3):
+                                    try:
+                                        tar.extract(epkg, tar_dir)
+                                    except (OSError, IOError, tarfile.TarError) as exc:
+                                        if resize_fs:
+                                            increase_fs(tar_dir)
+                                        else:
+                                            msg = f'Cannot extract tar file {epkg} to {tar_dir}'
+                                            module.log(msg)
+                                            module.log(f'EXCEPTION {exc}')
+                                            results['meta']['messages'].append(msg)
+                                            break
+                                    else:
+                                        break
+                                else:
+                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}'
+                                    module.log(msg)
+                                    results['meta']['messages'].append(msg)
+                                    continue
+                                out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                    except tarfile.TarError as exc:
+                        msg = f'Cannot read tar archive {dst}: {exc} (possibly a truncated or incomplete download)'
+                        module.log(msg)
+                        results['meta']['messages'].append(msg)
+                else:
+                    msg = f'Cannot open {dst}: not a valid tar or zip archive (possibly a corrupted or incomplete download)'
+                    module.log(msg)
+                    results['meta']['messages'].append(msg)
 
         else:  # URL as a Directory
             module.debug('treat url as a directory')
 
-            response = open_url(url, validate_certs=False)
+            try:
+                response = open_url(url, validate_certs=False)
+            except Exception as exc:
+                msg = f'Cannot reach directory URL {url}: {exc}'
+                module.log(msg)
+                results['meta']['messages'].append(msg)
+                continue
 
             # find all epkg in html body
             epkgs = re.findall(r'(\b[\w.-]+.epkg.Z\b)', response.read().decode('utf-8'))
