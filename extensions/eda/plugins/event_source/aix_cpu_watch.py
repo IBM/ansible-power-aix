@@ -202,7 +202,6 @@ source:
   returned: always
 '''
 
-from ansible_rulebook.source import Source
 import asyncio
 from datetime import datetime, timezone
 import paramiko
@@ -280,16 +279,15 @@ class _SSHClient:
             self._client = None
 
 
-@Source(name="aix_cpu_watch")
-class AIXCPUWatch:
+async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     """
     EDA event source: aix_cpu_watch
+    Main entry point for the event source plugin.
     """
-    def __init__(self):
-        self.clients: Dict[str, _SSHClient] = {}
-        self.running = True
-
-    async def run(self, queue, args):
+    clients: Dict[str, _SSHClient] = {}
+    running = True
+    
+    try:
         hosts: List[Dict[str, Any]] = args.get("hosts", [])
         if not hosts:
             raise ValueError("AIXCPUWatch: 'hosts' list is required.")
@@ -302,7 +300,7 @@ class AIXCPUWatch:
         # Prepare SSH clients
         for h in hosts:
             key = h["host"]
-            self.clients[key] = _SSHClient(
+            clients[key] = _SSHClient(
                 host=h["host"],
                 username=h.get("username", "root"),
                 port=int(h.get("port", 22)),
@@ -311,56 +309,55 @@ class AIXCPUWatch:
                 timeout=int(h.get("timeout", 10)),
             )
 
-        try:
-            while self.running:
-                start = asyncio.get_event_loop().time()
+        while running:
+            start = asyncio.get_event_loop().time()
 
-                async def poll_one(h: Dict[str, Any]):
-                    host = h["host"]
-                    cli = self.clients[host]
-                    try:
-                        # Run vmstat once per cycle
-                        out = await asyncio.to_thread(cli.run, sample_cmd)
-                        # Use the last non-empty line (tail -1 already, but be safe)
-                        lines = [line for line in out.splitlines() if line.strip()][-1]
-                        if not lines:
-                            raise ValueError("vmstat returned no data")
-                        cpu = _compute_cpu_usage_from_vmstat(lines)
-                        crossed = cpu["usage"] >= threshold
-                        if (not emit_only_above) or crossed:
-                            event = {
-                                "timestamp": datetime.now(timezone.utc).isoformat(),
-                                "host": host,
-                                "cpu": {
-                                    "percent": round(cpu["usage"], 2),
-                                    "us": cpu["us"],
-                                    "sy": cpu["sy"],
-                                    "id": cpu["id"],
-                                    "wa": cpu["wa"],
-                                },
-                                "threshold": threshold,
-                                "crossed": crossed,
-                                "source": "aix_cpu_watch",
-                            }
-                            await queue.put(event)
-                    except Exception as e:
-                        err_event = {
+            async def poll_one(h: Dict[str, Any]):
+                host = h["host"]
+                cli = clients[host]
+                try:
+                    # Run vmstat once per cycle
+                    out = await asyncio.to_thread(cli.run, sample_cmd)
+                    # Use the last non-empty line (tail -1 already, but be safe)
+                    lines = [line for line in out.splitlines() if line.strip()][-1]
+                    if not lines:
+                        raise ValueError("vmstat returned no data")
+                    cpu = _compute_cpu_usage_from_vmstat(lines)
+                    crossed = cpu["usage"] >= threshold
+                    if (not emit_only_above) or crossed:
+                        event = {
                             "timestamp": datetime.now(timezone.utc).isoformat(),
                             "host": host,
-                            "error": str(e),
+                            "cpu": {
+                                "percent": round(cpu["usage"], 2),
+                                "us": cpu["us"],
+                                "sy": cpu["sy"],
+                                "id": cpu["id"],
+                                "wa": cpu["wa"],
+                            },
+                            "threshold": threshold,
+                            "crossed": crossed,
                             "source": "aix_cpu_watch",
-                            "severity": "error",
                         }
-                        # Always emit errors so rules can alert
-                        await queue.put(err_event)
+                        await queue.put(event)
+                except Exception as e:
+                    err_event = {
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "host": host,
+                        "error": str(e),
+                        "source": "aix_cpu_watch",
+                        "severity": "error",
+                    }
+                    # Always emit errors so rules can alert
+                    await queue.put(err_event)
 
-                # Poll all hosts concurrently
-                await asyncio.gather(*(poll_one(h) for h in hosts))
+            # Poll all hosts concurrently
+            await asyncio.gather(*(poll_one(h) for h in hosts))
 
-                # Sleep until next tick (interval from loop start)
-                elapsed = asyncio.get_event_loop().time() - start
-                await asyncio.sleep(max(0, interval - elapsed))
-        finally:
-            # Cleanup SSH sessions
-            for cli in self.clients.values():
-                cli.close()
+            # Sleep until next tick (interval from loop start)
+            elapsed = asyncio.get_event_loop().time() - start
+            await asyncio.sleep(max(0, interval - elapsed))
+    finally:
+        # Cleanup SSH sessions
+        for cli in clients.values():
+            cli.close()
