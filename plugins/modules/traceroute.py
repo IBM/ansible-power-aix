@@ -213,7 +213,7 @@ import os
 def validate_parameters(module):
 
     """
-    validate the some of parameters for there boundry condition.
+    validate some of the parameters for boundry condition.
     arguments:
         module  (dict): The Ansible module
     note:
