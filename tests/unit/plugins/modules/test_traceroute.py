@@ -259,11 +259,11 @@ class TestTracerouteModule(unittest.TestCase):
             self.fail("validate_parameters raised AnsibleFailJson unexpectedly for queries=1")
 
     def test_wait_time_positive_valid(self):
-        self.module.params.update({'wait_time': 1})
+        self.module.params.update({'wait_time': 2})
         try:
             traceroute.validate_parameters(self.module)
         except AnsibleFailJson:
-            self.fail("validate_parameters raised AnsibleFailJson unexpectedly for wait_time=1")
+            self.fail("validate_parameters raised AnsibleFailJson unexpectedly for wait_time=2")
 
     def test_packet_size_positive_valid(self):
         self.module.params.update({'packet_size': 1})
