@@ -1,6 +1,6 @@
 ---
 ############################################################
-# ATTENTION: DELTE THIS BLOCK IF NOT NEEDED IN FOR SURE
+# ATTENTION: DELETE THIS BLOCK IF NOT NEEDED IN FOR SURE
 ############################################################
 # parsing the nim client hostname from lsnim output
 # - /usr/sbin/lsnim -a if1 {{ nim_alt_disk_migration_nim_client }}

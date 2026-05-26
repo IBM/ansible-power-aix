@@ -86,7 +86,7 @@
     - ansible.builtin.debug:
         var: nim_alt_disk_migration_results
 
-    - name: "Polling until migration finishes (ignore FAILED RETRING messages) "
+    - name: "Polling until migration finishes (ignore FAILED RETRYING messages) "
       ansible.builtin.async_status:
         jid: "{{ nim_alt_disk_migration_results.ansible_job_id }}"
       register: nim_alt_disk_migration_async_poll_results
@@ -125,7 +125,7 @@
 
 - name: Check for out of range in '{{ nim_alt_disk_migration_nimadm_phases_to_run }}'
   ansible.builtin.fail:
-    msg: "{{ nim_alt_disk_migration_nimadm_phases_to_run }} contains alpha numeric charcaters, exiting"
+    msg: "{{ nim_alt_disk_migration_nimadm_phases_to_run }} contains alpha numeric characters, exiting"
   when: >
     nim_alt_disk_migration_nimadm_phases_to_run is defined and
     nim_alt_disk_migration_nimadm_phases_to_run is not regex("\b([1-9]|1[0-2])\b")
@@ -250,7 +250,7 @@
     - ansible.builtin.debug:
         var: nim_alt_disk_migration_lpp_source_fileset_level
     - name: "Determine if we need to migrate {{ nim_alt_disk_migration_nim_client }} "
-      when: client_oslevel | int >= nim_alt_disk_migration_lpp_source_fileset_level | int
+      when: nim_alt_disk_migration_client_oslevel | int >= nim_alt_disk_migration_lpp_source_fileset_level | int
 
       ############################################################
       ############################################################
@@ -391,7 +391,7 @@
               - "Maximum retries: {{ nim_alt_disk_migration_retry_chk_nimadm_comp }} of {{ nim_alt_disk_migration_interval }} seconds"
         - ansible.builtin.debug:
             var: nim_alt_disk_migration_results
-        - name: "Polling until migration finishes (ignore FAILED RETRING messages) "
+        - name: "Polling until migration finishes (ignore FAILED RETRYING messages) "
           ansible.builtin.async_status:
             jid: "{{ nim_alt_disk_migration_results.ansible_job_id }}"
           register: nim_alt_disk_migration_async_poll_results
@@ -417,7 +417,7 @@
         - ansible.builtin.debug:
             msg: >
               'altinst_rootvg' successfully created in '{{ nim_alt_disk_migration_nim_client }}'.
-              Reboot '{{ nim_alt_disk_migration_nim_client }}' to boot into the alterate disk.
+              Reboot '{{ nim_alt_disk_migration_nim_client }}' to boot into the alternate disk.
           when: not nim_alt_disk_migration_reboot_client
 
         ############################################################
