@@ -47,4 +47,42 @@
         action: shutdown
     - name: Query audit subsystem status
       ibm.power_aix.audit:
+        action: query    
+    - name: Query audit with custom auditpr options
+      ibm.power_aix.audit:
         action: query
+        recorded_output: "/tmp/auditdata/audit_custom.txt"
+        auditpr_verbose: true
+        auditpr_header_type: 1
+        auditpr_fields: "E,l,R,t,c,r,p,P,T,h,W"
+        auditpr_long_usernames: true
+        audit_trail_path: "/audit/trail"
+        capture_delay: 5
+    - name: Query audit with custom auditpr options with single line
+      ibm.power_aix.audit:
+        action: query
+        recorded_output: "/tmp/auditdata/audit_custom1.txt"
+        auditpr_single_line: true
+        auditpr_header_type: 1
+        auditpr_fields: "E,l,R,t,c,r,p,P,T,h,W"
+        auditpr_message: "This is AIX Ansible Team"
+        auditpr_suppress_translation: true
+        capture_delay: 5
+    - name: Query audit with custom auditpr options with single line
+      ibm.power_aix.audit:
+        action: query
+        recorded_output: "/tmp/auditdata/audit_custom2.txt"
+        auditpr_single_line: true
+        auditpr_header_type: 1
+        auditpr_fields: "E,l,R,t,c,r,p,P,T,h,W"
+        auditpr_message: "This is AIX Ansible Team"
+        auditpr_suppress_translation: true
+        auditpr_long_usernames: true
+        capture_delay: 5
+        
+    - name: Shutdown audit with log capture
+      ibm.power_aix.audit:
+        action: shutdown
+        recorded_output: "/tmp/auditdata/audit_shutdown.txt"
+        auditpr_verbose: true
+
