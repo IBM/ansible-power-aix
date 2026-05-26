@@ -238,11 +238,11 @@ class TestTracerouteModule(unittest.TestCase):
             self.fail("validate_parameters raised AnsibleFailJson unexpectedly for tos=255")
 
     def test_max_ttl_positive_valid(self):
-        self.module.params.update({'max_ttl': 1})
+        self.module.params.update({'max_ttl': 2})
         try:
             traceroute.validate_parameters(self.module)
         except AnsibleFailJson:
-            self.fail("validate_parameters raised AnsibleFailJson unexpectedly for max_ttl=1")
+            self.fail("validate_parameters raised AnsibleFailJson unexpectedly for max_ttl=2")
 
     def test_port_positive_valid(self):
         self.module.params.update({'port': 1})
