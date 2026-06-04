@@ -1,0 +1,111 @@
+---
+- name: Test errclear module with all options
+  hosts: "{{ host_name }}"
+  gather_facts: false
+  vars:
+    host_name: usertest
+    user_name: aixguest
+    password_val: Password
+    test_log_dir: "/tmp/errclear_test_logs"
+
+  tasks:
+
+    - name: Test error_class (-d) - Clear software errors
+      ibm.power_aix.errclear:
+        days: 0
+        error_class: "S"
+        input_log: "/tmp/errlog_data/errlog1"
+
+    - name: Test input_log (-i) - Use default error log
+      ibm.power_aix.errclear:
+        days: 0
+        input_log: "/tmp/errlog_data/errlog2"
+
+    - name: Test include_errids (-j) - Clear C5F77290
+      ibm.power_aix.errclear:
+        days: 0
+        include_errids: "C5F77290"
+        input_log: "/tmp/errlog_data/errlog3"
+
+    - name: Test exclude_errids (-k) - Clear all except BC3BE5A3
+      ibm.power_aix.errclear:
+        days: 0
+        exclude_errids: "BC3BE5A3"
+        input_log: "/tmp/errlog_data/errlog4"
+
+    - name: Test include_labels (-J) - Clear SRC_SVKO
+      ibm.power_aix.errclear:
+        days: 0
+        include_labels: "SRC_SVKO"
+        input_log: "/tmp/errlog_data/errlog5"
+
+    - name: Test exclude_labels (-K) - Clear all except SRC_SVKO
+      ibm.power_aix.errclear:
+        days: 0
+        exclude_labels: "SRC_SVKO"
+        input_log: "/tmp/errlog_data/errlog6"
+
+    - name: Test sequence_number (-l) - Clear by sequence
+      ibm.power_aix.errclear:
+        days: 0
+        sequence_number: "181"
+        input_log: "/tmp/errlog_data/errlog7"
+
+    - name: Test machine (-m) - Clear for this machine
+      ibm.power_aix.errclear:
+        days: 0
+        machine: "00FB29314C00"
+        input_log: "/tmp/errlog_data/errlog8"
+
+    - name: Test node (-n) - Clear for this node
+      ibm.power_aix.errclear:
+        days: 0
+        node: "p9zpa-ansible-nim2"
+        input_log: "/tmp/errlog_data/errlog9"
+
+    - name: Test resource_names (-N) - Clear SRC errors
+      ibm.power_aix.errclear:
+        days: 0
+        resource_names: "SRC"
+        input_log: "/tmp/errlog_data/errlog10"
+
+    - name: Test resource_types (-R) - Clear LPP type
+      ibm.power_aix.errclear:
+        days: 0
+        resource_types: "SRC"
+        input_log: "/tmp/errlog_data/errlog11"
+
+    - name: Test resource_classes (-S) - Clear adapter class
+      ibm.power_aix.errclear:
+        days: 0
+        resource_classes: "adapter"
+        input_log: "/tmp/errlog_data/errlog12"
+
+    - name: Test error_types (-T) - Clear PERM errors
+      ibm.power_aix.errclear:
+        days: 0
+        error_types: "PERM"
+        input_log: "/tmp/errlog_data/errlog13"
+
+    - name: Test template_file (-y) - Use template
+      ibm.power_aix.errclear:
+        days: 0
+        template_file: "/tmp/test_template.tx"
+        input_log: "/tmp/errlog_data/errlog14"
+
+    - name: Test days parameter - Clear errors older than 30 days
+      ibm.power_aix.errclear:
+        days: 30
+        input_log: "/tmp/errlog_data/errlog15"
+
+    - name: Test all options combined
+      ibm.power_aix.errclear:
+        days: 0
+        error_class: "S"
+        include_labels: "SRC_SVKO"
+        machine: "00FB29314C00"
+        node: "p9zpa-ansible-nim2"
+        resource_names: "SRC"
+        error_types: "PERM"
+        input_log: "/tmp/errlog_data/errlog16"
+
