@@ -1,0 +1,165 @@
+---
+# =============================================================================
+# This rulebook demonstrates Event-Driven Ansible (EDA) for monitoring
+# file content modifications on AIX systems.
+#
+# FEATURES:
+# - Detects content changes (checksum)
+# - Detects permission changes (chmod)
+# - Detects owner changes (chown)
+# - Detects size changes
+# =============================================================================
+
+- name: AIX File Watch - Enhanced Monitoring
+  hosts: localhost
+
+  sources:
+    - ibm.power_aix.aix_file_watch:
+        hosts:
+          - host: 10.32.148.135
+            username: root
+            key_path: /Users/vivekpandey/.ssh/aix_key
+        files:
+          - /tmp/test_file1.txt
+          - /tmp/test_file23.txt
+          - /tmp/test_config.conf
+          - /etc/passwd
+          - /etc/hosts
+        interval: 10
+        emit_initial: false
+
+  rules:
+
+    - name: SECURITY ALERT - Permission changes detected
+      condition: >
+        event.changes is defined and
+        "permissions" in event.changes
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              SECURITY ALERT: File permissions changed!
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              Timestamp: {{ event.timestamp }}
+              
+              Previous permissions: {{ event.previous_permissions }}
+              Current permissions:  {{ event.file_mode }}
+              
+              Other changes: {{ event.changes | join(', ') }}
+        - run_playbook:
+            name: aix_file_watch_notify/notify_permission_change.yml
+
+    - name: SECURITY ALERT - Owner changes detected
+      condition: >
+        event.changes is defined and
+        "owner" in event.changes
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              SECURITY ALERT: File ownership changed!
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              Timestamp: {{ event.timestamp }}
+              
+              Previous owner: {{ event.previous_owner }}
+              Current owner:  {{ event.file_owner }}
+              
+              Other changes: {{ event.changes | join(', ') }}
+        - run_playbook:
+            name: aix_file_watch_notify/notify_owner_change.yml
+
+    - name: CRITICAL - Multiple security changes detected
+      condition: >
+        event.changes is defined and
+        ("permissions" in event.changes and "owner" in event.changes)
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              CRITICAL SECURITY ALERT: Multiple changes detected!
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              
+              Permission change: {{ event.previous_permissions }} → {{ event.file_mode }}
+              Owner change: {{ event.previous_owner }} → {{ event.file_owner }}
+              
+              This could indicate unauthorized access!
+        - run_playbook:
+            name: aix_file_watch_notify/notify_critical_security.yml
+
+    - name: Alert on file creation
+      condition: >
+        event.file is defined and
+        event.action == "created"
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              New file created
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              Size: {{ event.file_size }} bytes
+              Permissions: {{ event.file_mode }}
+              Owner: {{ event.file_owner }}
+              Checksum: {{ event.checksum }}
+        - run_playbook:
+            name: aix_file_watch_notify/notify_file_created.yml
+
+    - name: Alert on content modification
+      condition: >
+        event.changes is defined and
+        "content" in event.changes
+      throttle:
+        once_within: 50 seconds
+        group_by_attributes:
+          - host
+          - file
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              File content modified
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              
+              Previous checksum: {{ event.previous_checksum }}
+              Current checksum:  {{ event.checksum }}
+              
+              All changes: {{ event.changes | join(', ') }}
+        - run_playbook:
+            name: aix_file_watch_notify/notify_file_modified.yml
+
+    - name: Alert on file deletion
+      condition: >
+        event.file is defined and
+        event.action == "deleted"
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              File deleted
+              
+              Host: {{ event.host }}
+              File: {{ event.file }}
+              
+              Previous checksum: {{ event.previous_checksum }}
+              Previous permissions: {{ event.previous_permissions }}
+              Previous owner: {{ event.previous_owner }}
+              Previous size: {{ event.previous_size }} bytes
+        - run_playbook:
+            name: aix_file_watch_notify/notify_file_deleted.yml
+
+
