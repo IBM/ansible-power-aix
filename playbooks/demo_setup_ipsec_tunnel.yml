@@ -1,0 +1,52 @@
+---
+# Playbook to setup IPsec tunnel between two AIX machines
+# This playbook brings up IPsec tunnel on both endpoints
+
+- name: Setup IPsec tunnel between machine a and b
+  hosts: machine_a, machine_b
+  gather_facts: false
+  vars:
+    ipsec_action: "up"
+    ipsec_config_file: "/tmp/ipsec/ipsec.xml"
+
+  tasks:
+    - name: Include IPsec role
+      ansible.builtin.include_role:
+        name: ibm.power_aix.ipsec
+
+- name: Verify IPsec tunnel status on both machines
+  hosts: machine_a,machine_b
+  gather_facts: false
+  vars:
+    ipsec_action: "status"
+
+  tasks:
+    - name: Check IPsec tunnel status
+      ansible.builtin.include_role:
+        name: ibm.power_aix.ipsec
+
+- name: Tear down IPsec tunnel
+  hosts: machine_a, machine_b
+  gather_facts: false
+  vars:
+    ipsec_action: "down"
+    ipsec_config_file: "/tmp/ipsec/ipsec.xml"
+    # ipsec_ike_service_group: "ike"
+    # ipsec_ike_start_wait: 5
+    # ipsec_ike_activate_wait: 5
+
+  tasks:
+    - name: Include IPsec role
+      ansible.builtin.include_role:
+        name: ibm.power_aix.ipsec
+
+- name: Verify IPsec tunnel status on both machines
+  hosts: machine_a,machine_b
+  gather_facts: false
+  vars:
+    ipsec_action: "status"
+
+  tasks:
+    - name: Check IPsec tunnel status
+      ansible.builtin.include_role:
+        name: ibm.power_aix.ipsec

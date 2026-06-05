@@ -1,0 +1,114 @@
+---
+# Tasks to bring down IPsec tunnel
+
+- name: Check for active tunnels before removal
+  ansible.builtin.command:
+    cmd: ike cmd=list
+  register: ipsec_tunnels_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove all IPsec tunnels
+  ansible.builtin.command:
+    cmd: ike cmd=remove all
+  register: ipsec_ike_remove
+  when: ipsec_tunnels_check.rc == 0 and ipsec_tunnels_check.stdout | length > 0
+  changed_when: ipsec_ike_remove.rc == 0
+  failed_when: false  # Continue even if no tunnels exist
+
+####################
+- name: Check for IPv4 tunnels
+  ansible.builtin.command:
+    cmd: lstun -v 4
+  register: ipsec_v4_tunnels_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove all IPv4 tunnels
+  ansible.builtin.command:
+    cmd: rmtun -v 4 -t all
+  register: ipsec_rmtun_v4
+  when: ipsec_v4_tunnels_check.rc == 0 and ipsec_v4_tunnels_check.stdout | length > 0
+  changed_when: ipsec_rmtun_v4.rc == 0
+  failed_when: false  # Continue even if no tunnels exist
+####################
+
+- name: Check IKE service status before stopping
+  ansible.builtin.command:
+    cmd: lssrc -g {{ ipsec_ike_service_group }}
+  register: ipsec_service_status_check
+  changed_when: false
+  failed_when: false
+
+- name: Stop IKE service group
+  ansible.builtin.command:
+    cmd: stopsrc -g {{ ipsec_ike_service_group }}
+  register: ipsec_stopsrc_result
+  when: "'active' in ipsec_service_status_check.stdout.lower()"
+  changed_when: "'stopped' in ipsec_stopsrc_result.stdout.lower()"
+  failed_when:
+    - ipsec_stopsrc_result.rc != 0
+    - "'not active' not in ipsec_stopsrc_result.stderr.lower()"
+
+####################
+- name: Check for existing filter rules
+  ansible.builtin.command:
+    cmd: lsfilt
+  register: ipsec_filter_check
+  changed_when: false
+  failed_when: false
+
+- name: Delete filter rules
+  ansible.builtin.command:
+    cmd: mkfilt -d
+  register: ipsec_mkfilt_delete
+  when: ipsec_filter_check.rc == 0 and ipsec_filter_check.stdout | length > 0
+  changed_when: ipsec_mkfilt_delete.rc == 0
+  failed_when: false  # Continue even if no filters exist
+
+- name: Check if IPsec IPv4 device exists
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec -l {{ ipsec_v4_device }}
+  register: ipsec_v4_device_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove IPsec IPv4 device using devices module
+  ibm.power_aix.devices:
+    device: "{{ ipsec_v4_device }}"
+    state: removed
+    recursive: true
+  register: ipsec_rmdev_v4
+  when: ipsec_v4_device_check.rc == 0
+  failed_when: false
+
+- name: Check if IPsec IPv6 device exists
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec -l {{ ipsec_v6_device }}
+  register: ipsec_v6_device_check
+  changed_when: false
+  failed_when: false
+
+- name: Remove IPsec IPv6 device using devices module
+  ibm.power_aix.devices:
+    device: "{{ ipsec_v6_device }}"
+    state: removed
+    recursive: true
+  register: ipsec_rmdev_v6
+  when: ipsec_v6_device_check.rc == 0
+  failed_when: false
+
+- name: List IPsec devices after removal
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec
+  register: ipsec_lsdev_after
+  changed_when: false
+  failed_when: false
+
+- name: Display remaining IPsec devices
+  ansible.builtin.debug:
+    msg: "{{ ipsec_lsdev_after.stdout_lines if ipsec_lsdev_after.stdout_lines else 'No IPsec devices found' }}"
+
+- name: IPsec tunnel teardown complete
+  ansible.builtin.debug:
+    msg: "IPsec tunnel has been successfully torn down"

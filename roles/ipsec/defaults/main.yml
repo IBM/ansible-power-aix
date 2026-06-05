@@ -1,0 +1,18 @@
+---
+# defaults file for ipsec role
+
+# Action to perform: up, down, or status
+ipsec_action: "status"
+
+# IPsec configuration file path
+# remove default
+ipsec_config_file: "/etc/ipsec/tunnel_config.xml"
+
+# IKE service group name
+ipsec_ike_service_group: "ike"
+
+# Wait time after starting IKE service (seconds)
+ipsec_ike_start_wait: 5
+
+# Wait time after activating tunnel (seconds)
+ipsec_ike_activate_wait: 5

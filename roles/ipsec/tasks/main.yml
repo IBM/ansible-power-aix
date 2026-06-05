@@ -1,0 +1,30 @@
+# Copyright (c) IBM Corporation 2020
+---
+#############################################################
+#############################################################
+
+# Validate parameters
+- name: Validate IPsec action parameter
+  ansible.builtin.assert:
+    that:
+      - ipsec_action is defined
+      - ipsec_action in ['up', 'down', 'status']
+    fail_msg: "ipsec_action must be 'up', 'down', or 'status'"
+    success_msg: "Valid IPsec action: {{ ipsec_action }}"
+
+# Run this to bringup ipsec tunnel
+- name: Include IPsec tunnel setup tasks
+  ansible.builtin.include_tasks: "bringup.yml"
+  when: ipsec_action == 'up'
+
+
+# Run this to bring down the ipsec tunnel
+- name: Include IPsec tunnel teardown tasks
+  ansible.builtin.include_tasks: "bringdown.yml"
+  when: ipsec_action == 'down'
+
+
+# Run this to get the current IPsec tunnel status
+- name: Include IPsec tunnel status tasks
+  ansible.builtin.include_tasks: "getstatus.yml"
+  when: ipsec_action == 'status'

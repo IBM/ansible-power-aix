@@ -1,0 +1,46 @@
+---
+# Tasks to check IPsec tunnel status
+
+- name: Check IKE service status
+  ansible.builtin.command:
+    cmd: lssrc -g {{ ipsec_ike_service_group }}
+  register: ipsec_ike_status
+  changed_when: false
+  failed_when: false
+
+- name: Display IKE service status
+  ansible.builtin.debug:
+    msg: "{{ ipsec_ike_status.stdout_lines }}"
+
+- name: List IPsec devices
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec
+  register: ipsec_ipsec_devices
+  changed_when: false
+  failed_when: false
+
+- name: Display IPsec devices
+  ansible.builtin.debug:
+    msg: "{{ ipsec_ipsec_devices.stdout_lines if ipsec_ipsec_devices.stdout_lines else 'No IPsec devices found' }}"
+
+- name: List active tunnels
+  ansible.builtin.command:
+    cmd: ike cmd=list
+  register: ipsec_active_tunnels
+  changed_when: false
+  failed_when: false
+
+- name: Display active tunnels
+  ansible.builtin.debug:
+    msg: "{{ ipsec_active_tunnels.stdout_lines if ipsec_active_tunnels.stdout_lines else 'No active tunnels found' }}"
+
+- name: Check filter rules
+  ansible.builtin.command:
+    cmd: lsfilt
+  register: ipsec_filter_rules
+  changed_when: false
+  failed_when: false
+
+- name: Display filter rules
+  ansible.builtin.debug:
+    msg: "{{ ipsec_filter_rules.stdout_lines if ipsec_filter_rules.stdout_lines else 'No filter rules found' }}"
