@@ -1,0 +1,25 @@
+---
+# vars file for ipsec role
+
+# Internal variables used by the role
+# These should not be overridden by users
+
+# IPsec device names
+ipsec_v4_device: "ipsec_v4"
+ipsec_v6_device: "ipsec_v6"
+
+# IPsec device types
+ipsec_v4_type: "4"
+ipsec_v6_type: "6"
+
+# Filter rule versions
+ipsec_filter_v4_version: "4"
+ipsec_filter_v6_version: "6"
+
+# IKE commands
+ipsec_ike_cmd_activate: "ike cmd=activate"
+ipsec_ike_cmd_list: "ike cmd=list"
+ipsec_ike_cmd_remove_all: "ike cmd=remove all"
+
+# Device class
+ipsec_device_class: "ipsec"

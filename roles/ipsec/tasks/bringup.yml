@@ -1,0 +1,133 @@
+---
+# Tasks to bring up IPsec tunnel
+
+- name: Validate IPsec configuration file exists
+  ansible.builtin.stat:
+    path: "{{ ipsec_config_file }}"
+  register: ipsec_config_file_stat
+  failed_when: not ipsec_config_file_stat.stat.exists
+
+- name: Check if IPsec IPv4 device exists
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec -l ipsec_v4
+  register: ipsec_v4_check
+  changed_when: false
+  failed_when: false
+
+- name: Create IPsec IPv4 device
+  ansible.builtin.command:
+    cmd: mkdev -l ipsec -t 4
+  register: ipsec_mkdev_v4_result
+  changed_when: "'ipsec_v4 Available' in ipsec_mkdev_v4_result.stdout"
+  when: ipsec_v4_check.rc != 0 or ipsec_v4_check.stdout | length == 0
+  failed_when:
+    - ipsec_mkdev_v4_result.rc != 0
+    - "'0514-062' not in ipsec_mkdev_v4_result.stderr"  # Device already exists
+
+- name: Check if IPsec IPv6 device exists
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec -l ipsec_v6
+  register: ipsec_v6_check
+  changed_when: false
+  failed_when: false
+
+- name: Create IPsec IPv6 device
+  ansible.builtin.command:
+    cmd: mkdev -l ipsec -t 6
+  register: ipsec_mkdev_v6_result
+  changed_when: "'ipsec_v6 Available' in ipsec_mkdev_v6_result.stdout"
+  when: ipsec_v6_check.rc != 0 or ipsec_v6_check.stdout | length == 0
+  failed_when:
+    - ipsec_mkdev_v6_result.rc != 0
+    - "'0514-062' not in ipsec_mkdev_v6_result.stderr"  # Device already exists
+
+- name: List IPsec devices
+  ansible.builtin.command:
+    cmd: lsdev -Cc ipsec
+  register: ipsec_lsdev_result
+  changed_when: false
+
+- name: Display IPsec devices
+  ansible.builtin.debug:
+    msg: "{{ ipsec_lsdev_result.stdout_lines }}"
+
+- name: Export IKE database
+  ansible.builtin.command:
+    cmd: ikedb -x
+  register: ipsec_ikedb_export
+  changed_when: false
+
+- name: Parse IPsec configuration file
+  ansible.builtin.command:
+    cmd: "ikedb -p {{ ipsec_config_file }}"
+  register: ipsec_ikedb_parse
+  changed_when: true
+
+- name: Activate IPv4 filter rules with default permit
+  ibm.power_aix.mkfilt:
+    action: add
+    ipv4:
+      default: permit
+  register: ipsec_mkfilt_v4
+
+- name: Activate IPv6 filter rules with default permit
+  ibm.power_aix.mkfilt:
+    action: "add"
+    ipv6:
+      default: permit
+  register: ipsec_mkfilt_v6
+
+- name: Check IKE service status
+  ansible.builtin.command:
+    cmd: lssrc -g {{ ipsec_ike_service_group }}
+  register: ipsec_service_check
+  changed_when: false
+  failed_when: false
+
+- name: Start IKE service group
+  ansible.builtin.command:
+    cmd: startsrc -g {{ ipsec_ike_service_group }}
+  register: ipsec_startsrc_result
+  changed_when: "'started' in ipsec_startsrc_result.stdout.lower()"
+  when: "'active' not in ipsec_service_check.stdout.lower()"
+  failed_when:
+    - ipsec_startsrc_result.rc != 0
+    - "'already active' not in ipsec_startsrc_result.stderr.lower()"
+
+- name: Wait for IKE service to initialize
+  ansible.builtin.pause:
+    seconds: "{{ ipsec_ike_start_wait }}"
+  when: "'active' not in ipsec_service_check.stdout.lower()"
+
+- name: Check for existing active tunnels
+  ansible.builtin.command:
+    cmd: ike cmd=list
+  register: ipsec_existing_tunnels
+  changed_when: false
+  failed_when: false
+
+- name: Activate IPsec tunnel
+  ansible.builtin.command:
+    cmd: ike cmd=activate
+  register: ipsec_ike_activate
+  when: ipsec_existing_tunnels.rc != 0 or ipsec_existing_tunnels.stdout | length == 0
+  changed_when: ipsec_ike_activate.rc == 0
+
+- name: Wait for tunnel activation
+  ansible.builtin.pause:
+    seconds: "{{ ipsec_ike_activate_wait }}"
+  when: ipsec_existing_tunnels.rc != 0 or ipsec_existing_tunnels.stdout | length == 0
+
+- name: List active IPsec tunnels
+  ansible.builtin.command:
+    cmd: ike cmd=list
+  register: ipsec_ike_list
+  changed_when: false
+
+- name: Display active tunnels
+  ansible.builtin.debug:
+    msg: "{{ ipsec_ike_list.stdout_lines }}"
+
+- name: IPsec tunnel setup complete
+  ansible.builtin.debug:
+    msg: "IPsec tunnel has been successfully established"

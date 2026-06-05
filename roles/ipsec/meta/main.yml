@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: ipsec
+  author: >
+    Shreyansh Chamola (@schamola)
+  description: Ansible role for managing IPSEC tunnel(s)
+  company: IBM
+  standalone: false
+  license: GPL-3.0-only
+
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: AIX
+      versions:
+        - "7.1"
+
+  galaxy_tags:
+    - aix
+    - migration
+    - security
+
+dependencies: []

@@ -1,0 +1,39 @@
+---
+argument_specs:
+  main:
+    short_description: >
+      This role is used for setting up, tearing down, or checking status of IPsec tunnels on AIX systems
+    author:
+      - Shreyansh Chamola (schamola)
+    options:
+      ipsec_action:
+        type: "str"
+        required: true
+        description: >
+          Action to perform on the IPsec tunnel.
+        choices: ['up', 'down', 'status']
+      ipsec_config_file:
+        type: "str"
+        required: false
+        default: "/etc/ipsec/tunnel_config.xml"
+        description: >
+          Path to the IPsec configuration XML file. Required when ipsec_action is 'up'.
+      ipsec_ike_service_group:
+        type: "str"
+        required: false
+        default: "ike"
+        description: >
+          Name of the IKE service group to manage.
+      ipsec_ike_start_wait:
+        type: "int"
+        required: false
+        default: 5
+        description: >
+          Wait time in seconds after starting the IKE service before proceeding.
+      ipsec_ike_activate_wait:
+        type: "int"
+        required: false
+        default: 5
+        description: >
+          Wait time in seconds after activating the tunnel before proceeding.
+
