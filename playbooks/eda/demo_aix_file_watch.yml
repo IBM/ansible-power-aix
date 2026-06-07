@@ -16,7 +16,7 @@
   sources:
     - ibm.power_aix.aix_file_watch:
         hosts:
-          - host: 10.32.148.135
+          - host: xxx.xxx.xxx.xxx
             username: root
             key_path: /Users/vivekpandey/.ssh/aix_key
         files:
