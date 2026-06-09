@@ -410,170 +410,170 @@ def add_change_rules(module, params, version):
         return True
 
     if params[version]['rules']:
-      # Add or change rules
-      for rule in params[version]['rules']:
-          if params['action'] == 'change':
-              cmd = ['chfilt']
-              if not rule['id']:
-                  results['msg'] = 'Could not change rule without rule id'
-                  module.fail_json(**results)
-          else:
-              cmd = ['genfilt']
-          cmd += [vopt]
+        # Add or change rules
+        for rule in params[version]['rules']:
+            if params['action'] == 'change':
+                cmd = ['chfilt']
+                if not rule['id']:
+                    results['msg'] = 'Could not change rule without rule id'
+                    module.fail_json(**results)
+            else:
+                cmd = ['genfilt']
+            cmd += [vopt]
 
-          if rule['action'] == 'permit':
-              cmd += ['-aP']
-          elif rule['action'] == 'deny':
-              cmd += ['-aD']
-          elif rule['action'] == 'shun_host':
-              cmd += ['-aH']
-          elif rule['action'] == 'shun_port':
-              cmd += ['-aS']
-          elif rule['action'] == 'if':
-              cmd += ['-aI']
-          elif rule['action'] == 'else':
-              cmd += ['-aL']
-          elif rule['action'] == 'endif':
-              cmd += ['-aE']
-          elif rule['action'] == 'remove':
-              if not rule['id']:
-                  results['msg'] = 'action remove requires id'
-                  module.fail_json(**results)
-              cmd = ['rmfilt', vopt, '-n', rule['id']]
-              if params[version]['force']:
-                  cmd += ['-f']
-              ret, stdout, stderr = module.run_command(cmd)
-              results['stdout'] += stdout
-              results['stderr'] += stderr
-              if ret != 0:
-                  msg_cmd = ' '.join(cmd)
-                  results['msg'] = f'Could not remove rule: command \'{msg_cmd}\' failed \
-                    with return code {ret}.'
-                  module.fail_json(**results)
-              results['msg'] = "Removed the rules successfully."
-              results['changed'] = True
-              continue
-          elif rule['action'] == 'move':
-              if not rule['id'] or not rule['new_id']:
-                  results['msg'] = 'action move requires id and new_id'
-                  module.fail_json(**results)
-              cmd = ['mvfilt', vopt, '-p', rule['id'], '-n', rule['new_id']]
-              ret, stdout, stderr = module.run_command(cmd)
-              results['stdout'] += stdout
-              results['stderr'] += stderr
-              if ret != 0:
-                  msg_cmd = ' '.join(cmd)
-                  results['msg'] = f'Could not move rule: command \'{msg_cmd}\' \
-                    failed with return code {ret}.'
-                  module.fail_json(**results)
-              results['msg'] = "Moved the rules successfully."
-              results['changed'] = True
-              continue
+            if rule['action'] == 'permit':
+                cmd += ['-aP']
+            elif rule['action'] == 'deny':
+                cmd += ['-aD']
+            elif rule['action'] == 'shun_host':
+                cmd += ['-aH']
+            elif rule['action'] == 'shun_port':
+                cmd += ['-aS']
+            elif rule['action'] == 'if':
+                cmd += ['-aI']
+            elif rule['action'] == 'else':
+                cmd += ['-aL']
+            elif rule['action'] == 'endif':
+                cmd += ['-aE']
+            elif rule['action'] == 'remove':
+                if not rule['id']:
+                    results['msg'] = 'action remove requires id'
+                    module.fail_json(**results)
+                cmd = ['rmfilt', vopt, '-n', rule['id']]
+                if params[version]['force']:
+                    cmd += ['-f']
+                ret, stdout, stderr = module.run_command(cmd)
+                results['stdout'] += stdout
+                results['stderr'] += stderr
+                if ret != 0:
+                    msg_cmd = ' '.join(cmd)
+                    results['msg'] = f'Could not remove rule: command \'{msg_cmd}\' failed \
+                      with return code {ret}.'
+                    module.fail_json(**results)
+                results['msg'] = "Removed the rules successfully."
+                results['changed'] = True
+                continue
+            elif rule['action'] == 'move':
+                if not rule['id'] or not rule['new_id']:
+                    results['msg'] = 'action move requires id and new_id'
+                    module.fail_json(**results)
+                cmd = ['mvfilt', vopt, '-p', rule['id'], '-n', rule['new_id']]
+                ret, stdout, stderr = module.run_command(cmd)
+                results['stdout'] += stdout
+                results['stderr'] += stderr
+                if ret != 0:
+                    msg_cmd = ' '.join(cmd)
+                    results['msg'] = f'Could not move rule: command \'{msg_cmd}\' \
+                      failed with return code {ret}.'
+                    module.fail_json(**results)
+                results['msg'] = "Moved the rules successfully."
+                results['changed'] = True
+                continue
 
-          if rule['id']:
-              cmd += ['-n', rule['id']]
+            if rule['id']:
+                cmd += ['-n', rule['id']]
 
-          if rule['direction']:
-              if rule['direction'] == 'inbound':
-                  cmd += ['-wI']
-              elif rule['direction'] == 'outbound':
-                  cmd += ['-wO']
-              else:
-                  cmd += ['-wB']
+            if rule['direction']:
+                if rule['direction'] == 'inbound':
+                    cmd += ['-wI']
+                elif rule['direction'] == 'outbound':
+                    cmd += ['-wO']
+                else:
+                    cmd += ['-wB']
 
-          if rule['icmp_type_opr'] and not rule['s_opr']:
-              cmd += ['-o', rule['icmp_type_opr']]
-          if rule['icmp_type'] and not rule['s_port']:
-              cmd += ['-p', rule['icmp_type']]
-          if rule['icmp_code_opr'] and not rule['d_opr']:
-              cmd += ['-O', rule['icmp_code_opr']]
-          if rule['icmp_code'] and not rule['d_port']:
-              cmd += ['-P', rule['icmp_code']]
+            if rule['icmp_type_opr'] and not rule['s_opr']:
+                cmd += ['-o', rule['icmp_type_opr']]
+            if rule['icmp_type'] and not rule['s_port']:
+                cmd += ['-p', rule['icmp_type']]
+            if rule['icmp_code_opr'] and not rule['d_opr']:
+                cmd += ['-O', rule['icmp_code_opr']]
+            if rule['icmp_code'] and not rule['d_port']:
+                cmd += ['-P', rule['icmp_code']]
 
-          # genfilt -s and -m flags are mandatory
-          if rule['s_addr']:
-              cmd += ['-s', rule['s_addr']]
-          elif version == 'ipv4':
-              cmd += ['-s', '0.0.0.0']
-          else:
-              cmd += ['-s', '::']
-          if rule['s_mask']:
-              cmd += ['-m', rule['s_mask']]
-          elif version == 'ipv4':
-              if rule['s_addr']:
-                  cmd += ['-m', '255.255.255.255']
-              else:
-                  cmd += ['-m', '0.0.0.0']
-          else:
-              if rule['s_addr']:
-                  cmd += ['-m', '128']
-              else:
-                  cmd += ['-m', '0']
-          if rule['s_opr']:
-              cmd += ['-o', rule['s_opr']]
-          if rule['s_port']:
-              cmd += ['-p', rule['s_port']]
+            # genfilt -s and -m flags are mandatory
+            if rule['s_addr']:
+                cmd += ['-s', rule['s_addr']]
+            elif version == 'ipv4':
+                cmd += ['-s', '0.0.0.0']
+            else:
+                cmd += ['-s', '::']
+            if rule['s_mask']:
+                cmd += ['-m', rule['s_mask']]
+            elif version == 'ipv4':
+                if rule['s_addr']:
+                    cmd += ['-m', '255.255.255.255']
+                else:
+                    cmd += ['-m', '0.0.0.0']
+            else:
+                if rule['s_addr']:
+                    cmd += ['-m', '128']
+                else:
+                    cmd += ['-m', '0']
+            if rule['s_opr']:
+                cmd += ['-o', rule['s_opr']]
+            if rule['s_port']:
+                cmd += ['-p', rule['s_port']]
 
-          if rule['d_addr']:
-              cmd += ['-d', rule['d_addr']]
-          if rule['d_mask']:
-              cmd += ['-M', rule['d_mask']]
-          elif version == 'ipv4':
-              # If -M not specified, it would be set to 255.255.255.255
-              if not rule['d_addr']:
-                  cmd += ['-M', '0.0.0.0']
-          else:
-              if not rule['d_addr']:
-                  cmd += ['-M', '0']
-          if rule['d_opr']:
-              cmd += ['-O', rule['d_opr']]
-          if rule['d_port']:
-              cmd += ['-P', rule['d_port']]
+            if rule['d_addr']:
+                cmd += ['-d', rule['d_addr']]
+            if rule['d_mask']:
+                cmd += ['-M', rule['d_mask']]
+            elif version == 'ipv4':
+                # If -M not specified, it would be set to 255.255.255.255
+                if not rule['d_addr']:
+                    cmd += ['-M', '0.0.0.0']
+            else:
+                if not rule['d_addr']:
+                    cmd += ['-M', '0']
+            if rule['d_opr']:
+                cmd += ['-O', rule['d_opr']]
+            if rule['d_port']:
+                cmd += ['-P', rule['d_port']]
 
-          if rule['protocol']:
-              cmd += ['-c', rule['protocol']]
-          if rule['description']:
-              cmd += ['-D', rule['description']]
-          if rule['timeout']:
-              cmd += ['-e', rule['timeout']]
-          if rule['fragment']:
-              cmd += ['-f', rule['fragment']]
-          if rule['interface']:
-              cmd += ['-i', rule['interface']]
-          if not rule['source_routing']:
-              cmd += ['-gN']
+            if rule['protocol']:
+                cmd += ['-c', rule['protocol']]
+            if rule['description']:
+                cmd += ['-D', rule['description']]
+            if rule['timeout']:
+                cmd += ['-e', rule['timeout']]
+            if rule['fragment']:
+                cmd += ['-f', rule['fragment']]
+            if rule['interface']:
+                cmd += ['-i', rule['interface']]
+            if not rule['source_routing']:
+                cmd += ['-gN']
 
-          if rule['routing']:
-              if rule['routing'] == 'route':
-                  cmd += ['-rR']
-              elif rule['routing'] == 'local':
-                  cmd += ['-rL']
-              else:
-                  cmd += ['-rB']
+            if rule['routing']:
+                if rule['routing'] == 'route':
+                    cmd += ['-rR']
+                elif rule['routing'] == 'local':
+                    cmd += ['-rL']
+                else:
+                    cmd += ['-rB']
 
-          if rule['tunnel']:
-              cmd += ['-t', rule['tunnel']]
+            if rule['tunnel']:
+                cmd += ['-t', rule['tunnel']]
 
-          if rule['antivirus']:
-              cmd += ['-C', rule['antivirus']]
-          elif rule['pattern']:
-              cmd += ['-x', rule['pattern']]
-          elif rule['pattern_filename']:
-              cmd += ['-X', rule['pattern_filename']]
+            if rule['antivirus']:
+                cmd += ['-C', rule['antivirus']]
+            elif rule['pattern']:
+                cmd += ['-x', rule['pattern']]
+            elif rule['pattern_filename']:
+                cmd += ['-X', rule['pattern_filename']]
 
-          if rule['log']:
-              cmd += ['-lY']
+            if rule['log']:
+                cmd += ['-lY']
 
-          ret, stdout, stderr = module.run_command(cmd)
-          results['stdout'] += stdout
-          results['stderr'] += stderr
-          if ret != 0:
-              msg_cmd = ' '.join(cmd)
-              results['msg'] = f'Could not add rule: command \'{msg_cmd}\' \
-                failed with return code {ret}.'
-              module.fail_json(**results)
-          results['msg'] = "Added the rules successfully."
-          results['changed'] = True
+            ret, stdout, stderr = module.run_command(cmd)
+            results['stdout'] += stdout
+            results['stderr'] += stderr
+            if ret != 0:
+                msg_cmd = ' '.join(cmd)
+                results['msg'] = f'Could not add rule: command \'{msg_cmd}\' \
+                  failed with return code {ret}.'
+                module.fail_json(**results)
+            results['msg'] = "Added the rules successfully."
+            results['changed'] = True
 
     # Activate the rules
     cmd = ['mkfilt', vopt, '-u']

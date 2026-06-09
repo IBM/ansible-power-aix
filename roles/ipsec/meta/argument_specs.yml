@@ -36,4 +36,3 @@ argument_specs:
         default: 5
         description: >
           Wait time in seconds after activating the tunnel before proceeding.
-
