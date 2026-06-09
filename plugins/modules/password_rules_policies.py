@@ -333,6 +333,62 @@ notes:
 '''
 
 EXAMPLES = r'''
+    - name: Set registry as files
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        registry: files
+        state: present
+
+    - name: Change login times for user
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        logintimes: :0800-1700
+        state: present
+
+    - name: Remove registry attribute from stanza
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        registry: files
+        state: absent
+
+    - name: Lock System User Accounts
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        account_locked: "true"
+        login: "false"
+        rlogin: "false"
+        state: present
+
+    - name: Allow other users to switch to this user using su command
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        su: true
+        state: present
+
+    - name: Set password rules for a user
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        maxage: 13
+        maxexpired: 2
+        maxrepeats: 4
+        minlen: 8
+        state: present
+
+    - name: Make the user admin
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        admin: true
+
+    - name: Remove admin rights from the user
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        admin: false
+
+    - name: Set core compress and core path to On
+      ibm.power_aix.password_rules_policies:
+        stanza: "{{ stanza_val }}"
+        core_compress: "on"
+        core_path: "on"
 '''
 
 RETURN = r'''

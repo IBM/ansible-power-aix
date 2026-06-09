@@ -155,6 +155,21 @@ notes:
     at U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/install/nim_concepts.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/n_commands/nim_master_setup.html).
+  - 'Parameter requirements based on I(action):'
+  - If I(action=update), then C(targets) and C(lpp_source) are required.
+  - If I(action=master_setup), then C(device) is required.
+  - If I(action=compare), then C(targets) is required.
+  - If I(action=script), then C(targets) and C(script) are required.
+  - If I(action=allocate), then C(targets) and C(lpp_source) are required.
+  - If I(action=deallocate), then C(targets) and C(lpp_source) are required.
+  - If I(action=bos_inst), then C(targets) and C(group) are required.
+  - If I(action=define_script), then C(resource) and C(location) are required.
+  - If I(action=remove), then C(resource) is required.
+  - If I(action=reset), then C(targets) is required.
+  - If I(action=reboot), then C(targets) is required.
+  - If I(action=maintenance), then C(targets) is required.
+  - If I(action=install_fileset), then C(targets), C(lpp_source), and C(installp_bundle) are required.
+  - If I(action=register_client), then C(new_targets) is required.
 '''
 
 EXAMPLES = r'''
