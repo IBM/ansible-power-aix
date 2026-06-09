@@ -120,6 +120,10 @@ notes:
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/m_commands/mknfsmnt.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmfs.html),
     U(https://www.ibm.com/support/knowledgecenter/ssw_aix_72/r_commands/rmnfsmnt.html).
+  - 'Parameter requirements based on I(action):'
+  - If I(action=present) and a filesystem needs to be created, then C(size) is required.
+  - If I(action=present) and a local filesystem needs to be created, you need to use
+    either C(vg) or C(device), both can not used together.
 '''
 
 EXAMPLES = r'''
@@ -523,11 +527,18 @@ def mkfs(module, filesystem):
     else:
         # Create a local filesystem
         opts = fs_opts(module)
+        if '-a size=' not in opts:
+            result['msg'] = "You need to provide size when trying to create a filesystem."
+            module.fail_json(**result)
 
         fs_type = module.params['fs_type']
 
         vg = module.params['vg']
         if vg:
+            if device:
+                result['msg'] = "You can only use one of the following while creating a filesystem:"
+                result['msg'] += " vg, device"
+                module.fail_json(**result)
             vg = f"-g {vg} "
         else:
             vg = ""
