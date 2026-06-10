@@ -158,7 +158,7 @@ status:
     returned: always
     type: dict
     contains:
-        <tuple>:
+        tuple:
             description:
             - Status of the execution on the <tuple>.
             - The <tuple> elements are sorted to form the key of the dictionary.
@@ -234,7 +234,7 @@ meta:
             type: list
             elements: str
             sample: see below
-        <tuple>:
+        tuple:
             description: Detailed information on the execution on the target tuple.
             returned: when target is actually a NIM client
             type: dict
@@ -244,7 +244,7 @@ meta:
                     returned: always
                     type: list
                     elements: str
-                <vios>:
+                vios:
                     description: updateios information for a specific vios.
                     returned: when target is actually a NIM client.
                     type: dict
