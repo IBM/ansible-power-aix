@@ -1239,8 +1239,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
     curr_efixes = parse_emgr()
 
     # check prerequisite
-    (out['check'], out['reject']) = check_epkgs(out['download'],
-                                                        lpps_lvl, curr_efixes)
+    (out['check'], out['reject']) = check_epkgs(out['download'], lpps_lvl, curr_efixes)
     results['meta'].update(out)
 
 
