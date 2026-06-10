@@ -155,7 +155,7 @@ status:
     description:
     - Status for each C(target). It can be empty, SUCCESS or FAILURE.
     - If I(download_only=True), refer to C(meta[<target>][messages]) and
-      C(meta[<target>][4.1.reject]) for error checking.
+      C(meta[<target>][reject]) for error checking.
     returned: always
     type: dict
     elements: str
@@ -170,7 +170,7 @@ meta:
             type: list
             elements: str
             sample: see sample of meta
-        <target>:
+        target:
             description: Detailed information on the execution on the <target>.
             returned: when target is actually a NIM client or master
             type: dict
@@ -181,19 +181,19 @@ meta:
                     type: list
                     elements: str
                     sample: see sample of meta
-                0.report:
+                report:
                     description: Output of the FLRTVC script, report or details on flrtvc error if any.
                     returned: if the FLRTVC script succeeds
                     type: list
                     elements: str
                     sample: see sample of meta
-                1.parse:
+                parse:
                     description: List of URLs to download and details on parsing error if any.
                     returned: if the FLRTVC report parsing succeeds
                     type: list
                     elements: str
                     sample: see sample of meta
-                2.discover:
+                discover:
                     description:
                     - List of epkgs found in URLs.
                     - URLs can be eFix or tar files or directories needing parsing.
@@ -201,13 +201,13 @@ meta:
                     type: list
                     elements: str
                     sample: see sample of meta
-                3.download:
+                download:
                     description: List of downloaded epkgs.
                     returned: if download operation succeeds
                     type: list
                     elements: str
                     sample: see sample of meta
-                4.1.reject:
+                reject:
                     description:
                     - List of epkgs rejected. Can be because installed levels do not match ifix required
                       levels or because a file is or will be locked by an other ifix installation.
@@ -216,13 +216,13 @@ meta:
                     type: list
                     elements: str
                     sample: see sample of meta
-                4.2.check:
+                check:
                     description: List of epkgs matching the prerequisites and trying to install.
                     returned: if check succeeds
                     type: list
                     elements: str
                     sample: see sample of meta
-                5.install:
+                install:
                     description: List of epkgs actually installed on the <target> system.
                     returned: if install succeeds
                     type: list
@@ -235,7 +235,7 @@ meta:
                 ...,
             ],
             "nimclient01": {
-                "0.report": [
+                "report": [
                     "Fileset|Current Version|Type|EFix Installed|Abstract|Unsafe Versions|APARs|Bulletin URL|Download URL|CVSS Base Score|Reboot Required|
                      Last Update|Fixed In",
                     "bos.net.tcp.client_core|7.2.3.15|sec||NOT FIXED - There is a vulnerability in FreeBSD that affects AIX.|7.2.3.0-7.2.3.15|
@@ -243,12 +243,12 @@ meta:
                      ftp://aix.software.ibm.com/aix/efixes/security/freebsd_fix.tar|CVE-2018-6922:7.5|NO|11/08/2018|7200-03-03",
                     ...,
                 ],
-                "1.parse": [
+                "parse": [
                     "ftp://aix.software.ibm.com/aix/efixes/security/ntp_fix12.tar",
                     "ftp://aix.software.ibm.com/aix/efixes/security/tcpdump_fix4.tar",
                     ...,
                 ],
-                "2.discover": [
+                "discover": [
                     "ntp_fix12/IJ17059m9b.190719.epkg.Z",
                     "ntp_fix12/IJ17060m9a.190628.epkg.Z",
                     ...,
@@ -256,7 +256,7 @@ meta:
                     "tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
                     ...,
                 ],
-                "3.download": [
+                "download": [
                     "/usr/sys/inst.images/tardir/ntp_fix12/IJ17059m9b.190719.epkg.Z",
                     "/usr/sys/inst.images/tardir/ntp_fix12/IJ17060m9a.190628.epkg.Z",
                     ...,
@@ -264,7 +264,7 @@ meta:
                     "/usr/sys/inst.images/tardir/tcpdump_fix4/IJ12978sBa.190215.epkg.Z",
                     ...,
                 ],
-                "4.1.reject": [
+                "reject": [
                     "102p_fix: prerequisite openssl.base levels do not satisfy condition string: 1.0.2.1600 =< 1.0.2.1500 =< 1.0.2.1600",
                     ...,
                     "IJ12983m2a: locked by previous efix to install",
@@ -272,11 +272,11 @@ meta:
                     "IJ17059m9b: prerequisite missing: ntp.rte",
                     ...,
                 ],
-                "4.2.check": [
+                "check": [
                     "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
                     ...,
                 ],
-                "5.install": [
+                "install": [
                     "/usr/sys/inst.images/tardir/tcpdump_fix5/IJ20785s2a.191119.epkg.Z",
                     ...,
                 ],
@@ -1017,7 +1017,7 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
         params     (dict): The parameters to pass to flrtvc command
         force      (bool): The flag to automatically remove efixes
     note:
-        Create and build output['0.report']
+        Create and build output['report']
     return:
         True if flrtvc succeeded
         False otherwise
@@ -1071,7 +1071,7 @@ def run_flrtvc(module, output, machine, flrtvc_path, params, force):
         return False
 
     parsed_out = parse_stdout(stdout)
-    output.update({'0.report': parsed_out})
+    output.update({'report': parsed_out})
 
     # Save to file
     if params['save_report']:
@@ -1099,7 +1099,7 @@ def run_parser(module, machine, output, report):
     """
     Parse report by extracting URLs
     note:
-        Create and build output['1.parse']
+        Create and build output['parse']
     args:
         module (dict): The Ansible module
         machine (str): The remote machine name
@@ -1116,7 +1116,7 @@ def run_parser(module, machine, output, report):
 
     rows = list(set(selected_rows))  # remove duplicates
     module.debug(f'{machine}: extract {len(rows)} urls in the report')
-    output.update({'1.parse': rows})
+    output.update({'parse': rows})
 
 
 @start_threaded(THRDS)
@@ -1131,18 +1131,18 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
         resize_fs (bool): Increase the filesystem size if needed
     note:
         Create and build
-            output['2.discover']
-            output['3.download']
-            output['4.1.reject']
-            output['4.2.check']
+            output['discover']
+            output['download']
+            output['reject']
+            output['check']
         for the provided machine.
     """
 
     out = {'messages': output['messages'],
-           '2.discover': [],
-           '3.download': [],
-           '4.1.reject': [],
-           '4.2.check': []}
+           'discover': [],
+           'download': [],
+           'reject': [],
+           'check': []}
 
     for url in urls:
         protocol, srv, rep, name = re.search(r'^(.*?)://(.*?)/(.*)/(.*)$', url).groups()
@@ -1150,12 +1150,12 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
 
         if '.epkg.Z' in name:  # URL as an efix file
             module.debug(f'{machine}: treat url as an epkg file')
-            out['2.discover'].append(name)
+            out['discover'].append(name)
 
             # download epkg file
             epkg = os.path.abspath(os.path.join(workdir, name))
             if download(module, out, url, epkg, resize_fs):
-                out['3.download'].append(epkg)
+                out['download'].append(epkg)
 
         elif '.tar' in name:  # URL as a tar file
             module.debug(f'{machine}: treat url as a tar file')
@@ -1167,7 +1167,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
 
                     # find all epkg in tar file
                     epkgs = [epkg for epkg in tar.getnames() if re.search(r'(\b[\w.-]+.epkg.Z\b)$', epkg)]
-                    out['2.discover'].extend(epkgs)
+                    out['discover'].extend(epkgs)
                     module.debug(f'{machine}: found {len(epkgs)} epkg.Z file in tar file')
                     # extract epkg
                     tar_dir = os.path.join(workdir, 'tardir')
@@ -1193,7 +1193,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
                             module.log(f'[WARNING] {machine}: {msg}')
                             results['meta']['messages'].append(msg)
                             continue
-                        out['3.download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                        out['download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
 
         else:  # URL as a Directory
             module.debug(f'{machine}: treat url as a directory')
@@ -1205,7 +1205,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
 
             epkgs = list(set(epkgs))
 
-            out['2.discover'].extend(epkgs)
+            out['discover'].extend(epkgs)
             debug_len = len(epkgs)
             module.debug(f'found {debug_len} epkg.Z file in html body')
 
@@ -1213,7 +1213,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
             epkgs = [os.path.abspath(os.path.join(workdir, epkg)) for epkg in epkgs
                      if download(module, out, os.path.join(url, epkg),
                                  os.path.abspath(os.path.join(workdir, epkg)), resize_fs)]
-            out['3.download'].extend(epkgs)
+            out['download'].extend(epkgs)
 
     # Get installed filesets' levels
     lpps_lvl = parse_lpps_info(module, output, machine)
@@ -1222,9 +1222,7 @@ def run_downloader(module, machine, output, urls, resize_fs=True):
     curr_efixes = parse_emgr(machine)
 
     # check prerequisite
-    (out['4.2.check'], out['4.1.reject']) = check_epkgs(module, out, machine,
-                                                        out['3.download'],
-                                                        lpps_lvl, curr_efixes)
+    (out['check'], out['reject']) = check_epkgs(module, out, machine, out['download'], lpps_lvl, curr_efixes)
     output.update(out)
 
 
@@ -1242,9 +1240,9 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         True if install succeeded
         False otherwise
     note:
-        epkgs should be results['meta']['4.2.check'] which is
+        epkgs should be results['meta']['check'] which is
         sorted against packaging date. Do not change the order.
-        Create and build results['meta']['5.install'].
+        Create and build results['meta']['install'].
     """
 
     if not epkgs:
@@ -1324,7 +1322,7 @@ def run_installer(module, machine, output, epkgs, resize_fs=True):
         if rc == 0:
             install_ok = True
 
-        output.update({'5.install': stdout.splitlines()})
+        output.update({'install': stdout.splitlines()})
         results['status'][machine] = 'SUCCESS'
         results['changed'] = True
     else:
@@ -1537,13 +1535,13 @@ def main():
         # meta={
         #   target_name:{
         #       'messages': [],     detail execution messages
-        #       '0.report': [],     run_flrtvc reports the vulnerabilities
-        #       '1.parse': [],      run_parser builds the list of URLs
-        #       '2.discover': [],   run_downloader builds the list of epkgs found in URLs
-        #       '3.download': [],   run_downloader builds the list of downloaded epkgs
-        #       '4.1.reject': [],   check_epkgs builds the list of rejected epkgs
-        #       '4.2.check': [],    check_epkgs builds the list of epkgs checking prerequisites
-        #       '5.install': [],    run_installer builds the list of installed epkgs
+        #       'report': [],     run_flrtvc reports the vulnerabilities
+        #       'parse': [],      run_parser builds the list of URLs
+        #       'discover': [],   run_downloader builds the list of epkgs found in URLs
+        #       'download': [],   run_downloader builds the list of downloaded epkgs
+        #       'reject': [],   check_epkgs builds the list of rejected epkgs
+        #       'check': [],    check_epkgs builds the list of epkgs checking prerequisites
+        #       'install': [],    run_installer builds the list of installed epkgs
         #   }
         # }
         status={},
@@ -1666,7 +1664,7 @@ def main():
     # ===========================================
     module.debug('*** PARSE ***')
     for machine in targets:
-        run_parser(module, machine, results['meta'][machine], results['meta'][machine]['0.report'])
+        run_parser(module, machine, results['meta'][machine], results['meta'][machine]['report'])
     wait_all()
 
     # ===========================================
@@ -1674,8 +1672,8 @@ def main():
     # ===========================================
     module.debug('*** DOWNLOAD ***')
     for machine in targets:
-        run_downloader(module, machine, results['meta'][machine], results['meta'][machine]['1.parse'], resize_fs)
-        if '4.2.check' not in results['meta'][machine]:
+        run_downloader(module, machine, results['meta'][machine], results['meta'][machine]['parse'], resize_fs)
+        if 'check' not in results['meta'][machine]:
             msg = f'Error downloading some fixes, {machine} will not be updated'
             results['meta'][machine]['messages'].append(msg)
             results['status'][machine] = 'FAILURE'
@@ -1692,8 +1690,8 @@ def main():
     # ===========================================
     module.debug('*** UPDATE ***')
     for machine in targets:
-        if '4.2.check' in results['meta'][machine]:
-            run_installer(module, machine, results['meta'][machine], results['meta'][machine]['4.2.check'], resize_fs)
+        if 'check' in results['meta'][machine]:
+            run_installer(module, machine, results['meta'][machine], results['meta'][machine]['check'], resize_fs)
     wait_all()
 
     if clean and os.path.exists(workdir):
