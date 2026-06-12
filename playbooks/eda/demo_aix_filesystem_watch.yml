@@ -1,0 +1,35 @@
+- name: Monitor AIX filesystem utilization
+  hosts: localhost
+  sources:
+    - ibm.power_aix.aix_filesystem_watch:
+        hosts:
+          - host: X.X.X.X
+            username: "root"
+            key_path: key_path
+            timeout: 15
+        interval: 10
+        threshold: 80.0
+        emit_only_above: true
+        filesystems:
+          - "/"
+          - "/var"
+
+  rules:
+    - name: Alert on high filesystem usage
+      condition: >
+        event.filesystem is defined and
+        event.crossed == true
+      throttle:
+        once_within: 5 minutes
+        group_by_attributes:
+          - host
+          - filesystem.mount
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+            msg: |
+              ALERT: High Filesystem Usage!
+              Host: {{ event.host }}
+              Filesystem: {{ event.filesystem.mount }}
+              Usage: {{ event.filesystem.percent }}%
