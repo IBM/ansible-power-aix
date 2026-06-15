@@ -1,0 +1,43 @@
+---
+# Notification-Only FLRT Monitoring Rulebook
+# Sends alerts without automated remediation
+
+- name: FLRT Notification System
+  hosts: localhost
+  sources:
+    - ibm.power_aix.flrt_monitor:
+        poll_interval: 7200      # Check every 2 hours
+        filter_type: all         # Both security and HIPER
+        filter_product: aix
+
+  rules:
+    - name: Send email notification for any new fix
+      condition: event.type == "flrt_update"
+      action:
+        run_playbook:
+          name: playbooks/send_email_notification.yml
+          extra_vars:
+            event_type: "{{ event.vulnerability_type }}"
+            component: "{{ event.component }}"
+            cvss_score: "{{ event.cvss_max }}"
+            bulletin_url: "{{ event.bulletin_url }}"
+            abstract: "{{ event.abstract }}"
+
+    - name: Send Slack alert for high severity
+      condition: event.cvss_max >= 7.0
+      action:
+        run_playbook:
+          name: playbooks/send_slack_alert.yml
+          extra_vars:
+            severity: high
+            event_data: "{{ event }}"
+
+    - name: Create ServiceNow ticket for critical issues
+      condition: event.cvss_max >= 9.0
+      action:
+        run_playbook:
+          name: playbooks/create_servicenow_ticket.yml
+          extra_vars:
+            priority: 1
+            category: security
+            vulnerability: "{{ event }}"
