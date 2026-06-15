@@ -158,11 +158,11 @@ rc:
     description: The command return code.
     returned: When the command is executed.
     type: int
-stdout':
+stdout:
     description: The standard output.
     returned: If the command failed.
     type: str
-stderr':
+stderr:
     description: The standard error.
     returned: If the command failed.
     type: str
