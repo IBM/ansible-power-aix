@@ -1,0 +1,20 @@
+---
+# Basic FLRT Monitoring Rulebook
+# Monitors for any new AIX security fixes and runs FLRTVC script
+
+- name: Basic FLRT Monitoring
+  hosts: localhost
+  sources:
+    - ibm.power_aix.ibm_flrt_monitor:
+        poll_interval: 3600  # Check every hour
+        filter_type: sec     # Only security fixes
+        filter_product: aix  # Only AIX fixes
+
+  rules:
+    - name: New security fix detected
+      condition: event.type == "flrt_update"
+      action:
+        run_playbook:
+          name: playbooks/run_flrtvc.yml
+          extra_vars:
+            vulnerability_info: "{{ event }}"

@@ -1,0 +1,39 @@
+---
+# Severity-Based FLRT Monitoring Rulebook
+# Different actions based on CVSS severity scores
+
+- name: Severity-Based FLRT Monitoring
+  hosts: localhost
+  sources:
+    - ibm.power_aix.flrt_monitor:
+        poll_interval: 1800      # Check every 30 minutes
+        filter_type: sec         # Security fixes only
+        min_cvss_score: 4.0      # Medium severity and above
+
+  rules:
+    - name: Critical vulnerability (CVSS >= 9.0)
+      condition: event.cvss_max >= 9.0
+      action:
+        run_playbook:
+          name: playbooks/critical_response.yml
+          extra_vars:
+            severity: critical
+            vulnerability: "{{ event }}"
+
+    - name: High severity vulnerability (CVSS 7.0-8.9)
+      condition: event.cvss_max >= 7.0 and event.cvss_max < 9.0
+      action:
+        run_playbook:
+          name: playbooks/high_severity_response.yml
+          extra_vars:
+            severity: high
+            vulnerability: "{{ event }}"
+
+    - name: Medium severity vulnerability (CVSS 4.0-6.9)
+      condition: event.cvss_max >= 4.0 and event.cvss_max < 7.0
+      action:
+        run_playbook:
+          name: playbooks/medium_severity_response.yml
+          extra_vars:
+            severity: medium
+            vulnerability: "{{ event }}"
