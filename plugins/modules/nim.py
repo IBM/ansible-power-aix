@@ -218,7 +218,7 @@ status:
     returned: if the operation requires a target list
     type: dict
     contains:
-        <target>:
+        target:
             description: Status of the execution on the <target>.
             returned: when target is actually a NIM client
             type: str
@@ -251,7 +251,7 @@ meta:
             type: list
             elements: str
             sample: see below
-        <target>:
+        target:
             description: Detailed information on the execution on the C(target).
             returned: when target is actually a NIM client
             type: dict
@@ -282,7 +282,7 @@ meta:
             returned: only for show action
             type: dict
             contains:
-                <nim_object>:
+                nim_object:
                     description: Information for each individual NIM object fetched.
                     returned: if NIM object of this type exists
                     type: dict

@@ -99,15 +99,15 @@ msg:
     description: The execution message.
     returned: always
     type: str
-rc':
+rc:
     description: The return code.
     returned: If the command failed.
     type: int
-stdout':
+stdout:
     description: The standard output.
     returned: If the command failed.
     type: str
-stderr':
+stderr:
     description: The standard error.
     returned: If the command failed.
     type: str

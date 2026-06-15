@@ -305,7 +305,7 @@ status:
     returned: always
     type: dict
     contains:
-        <target>:
+        target:
             description: Status of the execution on the <target>.
             returned: when target is actually a NIM client
             type: str
@@ -316,11 +316,11 @@ backup_info:
     returned: if I(action=list)
     type: dict
     contains:
-        <backup_name>:
+        backup_name:
             description: Detailed information on the NIM resource.
             type: dict
             contains:
-                <attribute>:
+                attribute:
                     description: attribute of the <backup_name> resource
                     type: str
     sample:
@@ -421,7 +421,7 @@ meta:
             type: list
             elements: str
             sample: see below
-        <target>:
+        target:
             description: Detailed information on the execution on the C(target).
             returned: when target is actually a NIM client
             type: dict

@@ -122,7 +122,7 @@ status:
     returned: always
     type: dict
     contains:
-        <vios>:
+        vios:
             description: Status of the execution on the <vios>.
             returned: when vios is actually a NIM client
             type: str
@@ -168,7 +168,7 @@ meta:
             type: list
             elements: str
             sample: see below
-        <target>:
+        target:
             description: Detailed information on the execution on the C(target).
             returned: when target is actually a NIM client
             type: dict
