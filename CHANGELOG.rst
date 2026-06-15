@@ -5,6 +5,51 @@
 Releases
 ========
 
+Version 2.3.0
+-------------
+Notes
+  * flrt_monitor: NEW EDA plugin which monitors IBM Fix Level Recommendation Tool (FLRT) HIPER/Security CSV for new vulnerabilities and fixes.
+  * aix_filesystem_watch: NEW EDA plugin which emits an event per host per filesystem per interval or only when crossing a threshold.
+  * aix_file_watch: NEW EDA plugin watches file content modifications on AIX hosts over SSH and emit events.
+  * errclear: NEW MODULE which enables Ansible to invoke AIX's errclear utility to delete error log entries based on various filtering criteria.
+  * traceroute: NEW MODULE to trace the route that IP packets take to reach a destination host on AIX systems.
+  * ipsec : NEW ROLE to setup IPsec tunnel.
+  * New demo Rulebooks: demo_aix_file_watch, demo_aix_filesystem_watch, rulebook_dlrt_monitor_severity_based, rulebook_flrt_monitor_basic, rulebook_flrt_monitor_notification_only.
+  * NEW demo Playbooks: demo_errclear.yml, demo_traceroute.yml, demo_setup_ipsec.yml
+  * devices: Enhancement to implement 'defaults' values to ibm.power_aix.devices.
+  * alt_disk: Added feature to also be able to handle phases.
+  * audit: Enhancement to support auditpr command.
+  * filesystem: Added support for -K and -M options. Issue #277.
+  * filesystem: Fix for issue #750
+  * mkfilt: Fix for issue #752
+  * password_rules_policies: Documentation updates
+  * nim: Documentation upates
+  * EDA source plugin placeholder update according to community guidelines.
+  * flirtvc: Added exception handling. Fix for issue #724
+  * inetd role: Fix for issue #744
+  * nim_alt_disk_migration: Fix for issue #728
+  * power_aix_boostrap: Fix for issue #737
+  * installp: Fix for issue #734
+  * alt_disk: Fix for issue #397
+  * devices: Fix for issue #621
+  * alt_disk: Fix for issue #646
+  * Linting failures - ~70 linting failures across various modules/roles/playbooks.
+
+Availability
+  * `Automation Hub v2.3.0`_
+  * `Galaxy v2.3.0`_
+  * `GitHub v2.3.0`_
+
+.. _Automation Hub v2.3.0:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.3.0:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.3.0.tar.gz
+
+.. _GitHub v2.3.0:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.3.0.tar.gz
+
+
 Version 2.2.1
 -------------
 Notes
