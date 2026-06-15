@@ -278,13 +278,13 @@ ansible_facts:
               returned: always
               type: dict
               sample: '"oslevel": { "build": 2147, "sp": 3, "tl": 2, "base": "7.2.0.0" }'
-        IBM.MCP_info:
+        ibm_mcp_info:
           description: lsrsrc IBM.MCP command's output
           returned: always
           type: dict
           elements: dict
           contains:
-            resource list:
+            resource_list:
               description: Resource Persistent Attributes for IBM.MCP
               returned: always
               type: dict
@@ -365,7 +365,7 @@ descr2key = {
     "In-Core Crypto Acceleration": ('inc_core_crypto', 'bool'),
     "Full Core": ('full_coredump', 'bool'),
     "oslevel": ('oslevel', 'str'),
-    "IBM.MCP_info": ('IBM.MCP_info', 'str')
+    "IBM.MCP_info": ('ibm_mcp_info', 'str')
 }
 
 
@@ -453,7 +453,7 @@ def main():
         stdout = stdout + "\n" + stdout1
 
     lparstat = {}
-    lparstat["IBM.MCP_info"] = parse_MCP_info(stdout2)
+    lparstat["ibm_mcp_info"] = parse_MCP_info(stdout2)
 
     for line in stdout.splitlines():
         if ':' not in line:
