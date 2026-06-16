@@ -218,7 +218,8 @@ def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
     usage = us + sy + wa
     """
     toks = [t for t in line.strip().split() if t.replace(".", "", 1).isdigit()]
-    if len(toks) < 6:
+    vmstat_column_count = 6
+    if len(toks) < vmstat_column_count:
         msg = f"Unexpected vmstat output: {line!r}"
         raise ValueError(msg)
     us, sy, idl, wa = map(float, toks[-6:-2])
