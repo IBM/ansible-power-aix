@@ -15,7 +15,7 @@ __metaclass__ = type
 import asyncio
 from datetime import datetime, timezone
 import paramiko
-from typing import Any, Optional
+from typing import Any
 
 DOCUMENTATION = r"""
 ---
@@ -207,6 +207,7 @@ source:
   type: str
   returned: always
 """
+
 
 def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
     """AIX vmstat last 4 columns are: us sy id wa.

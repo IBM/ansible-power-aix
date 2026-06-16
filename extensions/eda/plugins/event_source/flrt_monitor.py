@@ -18,7 +18,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 try:
@@ -40,7 +40,7 @@ description:
   - Includes retry logic, caching, and comprehensive error handling for production use.
 version_added: 2.2.0
 author:
-  - "Nitish K Mishra (@nitismis)" 
+  - "Nitish K Mishra (@nitismis)"
 notes:
   - "Requires outbound HTTPS access to IBM's FLRT CSV endpoint."
   - "Uses aiohttp for async HTTP requests; ensure the dependency is installed."
@@ -321,18 +321,18 @@ MAX_CACHE_SIZE_MB = 100  # Maximum cache file size
 def setup_logging(log_level: str = "INFO") -> logging.Logger:
     """Setup logging with specified level"""
     logger = logging.getLogger("flrt_monitor")
-    
+
     # Remove existing handlers
     logger.handlers = []
-    
+
     # Set level
     level = getattr(logging, log_level.upper(), logging.INFO)
     logger.setLevel(level)
-    
+
     # Create console handler
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(level)
-    
+
     # Create formatter
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -601,172 +601,172 @@ class FLRTMonitor:
                 # Check cache file size
                 cache_size_mb = os.path.getsize(self.cache_file) / (1024 * 1024)
                 if cache_size_mb > MAX_CACHE_SIZE_MB:
-                    self.logger.warning(f"Cache file size ({cache_size_mb:.2f}MB) exceeds maximum ({MAX_CACHE_SIZE_MB}MB). Removing old cache.")
+                    self.logger.warning("Cache file size (%.2fMB) exceeds maximum (%sMB). Removing old cache.", cache_size_mb, MAX_CACHE_SIZE_MB)
                     os.remove(self.cache_file)
                     return
-                
+
                 with open(self.cache_file, 'r') as f:
                     cached_data = f.read()
                     self.previous_hash = hashlib.md5(cached_data.encode()).hexdigest()
-                    
+
                     # Parse cached entries
                     reader = csv.DictReader(cached_data.splitlines())
                     for row in reader:
                         if self._should_process_row(row):
                             entry_id = self._generate_entry_id(row)
                             self.previous_entries.add(entry_id)
-                
-                self.logger.info(f"Loaded {len(self.previous_entries)} entries from cache")
+
+                self.logger.info("Loaded %s entries from cache", len(self.previous_entries))
             except Exception as e:
-                self.logger.warning(f"Could not load cache file: {e}")
-    
+                self.logger.warning("Could not load cache file: %s", e)
+
     async def _download_csv_with_retry(self) -> str:
         """
         Download CSV with retry logic and exponential backoff.
-        
+
         Returns:
             CSV content as string
-            
+
         Raises:
             Exception: If all retry attempts fail
         """
         last_exception = None
-        
+
         for attempt in range(self.max_retries):
             try:
-                self.logger.debug(f"Download attempt {attempt + 1}/{self.max_retries}")
-                
+                self.logger.debug("Download attempt %s/%s", attempt + 1, self.max_retries)
+
                 timeout = aiohttp.ClientTimeout(total=self.request_timeout)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
                     async with session.get(self.csv_url) as response:
                         if response.status != 200:
                             raise Exception(f"HTTP {response.status}: {response.reason}")
-                        
+
                         csv_content = await response.text()
-                        self.logger.debug(f"Downloaded {len(csv_content)} bytes")
+                        self.logger.debug("Downloaded %s bytes", len(csv_content))
                         return csv_content
-                        
+
             except asyncio.TimeoutError as e:
                 last_exception = e
-                self.logger.warning(f"Request timeout on attempt {attempt + 1}")
+                self.logger.warning("Request timeout on attempt %s", attempt + 1)
             except aiohttp.ClientError as e:
                 last_exception = e
-                self.logger.warning(f"Network error on attempt {attempt + 1}: {e}")
+                self.logger.warning("Network error on attempt %s: %s", attempt + 1, e)
             except Exception as e:
                 last_exception = e
-                self.logger.warning(f"Error on attempt {attempt + 1}: {e}")
-            
+                self.logger.warning("Error on attempt %s: %s", attempt + 1, e)
+
             if attempt < self.max_retries - 1:
                 # Exponential backoff
                 delay = self.retry_delay * (2 ** attempt)
-                self.logger.info(f"Retrying in {delay}s...")
+                self.logger.info("Retrying in %ss...", delay)
                 await asyncio.sleep(delay)
-        
+
         raise Exception(f"Failed to download CSV after {self.max_retries} attempts: {last_exception}")
-    
+
     async def check_for_updates(self) -> List[Dict[str, Any]]:
         """
         Check for updates in the FLRT CSV and return new vulnerability events.
-        
+
         Returns:
             List of event dictionaries for new vulnerabilities
         """
         events = []
-        
+
         try:
             # Download current CSV with retry
             csv_content = await self._download_csv_with_retry()
-            
+
             # Calculate hash
             current_hash = hashlib.md5(csv_content.encode()).hexdigest()
-            
+
             # Check if CSV has changed
             if current_hash == self.previous_hash:
                 self.logger.debug("CSV unchanged")
                 return events
-            
+
             self.logger.info("CSV has changed, processing updates...")
-            
+
             # Parse CSV and find new entries
             current_entries = set()
             reader = csv.DictReader(csv_content.splitlines())
-            
+
             for row in reader:
                 if not self._should_process_row(row):
                     continue
-                
+
                 entry_id = self._generate_entry_id(row)
                 current_entries.add(entry_id)
-                
+
                 # Check if this is a new entry
                 if entry_id not in self.previous_entries:
                     event = self._create_event(row)
                     events.append(event)
-                    self.logger.info(f"New vulnerability: {event['component']} (CVSS: {event['cvss_max']})")
-            
+                    self.logger.info("New vulnerability: %s (CVSS: %s)", event['component'], event['cvss_max'])
+
             # Update cache
             try:
                 with open(self.cache_file, 'w') as f:
                     f.write(csv_content)
-                self.logger.debug(f"Updated cache file: {self.cache_file}")
+                self.logger.debug("Updated cache file: %s", self.cache_file)
             except Exception as e:
-                self.logger.error(f"Failed to update cache: {e}")
-            
+                self.logger.error("Failed to update cache: %s", e)
+
             self.previous_hash = current_hash
             self.previous_entries = current_entries
-            
+
         except Exception as e:
-            self.logger.error(f"Error checking for updates: {e}")
+            self.logger.error("Error checking for updates: %s", e)
             raise
-        
+
         return events
-    
+
     async def get_all_vulnerabilities(self) -> List[Dict[str, Any]]:
         """
         Get all current vulnerabilities from the CSV.
-        
+
         Returns:
             List of event dictionaries for all vulnerabilities
         """
         events = []
-        
+
         try:
             csv_content = await self._download_csv_with_retry()
-            
+
             reader = csv.DictReader(csv_content.splitlines())
-            
+
             for row in reader:
                 if self._should_process_row(row):
                     event = self._create_event(row)
                     events.append(event)
-        
+
         except Exception as e:
-            self.logger.error(f"Error getting vulnerabilities: {e}")
+            self.logger.error("Error getting vulnerabilities: %s", e)
             raise
-        
+
         return events
-    
+
     def _should_process_row(self, row: Dict[str, str]) -> bool:
         """Determine if a CSV row should be processed based on filters."""
         # Skip header/metadata rows
         if not row.get('type') or row['type'] in ['type', '0.8.14']:
             return False
-        
+
         # Filter by type (sec/hiper)
         if self.filter_type != "all" and row.get('type') != self.filter_type:
             return False
-        
+
         # Filter by product
         if self.filter_product and self.filter_product not in row.get('product', '').lower():
             return False
-        
+
         # Filter by CVSS score
         cvss_max = self._extract_max_cvss(row.get('cvss', ''))
         if cvss_max < self.min_cvss_score:
             return False
-        
+
         return True
-    
+
     def _generate_entry_id(self, row: Dict[str, str]) -> str:
         """Generate a unique ID for a CSV entry."""
         key_parts = [
@@ -776,30 +776,30 @@ class FLRTMonitor:
             row.get('apars', '')
         ]
         return hashlib.md5('|'.join(key_parts).encode()).hexdigest()
-    
+
     def _extract_max_cvss(self, cvss_string: str) -> float:
         """Extract maximum CVSS score from the cvss field."""
         if not cvss_string:
             return 0.0
-        
+
         try:
             scores = []
             for part in cvss_string.split('/'):
                 if ':' in part:
                     score_str = part.split(':')[1].strip()
                     scores.append(float(score_str))
-            
+
             return max(scores) if scores else 0.0
         except Exception as e:
-            self.logger.debug(f"Could not parse CVSS string '{cvss_string}': {e}")
+            self.logger.debug("Could not parse CVSS string '%s': %s", cvss_string, e)
             return 0.0
-    
+
     def _parse_cves(self, cvss_string: str) -> List[Dict[str, Any]]:
         """Parse CVE information from cvss field."""
         cves = []
         if not cvss_string:
             return cves
-        
+
         try:
             for part in cvss_string.split('/'):
                 part = part.strip()
@@ -810,15 +810,15 @@ class FLRTMonitor:
                         'score': float(score.strip())
                     })
         except Exception as e:
-            self.logger.debug(f"Could not parse CVEs from '{cvss_string}': {e}")
-        
+            self.logger.debug("Could not parse CVEs from '%s': %s", cvss_string, e)
+
         return cves
-    
+
     def _create_event(self, row: Dict[str, str]) -> Dict[str, Any]:
         """Create an event dictionary from a CSV row."""
         cvss_max = self._extract_max_cvss(row.get('cvss', ''))
         cves = self._parse_cves(row.get('cvss', ''))
-        
+
         event = {
             'type': 'flrt_update',
             'vulnerability_type': row.get('type', ''),
@@ -839,18 +839,18 @@ class FLRTMonitor:
             'timestamp': datetime.now(timezone.utc).isoformat(),
             'source': 'flrt_monitor'
         }
-        
+
         return event
 
 
 if __name__ == "__main__":
     """Allow testing the plugin standalone."""
-    
+
     class MockQueue:
         """Mock queue for testing."""
         async def put(self, item):
             print(f"Event: {json.dumps(item, indent=2)}")
-    
+
     async def test():
         queue = MockQueue()
         args = {
@@ -860,11 +860,11 @@ if __name__ == "__main__":
             "emit_on_startup": True,
             "log_level": "INFO"
         }
-        
+
         print("Starting FLRT Monitor ...")
         print(f"Configuration: {json.dumps(args, indent=2)}")
         print("\nMonitoring for events...\n")
-        
+
         await main(queue, args)
-    
+
     asyncio.run(test())

@@ -223,41 +223,41 @@ filesystem:
 def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """
     Parse AIX df -g output and extract filesystem information.
-    
+
     AIX df -g output format:
     Filesystem    GB blocks      Free %Used    Iused %Iused Mounted on
     /dev/hd4           2.00      1.50   25%     5120    10% /
     /dev/hd2          10.00      3.50   65%    15000    15% /usr
-    
+
     Returns list of filesystem dictionaries with usage information.
     """
     filesystems = []
     lines = output.strip().split('\n')
-    
+
     # Skip header line
     for line in lines[1:]:
         if not line.strip():
             continue
-            
+
         # Parse df output - handle potential whitespace variations
         parts = line.split()
         if len(parts) < 7:
             continue
-            
+
         device = parts[0]
         mount = parts[6]
-        
+
         # Skip if filtering and mount not in list
         if filter_filesystems and mount not in filter_filesystems:
             continue
-        
+
         try:
             size_gb = float(parts[1])
             free_gb = float(parts[2])
             used_percent_str = parts[3].rstrip('%')
             used_percent = float(used_percent_str)
             used_gb = size_gb - free_gb
-            
+
             filesystems.append({
                 "device": device,
                 "mount": mount,
@@ -269,7 +269,7 @@ def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None
         except (ValueError, IndexError):
             # Skip lines that don't parse correctly
             continue
-    
+
     return filesystems
 
 
@@ -336,7 +336,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
     """
     clients: Dict[str, _SSHClient] = {}
     running = True
-    
+
     try:
         hosts: List[Dict[str, Any]] = args.get("hosts", [])
         if not hosts:
