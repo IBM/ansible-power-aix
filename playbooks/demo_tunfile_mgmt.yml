@@ -115,7 +115,7 @@
       ansible.builtin.debug:
         var: tunfile_result
 
-    - name: "Modify specific dynamic and bosboot tunables of given component in a file"
+    - name: "Modify specific dynamic and bosboot tunables of given component in a file (second operation)"
       ibm.power_aix.tunfile_mgmt:
         action: modify
         filename: /tunfile_mgmt_test

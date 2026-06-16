@@ -118,7 +118,7 @@
         recorded_output: "/tmp/traceroutedata/traceroute_bypass_routing.txt"
         concatenated_output: "{{ concat_v1 }}"
 
-    - name: Test bypass_routing option (-r)
+    - name: Test bypass_routing option (-r) with google.com
       ibm.power_aix.traceroute:
         host: google.com
         max_ttl: 5

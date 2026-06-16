@@ -59,7 +59,7 @@
         name: "{{ user_name }}"
         load_module: files
         remove_homedir: false
-    - name: Delete Local user
+    - name: Delete LDAP user
       ibm.power_aix.user:
         state: absent
         name: "{{ user_name }}"

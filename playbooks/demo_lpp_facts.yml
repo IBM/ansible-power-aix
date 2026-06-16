@@ -19,11 +19,11 @@
         msg: Fileset 'test.base.xyz' is installed
       when: "'test.base.xyz' in ansible_facts.filesets"
 
-    - name: Gather the fileset facts
+    - name: Gather the fileset facts for openssh.base.client
       ibm.power_aix.lpp_facts:
         filesets: openssh.base.client
 
-    - name: Gather the fileset facts
+    - name: Gather the fileset facts for test.base.xyz
       ibm.power_aix.lpp_facts:
         filesets: test.base.xyz
 
@@ -31,7 +31,7 @@
       ibm.power_aix.lpp_facts:
         filesets: bos.rte.*
 
-    - name: Print the fileset facts
+    - name: Print the fileset facts for bos.rte
       ansible.builtin.debug:
         var: ansible_facts.filesets
 
@@ -39,7 +39,7 @@
       ibm.power_aix.lpp_facts:
         bundle: Server
 
-    - name: Print the fileset facts
+    - name: Print the fileset facts for Server bundle
       ansible.builtin.debug:
         var: ansible_facts.filesets
 

@@ -17,7 +17,7 @@
         timestamp: true
         recorded_output: "{{ output_dir }}/lparstat_output.txt"
         concatenated_output: "{{ concat_v1 }}"
-    - name: Run lparstat with config info
+    - name: Run lparstat with config info and service info
       ibm.power_aix.lparstat:
         config_info: true
         wpar_output: true
@@ -74,7 +74,7 @@
         recorded_output: "{{ output_dir }}/lparstat_output.txt"
         concatenated_output: "{{ concat_v1 }}"
 
-    - name: Run lparstat with detailed_cpu_stats
+    - name: Run lparstat with detailed_cpu_stats (second run)
       ibm.power_aix.lparstat:
         detailed_cpu_stats: true
         timestamp: true

@@ -21,7 +21,7 @@
         processes_to_include: 6226328
       register: include_proc
 
-    - name: Print result
+    - name: Print result for single process update
       ansible.builtin.debug:
         var: include_proc
 
@@ -32,7 +32,7 @@
         processes_to_exclude: 13828604
       register: exclude_proc
 
-    - name: Print result
+    - name: Print result for excluded process update
       ansible.builtin.debug:
         var: exclude_proc
 
@@ -42,7 +42,7 @@
         processes_to_include: 12845566, 9568716
       register: multiple_proc
 
-    - name: Print result
+    - name: Print result for multiple processes update
       ansible.builtin.debug:
         var: multiple_proc
 
@@ -53,7 +53,7 @@
         auto_cleanup: true
       register: all_proc
 
-    - name: Print result
+    - name: Print result for all processes update
       ansible.builtin.debug:
         var: all_proc
 
@@ -62,6 +62,6 @@
         action: clean
       register: cleanup
 
-    - name: Print result
+    - name: Print result for cleanup operation
       ansible.builtin.debug:
         var: cleanup
