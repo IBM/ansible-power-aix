@@ -118,8 +118,13 @@ module-lint:
 .PHONY: eda-lint
 eda-lint:
 	@echo "Running EDA plugin linting..."
+	@echo "Running ruff..."
+	ruff check --select ALL --ignore D100,D104,INP001,FA102,UP001,UP010,I001,FA100,PLR0913,E501 $(EDA_MODULE)
+	@echo "Running flake8..."
 	flake8 --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
+	@echo "Running pycodestyle..."
 	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
+	@echo "Running pylint..."
 	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
 	@echo "Checking for YAML files in EDA directory..."
 	@if [ -n "$$(find extensions/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
