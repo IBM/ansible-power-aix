@@ -141,8 +141,10 @@ eda-lint:
 		echo "No YAML files found in EDA directories"; \
 	fi
 	@echo "Running ansible-lint on EDA playbooks..."
-	@if [ -d "playbooks/eda" ]; then \
+	@if [ -d "playbooks/eda" ] && python3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" 2>/dev/null; then \
 		ansible-lint --force-color --strict playbooks/eda/; \
+	elif [ -d "playbooks/eda" ]; then \
+		echo "Skipping ansible-lint: requires Python 3.9+ (current: $$(python3 --version))"; \
 	fi
 
 .PHONY: playbook-lint
