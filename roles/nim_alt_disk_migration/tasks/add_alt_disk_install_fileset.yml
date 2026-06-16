@@ -6,17 +6,20 @@
 # THEN this task will automatically install the 'alt_disk_install' fileset
 - name: Add 'bos.alt_disk_install.rte fileset to {{ nim_alt_disk_migration_spot }}
   block:
-    - ansible.builtin.command: >
+    - name: Install bos.alt_disk_install.rte fileset to SPOT resource
+      ansible.builtin.command: >
         nim -o cust -a lpp_source={{ nim_mast_lpp | default(nim_alt_disk_migration_lpp_source) }}
         -a filesets=bos.alt_disk_install.rte {{ nim_alt_disk_migration_spot }}
       register: nim_alt_disk_migration_spot_fileset_install
       changed_when: nim_alt_disk_migration_spot_fileset_install.rc == 0
 
-    - ansible.builtin.fail:
+    - name: Fail if bos.alt_disk_install.rte installation failed
+      ansible.builtin.fail:
         msg: >
           Installation of 'bos.alt_disk_install.rte' on {{ nim_alt_disk_migration_spot }} failed
       when: nim_alt_disk_migration_spot_fileset_install is failed
 
-    - ansible.builtin.debug:
+    - name: Display bos.alt_disk_install.rte installation success message
+      ansible.builtin.debug:
         msg: >
           'bos.alt_disk_install.rte' fileset installed in {{ nim_alt_disk_migration_spot }}

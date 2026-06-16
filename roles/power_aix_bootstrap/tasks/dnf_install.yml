@@ -13,7 +13,8 @@
   when: (power_aix_bootstrap_output.stdout_lines[0] | int) < 71
 
 #   CHECK for DNF on inventory host
-- block:
+- name: Check for DNF on inventory host
+  block:
     - name: Check for existence of dnf
       ansible.builtin.raw: /opt/freeware/bin/rpm -q --quiet dnf && echo true || echo false
       register: power_aix_bootstrap_dnf_exists
@@ -31,7 +32,8 @@
       when: power_aix_bootstrap_dnf_exists.stdout is search("false")
 
 # Execute this block if DNF doesn't exist and AIX version is either 7.1 or 7.2
-- when:
+- name: Create and mount target filesystem for AIX 7.1 or 7.2
+  when:
     - power_aix_bootstrap_dnf_exists.stdout is search("false")
     - (power_aix_bootstrap_output.stdout_lines[0] | int) in [71, 72]
 
@@ -43,7 +45,8 @@
       ansible.builtin.raw: mount {{ power_aix_bootstrap_target_dir }}
       changed_when: true
 
-- when: (power_aix_bootstrap_output.stdout_lines[0] | int) == 73 and power_aix_bootstrap_dnf_exists.stdout is search("false")
+- name: Create and mount target filesystem for AIX 7.3
+  when: (power_aix_bootstrap_output.stdout_lines[0] | int) == 73 and power_aix_bootstrap_dnf_exists.stdout is search("false")
 
   # Excute this block if dnf is not installed
   block:
@@ -65,7 +68,8 @@
       ibm.power_aix.mount:
         mount_dir: "{{ power_aix_bootstrap_target_dir }}"
 
-- when: power_aix_bootstrap_dnf_exists.stdout is search("false")
+- name: Install DNF when not present
+  when: power_aix_bootstrap_dnf_exists.stdout is search("false")
 
   # { Execute this block to install dnf and proxy needs to be set
   block:
@@ -83,9 +87,11 @@
       ignore_errors: true # Continue even if the command fails
       changed_when: false
 
-    - when: not power_aix_bootstrap_local_repo
+    - name: Install DNF from remote repository
+      when: not power_aix_bootstrap_local_repo
       block:
-        - when: power_aix_bootstrap_python_installed.rc == 0 or power_aix_bootstrap_python3_installed.rc == 0
+        - name: Copy DNF install script using copy module
+          when: power_aix_bootstrap_python_installed.rc == 0 or power_aix_bootstrap_python3_installed.rc == 0
           block:
             - name: Copy dnf install script to "{{ power_aix_bootstrap_target_dir }}"
               ansible.builtin.copy:
@@ -96,7 +102,8 @@
                 - files/{{ power_aix_bootstrap_dnf_install_script }}
 
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
-        - when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
+        - name: Copy DNF install script using SCP
+          when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
           block:
             - name: Prepare remote target variables
               ansible.builtin.set_fact:
@@ -128,7 +135,8 @@
           when:
             - power_aix_bootstrap_yum_exists.stdout is not search("true")
 
-    - when: power_aix_bootstrap_local_repo
+    - name: Install DNF from local repository
+      when: power_aix_bootstrap_local_repo
 
       block:
         # Both the paths need to be provided in case of local repo setup
@@ -137,7 +145,8 @@
             msg: "Both power_aix_bootstrap_dnf_repo_mount_path and power_aix_bootstrap_dnf_bundle_mount_path must be defined!"
           when: (power_aix_bootstrap_dnf_repo_mount_path is not defined) or (power_aix_bootstrap_dnf_bundle_mount_path is not defined)
 
-        - when: power_aix_bootstrap_python_installed.rc == 0 or power_aix_bootstrap_python3_installed.rc == 0
+        - name: Copy DNF local install script using copy module
+          when: power_aix_bootstrap_python_installed.rc == 0 or power_aix_bootstrap_python3_installed.rc == 0
           block:
             - name: Copy dnf local install script to "{{ power_aix_bootstrap_target_dir }}"
               ansible.builtin.copy:
@@ -148,7 +157,8 @@
                 - files/{{ power_aix_bootstrap_local_repo_script }}
 
         # When python and python3 is not present on the system, copy module can not be used. Need to scp instead.
-        - when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
+        - name: Copy DNF local install script using SCP
+          when: power_aix_bootstrap_python_installed.rc != 0 and power_aix_bootstrap_python3_installed.rc != 0
           block:
             - name: Prepare remote target variables
               ansible.builtin.set_fact:
@@ -226,7 +236,8 @@
       changed_when: true
 
 #    Block to install dnf }
-- when: (power_aix_bootstrap_dnf_exists.stdout is not search("false") or power_aix_bootstrap_dnf_installed.stat.exists) and "proxy" is defined
+- name: Configure proxy for DNF
+  when: (power_aix_bootstrap_dnf_exists.stdout is not search("false") or power_aix_bootstrap_dnf_installed.stat.exists) and "proxy" is defined
   block:
     - name: Add proxy to /opt/freeware/etc/dnf/dnf.conf
       ansible.builtin.lineinfile:
