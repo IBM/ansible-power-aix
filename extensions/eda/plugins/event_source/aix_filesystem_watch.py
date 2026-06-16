@@ -335,91 +335,121 @@ class _SSHClient:
             self._client = None
 
 
-async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
-    """EDA event source: aix_filesystem_watch.
+def _create_ssh_clients(hosts: list[dict[str, Any]]) -> dict[str, _SSHClient]:
+    """Create SSH clients for all hosts.
 
+    Args:
+        hosts: List of host configuration dictionaries
 
-    Main entry point for the event source plugin.
+    Returns:
+        Dictionary mapping host to SSH client
+
     """
-    clients: dict[str, _SSHClient] = {}
-    running = True
+    clients = {}
+    for h in hosts:
+        key = h["host"]
+        clients[key] = _SSHClient(
+            host=h["host"],
+            username=h.get("username", "root"),
+            port=int(h.get("port", 22)),
+            key_path=h.get("key_path"),
+            password=h.get("password"),
+            timeout=int(h.get("timeout", 10)),
+        )
+    return clients
 
+
+async def _poll_host(
+    host_config: dict[str, Any],
+    client: _SSHClient,
+    queue: asyncio.Queue,
+    sample_cmd: str,
+    filter_filesystems: list[str] | None,
+    threshold: float,
+    emit_only_above: bool,
+) -> None:
+    """Poll a single host for filesystem usage.
+
+    Args:
+        host_config: Host configuration dictionary
+        client: SSH client for the host
+        queue: Queue to send events to
+        sample_cmd: Command to run for sampling
+        filter_filesystems: List of filesystems to filter
+        threshold: Threshold percentage
+        emit_only_above: Whether to emit only above threshold
+
+    """
+    host = host_config["host"]
     try:
-        hosts: list[dict[str, Any]] = args.get("hosts", [])
-        if not hosts:
-            msg = "AIXFilesystemWatch: 'hosts' list is required."
-            raise ValueError(msg)
+        # Run df command
+        out = await asyncio.to_thread(client.run, sample_cmd)
+        filesystems = _parse_df_output(out, filter_filesystems)
 
-        interval = int(args.get("interval", 60))
-        threshold = float(args.get("threshold", 80.0))
-        emit_only_above = bool(args.get("emit_only_above", False))
-        sample_cmd = args.get("sample_cmd", "df -g")
-        filter_filesystems = args.get("filesystems")
-
-        # Prepare SSH clients
-        for h in hosts:
-            key = h["host"]
-            clients[key] = _SSHClient(
-                host=h["host"],
-                username=h.get("username", "root"),
-                port=int(h.get("port", 22)),
-                key_path=h.get("key_path"),
-                password=h.get("password"),
-                timeout=int(h.get("timeout", 10)),
-            )
-
-        def _raise_no_filesystem_error() -> None:
-            """Raise error when no filesystem data is available."""
+        if not filesystems:
             msg = "No filesystem data returned or no filesystems match filter"
             raise ValueError(msg)
 
-        while running:
+        # Emit event for each filesystem
+        for fs in filesystems:
+            crossed = fs["percent"] >= threshold
+            if (not emit_only_above) or crossed:
+                event = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "host": host,
+                    "filesystem": {
+                        "mount": fs["mount"],
+                        "device": fs["device"],
+                        "percent": fs["percent"],
+                        "size_gb": fs["size_gb"],
+                        "used_gb": fs["used_gb"],
+                        "free_gb": fs["free_gb"],
+                    },
+                    "threshold": threshold,
+                    "crossed": crossed,
+                    "source": "aix_filesystem_watch",
+                }
+                await queue.put(event)
+    except (ValueError, RuntimeError, OSError) as e:
+        err_event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "host": host,
+            "error": str(e),
+            "source": "aix_filesystem_watch",
+            "severity": "error",
+        }
+        # Always emit errors so rules can alert
+        await queue.put(err_event)
+
+
+async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+    """EDA event source: aix_filesystem_watch.
+
+    Main entry point for the event source plugin.
+    """
+    hosts: list[dict[str, Any]] = args.get("hosts", [])
+    if not hosts:
+        msg = "AIXFilesystemWatch: 'hosts' list is required."
+        raise ValueError(msg)
+
+    interval = int(args.get("interval", 60))
+    threshold = float(args.get("threshold", 80.0))
+    emit_only_above = bool(args.get("emit_only_above", False))
+    sample_cmd = args.get("sample_cmd", "df -g")
+    filter_filesystems = args.get("filesystems")
+
+    # Prepare SSH clients
+    clients = _create_ssh_clients(hosts)
+
+    try:
+        while True:
             start = asyncio.get_event_loop().time()
 
-            async def poll_one(h: dict[str, Any]) -> None:
-                host = h["host"]
-                cli = clients[host]
-                try:
-                    # Run df command
-                    out = await asyncio.to_thread(cli.run, sample_cmd)
-                    filesystems = _parse_df_output(out, filter_filesystems)
-
-                    if not filesystems:
-                        _raise_no_filesystem_error()
-
-                    # Emit event for each filesystem
-                    for fs in filesystems:
-                        crossed = fs["percent"] >= threshold
-                        if (not emit_only_above) or crossed:
-                            event = {
-                                "timestamp": datetime.now(timezone.utc).isoformat(),
-                                "host": host,
-                                "filesystem": {
-                                    "mount": fs["mount"],
-                                    "device": fs["device"],
-                                    "percent": fs["percent"],
-                                    "size_gb": fs["size_gb"],
-                                    "used_gb": fs["used_gb"],
-                                    "free_gb": fs["free_gb"],
-                                },
-                                "threshold": threshold,
-                                "crossed": crossed,
-                                "source": "aix_filesystem_watch",
-                            }
-                            await queue.put(event)
-                except (ValueError, RuntimeError, OSError) as e:
-                    err_event = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "host": host,
-                        "error": str(e),
-                        "source": "aix_filesystem_watch",
-                        "severity": "error",
-                    }
-                    # Always emit errors so rules can alert
-                    await queue.put(err_event)
-
             # Poll all hosts concurrently
-            await asyncio.gather(*(poll_one(h) for h in hosts))
+            await asyncio.gather(*(
+                _poll_host(h, clients[h["host"]], queue, sample_cmd, filter_filesystems, threshold, emit_only_above)
+                for h in hosts
+            ))
 
             # Sleep until next tick (interval from loop start)
             elapsed = asyncio.get_event_loop().time() - start
