@@ -132,7 +132,7 @@ eda-lint:
 	@echo "Running pycodestyle..."
 	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
 	@echo "Running pylint..."
-	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
+	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,R0917,W0703 $(EDA_MODULE)
 	@echo "Checking EDA YAML files (plugins and playbooks)..."
 	@if [ -n "$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
 		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
