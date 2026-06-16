@@ -116,6 +116,8 @@ lint: module-lint eda-lint playbook-lint role-lint
 module-lint:
 	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
  	--exclude $(DEPRECATED) --test pylint $(MODULE)
+	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
+ 	--exclude $(DEPRECATED) --test yamllint $(MODULE)
 	flake8 --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) $(MODULE)
 	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
 		$(MODULE)
@@ -133,7 +135,7 @@ eda-lint:
 	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
 	@echo "Checking EDA YAML files (plugins and playbooks)..."
 	@if [ -n "$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
-		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}}}" \
+		yamllint -s -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
 		$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	else \
 		echo "No YAML files found in EDA directories"; \
@@ -148,7 +150,7 @@ playbook-lint:
 	@echo "Running playbook linting..."
 	@echo "Running yamllint on playbooks (excluding EDA)..."
 	@if [ -n "$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
-		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}}}" \
+		yamllint -s -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
 		$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	else \
 		echo "No YAML files found in playbooks directory"; \
@@ -183,4 +185,8 @@ unit-test:
 	ansible-test units -v --color yes --python $(PYTHON_VERSION) \
 	--coverage $(TEST)
 	
-	ansible-test coverage report --omit $(TEST_OMIT) --include "$(MODULE)" --show-missing
+	@if [ -d "tests/output/coverage" ] && [ -n "$$(find tests/output/coverage -name '.coverage*' 2>/dev/null)" ]; then \
+		ansible-test coverage report --omit $(TEST_OMIT) --include "$(MODULE)" --show-missing; \
+	else \
+		echo "No coverage data found, skipping coverage report"; \
+	fi
