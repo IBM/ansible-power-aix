@@ -148,16 +148,16 @@ eda-lint:
 .PHONY: playbook-lint
 playbook-lint:
 	@echo "Running playbook linting..."
-	@echo "Running yamllint on playbooks (excluding EDA)..."
-	@if [ -n "$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
-		yamllint -s -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
-		$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
+	@echo "Running yamllint on all playbooks (including EDA)..."
+	@if [ -n "$$(find $(PLAYBOOK) -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+		yamllint --no-warnings -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
+		$$(find $(PLAYBOOK) -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	else \
 		echo "No YAML files found in playbooks directory"; \
 	fi
-	@echo "Running ansible-lint on playbooks (excluding EDA)..."
-	@if [ -n "$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
-		ansible-lint --force-color $$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
+	@echo "Running ansible-lint on all playbooks (including EDA)..."
+	@if [ -n "$$(find $(PLAYBOOK) -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+		ansible-lint --force-color --strict $$(find $(PLAYBOOK) -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	fi
 
 .PHONY: role-lint
