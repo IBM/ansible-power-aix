@@ -793,8 +793,8 @@ class FLRTMonitor:
         try:
             scores = []
             for part_str in cvss_string.split("/"):
-                if ":" in part:
-                    score_str = part.split(":")[1].strip()
+                if ":" in part_str:
+                    score_str = part_str.split(":")[1].strip()
                     scores.append(float(score_str))
 
             return max(scores) if scores else 0.0
@@ -849,7 +849,6 @@ class FLRTMonitor:
         }
 
 
-
 if __name__ == "__main__":
     """Allow testing the plugin standalone."""
 
@@ -870,7 +869,6 @@ if __name__ == "__main__":
             "emit_on_startup": True,
             "log_level": "INFO",
         }
-
 
         await main(queue, args)
 
