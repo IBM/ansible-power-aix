@@ -274,7 +274,7 @@ def _parse_df_output(output: str, filter_filesystems: list[str] | None = None) -
     return filesystems
 
 
-class _SSHClient:  # pylint: disable=too-many-positional-arguments
+class _SSHClient:
     def __init__(
         self,
         host: str,
@@ -361,7 +361,7 @@ def _create_ssh_clients(hosts: list[dict[str, Any]]) -> dict[str, _SSHClient]:
     return clients
 
 
-async def _poll_host(  # pylint: disable=too-many-positional-arguments
+async def _poll_host(
     host_config: dict[str, Any],
     client: _SSHClient,
     queue: asyncio.Queue,
@@ -401,7 +401,7 @@ async def _poll_host(  # pylint: disable=too-many-positional-arguments
 
     try:
         # Run df command
-        out = await asyncio.to_thread(client.run, sample_cmd)
+        out = await asyncio.to_thread(client.run, sample_cmd)  # pylint: disable=no-member
         filesystems = _parse_df_output(out, filter_filesystems)
         _validate_filesystems(filesystems)
 

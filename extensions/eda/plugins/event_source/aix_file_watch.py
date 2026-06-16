@@ -421,7 +421,7 @@ def detect_changes(
     return changes
 
 
-def create_file_event(  # pylint: disable=too-many-positional-arguments
+def create_file_event(
     hostname: str,
     file_path: str,
     action: str,

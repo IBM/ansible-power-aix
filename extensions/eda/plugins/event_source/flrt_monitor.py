@@ -651,7 +651,7 @@ def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict
     return config
 
 
-class FLRTMonitor:  # pylint: disable=too-many-instance-attributes,too-many-positional-arguments
+class FLRTMonitor:  # pylint: disable=too-many-instance-attributes
     """Monitor IBM FLRT CSV for changes and new vulnerabilities."""
 
     def __init__(

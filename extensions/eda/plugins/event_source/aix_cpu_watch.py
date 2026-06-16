@@ -227,7 +227,7 @@ def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
-class _SSHClient:  # pylint: disable=too-many-positional-arguments
+class _SSHClient:
     def __init__(
         self,
         host: str,
@@ -335,7 +335,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                 cli = clients[host]
                 try:
                     # Run vmstat once per cycle
-                    out = await asyncio.to_thread(cli.run, sample_cmd)
+                    out = await asyncio.to_thread(cli.run, sample_cmd)  # pylint: disable=no-member
                     # Use the last non-empty line (tail -1 already, but be safe)
                     lines = [line for line in out.splitlines() if line.strip()][-1]
                     if not lines:
