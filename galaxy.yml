@@ -57,3 +57,4 @@ build_ignore:
  - 'docs/_pdf'
  - 'tests/unit'
  - '*.tar.gz'
+ - '.ansible-lint'

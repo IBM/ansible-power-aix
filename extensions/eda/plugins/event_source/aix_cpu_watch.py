@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -11,7 +9,15 @@
 # It is intended for early evaluation and feedback and is not recommended
 # for production use. Interfaces/behavior may change in future releases.
 
-DOCUMENTATION = r'''
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+import asyncio
+from datetime import datetime, timezone
+import paramiko
+from typing import Any, Optional
+
+DOCUMENTATION = r"""
 ---
 name: aix_cpu_watch
 short_description: Watch CPU utilization on AIX hosts over SSH and emit events.
@@ -93,9 +99,9 @@ options:
     required: false
     type: str
     default: "vmstat 1 2 | tail -1"
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: CPU watch on a single AIX host (emit every interval)
   hosts: localhost
   sources:
@@ -149,9 +155,9 @@ EXAMPLES = r'''
       action:
         debug:
           msg: "ERROR from {{ event.host }}: {{ event.error }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 timestamp:
   description: UTC timestamp in ISO 8601 format.
   type: str
@@ -200,32 +206,34 @@ source:
   description: Source identifier.
   type: str
   returned: always
-'''
+"""
 
-import asyncio
-from datetime import datetime, timezone
-import paramiko
-from typing import List, Dict, Any, Optional
+def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
+    """AIX vmstat last 4 columns are: us sy id wa.
 
-
-def _compute_cpu_usage_from_vmstat(line: str) -> Dict[str, float]:
-    """
-    AIX vmstat last 4 columns are: us sy id wa
     We'll parse the last 4 numeric fields and compute:
       usage = us + sy + wa
     """
-    toks = [t for t in line.strip().split() if t.replace('.', '', 1).isdigit()]
-    if len(toks) < 4:
-        raise ValueError(f"Unexpected vmstat output: {line!r}")
+    toks = [t for t in line.strip().split() if t.replace(".", "", 1).isdigit()]
+    vmstat_column_count = 4
+    if len(toks) < vmstat_column_count:
+        msg = f"Unexpected vmstat output: {line!r}"
+        raise ValueError(msg)
     us, sy, idl, wa = map(float, toks[-4:])
     usage = us + sy + wa  # 100 - idle
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
 class _SSHClient:
-    def __init__(self, host: str, username: str, port: int = 22,
-                 key_path: Optional[str] = None, password: Optional[str] = None,
-                 timeout: int = 10):
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        port: int = 22,
+        key_path: str | None = None,
+        password: str | None = None,
+        timeout: int = 10,
+    ) -> None:
         self.host = host
         self.username = username
         self.port = port
@@ -234,7 +242,7 @@ class _SSHClient:
         self.timeout = timeout
         self._client = None
 
-    def connect(self):
+    def connect(self) -> None:
         if self._client:
             return
         self._client = paramiko.SSHClient()
@@ -243,11 +251,11 @@ class _SSHClient:
         if self.key_path:
             try:
                 pkey = paramiko.RSAKey.from_private_key_file(self.key_path)
-            except Exception:
+            except (paramiko.SSHException, OSError):
                 # Try ECDSA if RSA fails
                 try:
                     pkey = paramiko.ECDSAKey.from_private_key_file(self.key_path)
-                except Exception:
+                except (paramiko.SSHException, OSError):
                     pkey = None
         self._client.connect(
             self.host,
@@ -263,15 +271,16 @@ class _SSHClient:
     def run(self, cmd: str) -> str:
         if not self._client:
             self.connect()
-        stdin, stdout, stderr = self._client.exec_command(cmd, timeout=self.timeout)
+        _stdin, stdout, stderr = self._client.exec_command(cmd, timeout=self.timeout)
         out = stdout.read().decode(errors="ignore")
         err = stderr.read().decode(errors="ignore")
         if err and not out:
             # vmstat prints headers to stdout; non-empty err with empty out is suspicious
-            raise RuntimeError(f"Command error on {self.host}: {err.strip()}")
+            msg = f"Command error on {self.host}: {err.strip()}"
+            raise RuntimeError(msg)
         return out
 
-    def close(self):
+    def close(self) -> None:
         try:
             if self._client:
                 self._client.close()
@@ -279,18 +288,19 @@ class _SSHClient:
             self._client = None
 
 
-async def main(queue: asyncio.Queue, args: Dict[str, Any]):
-    """
-    EDA event source: aix_cpu_watch
+async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+    """EDA event source: aix_cpu_watch.
+
     Main entry point for the event source plugin.
     """
-    clients: Dict[str, _SSHClient] = {}
+    clients: dict[str, _SSHClient] = {}
     running = True
-    
+
     try:
-        hosts: List[Dict[str, Any]] = args.get("hosts", [])
+        hosts: list[dict[str, Any]] = args.get("hosts", [])
         if not hosts:
-            raise ValueError("AIXCPUWatch: 'hosts' list is required.")
+            msg = "AIXCPUWatch: 'hosts' list is required."
+            raise ValueError(msg)
 
         interval = int(args.get("interval", 10))
         threshold = float(args.get("threshold", 80.0))
@@ -312,7 +322,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
         while running:
             start = asyncio.get_event_loop().time()
 
-            async def poll_one(h: Dict[str, Any]):
+            async def poll_one(h: dict[str, Any]) -> None:
                 host = h["host"]
                 cli = clients[host]
                 try:
@@ -321,7 +331,8 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                     # Use the last non-empty line (tail -1 already, but be safe)
                     lines = [line for line in out.splitlines() if line.strip()][-1]
                     if not lines:
-                        raise ValueError("vmstat returned no data")
+                        msg = "vmstat returned no data"
+                        raise ValueError(msg)
                     cpu = _compute_cpu_usage_from_vmstat(lines)
                     crossed = cpu["usage"] >= threshold
                     if (not emit_only_above) or crossed:
@@ -340,7 +351,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                             "source": "aix_cpu_watch",
                         }
                         await queue.put(event)
-                except Exception as e:
+                except (ValueError, RuntimeError, OSError) as e:
                     err_event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "host": host,

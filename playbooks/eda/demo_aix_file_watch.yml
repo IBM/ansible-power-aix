@@ -29,7 +29,6 @@
         emit_initial: false
 
   rules:
-
     - name: SECURITY ALERT - Permission changes detected
       condition: >
         event.changes is defined and
@@ -40,14 +39,14 @@
         - debug:
             msg: |
               SECURITY ALERT: File permissions changed!
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
               Timestamp: {{ event.timestamp }}
-              
+
               Previous permissions: {{ event.previous_permissions }}
               Current permissions:  {{ event.file_mode }}
-              
+
               Other changes: {{ event.changes | join(', ') }}
         - run_playbook:
             name: aix_file_watch_notify/notify_permission_change.yml
@@ -62,14 +61,14 @@
         - debug:
             msg: |
               SECURITY ALERT: File ownership changed!
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
               Timestamp: {{ event.timestamp }}
-              
+
               Previous owner: {{ event.previous_owner }}
               Current owner:  {{ event.file_owner }}
-              
+
               Other changes: {{ event.changes | join(', ') }}
         - run_playbook:
             name: aix_file_watch_notify/notify_owner_change.yml
@@ -84,13 +83,13 @@
         - debug:
             msg: |
               CRITICAL SECURITY ALERT: Multiple changes detected!
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
-              
+
               Permission change: {{ event.previous_permissions }} → {{ event.file_mode }}
               Owner change: {{ event.previous_owner }} → {{ event.file_owner }}
-              
+
               This could indicate unauthorized access!
         - run_playbook:
             name: aix_file_watch_notify/notify_critical_security.yml
@@ -105,7 +104,7 @@
         - debug:
             msg: |
               New file created
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
               Size: {{ event.file_size }} bytes
@@ -130,13 +129,13 @@
         - debug:
             msg: |
               File content modified
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
-              
+
               Previous checksum: {{ event.previous_checksum }}
               Current checksum:  {{ event.checksum }}
-              
+
               All changes: {{ event.changes | join(', ') }}
         - run_playbook:
             name: aix_file_watch_notify/notify_file_modified.yml
@@ -151,15 +150,13 @@
         - debug:
             msg: |
               File deleted
-              
+
               Host: {{ event.host }}
               File: {{ event.file }}
-              
+
               Previous checksum: {{ event.previous_checksum }}
               Previous permissions: {{ event.previous_permissions }}
               Previous owner: {{ event.previous_owner }}
               Previous size: {{ event.previous_size }} bytes
         - run_playbook:
             name: aix_file_watch_notify/notify_file_deleted.yml
-
-

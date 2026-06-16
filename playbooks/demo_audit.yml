@@ -1,3 +1,4 @@
+---
 - name: Run audit command with various options on AIX
   hosts: "{{ host_name }}"
   gather_facts: false
@@ -9,7 +10,6 @@
     output_dir: "/tmp/auditdata"
 
   tasks:
-
     - name: Start the AIX audit subsystem
       ibm.power_aix.audit:
         action: start
@@ -19,21 +19,21 @@
 
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
-        action: 'off'
+        action: "off"
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
-        action: 'off'
+        action: "off"
 
     - name: Restart the audit system (audit on)
       ibm.power_aix.audit:
-        action: 'on'
+        action: "on"
     - name: Restart the audit system with panic mode
       ibm.power_aix.audit:
-        action: 'on'
+        action: "on"
         panic: true
     - name: Restart the audit system with fullpath mode
       ibm.power_aix.audit:
-        action: 'on'
+        action: "on"
         fullpath: true
     - name: Query audit subsystem status
       ibm.power_aix.audit:
@@ -47,7 +47,7 @@
         action: shutdown
     - name: Query audit subsystem status
       ibm.power_aix.audit:
-        action: query    
+        action: query
     - name: Query audit with custom auditpr options
       ibm.power_aix.audit:
         action: query
@@ -79,10 +79,9 @@
         auditpr_suppress_translation: true
         auditpr_long_usernames: true
         capture_delay: 5
-        
+
     - name: Shutdown audit with log capture
       ibm.power_aix.audit:
         action: shutdown
         recorded_output: "/tmp/auditdata/audit_shutdown.txt"
         auditpr_verbose: true
-

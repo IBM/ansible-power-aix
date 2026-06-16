@@ -1,3 +1,4 @@
+---
 - name: Run traceroute command with various options on AIX (Complete Test Suite)
   hosts: "{{ host_name }}"
   gather_facts: false
@@ -10,7 +11,6 @@
     concat_v1: true
 
   tasks:
-
     - name: Run basic traceroute
       ibm.power_aix.traceroute:
         host: google.com
@@ -79,9 +79,10 @@
         max_ttl: 5
         recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
         concatenated_output: "{{ concat_v1 }}"
-  
+
     - name: Get configured IP addresses on the system
       ansible.builtin.shell: |
+        set -o pipefail
         ifconfig -a | grep 'inet ' | awk '{print $2}' | grep -v '127.0.0.1' | head -1
       register: system_ip
       changed_when: false
@@ -104,6 +105,7 @@
         concatenated_output: "{{ concat_v1 }}"
     - name: Get default gateway (local IP for bypass_routing test)
       ansible.builtin.shell: |
+        set -o pipefail
         netstat -rn | grep default | awk '{print $2}' | head -1
       register: local_gateway
       changed_when: false
@@ -115,7 +117,7 @@
         max_ttl: 5
         recorded_output: "/tmp/traceroutedata/traceroute_bypass_routing.txt"
         concatenated_output: "{{ concat_v1 }}"
-  
+
     - name: Test bypass_routing option (-r)
       ibm.power_aix.traceroute:
         host: google.com
@@ -130,7 +132,6 @@
         max_ttl: 5
         recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
         concatenated_output: "{{ concat_v1 }}"
-
 
     - name: Test tos option (-t) with value 8 (maximize throughput)
       ibm.power_aix.traceroute:
@@ -317,4 +318,3 @@
         packet_size: 256
         recorded_output: "/tmp/traceroutedata/traceroute_output.txt"
         concatenated_output: "{{ concat_v1 }}"
-

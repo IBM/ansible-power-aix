@@ -7,6 +7,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+import asyncio
+from datetime import datetime, timezone
+import paramiko
+from typing import Any, Dict, List, Optional
+
 DOCUMENTATION = r'''
 ---
 name: aix_filesystem_watch
@@ -211,12 +219,6 @@ filesystem:
       returned: always
 '''
 
-import asyncio
-from datetime import datetime, timezone
-import paramiko
-from typing import List, Dict, Any, Optional
-import re
-
 
 def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """
@@ -264,7 +266,7 @@ def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None
                 "free_gb": round(free_gb, 2),
                 "percent": round(used_percent, 2),
             })
-        except (ValueError, IndexError) as e:
+        except (ValueError, IndexError):
             # Skip lines that don't parse correctly
             continue
     
@@ -368,10 +370,11 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                     # Run df command
                     out = await asyncio.to_thread(cli.run, sample_cmd)
                     filesystems = _parse_df_output(out, filter_filesystems)
-                    
+
                     if not filesystems:
-                        raise ValueError("No filesystem data returned or no filesystems match filter")
-                    
+                        msg = "No filesystem data returned or no filesystems match filter"
+                        raise ValueError(msg)
+
                     # Emit event for each filesystem
                     for fs in filesystems:
                         crossed = fs["percent"] >= threshold
@@ -392,7 +395,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                                 "source": "aix_filesystem_watch",
                             }
                             await queue.put(event)
-                except Exception as e:
+                except (ValueError, RuntimeError, OSError) as e:
                     err_event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "host": host,
