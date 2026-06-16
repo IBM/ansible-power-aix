@@ -28,6 +28,7 @@ except ImportError:
 
 try:
     import aiofiles
+    import aiofiles.os
     HAS_AIOFILES = True
 except ImportError:
     HAS_AIOFILES = False
@@ -410,8 +411,40 @@ async def _emit_startup_events(
         logger.info("Found %s current vulnerabilities", len(initial_events))
         for event in initial_events:
             await queue.put(event)
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Failed to get initial vulnerabilities: %s", e)
+    except (OSError, ValueError, RuntimeError):
+        logger.exception("Failed to get initial vulnerabilities")
+
+
+async def _check_for_updates_iteration(
+    monitor: "FLRTMonitor",
+    queue: asyncio.Queue,
+    csv_url: str,
+    logger: logging.Logger,
+) -> None:
+    """Perform a single iteration of checking for updates.
+
+    Args:
+        monitor: FLRTMonitor instance
+        queue: Event queue
+        csv_url: CSV URL being monitored
+        logger: Logger instance
+
+    Raises:
+        OSError: If there's an I/O error
+        ValueError: If there's a data validation error
+        RuntimeError: If there's a runtime error
+
+    """
+    logger.debug("Checking for updates from %s", csv_url)
+    new_events = await monitor.check_for_updates()
+
+    if new_events:
+        logger.info("Found %s new vulnerabilities", len(new_events))
+        for event in new_events:
+            await queue.put(event)
+            logger.debug("Emitted event for %s", event.get("component", "unknown"))
+    else:
+        logger.debug("No new vulnerabilities found")
 
 
 async def _monitoring_loop(
@@ -436,26 +469,16 @@ async def _monitoring_loop(
 
     while True:
         try:
-            logger.debug("Checking for updates from %s", csv_url)
-            new_events = await monitor.check_for_updates()
-
-            if new_events:
-                logger.info("Found %s new vulnerabilities", len(new_events))
-                for event in new_events:
-                    await queue.put(event)
-                    logger.debug("Emitted event for %s", event.get("component", "unknown"))
-            else:
-                logger.debug("No new vulnerabilities found")
-
+            await _check_for_updates_iteration(monitor, queue, csv_url, logger)
             # Reset error counter on success
             consecutive_errors = 0
             await asyncio.sleep(poll_interval)
 
-        except (OSError, ValueError, RuntimeError) as e:
+        except (OSError, ValueError, RuntimeError) as e:  # noqa: PERF203
             consecutive_errors += 1
             logger.exception(
-                "Error in monitoring loop (attempt %s/%s): %s",
-                consecutive_errors, max_consecutive_errors, e,
+                "Error in monitoring loop (attempt %s/%s)",
+                consecutive_errors, max_consecutive_errors,
             )
 
             error_event = {
@@ -670,25 +693,29 @@ class FLRTMonitor:
 
     async def initialize(self) -> None:
         """Initialize the monitor by loading cached state if available."""
+        if not HAS_AIOFILES:
+            msg = "aiofiles is required for async file operations"
+            raise RuntimeError(msg)
+
         cache_path = Path(self.cache_file)
-        if not cache_path.exists():
+
+        # Use async file operations
+        if not await aiofiles.os.path.exists(str(cache_path)):
             return
 
         try:
             # Check cache file size
-            cache_size_mb = cache_path.stat().st_size / (1024 * 1024)
+            cache_stat = await aiofiles.os.stat(str(cache_path))
+            cache_size_mb = cache_stat.st_size / (1024 * 1024)
+
             if cache_size_mb > MAX_CACHE_SIZE_MB:
                 self.logger.warning("Cache file size (%.2fMB) exceeds maximum (%sMB). Removing old cache.", cache_size_mb, MAX_CACHE_SIZE_MB)
-                cache_path.unlink()
+                await aiofiles.os.remove(str(cache_path))
                 return
 
-            # Use aiofiles for async file operations if available
-            if HAS_AIOFILES:
-                async with aiofiles.open(cache_path) as f:
-                    cached_data = await f.read()
-            else:
-                # Fallback to sync operations
-                cached_data = cache_path.read_text()
+            # Use aiofiles for async file operations
+            async with aiofiles.open(cache_path) as f:
+                cached_data = await f.read()
 
             self.previous_hash = hashlib.sha256(cached_data.encode()).hexdigest()
 
@@ -788,14 +815,11 @@ class FLRTMonitor:
                     events.append(event)
                     self.logger.info("New vulnerability: %s (CVSS: %s)", event["component"], event["cvss_max"])
 
-            # Update cache using aiofiles if available
+            # Update cache using aiofiles
             try:
                 cache_path = Path(self.cache_file)
-                if HAS_AIOFILES:
-                    async with aiofiles.open(cache_path, "w") as f:
-                        await f.write(csv_content)
-                else:
-                    cache_path.write_text(csv_content)
+                async with aiofiles.open(str(cache_path), "w") as f:
+                    await f.write(csv_content)
                 self.logger.debug("Updated cache file: %s", self.cache_file)
             except (OSError, ValueError):
                 self.logger.exception("Failed to update cache")

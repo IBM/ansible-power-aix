@@ -366,6 +366,7 @@ async def _poll_host(
     sample_cmd: str,
     filter_filesystems: list[str] | None,
     threshold: float,
+    *,
     emit_only_above: bool,
 ) -> None:
     """Poll a single host for filesystem usage.
@@ -381,14 +382,26 @@ async def _poll_host(
 
     """
     host = host_config["host"]
+
+    def _validate_filesystems(filesystems: list) -> None:
+        """Validate that filesystems were returned.
+
+        Args:
+            filesystems: List of filesystem data
+
+        Raises:
+            ValueError: If no filesystems were returned
+
+        """
+        if not filesystems:
+            msg = "No filesystem data returned or no filesystems match filter"
+            raise ValueError(msg)
+
     try:
         # Run df command
         out = await asyncio.to_thread(client.run, sample_cmd)
         filesystems = _parse_df_output(out, filter_filesystems)
-
-        if not filesystems:
-            msg = "No filesystem data returned or no filesystems match filter"
-            raise ValueError(msg)
+        _validate_filesystems(filesystems)
 
         # Emit event for each filesystem
         for fs in filesystems:
@@ -447,7 +460,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
             # Poll all hosts concurrently
             await asyncio.gather(*(
-                _poll_host(h, clients[h["host"]], queue, sample_cmd, filter_filesystems, threshold, emit_only_above)
+                _poll_host(h, clients[h["host"]], queue, sample_cmd, filter_filesystems, threshold, emit_only_above=emit_only_above)
                 for h in hosts
             ))
 
