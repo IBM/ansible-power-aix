@@ -132,7 +132,7 @@ eda-lint:
 	@echo "Running pycodestyle..."
 	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
 	@echo "Running pylint..."
-	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
+	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,R0917,W0703 $(EDA_MODULE)
 	@echo "Checking EDA YAML files (plugins and playbooks)..."
 	@if [ -n "$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
 		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}, trailing-spaces: enable}}" \
@@ -141,8 +141,10 @@ eda-lint:
 		echo "No YAML files found in EDA directories"; \
 	fi
 	@echo "Running ansible-lint on EDA playbooks..."
-	@if [ -d "playbooks/eda" ]; then \
+	@if [ -d "playbooks/eda" ] && python3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" 2>/dev/null; then \
 		ansible-lint --force-color --strict playbooks/eda/; \
+	elif [ -d "playbooks/eda" ]; then \
+		echo "Skipping ansible-lint: requires Python 3.9+ (current: $$(python3 --version))"; \
 	fi
 
 .PHONY: playbook-lint

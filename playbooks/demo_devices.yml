@@ -27,7 +27,7 @@
           queue_depth: 31
           reserve_policy: single_path
         state: available
-    - name: Set multiple defaults for virtual SCSI disks
+    - name: Set queue depth default for virtual SCSI disks
       ibm.power_aix.devices:
         device: default
         device_class: disk

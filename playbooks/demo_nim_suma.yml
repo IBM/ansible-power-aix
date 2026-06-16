@@ -17,6 +17,6 @@
         oslevel: "{{ oslevel_val }}"
         download_dir: "{{ download_dir_val }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display nim suma result
+      ansible.builtin.debug:
         var: result
-        cmd: ""

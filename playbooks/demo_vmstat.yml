@@ -102,7 +102,7 @@
         concatenated_output: "{{ concat_v1 }}"
         interval: 5
         count: 2
-    - name: Run vmstat with specific option with pagesize_stats
+    - name: Run vmstat with specific option with pagesize_stats and timestamp
       ibm.power_aix.vmstat:
         pagesize_stats: '4k'
         timestamp: true
@@ -110,7 +110,7 @@
         concatenated_output: "{{ concat_v1 }}"
         interval: 5
         count: 2
-    - name: Run vmstat with specific option with page_stats_only
+    - name: Run vmstat with specific option with page_stats_only and timestamp
       ibm.power_aix.vmstat:
         page_stats_only: '4k'
         timestamp: true

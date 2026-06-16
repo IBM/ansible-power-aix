@@ -44,7 +44,7 @@
         action: activate
         activate_all_ps: true
 
-    - name: Activate a paging space
+    - name: Activate a paging space again
       ibm.power_aix.pagingspace:
         action: activate
         ps_name: /dev/paging00

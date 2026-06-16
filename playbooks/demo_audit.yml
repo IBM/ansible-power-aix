@@ -20,7 +20,7 @@
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
         action: "off"
-    - name: Suspend the audit system (audit off)
+    - name: Suspend the audit system (audit off) - second call
       ibm.power_aix.audit:
         action: "off"
 
@@ -42,10 +42,10 @@
     - name: Shut down the audit subsystem
       ibm.power_aix.audit:
         action: shutdown
-    - name: Shut down the audit subsystem
+    - name: Shut down the audit subsystem - second shutdown
       ibm.power_aix.audit:
         action: shutdown
-    - name: Query audit subsystem status
+    - name: Query audit subsystem status after shutdown
       ibm.power_aix.audit:
         action: query
     - name: Query audit with custom auditpr options
@@ -68,7 +68,7 @@
         auditpr_message: "This is AIX Ansible Team"
         auditpr_suppress_translation: true
         capture_delay: 5
-    - name: Query audit with custom auditpr options with single line
+    - name: Query audit with custom auditpr options with single line and long usernames
       ibm.power_aix.audit:
         action: query
         recorded_output: "/tmp/auditdata/audit_custom2.txt"

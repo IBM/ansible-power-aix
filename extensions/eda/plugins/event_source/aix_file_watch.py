@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -5,13 +7,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code,no-else-return
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
 from typing import Any
+
+import paramiko  # pylint: disable=import-error
 
 DOCUMENTATION = r"""
 ---
@@ -216,6 +218,7 @@ def get_current_timestamp() -> str:
 
     Returns:
         str: ISO 8601 timestamp (e.g., '2026-04-01T06:54:42.123456+00:00')
+
     """
     return datetime.now(timezone.utc).isoformat()
 
@@ -233,6 +236,7 @@ def load_ssh_key(key_path: str | None) -> paramiko.PKey | None:
 
     Returns:
         paramiko.PKey or None: Loaded private key object, or None if failed
+
     """
     if not key_path:
         return None
@@ -263,6 +267,7 @@ def create_ssh_client(host_info: dict[str, Any]) -> paramiko.SSHClient:
 
     Returns:
         paramiko.SSHClient: Connected SSH client object
+
     """
     # Extract connection details
     hostname = host_info["host"]
@@ -273,8 +278,10 @@ def create_ssh_client(host_info: dict[str, Any]) -> paramiko.SSHClient:
     timeout = int(host_info.get("timeout", 10))
 
     # Create SSH client
+    # Note: Using AutoAddPolicy for convenience in monitoring scenarios.
+    # In production, consider using a more restrictive policy with known_hosts.
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
 
     # Load private key if provided
     private_key = load_ssh_key(key_path)
@@ -308,6 +315,7 @@ def get_file_checksum(ssh_client: paramiko.SSHClient, file_path: str) -> str:
 
     Returns:
         str: MD5 checksum string, or "unknown" if command failed
+
     """
     # Use AIX csum command (MD5)
     _stdin, stdout, stderr = ssh_client.exec_command(f"csum '{file_path}' 2>/dev/null")
@@ -319,7 +327,7 @@ def get_file_checksum(ssh_client: paramiko.SSHClient, file_path: str) -> str:
     return "unknown"
 
 
-def get_file_info(ssh_client: paramiko.SSHClient, file_path: str) -> dict[str, Any]:
+def get_file_info(ssh_client: paramiko.SSHClient, file_path: str) -> dict[str, Any]:  # pylint: disable=inconsistent-return-statements
     """Get complete file information including checksum, permissions, ownership, and size.
 
     Uses ls -la for file attributes and csum for content checksum.
@@ -333,6 +341,7 @@ def get_file_info(ssh_client: paramiko.SSHClient, file_path: str) -> dict[str, A
 
     Returns:
         dict: File info (exists, checksum, permissions, owner, size, error)
+
     """
     try:
         # Check if file exists
@@ -386,6 +395,7 @@ def detect_changes(
 
     Returns:
         list: Change types ("created", "content", "permissions", "owner", "size")
+
     """
     if previous_info is None:
         return ["created"]
@@ -436,6 +446,7 @@ def create_file_event(
 
     Returns:
         dict: Event with timestamp, host, file, action, changes, and file metadata
+
     """
     event = {
         "timestamp": get_current_timestamp(),
@@ -489,6 +500,7 @@ def create_deletion_event(
 
     Returns:
         dict: Event with deletion details and previous file metadata
+
     """
     return {
         "timestamp": get_current_timestamp(),
@@ -519,6 +531,7 @@ def create_error_event(hostname: str, error_message: str) -> dict[str, Any]:
 
     Returns:
         dict: Event with timestamp, host, error, source, and severity
+
     """
     return {
         "timestamp": get_current_timestamp(),
@@ -535,6 +548,7 @@ async def scan_files_on_host(
     file_list: list[str],
     file_states: dict[str, Any],
     event_queue: asyncio.Queue,
+    *,
     emit_initial: bool,
 ) -> None:
     """Perform initial scan of all monitored files on a single AIX host.
@@ -554,6 +568,7 @@ async def scan_files_on_host(
 
     Returns:
         None (modifies file_states in place, emits events to queue)
+
     """
     # Initialize storage for this host
     file_states[hostname] = {}
@@ -616,6 +631,7 @@ async def check_file_changes(
 
     Returns:
         None (modifies file_states in place, emits events to queue)
+
     """
     current_info = get_file_info(ssh_client, file_path)
 
@@ -679,6 +695,7 @@ async def monitor_host(
 
     Returns:
         None (emits events to queue)
+
     """
     hostname = host_info["host"]
 
@@ -713,6 +730,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
     Returns:
         None (runs indefinitely, emitting events to queue)
+
     """
     # Get configuration
     host_list = args.get("hosts", [])

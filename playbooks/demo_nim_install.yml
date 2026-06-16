@@ -13,5 +13,6 @@
         targets: "{{ vm_targets }}"
         group: "{{ res_group }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display nim install result
+      ansible.builtin.debug:
         var: result

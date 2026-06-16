@@ -29,7 +29,7 @@
         restricted_tunables: "{{ bool_restricted_tunables }}"
       register: tunables_result
 
-    - name: "Debug: tunables_result"
+    - name: "Debug: tunables_result for restricted parameters"
       ansible.builtin.debug:
         var: tunables_result
 
@@ -40,7 +40,7 @@
         tunable_params: "{{ var_tunable_params }}"
       register: tunables_result
 
-    - name: "Debug: tunables_result"
+    - name: "Debug: tunables_result for specific parameters"
       ansible.builtin.debug:
         var: tunables_result
 

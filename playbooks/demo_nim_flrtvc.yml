@@ -20,6 +20,6 @@
         clean: false
         download_only: "{{ download }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display nim flrtvc result
+      ansible.builtin.debug:
         var: result
-        cmd: ""

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -9,13 +11,13 @@
 # It is intended for early evaluation and feedback and is not recommended
 # for production use. Interfaces/behavior may change in future releases.
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
-from typing import Any, Optional
+from typing import Any
+
+import paramiko  # pylint: disable=import-error
 
 DOCUMENTATION = r"""
 ---
@@ -208,19 +210,20 @@ source:
   returned: always
 """
 
-def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
-    """AIX vmstat last 4 columns are: us sy id wa.
 
-    We'll parse the last 4 numeric fields and compute:
-      usage = us + sy + wa
+def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
+    """AIX vmstat cpu columns: us sy id wa pc ec (last 6).
+
+    Parse us/sy/id/wa from toks[-6:-2], skipping pc and ec.
+    usage = us + sy + wa
     """
     toks = [t for t in line.strip().split() if t.replace(".", "", 1).isdigit()]
-    vmstat_column_count = 4
+    vmstat_column_count = 6
     if len(toks) < vmstat_column_count:
         msg = f"Unexpected vmstat output: {line!r}"
         raise ValueError(msg)
-    us, sy, idl, wa = map(float, toks[-4:])
-    usage = us + sy + wa  # 100 - idle
+    us, sy, idl, wa = map(float, toks[-6:-2])
+    usage = us + sy + wa
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
@@ -305,7 +308,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         interval = int(args.get("interval", 10))
         threshold = float(args.get("threshold", 80.0))
         emit_only_above = bool(args.get("emit_only_above", False))
-        sample_cmd = args.get("sample_cmd", "vmstat 1 2 | tail -1")
+        sample_cmd = args.get("sample_cmd", "vmstat 1 3 | tail -1")
 
         # Prepare SSH clients
         for h in hosts:
@@ -322,17 +325,21 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         while running:
             start = asyncio.get_event_loop().time()
 
+            def _raise_no_data_error() -> None:
+                """Raise error when vmstat returns no data."""
+                msg = "vmstat returned no data"
+                raise ValueError(msg)
+
             async def poll_one(h: dict[str, Any]) -> None:
                 host = h["host"]
                 cli = clients[host]
                 try:
                     # Run vmstat once per cycle
-                    out = await asyncio.to_thread(cli.run, sample_cmd)
+                    out = await asyncio.to_thread(cli.run, sample_cmd)  # pylint: disable=no-member
                     # Use the last non-empty line (tail -1 already, but be safe)
                     lines = [line for line in out.splitlines() if line.strip()][-1]
                     if not lines:
-                        msg = "vmstat returned no data"
-                        raise ValueError(msg)
+                        _raise_no_data_error()
                     cpu = _compute_cpu_usage_from_vmstat(lines)
                     crossed = cpu["usage"] >= threshold
                     if (not emit_only_above) or crossed:

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+
+from __future__ import annotations
 
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -7,15 +8,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-DOCUMENTATION = r'''
+import paramiko  # pylint: disable=import-error
+
+DOCUMENTATION = r"""
 ---
 name: aix_filesystem_watch
 short_description: Watch filesystem utilization on AIX hosts over SSH and emit events.
@@ -103,9 +104,9 @@ options:
     required: false
     type: str
     default: "df -g"
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Filesystem watch on a single AIX host (emit every interval)
   hosts: localhost
   sources:
@@ -163,9 +164,9 @@ EXAMPLES = r'''
       action:
         debug:
           msg: "ERROR from {{ event.host }}: {{ event.error }}"
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 timestamp:
   description: UTC timestamp in ISO 8601 format.
   type: str
@@ -217,47 +218,47 @@ filesystem:
       description: Source identifier.
       type: str
       returned: always
-'''
+"""
 
 
-def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-    """
-    Parse AIX df -g output and extract filesystem information.
-    
+def _parse_df_output(output: str, filter_filesystems: list[str] | None = None) -> list[dict[str, Any]]:
+    """Parse AIX df -g output and extract filesystem information.
+
     AIX df -g output format:
     Filesystem    GB blocks      Free %Used    Iused %Iused Mounted on
     /dev/hd4           2.00      1.50   25%     5120    10% /
     /dev/hd2          10.00      3.50   65%    15000    15% /usr
-    
+
     Returns list of filesystem dictionaries with usage information.
     """
     filesystems = []
-    lines = output.strip().split('\n')
-    
+    lines = output.strip().split("\n")
+
     # Skip header line
     for line in lines[1:]:
         if not line.strip():
             continue
-            
+
         # Parse df output - handle potential whitespace variations
         parts = line.split()
-        if len(parts) < 7:
+        min_parts_required = 7
+        if len(parts) < min_parts_required:
             continue
-            
+
         device = parts[0]
         mount = parts[6]
-        
+
         # Skip if filtering and mount not in list
         if filter_filesystems and mount not in filter_filesystems:
             continue
-        
+
         try:
             size_gb = float(parts[1])
             free_gb = float(parts[2])
-            used_percent_str = parts[3].rstrip('%')
+            used_percent_str = parts[3].rstrip("%")
             used_percent = float(used_percent_str)
             used_gb = size_gb - free_gb
-            
+
             filesystems.append({
                 "device": device,
                 "mount": mount,
@@ -269,14 +270,20 @@ def _parse_df_output(output: str, filter_filesystems: Optional[List[str]] = None
         except (ValueError, IndexError):
             # Skip lines that don't parse correctly
             continue
-    
+
     return filesystems
 
 
 class _SSHClient:
-    def __init__(self, host: str, username: str, port: int = 22,
-                 key_path: Optional[str] = None, password: Optional[str] = None,
-                 timeout: int = 10):
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        port: int = 22,
+        key_path: str | None = None,
+        password: str | None = None,
+        timeout: int = 10,
+    ) -> None:
         self.host = host
         self.username = username
         self.port = port
@@ -285,7 +292,7 @@ class _SSHClient:
         self.timeout = timeout
         self._client = None
 
-    def connect(self):
+    def connect(self) -> None:
         if self._client:
             return
         self._client = paramiko.SSHClient()
@@ -294,11 +301,11 @@ class _SSHClient:
         if self.key_path:
             try:
                 pkey = paramiko.RSAKey.from_private_key_file(self.key_path)
-            except Exception:
+            except (paramiko.SSHException, OSError):
                 # Try ECDSA if RSA fails
                 try:
                     pkey = paramiko.ECDSAKey.from_private_key_file(self.key_path)
-                except Exception:
+                except (paramiko.SSHException, OSError):
                     pkey = None
         self._client.connect(
             self.host,
@@ -314,14 +321,15 @@ class _SSHClient:
     def run(self, cmd: str) -> str:
         if not self._client:
             self.connect()
-        stdin, stdout, stderr = self._client.exec_command(cmd, timeout=self.timeout)
+        _stdin, stdout, stderr = self._client.exec_command(cmd, timeout=self.timeout)
         out = stdout.read().decode(errors="ignore")
         err = stderr.read().decode(errors="ignore")
         if err and not out:
-            raise RuntimeError(f"Command error on {self.host}: {err.strip()}")
+            msg = f"Command error on {self.host}: {err.strip()}"
+            raise RuntimeError(msg)
         return out
 
-    def close(self):
+    def close(self) -> None:
         try:
             if self._client:
                 self._client.close()
@@ -329,85 +337,134 @@ class _SSHClient:
             self._client = None
 
 
-async def main(queue: asyncio.Queue, args: Dict[str, Any]):
+def _create_ssh_clients(hosts: list[dict[str, Any]]) -> dict[str, _SSHClient]:
+    """Create SSH clients for all hosts.
+
+    Args:
+        hosts: List of host configuration dictionaries
+
+    Returns:
+        Dictionary mapping host to SSH client
+
     """
-    EDA event source: aix_filesystem_watch
+    clients = {}
+    for h in hosts:
+        key = h["host"]
+        clients[key] = _SSHClient(
+            host=h["host"],
+            username=h.get("username", "root"),
+            port=int(h.get("port", 22)),
+            key_path=h.get("key_path"),
+            password=h.get("password"),
+            timeout=int(h.get("timeout", 10)),
+        )
+    return clients
+
+
+async def _poll_host(
+    host_config: dict[str, Any],
+    client: _SSHClient,
+    queue: asyncio.Queue,
+    sample_cmd: str,
+    filter_filesystems: list[str] | None,
+    threshold: float,
+    *,
+    emit_only_above: bool,
+) -> None:
+    """Poll a single host for filesystem usage.
+
+    Args:
+        host_config: Host configuration dictionary
+        client: SSH client for the host
+        queue: Queue to send events to
+        sample_cmd: Command to run for sampling
+        filter_filesystems: List of filesystems to filter
+        threshold: Threshold percentage
+        emit_only_above: Whether to emit only above threshold
+
+    """
+    host = host_config["host"]
+
+    def _validate_filesystems(filesystems: list) -> None:
+        """Validate that filesystems were returned.
+
+        Args:
+            filesystems: List of filesystem data
+
+        Raises:
+            ValueError: If no filesystems were returned
+
+        """
+        if not filesystems:
+            msg = "No filesystem data returned or no filesystems match filter"
+            raise ValueError(msg)
+
+    try:
+        # Run df command
+        out = await asyncio.to_thread(client.run, sample_cmd)  # pylint: disable=no-member
+        filesystems = _parse_df_output(out, filter_filesystems)
+        _validate_filesystems(filesystems)
+
+        # Emit event for each filesystem
+        for fs in filesystems:
+            crossed = fs["percent"] >= threshold
+            if (not emit_only_above) or crossed:
+                event = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "host": host,
+                    "filesystem": {
+                        "mount": fs["mount"],
+                        "device": fs["device"],
+                        "percent": fs["percent"],
+                        "size_gb": fs["size_gb"],
+                        "used_gb": fs["used_gb"],
+                        "free_gb": fs["free_gb"],
+                    },
+                    "threshold": threshold,
+                    "crossed": crossed,
+                    "source": "aix_filesystem_watch",
+                }
+                await queue.put(event)
+    except (ValueError, RuntimeError, OSError) as e:
+        err_event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "host": host,
+            "error": str(e),
+            "source": "aix_filesystem_watch",
+            "severity": "error",
+        }
+        # Always emit errors so rules can alert
+        await queue.put(err_event)
+
+
+async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
+    """EDA event source: aix_filesystem_watch.
+
     Main entry point for the event source plugin.
     """
-    clients: Dict[str, _SSHClient] = {}
-    running = True
-    
+    hosts: list[dict[str, Any]] = args.get("hosts", [])
+    if not hosts:
+        msg = "AIXFilesystemWatch: 'hosts' list is required."
+        raise ValueError(msg)
+
+    interval = int(args.get("interval", 60))
+    threshold = float(args.get("threshold", 80.0))
+    emit_only_above = bool(args.get("emit_only_above", False))
+    sample_cmd = args.get("sample_cmd", "df -g")
+    filter_filesystems = args.get("filesystems")
+
+    # Prepare SSH clients
+    clients = _create_ssh_clients(hosts)
+
     try:
-        hosts: List[Dict[str, Any]] = args.get("hosts", [])
-        if not hosts:
-            raise ValueError("AIXFilesystemWatch: 'hosts' list is required.")
-
-        interval = int(args.get("interval", 60))
-        threshold = float(args.get("threshold", 80.0))
-        emit_only_above = bool(args.get("emit_only_above", False))
-        sample_cmd = args.get("sample_cmd", "df -g")
-        filter_filesystems = args.get("filesystems")
-
-        # Prepare SSH clients
-        for h in hosts:
-            key = h["host"]
-            clients[key] = _SSHClient(
-                host=h["host"],
-                username=h.get("username", "root"),
-                port=int(h.get("port", 22)),
-                key_path=h.get("key_path"),
-                password=h.get("password"),
-                timeout=int(h.get("timeout", 10)),
-            )
-
-        while running:
+        while True:
             start = asyncio.get_event_loop().time()
 
-            async def poll_one(h: Dict[str, Any]):
-                host = h["host"]
-                cli = clients[host]
-                try:
-                    # Run df command
-                    out = await asyncio.to_thread(cli.run, sample_cmd)
-                    filesystems = _parse_df_output(out, filter_filesystems)
-
-                    if not filesystems:
-                        msg = "No filesystem data returned or no filesystems match filter"
-                        raise ValueError(msg)
-
-                    # Emit event for each filesystem
-                    for fs in filesystems:
-                        crossed = fs["percent"] >= threshold
-                        if (not emit_only_above) or crossed:
-                            event = {
-                                "timestamp": datetime.now(timezone.utc).isoformat(),
-                                "host": host,
-                                "filesystem": {
-                                    "mount": fs["mount"],
-                                    "device": fs["device"],
-                                    "percent": fs["percent"],
-                                    "size_gb": fs["size_gb"],
-                                    "used_gb": fs["used_gb"],
-                                    "free_gb": fs["free_gb"],
-                                },
-                                "threshold": threshold,
-                                "crossed": crossed,
-                                "source": "aix_filesystem_watch",
-                            }
-                            await queue.put(event)
-                except (ValueError, RuntimeError, OSError) as e:
-                    err_event = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "host": host,
-                        "error": str(e),
-                        "source": "aix_filesystem_watch",
-                        "severity": "error",
-                    }
-                    # Always emit errors so rules can alert
-                    await queue.put(err_event)
-
             # Poll all hosts concurrently
-            await asyncio.gather(*(poll_one(h) for h in hosts))
+            await asyncio.gather(*(
+                _poll_host(h, clients[h["host"]], queue, sample_cmd, filter_filesystems, threshold, emit_only_above=emit_only_above)
+                for h in hosts
+            ))
 
             # Sleep until next tick (interval from loop start)
             elapsed = asyncio.get_event_loop().time() - start
