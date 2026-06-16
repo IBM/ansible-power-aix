@@ -3,7 +3,7 @@ ifndef PYTHON_VERSION
 endif
 
 ifndef MODULE
-	MODULE = plugins/modules/*.py
+	MODULE = plugins/modules/*.py plugins/action/*.py
 endif
 
 ifndef EDA_MODULE
@@ -12,6 +12,10 @@ endif
 
 ifndef ROLE
 	ROLE = roles
+endif
+
+ifndef PLAYBOOK
+	PLAYBOOK = playbooks
 endif
 
 ifndef SHELLSCRIPT
@@ -43,9 +47,10 @@ help:
 	run sanity testing"
 	@echo "install-unit-test-requirements 			install python modules needed \
 	run unit testing"
-	@echo "lint 						lint ansible module and roles"
+	@echo "lint 						lint ansible modules, EDA plugins, playbooks, and roles"
 	@echo "module-lint MODULE=<module path> 		lint ansible module"
-	@echo "eda-lint EDA_MODULE=<eda module path> 		lint EDA event source plugins"
+	@echo "eda-lint EDA_MODULE=<eda module path> 		lint EDA event source plugins and playbooks"
+	@echo "playbook-lint PLAYBOOK=<playbook path> 		lint ansible playbooks"
 	@echo "role-lint ROLE=<role path> 			lint ansible role"
 	@echo "porting MODULE=<module path>			check if module is python3 ported"
 	@echo "sanity-test MODULE=<module path>		run sanity test on the collections"
@@ -105,7 +110,7 @@ install-pylint-py3k: uninstall-pylint
 ######################################################################################
 
 .PHONY: lint
-lint: module-lint eda-lint role-lint
+lint: module-lint eda-lint playbook-lint role-lint
 
 .PHONY: module-lint
 module-lint:
@@ -126,12 +131,31 @@ eda-lint:
 	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
 	@echo "Running pylint..."
 	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
-	@echo "Checking for YAML files in EDA directory..."
-	@if [ -n "$$(find extensions/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+	@echo "Checking EDA YAML files (plugins and playbooks)..."
+	@if [ -n "$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
 		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}}}" \
-		$$(find extensions/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
+		$$(find extensions/eda playbooks/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	else \
-		echo "No YAML files found in EDA directory"; \
+		echo "No YAML files found in EDA directories"; \
+	fi
+	@echo "Running ansible-lint on EDA playbooks..."
+	@if [ -d "playbooks/eda" ]; then \
+		ansible-lint --force-color playbooks/eda/; \
+	fi
+
+.PHONY: playbook-lint
+playbook-lint:
+	@echo "Running playbook linting..."
+	@echo "Running yamllint on playbooks (excluding EDA)..."
+	@if [ -n "$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}}}" \
+		$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
+	else \
+		echo "No YAML files found in playbooks directory"; \
+	fi
+	@echo "Running ansible-lint on playbooks (excluding EDA)..."
+	@if [ -n "$$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+		ansible-lint --force-color $$(find $(PLAYBOOK) -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
 	fi
 
 .PHONY: role-lint

@@ -81,6 +81,41 @@ jobs:
           make eda-lint
 
   ########################################################################
+  # playbook linting test
+  # - makes sure that playbooks conform with YAML and Ansible best
+  # practices
+  ########################################################################
+  playbook-linting-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ansible_collections/ibm/power_aix
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    name: running playbook linting test
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ansible_collections/ibm/power_aix
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install linting test requirements
+        run: |
+          python -m pip install --upgrade pip
+          make install-sanity-test-requirements
+
+      - name: run playbook linting
+        run: |
+          make playbook-lint
+
+  ########################################################################
   # role linting test
   # - makes sure that the collection conforms with PEP8 coding style
   # standards

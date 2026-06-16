@@ -6,6 +6,6 @@
 #
 # skip_list will globally ignore the following flagged
 # linting errors for roles
-skip_list:
-  - unnamed-task
-  - package-latest
+# skip_list:
+#   - unnamed-task
+#   - package-latest
