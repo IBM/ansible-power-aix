@@ -11,6 +11,14 @@
 # It is intended for early evaluation and feedback and is not recommended
 # for production use. Interfaces/behavior may change in future releases.
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+import asyncio
+from datetime import datetime, timezone
+import paramiko
+from typing import Any, Dict, List, Optional
+
 DOCUMENTATION = r'''
 ---
 name: aix_cpu_watch
@@ -201,12 +209,6 @@ source:
   type: str
   returned: always
 '''
-
-import asyncio
-from datetime import datetime, timezone
-import paramiko
-from typing import List, Dict, Any, Optional
-
 
 def _compute_cpu_usage_from_vmstat(line: str) -> Dict[str, float]:
     """

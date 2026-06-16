@@ -39,7 +39,7 @@
       ibm.power_aix.alt_disk:
         action: wakeup
         targets: hdisk3
-  
+
     - name: Perform an alternate disk sleep of the rootvg
       ibm.power_aix.alt_disk:
         action: sleep
@@ -48,7 +48,7 @@
     - name: Perform an alternate disk copy with phases and disk_size_policy
       ibm.power_aix.alt_disk:
         action: copy
-        phases_to_execute: 'all'
+        phases_to_execute: "all"
         disk_size_policy: nearest
         bootlist: true
         force: true
@@ -57,22 +57,22 @@
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '12'
+        phases_to_execute: "12"
         bootlist: true
-        #force: true
+        #  force: true
 
     - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '3'
+        phases_to_execute: "3"
         bootlist: true
 
     - name: Perform an alternate disk copy of the rootvg with phases to hdisk2
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '12'
+        phases_to_execute: "12"
         bootlist: true
         force: true
 
@@ -80,21 +80,21 @@
       ibm.power_aix.alt_disk:
         action: copy
         targets: hdisk2
-        phases_to_execute: '3'
+        phases_to_execute: "3"
         bootlist: true
 
-    - name: Run install action on existing altinst_rootvg with phases option 
+    - name: Run install action on existing altinst_rootvg with phases option
       ibm.power_aix.alt_disk:
         action: install
         existing_altinst_rootvg: hdisk2
-        phases_to_execute: '12'
+        phases_to_execute: "12"
         filesets: "printers.msg.en_US.rte"
         image_location: /mnt/2534B_73H/installp/ppc
 
-    - name: Run install action on existing altinst_rootvg with phases option 
+    - name: Run install action on existing altinst_rootvg with phases option
       ibm.power_aix.alt_disk:
         action: install
         existing_altinst_rootvg: hdisk2
-        phases_to_execute: '3'
+        phases_to_execute: "3"
         filesets: "printers.ibm6180.rte"
         image_location: /mnt/2534B_73H/installp/ppc

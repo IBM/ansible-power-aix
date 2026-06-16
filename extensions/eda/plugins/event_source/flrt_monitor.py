@@ -7,9 +7,29 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+import asyncio
+import csv
+import hashlib
+import json
+import logging
+import os
+import sys
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
+
+try:
+    import aiohttp
+    HAS_AIOHTTP = True
+except ImportError:
+    HAS_AIOHTTP = False
+
 DOCUMENTATION = r'''
 ---
-name: ibm_flrt_monitor
+name: flrt_monitor
 short_description: Monitor IBM FLRT for new AIX security fixes and HIPER updates.
 description:
   - Monitors IBM Fix Level Recommendation Tool (FLRT) HIPER/Security CSV for new vulnerabilities and fixes.
@@ -119,7 +139,7 @@ EXAMPLES = r'''
 - name: Monitor for critical AIX security vulnerabilities
   hosts: localhost
   sources:
-    - ibm.power_aix.ibm_flrt_monitor:
+    - ibm.power_aix.flrt_monitor:
         poll_interval: 3600
         filter_type: sec
         min_cvss_score: 9.0
@@ -135,7 +155,7 @@ EXAMPLES = r'''
 - name: Monitor all AIX fixes with email notifications
   hosts: localhost
   sources:
-    - ibm.power_aix.ibm_flrt_monitor:
+    - ibm.power_aix.flrt_monitor:
         poll_interval: 1800
         filter_type: all
         min_cvss_score: 7.0
@@ -149,7 +169,7 @@ EXAMPLES = r'''
 - name: Monitor OpenSSL vulnerabilities specifically
   hosts: localhost
   sources:
-    - ibm.power_aix.ibm_flrt_monitor:
+    - ibm.power_aix.flrt_monitor:
         poll_interval: 3600
         filter_type: sec
         min_cvss_score: 5.0
@@ -163,7 +183,7 @@ EXAMPLES = r'''
 - name: Run FLRTVC scan on all new vulnerabilities
   hosts: localhost
   sources:
-    - ibm.power_aix.ibm_flrt_monitor:
+    - ibm.power_aix.flrt_monitor:
         poll_interval: 3600
         filter_type: sec
         min_cvss_score: 7.0
@@ -270,7 +290,7 @@ source:
   description: Source identifier for the event.
   type: str
   returned: always
-  sample: "ibm_flrt_monitor"
+  sample: "flrt_monitor"
 error:
   description: Error message if monitoring failed.
   type: str
@@ -282,22 +302,6 @@ consecutive_errors:
   returned: on error
   sample: 2
 '''
-
-import asyncio
-import csv
-import hashlib
-import json
-import logging
-import os
-import sys
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
-
-try:
-    import aiohttp
-except ImportError:
-    raise ImportError("aiohttp is required. Install with: pip install aiohttp")
 
 
 # Default IBM FLRT HIPER/Security CSV URL
@@ -316,7 +320,7 @@ MAX_CACHE_SIZE_MB = 100  # Maximum cache file size
 # Configure logging
 def setup_logging(log_level: str = "INFO") -> logging.Logger:
     """Setup logging with specified level"""
-    logger = logging.getLogger("ibm_flrt_monitor")
+    logger = logging.getLogger("flrt_monitor")
     
     # Remove existing handlers
     logger.handlers = []
@@ -482,7 +486,7 @@ def validate_configuration(args: Dict[str, Any], logger: logging.Logger) -> Dict
     # CSV URL
     csv_url = args.get("csv_url", DEFAULT_CSV_URL)
     parsed_url = urlparse(csv_url)
-    if not parsed_url.scheme in ['http', 'https', 'file']:
+    if parsed_url.scheme not in ['http', 'https', 'file']:
         raise ValueError(f"Invalid CSV URL scheme: {parsed_url.scheme}")
     config["csv_url"] = csv_url
     
@@ -556,7 +560,7 @@ class FLRTMonitor:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.request_timeout = request_timeout
-        self.logger = logger or logging.getLogger("ibm_flrt_monitor")
+        self.logger = logger or logging.getLogger("flrt_monitor")
         self.previous_hash = None
         self.previous_entries = set()
         
@@ -803,7 +807,7 @@ class FLRTMonitor:
             'cves': cves,
             'reboot_required': row.get('reboot', 'unknown'),
             'timestamp': datetime.now(timezone.utc).isoformat(),
-            'source': 'ibm_flrt_monitor'
+            'source': 'flrt_monitor'
         }
         
         return event

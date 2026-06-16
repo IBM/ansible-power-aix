@@ -5,7 +5,7 @@
 - name: Basic FLRT Monitoring
   hosts: localhost
   sources:
-    - ibm.power_aix.ibm_flrt_monitor:
+    - ibm.power_aix.flrt_monitor:
         poll_interval: 3600  # Check every hour
         filter_type: sec     # Only security fixes
         filter_product: aix  # Only AIX fixes

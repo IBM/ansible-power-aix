@@ -7,6 +7,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+import asyncio
+from datetime import datetime, timezone
+import paramiko
+from typing import Any, Dict
+
 DOCUMENTATION = r'''
 ---
 name: aix_file_watch
@@ -197,12 +205,6 @@ source:
   type: str
   returned: always
 '''
-
-import asyncio
-from datetime import datetime, timezone
-import paramiko
-from typing import Any, Dict
-
 
 def get_current_timestamp():
     """
