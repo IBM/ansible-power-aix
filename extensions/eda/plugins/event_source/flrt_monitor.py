@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -13,12 +12,11 @@ __metaclass__ = type
 import asyncio
 import csv
 import hashlib
-import json
 import logging
-import os
+from pathlib import Path
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any
 from urllib.parse import urlparse
 
 try:
@@ -27,7 +25,7 @@ try:
 except ImportError:
     HAS_AIOHTTP = False
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 name: flrt_monitor
 short_description: Monitor IBM FLRT for new AIX security fixes and HIPER updates.
@@ -133,9 +131,9 @@ options:
     type: str
     choices: ['DEBUG', 'INFO', 'WARNING', 'ERROR']
     default: 'INFO'
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Monitor for critical AIX security vulnerabilities
   hosts: localhost
   sources:
@@ -194,9 +192,9 @@ EXAMPLES = r'''
       action:
         run_playbook:
           name: run_flrtvc.yml
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 type:
   description: Event type identifier.
   type: str
@@ -301,7 +299,7 @@ consecutive_errors:
   type: int
   returned: on error
   sample: 2
-'''
+"""
 
 
 # Default IBM FLRT HIPER/Security CSV URL
@@ -319,7 +317,15 @@ MAX_CACHE_SIZE_MB = 100  # Maximum cache file size
 
 # Configure logging
 def setup_logging(log_level: str = "INFO") -> logging.Logger:
-    """Setup logging with specified level"""
+    """Set up logging with specified level.
+
+    Args:
+        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+
+    Returns:
+        Configured logger instance
+
+    """
     logger = logging.getLogger("flrt_monitor")
 
     # Remove existing handlers
@@ -371,7 +377,7 @@ async def main(
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         await queue.put(error_event)
-        logger.exception("Configuration error: %s", e)
+        logger.exception("Configuration error")
         return
 
     csv_url = config["csv_url"]
@@ -387,7 +393,7 @@ async def main(
 
     logger.info(
         "Configuration: poll_interval=%ss, filter_type=%s, min_cvss_score=%s, max_retries=%s",
-        poll_interval, filter_type, min_cvss_score, max_retries
+        poll_interval, filter_type, min_cvss_score, max_retries,
     )
 
     monitor = FLRTMonitor(
@@ -406,8 +412,8 @@ async def main(
     try:
         await monitor.initialize()
         logger.info("Monitor initialized successfully")
-    except (OSError, ValueError, RuntimeError) as e:
-        logger.exception("Initialization failed: %s", e)
+    except (OSError, ValueError, RuntimeError):
+        logger.exception("Initialization failed")
         error_event = {
             "type": "error",
             "error": f"Initialization failed: {e!s}",
@@ -422,8 +428,8 @@ async def main(
             logger.info("Found %s current vulnerabilities", len(initial_events))
             for event in initial_events:
                 await queue.put(event)
-        except (OSError, ValueError, RuntimeError) as e:
-            logger.exception("Failed to get initial vulnerabilities: %s", e)
+        except (OSError, ValueError, RuntimeError):
+            logger.exception("Failed to get initial vulnerabilities")
 
     # Continuous monitoring loop
     consecutive_errors = 0
@@ -438,7 +444,7 @@ async def main(
                 logger.info("Found %s new vulnerabilities", len(new_events))
                 for event in new_events:
                     await queue.put(event)
-                    logger.debug("Emitted event for %s", event.get('component', 'unknown'))
+                    logger.debug("Emitted event for %s", event.get("component", "unknown"))
             else:
                 logger.debug("No new vulnerabilities found")
 
@@ -447,11 +453,11 @@ async def main(
 
             await asyncio.sleep(poll_interval)
 
-        except (OSError, ValueError, RuntimeError) as e:
+        except (OSError, ValueError, RuntimeError):
             consecutive_errors += 1
             logger.exception(
                 "Error in monitoring loop (attempt %s/%s): %s",
-                consecutive_errors, max_consecutive_errors, e
+                consecutive_errors, max_consecutive_errors, e,
             )
 
             error_event = {
@@ -501,13 +507,13 @@ def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict
     if poll_interval < MIN_POLL_INTERVAL:
         logger.warning(
             "poll_interval %ss is below minimum %ss. Using minimum.",
-            poll_interval, MIN_POLL_INTERVAL
+            poll_interval, MIN_POLL_INTERVAL,
         )
         poll_interval = MIN_POLL_INTERVAL
     if poll_interval > MAX_POLL_INTERVAL:
         logger.warning(
             "poll_interval %ss exceeds maximum %ss. Using maximum.",
-            poll_interval, MAX_POLL_INTERVAL
+            poll_interval, MAX_POLL_INTERVAL,
         )
         poll_interval = MAX_POLL_INTERVAL
     config["poll_interval"] = poll_interval
@@ -531,11 +537,12 @@ def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict
     config["min_cvss_score"] = min_cvss_score
 
     # Cache file
-    cache_file = args.get("cache_file", "/tmp/flrt_cache.csv")
-    cache_dir = os.path.dirname(cache_file)
-    if cache_dir and not os.path.exists(cache_dir):
+    cache_file = args.get("cache_file", "/tmp/flrt_cache.csv")  # Default temp location
+    cache_path = Path(cache_file)
+    cache_dir = str(cache_path.parent)
+    if cache_dir and cache_dir != "." and not cache_path.parent.exists():
         try:
-            os.makedirs(cache_dir, exist_ok=True)
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
             logger.info("Created cache directory: %s", cache_dir)
         except OSError as e:
             msg = f"Cannot create cache directory {cache_dir}: {e}"
@@ -596,16 +603,17 @@ class FLRTMonitor:
 
     async def initialize(self) -> None:
         """Initialize the monitor by loading cached state if available."""
-        if os.path.exists(self.cache_file):
+        cache_path = Path(self.cache_file)
+        if cache_path.exists():
             try:
                 # Check cache file size
-                cache_size_mb = os.path.getsize(self.cache_file) / (1024 * 1024)
+                cache_size_mb = cache_path.stat().st_size / (1024 * 1024)
                 if cache_size_mb > MAX_CACHE_SIZE_MB:
                     self.logger.warning("Cache file size (%.2fMB) exceeds maximum (%sMB). Removing old cache.", cache_size_mb, MAX_CACHE_SIZE_MB)
-                    os.remove(self.cache_file)
+                    cache_path.unlink()
                     return
 
-                with open(self.cache_file, 'r') as f:
+                with cache_path.open() as f:
                     cached_data = f.read()
                     self.previous_hash = hashlib.md5(cached_data.encode()).hexdigest()
 
@@ -617,18 +625,18 @@ class FLRTMonitor:
                             self.previous_entries.add(entry_id)
 
                 self.logger.info("Loaded %s entries from cache", len(self.previous_entries))
-            except Exception as e:
+            except (OSError, ValueError) as e:
                 self.logger.warning("Could not load cache file: %s", e)
 
     async def _download_csv_with_retry(self) -> str:
-        """
-        Download CSV with retry logic and exponential backoff.
+        """Download CSV with retry logic and exponential backoff.
 
         Returns:
             CSV content as string
 
         Raises:
             Exception: If all retry attempts fail
+
         """
         last_exception = None
 
@@ -640,7 +648,8 @@ class FLRTMonitor:
                 async with aiohttp.ClientSession(timeout=timeout) as session:
                     async with session.get(self.csv_url) as response:
                         if response.status != 200:
-                            raise Exception(f"HTTP {response.status}: {response.reason}")
+                            msg = f"HTTP {response.status}: {response.reason}"
+                            raise Exception(msg)
 
                         csv_content = await response.text()
                         self.logger.debug("Downloaded %s bytes", len(csv_content))
@@ -652,7 +661,7 @@ class FLRTMonitor:
             except aiohttp.ClientError as e:
                 last_exception = e
                 self.logger.warning("Network error on attempt %s: %s", attempt + 1, e)
-            except Exception as e:
+            except (OSError, ValueError) as e:
                 last_exception = e
                 self.logger.warning("Error on attempt %s: %s", attempt + 1, e)
 
@@ -662,14 +671,15 @@ class FLRTMonitor:
                 self.logger.info("Retrying in %ss...", delay)
                 await asyncio.sleep(delay)
 
-        raise Exception(f"Failed to download CSV after {self.max_retries} attempts: {last_exception}")
+        msg = f"Failed to download CSV after {self.max_retries} attempts: {last_exception}"
+        raise Exception(msg)
 
-    async def check_for_updates(self) -> List[Dict[str, Any]]:
-        """
-        Check for updates in the FLRT CSV and return new vulnerability events.
+    async def check_for_updates(self) -> list[dict[str, Any]]:
+        """Check for updates in the FLRT CSV and return new vulnerability events.
 
         Returns:
             List of event dictionaries for new vulnerabilities
+
         """
         events = []
 
@@ -702,31 +712,32 @@ class FLRTMonitor:
                 if entry_id not in self.previous_entries:
                     event = self._create_event(row)
                     events.append(event)
-                    self.logger.info("New vulnerability: %s (CVSS: %s)", event['component'], event['cvss_max'])
+                    self.logger.info("New vulnerability: %s (CVSS: %s)", event["component"], event["cvss_max"])
 
             # Update cache
             try:
-                with open(self.cache_file, 'w') as f:
+                cache_path = Path(self.cache_file)
+                with cache_path.open("w") as f:
                     f.write(csv_content)
                 self.logger.debug("Updated cache file: %s", self.cache_file)
-            except Exception as e:
-                self.logger.error("Failed to update cache: %s", e)
+            except (OSError, ValueError) as e:
+                self.logger.exception("Failed to update cache")
 
             self.previous_hash = current_hash
             self.previous_entries = current_entries
 
-        except Exception as e:
-            self.logger.error("Error checking for updates: %s", e)
+        except (OSError, ValueError) as e:
+            self.logger.exception("Error checking for updates")
             raise
 
         return events
 
-    async def get_all_vulnerabilities(self) -> List[Dict[str, Any]]:
-        """
-        Get all current vulnerabilities from the CSV.
+    async def get_all_vulnerabilities(self) -> list[dict[str, Any]]:
+        """Get all current vulnerabilities from the CSV.
 
         Returns:
             List of event dictionaries for all vulnerabilities
+
         """
         events = []
 
@@ -740,42 +751,39 @@ class FLRTMonitor:
                     event = self._create_event(row)
                     events.append(event)
 
-        except Exception as e:
-            self.logger.error("Error getting vulnerabilities: %s", e)
+        except (OSError, ValueError) as e:
+            self.logger.exception("Error getting vulnerabilities")
             raise
 
         return events
 
-    def _should_process_row(self, row: Dict[str, str]) -> bool:
+    def _should_process_row(self, row: dict[str, str]) -> bool:
         """Determine if a CSV row should be processed based on filters."""
         # Skip header/metadata rows
-        if not row.get('type') or row['type'] in ['type', '0.8.14']:
+        if not row.get("type") or row["type"] in ["type", "0.8.14"]:
             return False
 
         # Filter by type (sec/hiper)
-        if self.filter_type != "all" and row.get('type') != self.filter_type:
+        if self.filter_type != "all" and row.get("type") != self.filter_type:
             return False
 
         # Filter by product
-        if self.filter_product and self.filter_product not in row.get('product', '').lower():
+        if self.filter_product and self.filter_product not in row.get("product", "").lower():
             return False
 
         # Filter by CVSS score
-        cvss_max = self._extract_max_cvss(row.get('cvss', ''))
-        if cvss_max < self.min_cvss_score:
-            return False
+        cvss_max = self._extract_max_cvss(row.get("cvss", ""))
+        return not cvss_max < self.min_cvss_score
 
-        return True
-
-    def _generate_entry_id(self, row: Dict[str, str]) -> str:
+    def _generate_entry_id(self, row: dict[str, str]) -> str:
         """Generate a unique ID for a CSV entry."""
         key_parts = [
-            row.get('type', ''),
-            row.get('product', ''),
-            row.get('versions', ''),
-            row.get('apars', '')
+            row.get("type", ""),
+            row.get("product", ""),
+            row.get("versions", ""),
+            row.get("apars", ""),
         ]
-        return hashlib.md5('|'.join(key_parts).encode()).hexdigest()
+        return hashlib.md5("|".join(key_parts).encode()).hexdigest()
 
     def _extract_max_cvss(self, cvss_string: str) -> float:
         """Extract maximum CVSS score from the cvss field."""
@@ -784,63 +792,62 @@ class FLRTMonitor:
 
         try:
             scores = []
-            for part in cvss_string.split('/'):
-                if ':' in part:
-                    score_str = part.split(':')[1].strip()
+            for part_str in cvss_string.split("/"):
+                if ":" in part:
+                    score_str = part.split(":")[1].strip()
                     scores.append(float(score_str))
 
             return max(scores) if scores else 0.0
-        except Exception as e:
+        except (OSError, ValueError) as e:
             self.logger.debug("Could not parse CVSS string '%s': %s", cvss_string, e)
             return 0.0
 
-    def _parse_cves(self, cvss_string: str) -> List[Dict[str, Any]]:
+    def _parse_cves(self, cvss_string: str) -> list[dict[str, Any]]:
         """Parse CVE information from cvss field."""
         cves = []
         if not cvss_string:
             return cves
 
         try:
-            for part in cvss_string.split('/'):
-                part = part.strip()
-                if ':' in part:
-                    cve_id, score = part.split(':')
+            for part_str in cvss_string.split("/"):
+                part = part_str.strip()
+                if ":" in part:
+                    cve_id, score = part.split(":")
                     cves.append({
-                        'id': cve_id.strip(),
-                        'score': float(score.strip())
+                        "id": cve_id.strip(),
+                        "score": float(score.strip()),
                     })
-        except Exception as e:
+        except (OSError, ValueError) as e:
             self.logger.debug("Could not parse CVEs from '%s': %s", cvss_string, e)
 
         return cves
 
-    def _create_event(self, row: Dict[str, str]) -> Dict[str, Any]:
+    def _create_event(self, row: dict[str, str]) -> dict[str, Any]:
         """Create an event dictionary from a CSV row."""
-        cvss_max = self._extract_max_cvss(row.get('cvss', ''))
-        cves = self._parse_cves(row.get('cvss', ''))
+        cvss_max = self._extract_max_cvss(row.get("cvss", ""))
+        cves = self._parse_cves(row.get("cvss", ""))
 
-        event = {
-            'type': 'flrt_update',
-            'vulnerability_type': row.get('type', ''),
-            'product': row.get('product', ''),
-            'component': row.get('versions', ''),
-            'abstract': row.get('abstract', ''),
-            'apars': row.get('apars', '').split(' / ') if row.get('apars') else [],
-            'fixed_in': row.get('fixedIn', ''),
-            'ifixes': row.get('ifixes', '').split() if row.get('ifixes') else [],
-            'bulletin_url': row.get('bulletinUrl', ''),
-            'filesets': row.get('filesets', '').split() if row.get('filesets') else [],
-            'issued_date': row.get('issued', ''),
-            'updated_date': row.get('updated', ''),
-            'download_url': row.get('download', ''),
-            'cvss_max': cvss_max,
-            'cves': cves,
-            'reboot_required': row.get('reboot', 'unknown'),
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'source': 'flrt_monitor'
+        return {
+            "type": "flrt_update",
+            "vulnerability_type": row.get("type", ""),
+            "product": row.get("product", ""),
+            "component": row.get("versions", ""),
+            "abstract": row.get("abstract", ""),
+            "apars": row.get("apars", "").split(" / ") if row.get("apars") else [],
+            "fixed_in": row.get("fixedIn", ""),
+            "ifixes": row.get("ifixes", "").split() if row.get("ifixes") else [],
+            "bulletin_url": row.get("bulletinUrl", ""),
+            "filesets": row.get("filesets", "").split() if row.get("filesets") else [],
+            "issued_date": row.get("issued", ""),
+            "updated_date": row.get("updated", ""),
+            "download_url": row.get("download", ""),
+            "cvss_max": cvss_max,
+            "cves": cves,
+            "reboot_required": row.get("reboot", "unknown"),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "source": "flrt_monitor",
         }
 
-        return event
 
 
 if __name__ == "__main__":
@@ -848,22 +855,22 @@ if __name__ == "__main__":
 
     class MockQueue:
         """Mock queue for testing."""
-        async def put(self, item):
-            print(f"Event: {json.dumps(item, indent=2)}")
 
-    async def test():
+        """Put an item in the mock queue."""
+        async def put(self, item: dict[str, Any]) -> None:
+            pass
+
+    """Test function for FLRT monitor."""
+    async def test() -> None:
         queue = MockQueue()
         args = {
             "poll_interval": 10,
             "filter_type": "sec",
             "min_cvss_score": 7.0,
             "emit_on_startup": True,
-            "log_level": "INFO"
+            "log_level": "INFO",
         }
 
-        print("Starting FLRT Monitor ...")
-        print(f"Configuration: {json.dumps(args, indent=2)}")
-        print("\nMonitoring for events...\n")
 
         await main(queue, args)
 

@@ -323,6 +323,11 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         while running:
             start = asyncio.get_event_loop().time()
 
+            def _raise_no_data_error() -> None:
+                """Raise error when vmstat returns no data."""
+                msg = "vmstat returned no data"
+                raise ValueError(msg)
+
             async def poll_one(h: dict[str, Any]) -> None:
                 host = h["host"]
                 cli = clients[host]
@@ -332,8 +337,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                     # Use the last non-empty line (tail -1 already, but be safe)
                     lines = [line for line in out.splitlines() if line.strip()][-1]
                     if not lines:
-                        msg = "vmstat returned no data"
-                        raise ValueError(msg)
+                        _raise_no_data_error()
                     cpu = _compute_cpu_usage_from_vmstat(lines)
                     crossed = cpu["usage"] >= threshold
                     if (not emit_only_above) or crossed:
