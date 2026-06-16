@@ -12,16 +12,19 @@
 
 - name: Fetch the location of the nim_alt_disk_migration_lpp_source
   block:
-    - ibm.power_aix.nim_resource:
+    - name: Query LPP source resource information
+      ibm.power_aix.nim_resource:
         action: show
         name: "{{ nim_alt_disk_migration_lpp_source }}"
       register: nim_alt_disk_migration_lpp_source_query
 
-    - ansible.builtin.set_fact:
+    - name: Set LPP source info and location pattern
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_info: "{{ nim_alt_disk_migration_lpp_source_query.nim_resources.values() | first }}"
         nim_alt_disk_migration_location_pattern: (/\S+)(?=/)
 
-    - ansible.builtin.set_fact:
+    - name: Extract LPP source location path
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_lpp_source_location:
           "{{ nim_alt_disk_migration_lpp_source_info.location | regex_search(nim_alt_disk_migration_location_pattern, '\\0') | join('\n') }}"
 
@@ -52,10 +55,12 @@
   when: nim_alt_disk_migration_result.stderr.find( "0042-081" ) != -1
 
   block:
-    - ansible.builtin.debug:
+    - name: Display SPOT resource already exists message
+      ansible.builtin.debug:
         msg: SPOT resource 'dflt_{{ nim_alt_disk_migration_lpp_source }}_spot' already exists.
 
-    - ibm.power_aix.nim_resource:
+    - name: Query existing SPOT resource for installed filesets
+      ibm.power_aix.nim_resource:
         action: show
         name: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
         showres:
@@ -65,12 +70,15 @@
       register: nim_alt_disk_migration_spot_query
 - name: Set SPOT resource to be used
   block:
-    - ansible.builtin.set_fact:
+    - name: Set SPOT resource name variable
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_spot: dflt_{{ nim_alt_disk_migration_lpp_source }}_spot
-    - ansible.builtin.set_fact:
+    - name: Set SPOT resource fileset contents
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_spot_fileset: "{{ nim_alt_disk_migration_spot_query['nim_resources'][nim_alt_disk_migration_spot]['contents'] }}"
 
-- ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
+- name: Include task to add alt_disk_install fileset if needed
+  ansible.builtin.include_tasks: add_alt_disk_install_fileset.yml
   when: >
     nim_alt_disk_migration_result.stderr.find( "0042-081" ) == -1 or
     nim_alt_disk_migration_spot_fileset['bos.alt_disk_install.rte'] is not defined

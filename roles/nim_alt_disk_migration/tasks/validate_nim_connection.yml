@@ -102,7 +102,8 @@
 
 - name: Parse and nimsh status
   block:
-    - ansible.builtin.set_fact:
+    - name: Extract nimsh status from output
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_nimsh_status: "{{ nim_alt_disk_migration_nimsh_client_output.stdout | regex_search('active') }}"
 
 - name: Validate nimsh status on client
@@ -127,7 +128,8 @@
 
 - name: Parse and get niminfo
   block:
-    - ansible.builtin.set_fact:
+    - name: Check if NIM master hostname matches
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_master_match: "{{ nim_alt_disk_migration_niminfo_output.stdout | regex_search(nim_alt_disk_migration_hostname_output.stdout) }}"
 
 - name: Validate client master hostname from niminfo
