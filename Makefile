@@ -1,9 +1,13 @@
 ifndef PYTHON_VERSION
-	PYTHON_VERSION := $(shell python -c "import sys; print('%d.%d' % sys.version_info[0:2])")
+	PYTHON_VERSION := $(shell python3 -c "import sys; print('%d.%d' % sys.version_info[0:2])")
 endif
 
 ifndef MODULE
 	MODULE = plugins/modules/*.py
+endif
+
+ifndef EDA_MODULE
+	EDA_MODULE = extensions/eda/plugins/event_source/*.py
 endif
 
 ifndef ROLE
@@ -39,9 +43,10 @@ help:
 	run sanity testing"
 	@echo "install-unit-test-requirements 			install python modules needed \
 	run unit testing"
-	@echo "lint 						lint ansible module and roles"         
-	@echo "module-lint MODULE=<module path> 		lint ansible module"         
-	@echo "role-lint ROLE=<role path> 			lint ansible role"         
+	@echo "lint 						lint ansible module and roles"
+	@echo "module-lint MODULE=<module path> 		lint ansible module"
+	@echo "eda-lint EDA_MODULE=<eda module path> 		lint EDA event source plugins"
+	@echo "role-lint ROLE=<role path> 			lint ansible role"
 	@echo "porting MODULE=<module path>			check if module is python3 ported"
 	@echo "sanity-test MODULE=<module path>		run sanity test on the collections"
 	@echo "unit-test TEST=<test path>			run unit test suite for the collection"
@@ -65,50 +70,64 @@ uninstall-pylint:
 .PHONY: install-requirements
 install-requirements: install-ansible install-sanity-test-requirements \
 		install-unit-test-requirements
-	python -m pip install --upgrade pip
+	python3 -m pip install --upgrade pip
 
 .PHONY: install-ansible
 install-ansible:
-	python -m pip install --upgrade pip
+	python3 -m pip install --upgrade pip
 ifdef ANSIBLE_VERSION
-	python -m pip install ansible==$(ANSIBLE_VERSION).*
+	python3 -m pip install ansible==$(ANSIBLE_VERSION).*
 else
-	python -m pip install ansible
+	python3 -m pip install ansible
 endif
 
 .PHONY: install-ansible-devel-branch
 install-ansible-devel-branch:
-	python -m pip install --upgrade pip
-	python -m pip install https://github.com/ansible/ansible/archive/devel.tar.gz \
+	python3 -m pip install --upgrade pip
+	python3 -m pip install https://github.com/ansible/ansible/archive/devel.tar.gz \
 	--disable-pip-version-check
 
 .PHONY: install-sanity-test-requirements
 install-sanity-test-requirements:
-	python -m pip install -r tests/sanity/sanity.requirements
+	python3 -m pip install -r tests/sanity/sanity.requirements
 
 .PHONY: install-unit-test-requirements
 install-unit-test-requirements:
-	python -m pip install -r tests/unit/unit.requirements
+	python3 -m pip install -r tests/unit/unit.requirements
 
 .PHONY: install-pylint-py3k
 install-pylint-py3k: uninstall-pylint
-	python -m pip install --upgrade pip
-	python -m pip install pylint==2.10.*
+	python3 -m pip install --upgrade pip
+	python3 -m pip install pylint==2.10.*
 
 ######################################################################################
 # testing targets
 ######################################################################################
 
 .PHONY: lint
-lint: module-lint role-lint
+lint: module-lint eda-lint role-lint
 
 .PHONY: module-lint
 module-lint:
 	ansible-test sanity -v --color yes --truncate 0 --python $(PYTHON_VERSION) \
  	--exclude $(DEPRECATED) --test pylint $(MODULE)
 	flake8 --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) $(MODULE)
-	python -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
+	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 --exclude $(DEPRECATED) \
 		$(MODULE)
+
+.PHONY: eda-lint
+eda-lint:
+	@echo "Running EDA plugin linting..."
+	flake8 --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
+	python3 -m pycodestyle --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
+	pylint --max-line-length=160 --disable=C0103,C0114,C0115,C0116,R0913,R0914,W0703 $(EDA_MODULE)
+	@echo "Checking for YAML files in EDA directory..."
+	@if [ -n "$$(find extensions/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null)" ]; then \
+		yamllint -d "{extends: default, rules: {line-length: {max: 160}, comments: {min-spaces-from-content: 1}}}" \
+		$$(find extensions/eda -name '*.yml' -o -name '*.yaml' 2>/dev/null); \
+	else \
+		echo "No YAML files found in EDA directory"; \
+	fi
 
 .PHONY: role-lint
 role-lint:
@@ -116,7 +135,7 @@ role-lint:
 
 .PHONY: porting
 porting:
-	python -m pylint --py3k --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
+	python3 -m pylint --py3k --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
 
 .PHONY: compile
 compile:
