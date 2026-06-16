@@ -335,45 +335,45 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
     
     # Create formatter
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
     handler.setFormatter(formatter)
-    
+
     logger.addHandler(handler)
     return logger
 
 
 async def main(
     queue: asyncio.Queue,
-    args: Dict[str, Any]
-):
-    """
-    Main entry point for the EDA event source plugin.
-    
+    args: dict[str, Any],
+) -> None:
+    """Serve as main entry point for the EDA event source plugin.
+
     Args:
         queue: Async queue to send events to the rule engine
         args: Configuration arguments from the rulebook
+
     """
     # Setup logging
     log_level = args.get("log_level", "INFO")
     logger = setup_logging(log_level)
-    
+
     logger.info("IBM FLRT Monitor starting...")
-    
+
     # Extract and validate configuration
     try:
         config = validate_configuration(args, logger)
     except ValueError as e:
         error_event = {
             "type": "error",
-            "error": f"Configuration error: {str(e)}",
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "error": f"Configuration error: {e!s}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         await queue.put(error_event)
-        logger.error(f"Configuration error: {e}")
+        logger.exception("Configuration error: %s", e)
         return
-    
+
     csv_url = config["csv_url"]
     poll_interval = config["poll_interval"]
     filter_type = config["filter_type"]
@@ -384,10 +384,12 @@ async def main(
     max_retries = config["max_retries"]
     retry_delay = config["retry_delay"]
     request_timeout = config["request_timeout"]
-    
-    logger.info(f"Configuration: poll_interval={poll_interval}s, filter_type={filter_type}, "
-                f"min_cvss_score={min_cvss_score}, max_retries={max_retries}")
-    
+
+    logger.info(
+        "Configuration: poll_interval=%ss, filter_type=%s, min_cvss_score=%s, max_retries=%s",
+        poll_interval, filter_type, min_cvss_score, max_retries
+    )
+
     monitor = FLRTMonitor(
         csv_url=csv_url,
         cache_file=cache_file,
@@ -397,149 +399,163 @@ async def main(
         max_retries=max_retries,
         retry_delay=retry_delay,
         request_timeout=request_timeout,
-        logger=logger
+        logger=logger,
     )
-    
+
     # Initial check
     try:
         await monitor.initialize()
         logger.info("Monitor initialized successfully")
-    except Exception as e:
-        logger.error(f"Initialization failed: {e}")
+    except (OSError, ValueError, RuntimeError) as e:
+        logger.exception("Initialization failed: %s", e)
         error_event = {
             "type": "error",
-            "error": f"Initialization failed: {str(e)}",
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "error": f"Initialization failed: {e!s}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         await queue.put(error_event)
-    
+
     if emit_on_startup:
         logger.info("Emitting current vulnerabilities on startup...")
         try:
             initial_events = await monitor.get_all_vulnerabilities()
-            logger.info(f"Found {len(initial_events)} current vulnerabilities")
+            logger.info("Found %s current vulnerabilities", len(initial_events))
             for event in initial_events:
                 await queue.put(event)
-        except Exception as e:
-            logger.error(f"Failed to get initial vulnerabilities: {e}")
-    
+        except (OSError, ValueError, RuntimeError) as e:
+            logger.exception("Failed to get initial vulnerabilities: %s", e)
+
     # Continuous monitoring loop
     consecutive_errors = 0
     max_consecutive_errors = 5
-    
+
     while True:
         try:
-            logger.debug(f"Checking for updates from {csv_url}")
+            logger.debug("Checking for updates from %s", csv_url)
             new_events = await monitor.check_for_updates()
-            
+
             if new_events:
-                logger.info(f"Found {len(new_events)} new vulnerabilities")
+                logger.info("Found %s new vulnerabilities", len(new_events))
                 for event in new_events:
                     await queue.put(event)
-                    logger.debug(f"Emitted event for {event.get('component', 'unknown')}")
+                    logger.debug("Emitted event for %s", event.get('component', 'unknown'))
             else:
                 logger.debug("No new vulnerabilities found")
-            
+
             # Reset error counter on success
             consecutive_errors = 0
-            
+
             await asyncio.sleep(poll_interval)
-            
-        except Exception as e:
+
+        except (OSError, ValueError, RuntimeError) as e:
             consecutive_errors += 1
-            logger.error(f"Error in monitoring loop (attempt {consecutive_errors}/{max_consecutive_errors}): {e}")
-            
+            logger.exception(
+                "Error in monitoring loop (attempt %s/%s): %s",
+                consecutive_errors, max_consecutive_errors, e
+            )
+
             error_event = {
                 "type": "error",
                 "error": str(e),
                 "consecutive_errors": consecutive_errors,
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             await queue.put(error_event)
-            
+
             if consecutive_errors >= max_consecutive_errors:
-                logger.critical(f"Too many consecutive errors ({consecutive_errors}). Stopping monitor.")
+                logger.critical("Too many consecutive errors (%s). Stopping monitor.", consecutive_errors)
                 break
-            
+
             # Exponential backoff
             backoff_delay = min(60 * (2 ** consecutive_errors), 300)  # Max 5 minutes
-            logger.info(f"Waiting {backoff_delay}s before retry...")
+            logger.info("Waiting %ss before retry...", backoff_delay)
             await asyncio.sleep(backoff_delay)
 
 
-def validate_configuration(args: Dict[str, Any], logger: logging.Logger) -> Dict[str, Any]:
-    """
-    Validate and normalize configuration parameters.
-    
+def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict[str, Any]:
+    """Validate and normalize configuration parameters.
+
     Args:
         args: Raw configuration from rulebook
         logger: Logger instance
-        
+
     Returns:
         Validated configuration dictionary
-        
+
     Raises:
         ValueError: If configuration is invalid
+
     """
     config = {}
-    
+
     # CSV URL
     csv_url = args.get("csv_url", DEFAULT_CSV_URL)
     parsed_url = urlparse(csv_url)
-    if parsed_url.scheme not in ['http', 'https', 'file']:
-        raise ValueError(f"Invalid CSV URL scheme: {parsed_url.scheme}")
+    if parsed_url.scheme not in ["http", "https", "file"]:
+        msg = f"Invalid CSV URL scheme: {parsed_url.scheme}"
+        raise ValueError(msg)
     config["csv_url"] = csv_url
-    
+
     # Poll interval
     poll_interval = int(args.get("poll_interval", DEFAULT_POLL_INTERVAL))
     if poll_interval < MIN_POLL_INTERVAL:
-        logger.warning(f"poll_interval {poll_interval}s is below minimum {MIN_POLL_INTERVAL}s. Using minimum.")
+        logger.warning(
+            "poll_interval %ss is below minimum %ss. Using minimum.",
+            poll_interval, MIN_POLL_INTERVAL
+        )
         poll_interval = MIN_POLL_INTERVAL
     if poll_interval > MAX_POLL_INTERVAL:
-        logger.warning(f"poll_interval {poll_interval}s exceeds maximum {MAX_POLL_INTERVAL}s. Using maximum.")
+        logger.warning(
+            "poll_interval %ss exceeds maximum %ss. Using maximum.",
+            poll_interval, MAX_POLL_INTERVAL
+        )
         poll_interval = MAX_POLL_INTERVAL
     config["poll_interval"] = poll_interval
-    
+
     # Filter type
     filter_type = args.get("filter_type", "all").lower()
     if filter_type not in ["all", "sec", "hiper"]:
-        raise ValueError(f"Invalid filter_type: {filter_type}. Must be 'all', 'sec', or 'hiper'")
+        msg = f"Invalid filter_type: {filter_type}. Must be 'all', 'sec', or 'hiper'"
+        raise ValueError(msg)
     config["filter_type"] = filter_type
-    
+
     # Filter product
     config["filter_product"] = args.get("filter_product", "").lower()
-    
+
     # CVSS score
+    max_cvss_score = 10.0
     min_cvss_score = float(args.get("min_cvss_score", 0.0))
-    if not (0.0 <= min_cvss_score <= 10.0):
-        raise ValueError(f"min_cvss_score must be between 0.0 and 10.0, got {min_cvss_score}")
+    if not (0.0 <= min_cvss_score <= max_cvss_score):
+        msg = f"min_cvss_score must be between 0.0 and 10.0, got {min_cvss_score}"
+        raise ValueError(msg)
     config["min_cvss_score"] = min_cvss_score
-    
+
     # Cache file
     cache_file = args.get("cache_file", "/tmp/flrt_cache.csv")
     cache_dir = os.path.dirname(cache_file)
     if cache_dir and not os.path.exists(cache_dir):
         try:
             os.makedirs(cache_dir, exist_ok=True)
-            logger.info(f"Created cache directory: {cache_dir}")
-        except Exception as e:
-            raise ValueError(f"Cannot create cache directory {cache_dir}: {e}")
+            logger.info("Created cache directory: %s", cache_dir)
+        except OSError as e:
+            msg = f"Cannot create cache directory {cache_dir}: {e}"
+            raise ValueError(msg) from e
     config["cache_file"] = cache_file
-    
+
     # Emit on startup
     config["emit_on_startup"] = bool(args.get("emit_on_startup", False))
-    
+
     # Retry configuration
     config["max_retries"] = int(args.get("max_retries", DEFAULT_MAX_RETRIES))
     config["retry_delay"] = int(args.get("retry_delay", DEFAULT_RETRY_DELAY))
     config["request_timeout"] = int(args.get("request_timeout", DEFAULT_REQUEST_TIMEOUT))
-    
+
     return config
 
 
 class FLRTMonitor:
     """Monitor IBM FLRT CSV for changes and new vulnerabilities."""
-    
+
     def __init__(
         self,
         csv_url: str,
@@ -550,8 +566,22 @@ class FLRTMonitor:
         max_retries: int = DEFAULT_MAX_RETRIES,
         retry_delay: int = DEFAULT_RETRY_DELAY,
         request_timeout: int = DEFAULT_REQUEST_TIMEOUT,
-        logger: Optional[logging.Logger] = None
-    ):
+        logger: logging.Logger | None = None,
+    ) -> None:
+        """Initialize FLRT Monitor.
+
+        Args:
+            csv_url: URL to FLRT CSV file
+            cache_file: Path to cache file
+            filter_type: Filter type (all, sec, hiper)
+            filter_product: Product filter string
+            min_cvss_score: Minimum CVSS score threshold
+            max_retries: Maximum retry attempts
+            retry_delay: Delay between retries in seconds
+            request_timeout: Request timeout in seconds
+            logger: Logger instance
+
+        """
         self.csv_url = csv_url
         self.cache_file = cache_file
         self.filter_type = filter_type
@@ -563,8 +593,8 @@ class FLRTMonitor:
         self.logger = logger or logging.getLogger("flrt_monitor")
         self.previous_hash = None
         self.previous_entries = set()
-        
-    async def initialize(self):
+
+    async def initialize(self) -> None:
         """Initialize the monitor by loading cached state if available."""
         if os.path.exists(self.cache_file):
             try:

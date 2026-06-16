@@ -370,10 +370,11 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                     # Run df command
                     out = await asyncio.to_thread(cli.run, sample_cmd)
                     filesystems = _parse_df_output(out, filter_filesystems)
-                    
+
                     if not filesystems:
-                        raise ValueError("No filesystem data returned or no filesystems match filter")
-                    
+                        msg = "No filesystem data returned or no filesystems match filter"
+                        raise ValueError(msg)
+
                     # Emit event for each filesystem
                     for fs in filesystems:
                         crossed = fs["percent"] >= threshold
@@ -394,7 +395,7 @@ async def main(queue: asyncio.Queue, args: Dict[str, Any]):
                                 "source": "aix_filesystem_watch",
                             }
                             await queue.put(event)
-                except Exception as e:
+                except (ValueError, RuntimeError, OSError) as e:
                     err_event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                         "host": host,
