@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -6,13 +8,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
 from typing import Any
+
+import paramiko  # pylint: disable=import-error
 
 DOCUMENTATION = r"""
 ---
@@ -272,7 +274,7 @@ def _parse_df_output(output: str, filter_filesystems: list[str] | None = None) -
     return filesystems
 
 
-class _SSHClient:
+class _SSHClient:  # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         host: str,
@@ -359,7 +361,7 @@ def _create_ssh_clients(hosts: list[dict[str, Any]]) -> dict[str, _SSHClient]:
     return clients
 
 
-async def _poll_host(
+async def _poll_host(  # pylint: disable=too-many-positional-arguments
     host_config: dict[str, Any],
     client: _SSHClient,
     queue: asyncio.Queue,

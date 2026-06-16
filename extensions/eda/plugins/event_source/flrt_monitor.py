@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -6,8 +8,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code
 
 import asyncio
 import csv
@@ -21,14 +22,14 @@ from typing import Any
 from urllib.parse import urlparse
 
 try:
-    import aiohttp
+    import aiohttp  # pylint: disable=import-error
     HAS_AIOHTTP = True
 except ImportError:
     HAS_AIOHTTP = False
 
 try:
-    import aiofiles
-    import aiofiles.os
+    import aiofiles  # pylint: disable=import-error
+    import aiofiles.os  # pylint: disable=import-error
     HAS_AIOFILES = True
 except ImportError:
     HAS_AIOFILES = False
@@ -372,7 +373,7 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
     return logger
 
 
-async def _initialize_monitor(monitor: "FLRTMonitor", logger: logging.Logger) -> None:
+async def _initialize_monitor(monitor: FLRTMonitor, logger: logging.Logger) -> None:
     """Initialize the FLRT monitor.
 
     Args:
@@ -393,7 +394,7 @@ async def _initialize_monitor(monitor: "FLRTMonitor", logger: logging.Logger) ->
 
 
 async def _emit_startup_events(
-    monitor: "FLRTMonitor",
+    monitor: FLRTMonitor,
     queue: asyncio.Queue,
     logger: logging.Logger,
 ) -> None:
@@ -416,7 +417,7 @@ async def _emit_startup_events(
 
 
 async def _check_for_updates_iteration(
-    monitor: "FLRTMonitor",
+    monitor: FLRTMonitor,
     queue: asyncio.Queue,
     csv_url: str,
     logger: logging.Logger,
@@ -448,7 +449,7 @@ async def _check_for_updates_iteration(
 
 
 async def _monitoring_loop(
-    monitor: "FLRTMonitor",
+    monitor: FLRTMonitor,
     queue: asyncio.Queue,
     poll_interval: int,
     csv_url: str,
@@ -620,7 +621,7 @@ def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict
     # CVSS score
     max_cvss_score = 10.0
     min_cvss_score = float(args.get("min_cvss_score", 0.0))
-    if not (0.0 <= min_cvss_score <= max_cvss_score):
+    if not 0.0 <= min_cvss_score <= max_cvss_score:
         msg = f"min_cvss_score must be between 0.0 and 10.0, got {min_cvss_score}"
         raise ValueError(msg)
     config["min_cvss_score"] = min_cvss_score
@@ -650,7 +651,7 @@ def validate_configuration(args: dict[str, Any], logger: logging.Logger) -> dict
     return config
 
 
-class FLRTMonitor:
+class FLRTMonitor:  # pylint: disable=too-many-instance-attributes,too-many-positional-arguments
     """Monitor IBM FLRT CSV for changes and new vulnerabilities."""
 
     def __init__(
@@ -951,9 +952,9 @@ class FLRTMonitor:
 
 
 if __name__ == "__main__":
-    """Allow testing the plugin standalone."""
+    # Allow testing the plugin standalone
 
-    class MockQueue:
+    class MockQueue:  # pylint: disable=too-few-public-methods
         """Mock queue for testing."""
 
         async def put(self, item: dict[str, Any]) -> None:

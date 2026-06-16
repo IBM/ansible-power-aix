@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -5,13 +7,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code,no-else-return
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
 from typing import Any
+
+import paramiko  # pylint: disable=import-error
 
 DOCUMENTATION = r"""
 ---
@@ -325,7 +327,7 @@ def get_file_checksum(ssh_client: paramiko.SSHClient, file_path: str) -> str:
     return "unknown"
 
 
-def get_file_info(ssh_client: paramiko.SSHClient, file_path: str) -> dict[str, Any]:
+def get_file_info(ssh_client: paramiko.SSHClient, file_path: str) -> dict[str, Any]:  # pylint: disable=inconsistent-return-statements
     """Get complete file information including checksum, permissions, ownership, and size.
 
     Uses ls -la for file attributes and csum for content checksum.
@@ -419,7 +421,7 @@ def detect_changes(
     return changes
 
 
-def create_file_event(
+def create_file_event(  # pylint: disable=too-many-positional-arguments
     hostname: str,
     file_path: str,
     action: str,

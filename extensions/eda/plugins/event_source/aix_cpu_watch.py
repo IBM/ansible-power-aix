@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -9,13 +11,13 @@
 # It is intended for early evaluation and feedback and is not recommended
 # for production use. Interfaces/behavior may change in future releases.
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+# pylint: disable=duplicate-code
 
 import asyncio
 from datetime import datetime, timezone
-import paramiko
 from typing import Any
+
+import paramiko  # pylint: disable=import-error
 
 DOCUMENTATION = r"""
 ---
@@ -225,7 +227,7 @@ def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
-class _SSHClient:
+class _SSHClient:  # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         host: str,
