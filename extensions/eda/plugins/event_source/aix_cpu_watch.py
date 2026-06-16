@@ -212,18 +212,17 @@ source:
 
 
 def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
-    """AIX vmstat last 4 columns are: us sy id wa.
+    """AIX vmstat cpu columns: us sy id wa pc ec (last 6).
 
-    We'll parse the last 4 numeric fields and compute:
-      usage = us + sy + wa
+    Parse us/sy/id/wa from toks[-6:-2], skipping pc and ec.
+    usage = us + sy + wa
     """
     toks = [t for t in line.strip().split() if t.replace(".", "", 1).isdigit()]
-    vmstat_column_count = 4
-    if len(toks) < vmstat_column_count:
+    if len(toks) < 6:
         msg = f"Unexpected vmstat output: {line!r}"
         raise ValueError(msg)
-    us, sy, idl, wa = map(float, toks[-4:])
-    usage = us + sy + wa  # 100 - idle
+    us, sy, idl, wa = map(float, toks[-6:-2])
+    usage = us + sy + wa
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
@@ -308,7 +307,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         interval = int(args.get("interval", 10))
         threshold = float(args.get("threshold", 80.0))
         emit_only_above = bool(args.get("emit_only_above", False))
-        sample_cmd = args.get("sample_cmd", "vmstat 1 2 | tail -1")
+        sample_cmd = args.get("sample_cmd", "vmstat 1 3 | tail -1")
 
         # Prepare SSH clients
         for h in hosts:
