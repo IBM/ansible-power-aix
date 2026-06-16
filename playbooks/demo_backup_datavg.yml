@@ -73,7 +73,8 @@
         force: "{{ force_v }}"
         verbose: "{{ verbose_v }}"
       register: results
-    - ansible.builtin.debug:
+    - name: Display backup results
+      ansible.builtin.debug:
         var: results
         verbosity: 4
 
@@ -94,7 +95,8 @@
         type: "{{ type_v }}"
         location: "{{ location_v }}"
       register: results
-    - ansible.builtin.debug:
+    - name: Display restvg results
+      ansible.builtin.debug:
         var: results
         verbosity: 4
 

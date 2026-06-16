@@ -36,7 +36,8 @@
         force: "{{ overwrite_v }}"
       register: output
       when: install_v
-    - ansible.builtin.debug:
+    - name: Display ifix packages installation output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
       when: install_v
@@ -51,7 +52,8 @@
         force: "{{ overwrite_v }}"
       register: output
       when: install_v
-    - ansible.builtin.debug:
+    - name: Display ifix package installation output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
       when: install_v
@@ -62,7 +64,8 @@
         ifix_label: "{{ ifix_label_v }}"
         verbose: "{{ verbose_v }}"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix list output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -72,7 +75,8 @@
         ifix_label: "{{ ifix_label_v }}"
       ignore_errors: true
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix check output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -84,7 +88,8 @@
           - test2
       ignore_errors: true
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix packages check output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -97,7 +102,8 @@
         preview: "{{ preview_v }}"
         quiet: "{{ quiet_v }}"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix packages commit preview output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -108,7 +114,8 @@
         preview: "{{ preview_v }}"
         quiet: "{{ quiet_v }}"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix commit preview output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -118,7 +125,8 @@
         ifix_vuid: "{{ ifix_vuid_v }}"
         preview: "{{ preview_v }}"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix removal output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -129,7 +137,8 @@
           - /epkgwork/test1/test1.230221.epkg.Z
           - /epkgwork/test2/test2.230221.epkg.Z
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix packages display output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -138,7 +147,8 @@
         action: display_ifix
         ifix_package: "/epkgwork/test1/test1.230221.epkg.Z"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix package display output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 
@@ -150,7 +160,8 @@
           - test2
         force: "{{ overwrite_v }}"
       register: output
-    - ansible.builtin.debug:
+    - name: Display ifix packages removal output
+      ansible.builtin.debug:
         var: output
         verbosity: 4
 

@@ -8,6 +8,6 @@
       nim:
         action: check
       register: result
-    - ansible.builtin.debug:
+    - name: Display nim check result
+      ansible.builtin.debug:
         var: result
-        cmd: ""

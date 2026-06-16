@@ -46,7 +46,8 @@
     - name: Print the filesets in a lists
       ansible.builtin.set_fact:
         fileset_list: "{{ ansible_facts.filesets.keys() | list }}"
-    - ansible.builtin.debug:
+    - name: Display fileset list
+      ansible.builtin.debug:
         var: fileset_list
 
     - name: Populate fileset facts with the installation state for the most recent level of installed filesets

@@ -18,7 +18,8 @@
         action: save
         filename: "{{ var_filename }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display save all tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Save only currently non default tunables to a file"
@@ -27,7 +28,8 @@
         filename: "{{ var_filename }}"
         save_all_tunables: "{{ bool_save_all_tunables }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display save non-default tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Validate a tunable file in current context"
@@ -35,7 +37,8 @@
         action: validate
         filename: "{{ var_filename }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display validate current context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Validate a tunable file in reboot context"
@@ -44,7 +47,8 @@
         filename: "{{ var_filename }}"
         validation_type: "{{ var_validation_type }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display validate reboot context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify all tunables of given component as default to a file"
@@ -54,7 +58,8 @@
         set_default: "{{ var_set_default }}"
         component_to_set_dflt: "{{ component_name }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify component default result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify specific dynamic tunables of given component in a file"
@@ -63,7 +68,8 @@
         filename: "{{ var_filename }}"
         tunables_with_values: "{{ var_tunables_with_values }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify dynamic tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Restore a file in current context"
@@ -72,7 +78,8 @@
         action: restore
         filename: "{{ var_filename }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display restore current context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Restore a file in reboot context"
@@ -85,5 +92,6 @@
         filename: "{{ var_filename }}"
         make_nextboot: "{{ bool_make_nextboot }}"
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display restore reboot context result
+      ansible.builtin.debug:
         var: tunfile_result

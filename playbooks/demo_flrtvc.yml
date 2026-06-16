@@ -28,6 +28,7 @@
       environment:
         PATH: /usr/bin:/usr/sbin/:/opt/freeware/bin
       register: result
-    - ansible.builtin.debug:
+    - name: Display flrtvc result
+      ansible.builtin.debug:
         var: result
         verbosity: 4
