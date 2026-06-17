@@ -5,6 +5,28 @@
 Releases
 ========
 
+Version 2.3.1
+-------------
+Notes
+  * Updated the minimum required version of ansible to 2.16.
+  * Fixed all the EDA linting issues reported by Red hat automation hub.
+  * Updated Red hat README.md file to include support details and issues locations
+
+Availability
+  * `Automation Hub v2.3.1`_
+  * `Galaxy v2.3.1`_
+  * `GitHub v2.3.1`_
+
+.. _Automation Hub v2.3.1:
+   https://cloud.redhat.com/ansible/automation-hub/ibm/power_aix
+
+.. _Galaxy v2.3.1:
+   https://galaxy.ansible.com/download/ibm-power_aix-2.3.1.tar.gz
+
+.. _GitHub v2.3.1:
+   https://github.com/IBM/ansible-power-aix/raw/dev-collection/builds/ibm-power_aix-2.3.1.tar.gz
+
+
 Version 2.3.0
 -------------
 Notes
