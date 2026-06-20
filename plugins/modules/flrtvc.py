@@ -1072,11 +1072,11 @@ def run_parser(report, localpatchserver, localpatchpath):
     protocol = module.params['protocol']
     dict_rows = csv.DictReader(report, delimiter='|')
     rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
-    rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$'
+    rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?.tar)$'
     if localpatchserver != "":
         rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com|' + localpatchserver + ')'
     if localpatchpath != "":
-        rule2 = r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
+        rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
 
     pattern = re.compile(rule1 + rule2)
 
@@ -1116,7 +1116,19 @@ def run_downloader(urls, dst_path, resize_fs=True):
            'discover': [],
            'download': [],
            'reject': [],
-           'check': []}
+           'check': [],
+           'installp': []}
+
+    # Get OS major version once at the start (for nested tar filtering)
+    os_ver = ''
+    cmd = ['/usr/bin/oslevel', '-s']
+    rc, stdout, stderr = module.run_command(cmd)
+    if rc == 0:
+        os_ver = stdout.strip()[:2]  # '73' for AIX 7.3
+        module.debug(f'Detected OS version: {os_ver}')
+
+    # Track processed subdirectories to avoid duplicate nested tar processing
+    processed_subdirs = set()
 
     for url in urls:
         protocol, srv, rep, name = re.search(r'^(.*?)://(.*?)/(.*)/(.*)$', url).groups()
@@ -1196,6 +1208,127 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                     results['meta']['messages'].append(msg)
                                     continue
                                 out['download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+
+                            # Extract ALL tar content for installp package processing
+                            # This ensures nested tars (python, perl, bind) are available even if they don't contain .epkg.Z
+                            module.debug(f'Extracting full tar content to {tar_dir}')
+                            try:
+                                tar.extractall(path=tar_dir)
+                                module.debug(f'Successfully extracted full tar content to {tar_dir}')
+                            except (OSError, IOError, tarfile.TarError) as exc:
+                                if resize_fs:
+                                    increase_fs(tar_dir)
+                                    try:
+                                        tar.extractall(path=tar_dir)
+                                        module.debug('Successfully extracted full tar content after filesystem resize')
+                                    except Exception as exc2:
+                                        msg = f'Cannot extract full tar to {tar_dir}: {exc2}'
+                                        module.log(msg)
+                                        results['meta']['messages'].append(msg)
+                                else:
+                                    msg = f'Cannot extract full tar to {tar_dir}: {exc}'
+                                    module.log(msg)
+                                    results['meta']['messages'].append(msg)
+
+                        # Process nested tar files for installp packages
+                        # Skip if already processed (avoids duplicate work when multiple URLs point to same tardir)
+                        if os.path.exists(tar_dir):
+                            for subdir in os.listdir(tar_dir):
+                                subdir_path = os.path.join(tar_dir, subdir)
+
+                                # Skip if already processed
+                                if subdir_path in processed_subdirs:
+                                    module.debug(f'Skipping already processed subdir: {subdir_path}')
+                                    continue
+
+                                processed_subdirs.add(subdir_path)
+                                if not os.path.isdir(subdir_path):
+                                    continue
+
+                                module.debug(f'Processing subdirectory: {subdir_path}')
+
+                                # Filter nested tars by OS version if available
+                                nested_tars = []
+                                all_files = os.listdir(subdir_path)
+
+                                # Prefer version-specific tars (e.g., 73bind918.tar for AIX 7.3)
+                                if os_ver:
+                                    version_specific = [f for f in all_files if f.startswith(os_ver) and f.endswith('.tar')]
+                                    if version_specific:
+                                        nested_tars = version_specific
+                                        module.debug(f'Found version-specific tars for AIX {os_ver}: {nested_tars}')
+
+                                # Fall back to all tar files if no version-specific ones found
+                                if not nested_tars:
+                                    nested_tars = [f for f in all_files if f.endswith(('.tar', '.tar.Z'))]
+
+                                # Extract nested tar files
+                                for nested_file in nested_tars:
+                                    nested_path = os.path.join(subdir_path, nested_file)
+                                    module.debug(f'Extracting nested tar: {nested_file}')
+
+                                    try:
+                                        if nested_file.endswith('.tar.Z'):
+                                            # Uncompress .tar.Z files
+                                            cmd = f'uncompress -c {nested_path} | tar -xf - -C {subdir_path}'
+                                            rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+                                            if rc == 0:
+                                                module.debug(f'Extracted nested .tar.Z: {nested_file}')
+                                            else:
+                                                msg = f'Failed to extract {nested_file}: {stderr}'
+                                                module.log(msg)
+                                                results['meta']['messages'].append(msg)
+                                        else:
+                                            # Extract regular .tar files
+                                            for attempt in range(3):
+                                                try:
+                                                    with tarfile.open(nested_path, mode='r') as nested_tar:
+                                                        nested_tar.extractall(path=subdir_path)
+                                                        module.debug(f'Extracted nested tar: {nested_file}')
+                                                        break
+                                                except (OSError, IOError, tarfile.TarError) as exc:
+                                                    if resize_fs and attempt < 2:
+                                                        increase_fs(subdir_path)
+                                                    else:
+                                                        msg = f'Cannot extract nested tar {nested_file}: {exc}'
+                                                        module.log(msg)
+                                                        results['meta']['messages'].append(msg)
+                                                        break
+                                    except Exception as exc:
+                                        msg = f'Cannot extract nested tar {nested_file}: {exc}'
+                                        module.log(msg)
+                                        results['meta']['messages'].append(msg)
+
+                                # Now look for installp packages in nested directories
+                                for nested_dir in os.listdir(subdir_path):
+                                    nested_dir_path = os.path.join(subdir_path, nested_dir)
+                                    if not os.path.isdir(nested_dir_path):
+                                        continue
+
+                                    # Check if directory contains installp filesets using installp -ld
+                                    cmd = ['/usr/sbin/installp', '-ld', nested_dir_path]
+                                    rc, stdout, stderr = module.run_command(cmd)
+                                    has_installp = (rc == 0 and 'Fileset Name' in stdout)
+
+                                    if has_installp:
+                                        module.debug(f'Found installp directory: {nested_dir_path}')
+
+                                        # Install using installp with proper flags
+                                        cmd = ['/usr/sbin/installp', '-acgXY', '-d', nested_dir_path, 'all']
+                                        rc, stdout, stderr = module.run_command(cmd)
+
+                                        if rc == 0 or 'SUCCESS' in stdout:
+                                            results['changed'] = True
+                                            module.debug(f'Installed packages from {nested_dir_path}')
+                                            out['installp'].append({
+                                                'directory': nested_dir_path,
+                                                'stdout': stdout.splitlines()
+                                            })
+                                        else:
+                                            msg = f'installp failed for {nested_dir_path}: {stderr}'
+                                            module.log(msg)
+                                            results['meta']['messages'].append(msg)
+
                     except tarfile.TarError as exc:
                         msg = f'Cannot read tar archive {dst}: {exc} (possibly a truncated or incomplete download)'
                         module.log(msg)
