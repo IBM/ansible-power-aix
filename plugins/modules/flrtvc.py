@@ -1111,6 +1111,9 @@ def run_downloader(urls, dst_path, resize_fs=True):
             results['meta']['download']
             results['meta']['reject']
             results['meta']['check']
+            results['meta']['installp']
+        installp contains a list of directory paths where installp
+        filesets were found.  Actual installation happens in main().
     """
     out = {'messages': results['meta']['messages'],
            'discover': [],
@@ -1183,50 +1186,36 @@ def run_downloader(urls, dst_path, resize_fs=True):
                             debug_len = len(epkgs)
                             module.debug(f'found {debug_len} epkg.Z file in tar file')
 
-                            # extract epkg
+                            # extract full tar content once (covers both epkg.Z and installp nested tars)
                             tar_dir = os.path.join(dst_path, 'tardir')
                             if not os.path.exists(tar_dir):
                                 os.makedirs(tar_dir)
-                            for epkg in epkgs:
-                                for attempt in range(3):
-                                    try:
-                                        tar.extract(epkg, tar_dir)
-                                    except (OSError, IOError, tarfile.TarError) as exc:
-                                        if resize_fs:
-                                            increase_fs(tar_dir)
-                                        else:
-                                            msg = f'Cannot extract tar file {epkg} to {tar_dir}'
-                                            module.log(msg)
-                                            module.log(f'EXCEPTION {exc}')
-                                            results['meta']['messages'].append(msg)
-                                            break
+                            for attempt in range(3):
+                                try:
+                                    tar.extractall(path=tar_dir)
+                                except (OSError, IOError, tarfile.TarError) as exc:
+                                    if resize_fs:
+                                        increase_fs(tar_dir)
                                     else:
+                                        msg = f'Cannot extract tar file to {tar_dir}'
+                                        module.log(msg)
+                                        module.log(f'EXCEPTION {exc}')
+                                        results['meta']['messages'].append(msg)
                                         break
                                 else:
-                                    msg = f'Cannot extract tar file {epkg} to {tar_dir}'
-                                    module.log(msg)
-                                    results['meta']['messages'].append(msg)
-                                    continue
-                                out['download'].append(os.path.abspath(os.path.join(tar_dir, epkg)))
+                                    module.debug(f'Successfully extracted full tar content to {tar_dir}')
+                                    break
+                            else:
+                                msg = f'Cannot extract tar file to {tar_dir} after retries'
+                                module.log(msg)
+                                results['meta']['messages'].append(msg)
 
-                            # Extract ALL tar content for installp package processing
-                            # This ensures nested tars (python, perl, bind) are available even if they don't contain .epkg.Z
-                            module.debug(f'Extracting full tar content to {tar_dir}')
-                            try:
-                                tar.extractall(path=tar_dir)
-                                module.debug(f'Successfully extracted full tar content to {tar_dir}')
-                            except (OSError, IOError, tarfile.TarError) as exc:
-                                if resize_fs:
-                                    increase_fs(tar_dir)
-                                    try:
-                                        tar.extractall(path=tar_dir)
-                                        module.debug('Successfully extracted full tar content after filesystem resize')
-                                    except Exception as exc2:
-                                        msg = f'Cannot extract full tar to {tar_dir}: {exc2}'
-                                        module.log(msg)
-                                        results['meta']['messages'].append(msg)
+                            for epkg in epkgs:
+                                extracted = os.path.abspath(os.path.join(tar_dir, epkg))
+                                if os.path.exists(extracted):
+                                    out['download'].append(extracted)
                                 else:
-                                    msg = f'Cannot extract full tar to {tar_dir}: {exc}'
+                                    msg = f'Expected extracted file not found: {extracted}'
                                     module.log(msg)
                                     results['meta']['messages'].append(msg)
 
@@ -1312,22 +1301,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
                                     if has_installp:
                                         module.debug(f'Found installp directory: {nested_dir_path}')
-
-                                        # Install using installp with proper flags
-                                        cmd = ['/usr/sbin/installp', '-acgXY', '-d', nested_dir_path, 'all']
-                                        rc, stdout, stderr = module.run_command(cmd)
-
-                                        if rc == 0 or 'SUCCESS' in stdout:
-                                            results['changed'] = True
-                                            module.debug(f'Installed packages from {nested_dir_path}')
-                                            out['installp'].append({
-                                                'directory': nested_dir_path,
-                                                'stdout': stdout.splitlines()
-                                            })
-                                        else:
-                                            msg = f'installp failed for {nested_dir_path}: {stderr}'
-                                            module.log(msg)
-                                            results['meta']['messages'].append(msg)
+                                        out['installp'].append(nested_dir_path)
 
                     except tarfile.TarError as exc:
                         msg = f'Cannot read tar archive {dst}: {exc} (possibly a truncated or incomplete download)'
@@ -1594,6 +1568,22 @@ def main():
             shutil.rmtree(workdir, ignore_errors=True)
         results['msg'] = 'exit on download only'
         module.exit_json(**results)
+
+    # ===========================================
+    # Install installp packages discovered during download
+    # ===========================================
+    module.debug('*** INSTALLP ***')
+    for installp_dir in results['meta'].get('installp', []):
+        module.debug(f'Installing installp packages from {installp_dir}')
+        cmd = ['/usr/sbin/installp', '-acgXY', '-d', installp_dir, 'all']
+        rc, stdout, stderr = module.run_command(cmd)
+        if rc == 0 or 'SUCCESS' in stdout:
+            results['changed'] = True
+            module.debug(f'Installed packages from {installp_dir}')
+        else:
+            msg = f'installp failed for {installp_dir}: {stderr}'
+            module.log(msg)
+            results['meta']['messages'].append(msg)
 
     # ===========================================
     # Install efixes
