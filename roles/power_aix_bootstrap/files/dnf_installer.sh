@@ -111,41 +111,35 @@ fi
 
 if [ $aix_730_plus -eq 1 ]
 then
-    total_req=$(echo "(512)" | bc)
+    total_req=$(echo "(1024)" | bc)
     tmp_free=$(/usr/bin/df -m "$tmppath" | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
     if [ "$tmp_free" -le "$total_req" ]
     then
-      if chfs -a size=+$(( total_req - tmp_free ))M "$tmppath"; then
-          echo "Please make sure $tmppath has around 512MB of free space to download and"
-          echo "extract files from dnf_bundle."
-          exit 1
-      fi
-    fi
-else
-    total_req=$(echo "(512)" | bc)
-    tmp_free=$(/usr/bin/df -m "$tmppath" | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
-    if [ "$tmp_free" -le "$total_req" ]
-    then
-      if chfs -a size=+$(( total_req - tmp_free ))M "$tmppath"; then
-        echo "Please make sure $tmppath has around 512MB of free space to download and"
+        echo "Please make sure $tmppath has around 1024MB of free space to download and"
         echo "extract files from dnf_bundle."
         exit 1
-      fi
+    fi
+else
+    total_req=$(echo "(1024)" | bc)
+    tmp_free=$(/usr/bin/df -m "$tmppath" | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
+    if [ "$tmp_free" -le "$total_req" ]
+    then
+        echo "Please make sure $tmppath has around 1024MB of free space to download and"
+        echo "extract files from dnf_bundle."
+        exit 1
     fi
 fi
 
 # Check if /opt is having enough space to install the packages from dnf_bundle.
-# Currently we need around 457MB of free space in /opt filesystem.
-total_opt=$(echo "(512)" | bc)
+# Currently we need around 1024MB of free space in /opt filesystem.
+total_opt=$(echo "(1024)" | bc)
 opt_free=$(/usr/bin/df -m /opt | /usr/bin/sed -e /Filesystem/d | /usr/bin/head -1 | /usr/bin/awk '{print $3}')
 if [ "$opt_free" -le "$total_opt" ]
 then
-    if chfs -a size=+$(( total_opt - opt_free ))M /opt; then
-      echo "Total free space required for /opt filesystem to install rpms"
-      echo "  from dnf_bundle is around 512MB."
-      echo "Please increase the size of /opt and retry."
-      exit 1
-    fi
+    echo "Total free space required for /opt filesystem to install rpms"
+    echo "  from dnf_bundle is around 1024MB."
+    echo "Please increase the size of /opt and retry."
+    exit 1
 fi
 
 # Create a temporary directroy where all downloads should go.
