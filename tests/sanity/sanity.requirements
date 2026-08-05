@@ -11,4 +11,3 @@ shellcheck-py
 changelog
 ignores
 pep8
-shebang
