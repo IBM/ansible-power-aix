@@ -1192,7 +1192,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                 os.makedirs(tar_dir)
                             for attempt in range(3):
                                 try:
-                                    tar.extractall(path=tar_dir)
+                                    tar.extractall(path=tar_dir, filter='tar')
                                 except (OSError, IOError, tarfile.TarError) as exc:
                                     if resize_fs:
                                         increase_fs(tar_dir)
@@ -1258,9 +1258,12 @@ def run_downloader(urls, dst_path, resize_fs=True):
 
                                     try:
                                         if nested_file.endswith('.tar.Z'):
-                                            # Uncompress .tar.Z files
+                                            # Uncompress .tar.Z files with retry on space errors
                                             cmd = f'uncompress -c {nested_path} | tar -xf - -C {subdir_path}'
                                             rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
+                                            if rc != 0 and resize_fs and 'No space' in stderr:
+                                                increase_fs(subdir_path)
+                                                rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True)
                                             if rc == 0:
                                                 module.debug(f'Extracted nested .tar.Z: {nested_file}')
                                             else:
@@ -1272,7 +1275,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                             for attempt in range(3):
                                                 try:
                                                     with tarfile.open(nested_path, mode='r') as nested_tar:
-                                                        nested_tar.extractall(path=subdir_path)
+                                                        nested_tar.extractall(path=subdir_path, filter='tar')
                                                         module.debug(f'Extracted nested tar: {nested_file}')
                                                         break
                                                 except (OSError, IOError, tarfile.TarError) as exc:
@@ -1574,6 +1577,19 @@ def main():
     # ===========================================
     module.debug('*** INSTALLP ***')
     for installp_dir in results['meta'].get('installp', []):
+        module.debug(f'Checking installp prerequisites for {installp_dir}')
+
+        # Preview first to check if prerequisites are met
+        preview_cmd = ['/usr/sbin/installp', '-acgXY', '-p', '-d', installp_dir, 'all']
+        rc, stdout, stderr = module.run_command(preview_cmd)
+
+        if rc != 0 or 'FAILED' in stdout or 'The format of the toc file is invalid' in stderr:
+            msg = f'installp failed for {installp_dir}: {stderr.strip() or stdout.strip()}'
+            module.log(msg)
+            results['meta']['messages'].append(msg)
+            continue
+
+        # Prerequisites met, proceed with actual installation
         module.debug(f'Installing installp packages from {installp_dir}')
         cmd = ['/usr/sbin/installp', '-acgXY', '-d', installp_dir, 'all']
         rc, stdout, stderr = module.run_command(cmd)
