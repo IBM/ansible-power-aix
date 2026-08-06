@@ -39,7 +39,7 @@
 
   block:
     - name: Create target filesystem for image transfer
-      ansible.builtin.raw: crfs -v jfs2 -g rootvg -a size=530M -m {{ power_aix_bootstrap_target_dir }} -A yes -p rw
+      ansible.builtin.raw: crfs -v jfs2 -g rootvg -a size=1100M -m {{ power_aix_bootstrap_target_dir }} -A yes -p rw
       changed_when: true
     - name: Mount target filesystem
       ansible.builtin.raw: mount {{ power_aix_bootstrap_target_dir }}
@@ -60,7 +60,7 @@
         filesystem: "{{ power_aix_bootstrap_target_dir }}"
         fs_type: jfs2
         auto_mount: true # noqa yaml
-        attributes: size=530M
+        attributes: size=1100M
         permissions: rw
         vg: rootvg
 
