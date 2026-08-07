@@ -1192,7 +1192,7 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                 os.makedirs(tar_dir)
                             for attempt in range(3):
                                 try:
-                                    tar.extractall(path=tar_dir, filter='tar')
+                                    tar.extractall(path=tar_dir, filter='data')
                                 except (OSError, IOError, tarfile.TarError) as exc:
                                     if resize_fs:
                                         increase_fs(tar_dir)
@@ -1251,7 +1251,8 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                 if not nested_tars:
                                     nested_tars = [f for f in all_files if f.endswith(('.tar', '.tar.Z'))]
 
-                                # Extract nested tar files
+                                # Extract nested tar files and track which ones succeeded
+                                failed_extractions = set()
                                 for nested_file in nested_tars:
                                     nested_path = os.path.join(subdir_path, nested_file)
                                     module.debug(f'Extracting nested tar: {nested_file}')
@@ -1267,16 +1268,19 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                             if rc == 0:
                                                 module.debug(f'Extracted nested .tar.Z: {nested_file}')
                                             else:
+                                                failed_extractions.add(nested_file)
                                                 msg = f'Failed to extract {nested_file}: {stderr}'
                                                 module.log(msg)
                                                 results['meta']['messages'].append(msg)
                                         else:
                                             # Extract regular .tar files
+                                            extracted = False
                                             for attempt in range(3):
                                                 try:
                                                     with tarfile.open(nested_path, mode='r') as nested_tar:
-                                                        nested_tar.extractall(path=subdir_path, filter='tar')
+                                                        nested_tar.extractall(path=subdir_path, filter='data')
                                                         module.debug(f'Extracted nested tar: {nested_file}')
+                                                        extracted = True
                                                         break
                                                 except (OSError, IOError, tarfile.TarError) as exc:
                                                     if resize_fs and attempt < 2:
@@ -1286,15 +1290,26 @@ def run_downloader(urls, dst_path, resize_fs=True):
                                                         module.log(msg)
                                                         results['meta']['messages'].append(msg)
                                                         break
+                                            if not extracted:
+                                                failed_extractions.add(nested_file)
                                     except Exception as exc:
+                                        failed_extractions.add(nested_file)
                                         msg = f'Cannot extract nested tar {nested_file}: {exc}'
                                         module.log(msg)
                                         results['meta']['messages'].append(msg)
 
                                 # Now look for installp packages in nested directories
+                                # Only check directories whose parent tar extracted successfully
                                 for nested_dir in os.listdir(subdir_path):
                                     nested_dir_path = os.path.join(subdir_path, nested_dir)
                                     if not os.path.isdir(nested_dir_path):
+                                        continue
+
+                                    # Skip directories from failed extractions
+                                    parent_tar = nested_dir + '.tar.Z'
+                                    parent_tar2 = nested_dir + '.tar'
+                                    if parent_tar in failed_extractions or parent_tar2 in failed_extractions:
+                                        module.debug(f'Skipping {nested_dir_path}: parent tar extraction failed')
                                         continue
 
                                     # Check if directory contains installp filesets using installp -ld
@@ -1583,23 +1598,30 @@ def main():
         preview_cmd = ['/usr/sbin/installp', '-acgXY', '-p', '-d', installp_dir, 'all']
         rc, stdout, stderr = module.run_command(preview_cmd)
 
-        if rc != 0 or 'FAILED' in stdout or 'The format of the toc file is invalid' in stderr:
+        if rc != 0 or 'FAILURES' in stdout or 'The format of the toc file is invalid' in stderr:
             msg = f'installp failed for {installp_dir}: {stderr.strip() or stdout.strip()}'
             module.log(msg)
             results['meta']['messages'].append(msg)
+            continue
+
+        # Check if preview found anything to actually install
+        if '0 Total to be installed' in stdout:
+            module.debug(f'Nothing to install from {installp_dir} (already at latest level)')
             continue
 
         # Prerequisites met, proceed with actual installation
         module.debug(f'Installing installp packages from {installp_dir}')
         cmd = ['/usr/sbin/installp', '-acgXY', '-d', installp_dir, 'all']
         rc, stdout, stderr = module.run_command(cmd)
-        if rc == 0 or 'SUCCESS' in stdout:
-            results['changed'] = True
-            module.debug(f'Installed packages from {installp_dir}')
-        else:
+        if rc != 0:
             msg = f'installp failed for {installp_dir}: {stderr}'
             module.log(msg)
             results['meta']['messages'].append(msg)
+        elif 'Already Installed' in stdout and '0 Total to be installed' in stdout:
+            module.debug(f'Packages from {installp_dir} already installed, no changes made')
+        else:
+            results['changed'] = True
+            module.debug(f'Installed packages from {installp_dir}')
 
     # ===========================================
     # Install efixes
