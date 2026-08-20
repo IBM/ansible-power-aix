@@ -14,7 +14,7 @@ permissions:
 
 on:
   pull_request:
-    branches: [main]
+    branches: [dev-collection]
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * *"
