@@ -1,0 +1,6 @@
+devops/bin/gen_doc.sh shebang
+devops/bin/gen_doc.sh shellcheck:SC2006
+devops/bin/gen_doc.sh shellcheck:SC2086
+devops/bin/sanity_test.sh shebang
+devops/bin/sanity_test.sh shellcheck:SC2006
+devops/bin/sanity_test.sh shellcheck:SC2086
