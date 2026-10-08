@@ -20,6 +20,7 @@
   when: live_kernel_update_client_oslevel < "7200"
   changed_when: false
 
-- ansible.builtin.debug:
+- name: Display target LPAR AIX level
+  ansible.builtin.debug:
     msg: Target LPAR is at AIX level '{{ live_kernel_update_oslevel_output }}'
-    changed_when: false
+  changed_when: false

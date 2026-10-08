@@ -120,5 +120,6 @@
         msg: "Could not restore database"
       when: nim_master_migration_command.rc != 0
 
-    - ansible.builtin.debug:
+    - name: Display successful database restoration message
+      ansible.builtin.debug:
         msg: "Database restored, NIM Master - {{ nim_master_migration_master_b }} has been migrated and restored!!!"

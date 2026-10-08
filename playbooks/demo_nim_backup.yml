@@ -56,9 +56,9 @@
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display mksysb list result
+      ansible.builtin.debug:
         var: result
-        cmd: ""
     - name: Create a mksysb backup of a LPAR
       ibm.power_aix.nim_backup:
         action: create
@@ -68,9 +68,9 @@
       # name_prefix: "{{ sysb_name_prefix_v }}"
       # name_postfix: "{{ sysb_name_postfix_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display LPAR mksysb creation result
+      ansible.builtin.debug:
         var: result
-        cmd: ""
     - name: Create an ios mksysb
       ibm.power_aix.nim_backup:
         action: create
@@ -79,9 +79,9 @@
         location: "{{ iossysb_location_v }}"
       # name: "{{ iossysb_name_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display ios mksysb creation result
+      ansible.builtin.debug:
         var: result
-        cmd: ""
     - name: Create an ios backup ( save vios config )
       ibm.power_aix.nim_backup:
         action: create
@@ -89,9 +89,9 @@
         targets: "{{ vios_targets_v }}"
         location: "{{ iosb_location_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display ios backup creation result
+      ansible.builtin.debug:
         var: result
-        cmd: ""
     - name: Display an ios backup
       ibm.power_aix.nim_backup:
         action: view
@@ -99,9 +99,9 @@
         #  targets: "{{ vios_targets_v }}"
         name: quimby-vios2_iosb
       register: result
-    - ansible.builtin.debug:
+    - name: Display ios backup view result
+      ansible.builtin.debug:
         var: result
-        cmd: ""
     - name: Create a savevg backup of a LPAR VG
       ibm.power_aix.nim_backup:
         action: create
@@ -112,7 +112,8 @@
         shrink_fs: "{{ svg_shrink_fs_v }}"
       # check_mode: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display LPAR savevg creation result
+      ansible.builtin.debug:
         var: result
 
     - name: Create a savevg backup of a VIOS VG
@@ -126,6 +127,6 @@
         shrink_fs: "{{ svg_shrink_fs_v }}"
       check_mode: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display VIOS savevg creation result
+      ansible.builtin.debug:
         var: result
-        cmd: ""

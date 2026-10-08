@@ -20,7 +20,7 @@
           location: "{{ lpp_source_location }}"
       register: result
 
-    - name: Display result
+    - name: Display result for lpp_source creation
       ansible.builtin.debug:
         var: result
 
@@ -34,7 +34,7 @@
           location: "{{ spot_final_location_v }}"
       register: result
 
-    - name: Display result
+    - name: Display result for spot creation
       ansible.builtin.debug:
         var: result
 

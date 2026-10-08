@@ -5,7 +5,8 @@
   user: root
   tasks:
     # CHECK for Yum on inventory host
-    - ansible.builtin.import_role:
+    - name: Import live_kernel_update role
+      ansible.builtin.import_role:
         name: live_kernel_update
       vars:
         live_kernel_update_hmc_name: test1.hmc.hostname

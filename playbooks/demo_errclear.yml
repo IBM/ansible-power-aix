@@ -9,7 +9,6 @@
     test_log_dir: "/tmp/errclear_test_logs"
 
   tasks:
-
     - name: Test error_class (-d) - Clear software errors
       ibm.power_aix.errclear:
         days: 0
@@ -108,4 +107,3 @@
         resource_names: "SRC"
         error_types: "PERM"
         input_log: "/tmp/errlog_data/errlog16"
-

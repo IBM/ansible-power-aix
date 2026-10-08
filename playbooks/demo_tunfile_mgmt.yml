@@ -11,7 +11,8 @@
         action: save
         filename: /tunfile_mgmt_test
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display save all tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Save only currently non default tunables to a file"
@@ -20,7 +21,8 @@
         filename: /tunfile_mgmt_test
         save_all_tunables: false
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display save non-default tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Validate a tunable file in current context"
@@ -28,7 +30,8 @@
         action: validate
         filename: /tunfile_mgmt_test
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display validate current context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Validate a tunable file in reboot context"
@@ -37,7 +40,8 @@
         filename: /tunfile_mgmt_test
         validation_type: reboot
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display validate reboot context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Validate a tunable file in both reboot and current context"
@@ -46,7 +50,8 @@
         filename: /tunfile_mgmt_test
         validation_type: both
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display validate both contexts result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify all tunables of given component as default to a file"
@@ -56,7 +61,8 @@
         set_default: true
         component_to_set_dflt: schedo
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify component default result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify specific dynamic tunables of given component in a file"
@@ -68,7 +74,8 @@
             client_delegation: 1
             nfs_rfc1323: 1
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify dynamic tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify specific bosboot tunables of given component in a file"
@@ -79,7 +86,8 @@
           vmo:
             ame_mpsize_support: 1
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify bosboot tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify specific restricted tunables of given component in a file"
@@ -90,7 +98,8 @@
           vmo:
             kernel_heap_psize: 128K
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify restricted tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Modify specific dynamic and bosboot tunables of given component in a file"
@@ -102,10 +111,11 @@
             ame_mpsize_support: 1
             ame_min_ucpool_size: 10
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify dynamic and bosboot tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
-    - name: "Modify specific dynamic and bosboot tunables of given component in a file"
+    - name: "Modify specific dynamic and bosboot tunables of given component in a file (second operation)"
       ibm.power_aix.tunfile_mgmt:
         action: modify
         filename: /tunfile_mgmt_test
@@ -114,7 +124,8 @@
             ame_mpsize_support: 1
             ame_min_ucpool_size: 10
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display modify mixed tunables result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Restore a file in current context"
@@ -123,7 +134,8 @@
         action: restore
         filename: /tunfile_mgmt_test
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display restore current context result
+      ansible.builtin.debug:
         var: tunfile_result
 
     - name: "Restore a file in reboot context"
@@ -136,5 +148,6 @@
         filename: /tunfile_mgmt_test
         make_nextboot: true
       register: tunfile_result
-    - ansible.builtin.debug:
+    - name: Display restore reboot context result
+      ansible.builtin.debug:
         var: tunfile_result

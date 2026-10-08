@@ -9,7 +9,8 @@
       when: ansible_distribution == 'AIX'
       changed_when: false
       register: output
-    - ansible.builtin.debug:
+    - name: Display current oslevel
+      ansible.builtin.debug:
         var: output
 
     - name: Check for, and install, system updates
@@ -19,7 +20,8 @@
       when: ansible_distribution == 'AIX'
       ignore_errors: true
       register: output
-    - ansible.builtin.debug:
+    - name: Display suma update result
+      ansible.builtin.debug:
         var: output
 
     - name: Check for new oslevel
@@ -27,5 +29,6 @@
       when: ansible_distribution == 'AIX'
       changed_when: false
       register: output
-    - ansible.builtin.debug:
+    - name: Display new oslevel
+      ansible.builtin.debug:
         var: output

@@ -4,10 +4,10 @@ six
 voluptuous
 yamllint
 flake8
+ruff
 ansible-lint
 rich
 shellcheck-py
 changelog
 ignores
 pep8
-shebang

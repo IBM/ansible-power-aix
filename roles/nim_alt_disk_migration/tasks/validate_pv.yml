@@ -45,13 +45,15 @@
 
 - name: Parse and sort physical volume info
   block:
-    - ansible.builtin.set_fact:
+    - name: Set regex patterns and PV availability conditions
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_used_pp_pattern: (?<=USED PPs:)[\s0-9]+[\(]([0-9]+)
         # 0516-320 /usr/sbin/getlvodm: Physical volume hdisk1 is not assigned to
         #        a volume group.
         nim_alt_disk_migration_pv_available_cond1:
           "{% if nim_alt_disk_migration_pv_availability_output.stderr.find('0516-320') != -1 %} true {% else %} false {% endif %}"
-    - ansible.builtin.set_fact:
+    - name: Set PV size and availability condition variables
+      ansible.builtin.set_fact:
         # in megabytes
         nim_alt_disk_migration_used_pps:
           "{{ nim_alt_disk_migration_used_pp_output.stdout | regex_search(nim_alt_disk_migration_used_pp_pattern, '\\1') | join('\n') }}"
@@ -60,7 +62,8 @@
         nim_alt_disk_migration_pv_available_cond2: "{{ nim_alt_disk_migration_pv_availability_output.stderr == '' }}"
         nim_alt_disk_migration_pv_available_cond3: "{{ nim_alt_disk_migration_pv_availability_output.stdout == '' }}"
         nim_alt_disk_migration_pv_available_cond4: "{{ nim_alt_disk_migration_pv_availability_output.rc == 0 }}"
-    - ansible.builtin.set_fact:
+    - name: Determine if PV is available for use
+      ansible.builtin.set_fact:
         nim_alt_disk_migration_pv_available: >-
           {{ nim_alt_disk_migration_pv_available_cond1 or
           (nim_alt_disk_migration_pv_available_cond2 and nim_alt_disk_migration_pv_available_cond3
@@ -68,11 +71,14 @@
 
 - name: Validate specified physical volume
   block:
-    - ansible.builtin.fail:
+    - name: Fail if PV belongs to a volume group
+      ansible.builtin.fail:
         msg: Physical volume belongs to a volume group
       when: not nim_alt_disk_migration_pv_available
-    - ansible.builtin.fail:
+    - name: Fail if PV does not have enough space
+      ansible.builtin.fail:
         msg: There is not enough space for an alternate disk
       when: nim_alt_disk_migration_pv_size | int < nim_alt_disk_migration_used_pps | int
-    - ansible.builtin.debug:
+    - name: Display PV validation success message
+      ansible.builtin.debug:
         msg: Specified disk '{{ nim_alt_disk_migration_target_disk }}' is valid

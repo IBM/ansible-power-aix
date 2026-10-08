@@ -5,7 +5,8 @@
   user: root
   tasks:
     # CHECK for Yum on inventory host
-    - ansible.builtin.import_role:
+    - name: Import power_aix_bootstrap role
+      ansible.builtin.import_role:
         name: power_aix_bootstrap
       vars:
         power_aix_bootstrap_pkgtype: dnf

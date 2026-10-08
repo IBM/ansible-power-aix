@@ -43,7 +43,8 @@
         targets: "{{ target_v }}"
         viosupgrade_params: "{{ params_altdisk_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display viosupgrade altdisk result
+      ansible.builtin.debug:
         var: result.meta["{{ target_v }}"].stdout.split('\n')
 
     - name: Wait for viosupgrade to complete
@@ -54,5 +55,6 @@
       until: result.status["{{ target_v }}"] != 'ONGOING'
       retries: 30
       delay: 120
-    - ansible.builtin.debug:
+    - name: Display viosupgrade status result
+      ansible.builtin.debug:
         var: result.meta["{{ target_v }}"].stdout.split('\n')

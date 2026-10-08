@@ -14,7 +14,8 @@
       when: ansible_distribution == 'AIX'
       register: output
       changed_when: false
-    - ansible.builtin.debug:
+    - name: Display current oslevel
+      ansible.builtin.debug:
         var: output
 
     - name: Create file system for system updates
@@ -39,7 +40,8 @@
         download_only: "{{ download_only }}"
       when: ansible_distribution == 'AIX'
       register: output
-    - ansible.builtin.debug:
+    - name: Display suma result
+      ansible.builtin.debug:
         var: output
 
     - name: Check for new oslevel
@@ -47,5 +49,6 @@
       when: ansible_distribution == 'AIX'
       changed_when: false
       register: output
-    - ansible.builtin.debug:
+    - name: Display new oslevel
+      ansible.builtin.debug:
         var: output

@@ -25,7 +25,8 @@
         asynchronous: true
         force: false
       register: result
-    - ansible.builtin.debug:
+    - name: Display allocate result
+      ansible.builtin.debug:
         var: result
 
     - name: Deallocate a NIM resource
@@ -34,7 +35,8 @@
         targets: "{{ install_targets_v }}"
         lpp_source: "{{ alloc_resource_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display deallocate result
+      ansible.builtin.debug:
         var: result
 
     - name: Apply a customization script
@@ -44,7 +46,8 @@
         script: "{{ apply_script_v }}"
         asynchronous: true
       register: result
-    - ansible.builtin.debug:
+    - name: Display script result
+      ansible.builtin.debug:
         var: result
 
     - name: Reset the current state of standalone partitions
@@ -53,7 +56,8 @@
         targets: "{{ check_targets_v }}"
         force: false
       register: result
-    - ansible.builtin.debug:
+    - name: Display reset result
+      ansible.builtin.debug:
         var: result
 
     - name: Reboot a partition
@@ -61,7 +65,8 @@
         action: reboot
         targets: "{{ install_targets_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display reboot result
+      ansible.builtin.debug:
         var: result
 
     - name: Perform a maintenance operation on standalone partition
@@ -69,7 +74,8 @@
         action: maintenance
         targets: "{{ install_targets_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display maintenance result
+      ansible.builtin.debug:
         var: result
 
     - name: Query all standalone objects defined in a NIM master
@@ -77,9 +83,10 @@
         action: show
         object_type: standalone
       register: result
-    - ansible.builtin.debug:
+    - name: Display show result
+      ansible.builtin.debug:
         var: result
 
-    - name: Get CState of '{{ install_targets_v }}'
+    - name: Display CState of target
       ansible.builtin.debug:
         var: result.meta.query[install_targets_v].Cstate

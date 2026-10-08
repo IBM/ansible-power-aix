@@ -23,7 +23,8 @@
         time_limit: "{{ time_limit_v }}"
         preview: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display updateios install result
+      ansible.builtin.debug:
         var: result
 
     - name: Remove a list of filesets from VIOS
@@ -33,7 +34,8 @@
         filesets: "{{ rm_filesets_v }}"
         preview: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display updateios remove result
+      ansible.builtin.debug:
         var: result
 
     - name: Commit all uncommitted filesets on VIOS
@@ -42,7 +44,8 @@
         targets: "{{ targets_v }}"
         preview: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display updateios commit result
+      ansible.builtin.debug:
         var: result
 
     - name: Cleanup incomplete previous installation from VIOS
@@ -51,5 +54,6 @@
         targets: "{{ targets_v }}"
         preview: "{{ preview_v }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display updateios cleanup result
+      ansible.builtin.debug:
         var: result

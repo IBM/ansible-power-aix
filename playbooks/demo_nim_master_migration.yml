@@ -9,7 +9,8 @@
     log_file: "/tmp/ansible_mpio_debug.log"
   remote_user: root
   tasks:
-    - ansible.builtin.import_role:
+    - name: Import nim_master_migration role
+      ansible.builtin.import_role:
         name: nim_master_migration
       vars:
         nim_master_migration_master_a: ansible-nim1

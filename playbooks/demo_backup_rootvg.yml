@@ -71,7 +71,8 @@
         flags: "{{ mksysb_flags }}"
         force: "{{ force }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display mksysb creation result
+      ansible.builtin.debug:
         var: result
         verbosity: 4
 
@@ -81,7 +82,8 @@
         type: "{{ type }}"
         location: "{{ location_create }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display mksysb view result
+      ansible.builtin.debug:
         var: result
         verbosity: 4
 
@@ -144,6 +146,7 @@
         debug: "{{ debug }}"
         bootlist: "{{ bootlist }}"
       register: result
-    - ansible.builtin.debug:
+    - name: Display restore result
+      ansible.builtin.debug:
         var: result
         verbosity: 4

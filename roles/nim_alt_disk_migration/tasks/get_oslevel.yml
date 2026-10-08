@@ -4,7 +4,8 @@
     action: check
     targets: "{{ nim_alt_disk_migration_nim_client }}"
   register: nim_alt_disk_migration_nim_check
-- ansible.builtin.debug:
+- name: Display NIM client check results
+  ansible.builtin.debug:
     var: nim_alt_disk_migration_nim_check.nim_node.standalone[nim_alt_disk_migration_nim_client]
 - name: Parse OS level
   ansible.builtin.set_fact:
@@ -37,5 +38,6 @@
   ansible.builtin.fail:
     msg: Client LPAR must be AIX 7.1 or higher.
   when: nim_alt_disk_migration_client_oslevel < "7100"
-- ansible.builtin.debug:
+- name: Display client LPAR OS level
+  ansible.builtin.debug:
     msg: Client LPAR '{{ nim_alt_disk_migration_nim_client }}' is at AIX level '{{ nim_alt_disk_migration_full_client_oslevel }}'

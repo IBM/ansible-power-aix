@@ -28,7 +28,8 @@
   tasks:
 
     # perform alt_disk_migration
-    - ansible.builtin.import_role:
+    - name: Import nim_alt_disk_migration role
+      ansible.builtin.import_role:
         name: nim_alt_disk_migration
       vars:
         # required: NIM standalone object name

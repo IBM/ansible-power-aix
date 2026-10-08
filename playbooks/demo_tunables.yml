@@ -23,7 +23,7 @@
         restricted_tunables: true
       register: tunables_result
 
-    - name: "Debug: tunables_result"
+    - name: "Debug: tunables_result for restricted parameters"
       ansible.builtin.debug:
         var: tunables_result
 
@@ -36,7 +36,7 @@
           - vmm_default_pspa
       register: tunables_result
 
-    - name: "Debug: tunables_result"
+    - name: "Debug: tunables_result for specific parameters"
       ansible.builtin.debug:
         var: tunables_result
 

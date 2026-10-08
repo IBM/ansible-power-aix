@@ -7,7 +7,7 @@ namespace: ibm
 name: power_aix
 
 # The version of the collection.
-version: 2.3.0
+version: 2.3.1
 
 # Collection README file (relative to root path)
 readme: README.md
@@ -57,3 +57,4 @@ build_ignore:
  - 'docs/_pdf'
  - 'tests/unit'
  - '*.tar.gz'
+ - '.ansible-lint'

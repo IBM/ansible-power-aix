@@ -36,7 +36,7 @@
         gateway: "192.168.1.1"
         numeric: true
         flags: "net"
-    - name: Add a route with numeric mode
+    - name: Add a route with numeric mode and prefix length 24
       ibm.power_aix.route:
         action: add
         destination: "192.168.4.1"
@@ -44,7 +44,7 @@
         numeric: true
         prefixlen: 24
         flags: "net"
-    - name: Delete a route with numeric mode
+    - name: Delete a route with numeric mode and prefix length 24
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.1"
@@ -52,7 +52,7 @@
         numeric: true
         prefixlen: 24
         flags: "net"
-    - name: Add a route with numeric mode
+    - name: Add a route with numeric mode via gateway 192.168.1.2
       ibm.power_aix.route:
         action: add
         destination: "192.168.4.1"
@@ -60,7 +60,7 @@
         numeric: true
         prefixlen: 24
         flags: "net"
-    - name: Delete a route with numeric mode
+    - name: Delete a route with numeric mode via gateway 192.168.1.2
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.1"
@@ -96,14 +96,14 @@
         gateway: "192.168.3.1"
         verbose: true
         flags: "host"
-    - name: Add a route with verbose mode
+    - name: Add a route with verbose mode via gateway 192.168.3.2
       ibm.power_aix.route:
         action: add
         destination: "192.168.4.0"
         gateway: "192.168.3.2"
         verbose: true
         flags: "host"
-    - name: Delete a route with verbose mode
+    - name: Delete a route with verbose mode via gateway 192.168.3.2
       ibm.power_aix.route:
         action: delete
         destination: "192.168.4.0"
@@ -126,7 +126,7 @@
         ioctl_preference: true
         numeric: true
         flags: "host"
-    - name: Add a route with verbose,ioctl, numeric mode
+    - name: Add a route with verbose and numeric mode
       ibm.power_aix.route:
         action: add
         destination: "192.168.7.0"
@@ -134,7 +134,7 @@
         numeric: true
         verbose: true
         flags: "host"
-    - name: Delete a route with verbose,ioctl, numeric mode
+    - name: Delete a route with verbose and numeric mode
       ibm.power_aix.route:
         action: delete
         destination: "192.168.7.0"
@@ -199,7 +199,7 @@
           weight: "4"
           policy: "2"
         flags: "host"
-    - name: Add a route with weight and policy
+    - name: Add a net route with weight and policy
       ibm.power_aix.route:
         action: add
         destination: "192.158.4.2"
@@ -209,7 +209,7 @@
           weight: "5"
           policy: "4"
         flags: "net"
-    - name: Change route parameters
+    - name: Change net route parameters
       ibm.power_aix.route:
         action: change
         destination: "192.158.4.2"
@@ -219,7 +219,7 @@
         arguments:
           weight: "6"
           policy: "4"
-    - name: Set route attributes
+    - name: Set net route attributes
       ibm.power_aix.route:
         action: set
         destination: "192.158.4.2"
@@ -229,7 +229,7 @@
           weight: "4"
           policy: "4"
         flags: "net"
-    - name: Delete route attributes
+    - name: Delete net route attributes
       ibm.power_aix.route:
         action: delete
         destination: "192.158.4.2"

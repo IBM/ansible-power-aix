@@ -117,20 +117,21 @@ fi
 
 if [ $aix_730_plus -eq 1 ]
 then
-    total_req=$(echo "(512)" | bc)
+    total_req=$(echo "(1024)" | bc)
     tmp_free=$(/usr/bin/df -m /tmp | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
 
     if [ "$tmp_free" -le "$total_req" ]
     then
-        echo "Please make sure /tmp has around 512MB of free space to download and"
+        echo "Please make sure /tmp has around 1024MB of free space to download and"
         echo "extract files from dnf_bundle."
         exit 1
     fi
 else
-    total_req=$(echo "(512)" | bc)
+    total_req=$(echo "(1024)" | bc)
     tmp_free=$(/usr/bin/df -m /tmp | /usr/bin/sed -e /Filesystem/d | /usr/bin/awk '{print $3}')
-    if [ "${tmp_free:-0}" -le "${total_req:-0}" ]; then
-        echo "Please make sure /tmp has around 512MB of free space to download and"
+    if [ "$tmp_free" -le "$total_req" ]
+    then
+        echo "Please make sure /tmp has around 1024MB of free space to download and"
         echo "extract files from dnf_bundle."
         exit 1
     fi
@@ -151,12 +152,13 @@ fi
 
 
 # Check if /opt is having enough space to install the packages from dnf_bundle.
-# Currently we need around 457MB of free space in /opt filesystem.
-total_opt=$(echo "(512)" | bc)
+# Currently we need around 1024MB of free space in /opt filesystem.
+total_opt=$(echo "(1024)" | bc)
 opt_free=$(/usr/bin/df -m /opt | /usr/bin/sed -e /Filesystem/d | /usr/bin/head -1 | /usr/bin/awk '{print $3}')
-if [ "${opt_free:-0}" -le "${total_opt:-0}" ]; then
+if [ "$opt_free" -le "$total_opt" ]
+then
     echo "Total free space required for /opt filesystem to install rpms"
-    echo "  from dnf_bundle is around 512MB."
+    echo "  from dnf_bundle is around 1024MB."
     echo "Please increase the size of /opt and retry."
     exit 1
 fi

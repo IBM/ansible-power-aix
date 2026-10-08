@@ -6,7 +6,6 @@
     host_name: alttest
 
   tasks:
-
     - name: Set default queue_depth for virtual SCSI disks
       ibm.power_aix.devices:
         device: default
@@ -28,7 +27,7 @@
           queue_depth: 31
           reserve_policy: single_path
         state: available
-    - name: Set multiple defaults for virtual SCSI disks
+    - name: Set queue depth default for virtual SCSI disks
       ibm.power_aix.devices:
         device: default
         device_class: disk
@@ -37,4 +36,3 @@
         attributes:
           queue_depth: 32
         state: available
-
