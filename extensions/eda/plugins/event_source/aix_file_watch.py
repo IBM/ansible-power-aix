@@ -12,8 +12,10 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 from typing import Any
-
+import os
 import paramiko  # pylint: disable=import-error
+import logging
+logger = logging.getLogger("ibm.power_aix.aix_file_watch")
 
 DOCUMENTATION = r"""
 ---
@@ -73,6 +75,15 @@ options:
         required: false
         type: int
         default: 10
+      known_hosts_file:
+        description:
+          - Path to the SSH known_hosts file for strict host key verification.
+          - If not provided, defaults to C(~/.ssh/known_hosts).
+          - The target host key must exist in this file before connecting.
+          - Use C(ssh-keyscan <host> >> ~/.ssh/known_hosts) to add a host key.
+        required: false
+        type: str
+        default: ~/.ssh/known_hosts
   files:
     description:
       - List of files to monitor for content changes.
@@ -281,7 +292,23 @@ def create_ssh_client(host_info: dict[str, Any]) -> paramiko.SSHClient:
     # Note: Using AutoAddPolicy for convenience in monitoring scenarios.
     # In production, consider using a more restrictive policy with known_hosts.
     client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # noqa: S507
+
+    # Load known_hosts for strict host key verification (fixes MITM vulnerability)
+    known_hosts = host_info.get("known_hosts_file", "~/.ssh/known_hosts")
+    expanded = os.path.expanduser(known_hosts)
+    if os.path.exists(expanded):
+        client.load_host_keys(expanded)
+    else:
+        logger.warning(
+            "known_hosts file not found at '%s'. "
+            "All connections will be rejected by RejectPolicy. "
+            "Run: ssh-keyscan %s >> %s",
+            expanded,
+            host_info.get("host", "TARGET_HOST"),
+            expanded,
+        )
+
+    client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
     # Load private key if provided
     private_key = load_ssh_key(key_path)
@@ -712,6 +739,7 @@ async def monitor_host(
 
     except (OSError, paramiko.SSHException) as e:
         # Emit error event
+        logger.error("SSH connection REJECTED for host '%s': %s", hostname, e)
         error_event = create_error_event(hostname, str(e))
         await event_queue.put(error_event)
 
@@ -772,6 +800,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
         except (OSError, paramiko.SSHException) as e:
             # Emit error event
+            logger.error("Initial connection FAILED for host '%s': %s", hostname, e)
             error_event = create_error_event(hostname, f"Initial connection failed: {e!s}")
             await queue.put(error_event)
 

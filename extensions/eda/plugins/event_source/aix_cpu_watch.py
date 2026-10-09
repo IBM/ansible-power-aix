@@ -18,6 +18,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 import paramiko  # pylint: disable=import-error
+import logging
+import os
+logger = logging.getLogger("ibm.power_aix.aix_cpu_watch")
 
 DOCUMENTATION = r"""
 ---
@@ -75,6 +78,14 @@ options:
         required: false
         type: int
         default: 10
+      known_hosts_file:
+        description:
+          - Path to the SSH known_hosts file for strict host key verification.
+          - If not provided, defaults to C(~/.ssh/known_hosts).
+          - The target host key must exist in this file before connecting.
+        required: false
+        type: str
+        default: ~/.ssh/known_hosts
   interval:
     description: Seconds between samples (applies to the poll loop).
     required: false
@@ -236,6 +247,7 @@ class _SSHClient:
         key_path: str | None = None,
         password: str | None = None,
         timeout: int = 10,
+        known_hosts_file: str = "~/.ssh/known_hosts",
     ) -> None:
         self.host = host
         self.username = username
@@ -243,13 +255,24 @@ class _SSHClient:
         self.key_path = key_path
         self.password = password
         self.timeout = timeout
+        self.known_hosts_file = known_hosts_file
         self._client = None
 
     def connect(self) -> None:
         if self._client:
             return
         self._client = paramiko.SSHClient()
-        self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        expanded = os.path.expanduser(self.known_hosts_file)
+        if os.path.exists(expanded):
+            self._client.load_host_keys(expanded)
+        else:
+            logger.warning(
+                "known_hosts file not found at '%s'. "
+                "All connections will be rejected. "
+                "Run: ssh-keyscan %s >> %s",
+                expanded, self.host, expanded,
+            )
+        self._client.set_missing_host_key_policy(paramiko.RejectPolicy())
         pkey = None
         if self.key_path:
             try:
@@ -277,6 +300,7 @@ class _SSHClient:
         _stdin, stdout, stderr = self._client.exec_command(cmd, timeout=self.timeout)
         out = stdout.read().decode(errors="ignore")
         err = stderr.read().decode(errors="ignore")
+        stdout.channel.close()
         if err and not out:
             # vmstat prints headers to stdout; non-empty err with empty out is suspicious
             msg = f"Command error on {self.host}: {err.strip()}"
@@ -320,6 +344,7 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                 key_path=h.get("key_path"),
                 password=h.get("password"),
                 timeout=int(h.get("timeout", 10)),
+                known_hosts_file=h.get("known_hosts_file", "~/.ssh/known_hosts"),
             )
 
         while running:
@@ -358,6 +383,21 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
                             "source": "aix_cpu_watch",
                         }
                         await queue.put(event)
+                except paramiko.ssh_exception.SSHException as e:
+                    logger.error(
+                        "SSH connection REJECTED for host '%s': %s",
+                        host, e
+                    )
+                    err_event = {
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "host": host,
+                        "error": str(e),
+                        "source": "aix_cpu_watch",
+                        "severity": "error",
+                    }
+                    await queue.put(err_event)
+                    cli.close()
+
                 except (ValueError, RuntimeError, OSError) as e:
                     err_event = {
                         "timestamp": datetime.now(timezone.utc).isoformat(),
