@@ -112,8 +112,8 @@ def sanitize_log_message(txt):
     """
     if txt is None:
         return txt
-    # The closing tag uses a backreference to the opening tag name
-    sanitized = re.sub(r'<(Password|UserID)>.*?</\1>', r'<\1>***</\1>',
+    # Mask credential-like XML tags, including optional namespace prefix.
+    sanitized = re.sub(r'<((?:\w+:)?(?:Password|UserID))>.*?</\1>', r'<\1>***</\1>',
                        txt, flags=re.IGNORECASE | re.DOTALL)
     sanitized = re.sub(r'(<X-API-Session[^>]*>).*?(</X-API-Session>)', r'\1***\2',
                        sanitized, flags=re.IGNORECASE | re.DOTALL)
@@ -513,7 +513,7 @@ def get_session_key(hmc_info, filename):
 
             log("curl request fields: <LogonRequest>***</LogonRequest>\n")
             _p = bytes([80, 97, 115, 115, 119, 111, 114, 100]).decode()  # Password
-            log("curl request fields: {0} <{1}>xxx</{1}></LogonRequest>\n".format(fields, _p))
+            log("curl request fields prepared (credentials masked)\n")
             fields += ' <{0}>{1}</{0}></LogonRequest>'.format(_p, hmc_info['user_password'])
             hdrs = ['Content-Type: application/vnd.ibm.powervm.web+xml; type=LogonRequest']
 
