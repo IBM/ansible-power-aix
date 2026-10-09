@@ -2014,6 +2014,7 @@ def check_machine_details_validity(module, targets):
         Exits with fail_json in case of error
     """
 
+    failed = 0
     failed_targets = []
     successful_details = []
 
@@ -2023,7 +2024,7 @@ def check_machine_details_validity(module, targets):
             failed = 1
             failed_targets.append(target_details[0])
         else:
-            successful_details.append[target_details]
+            successful_details.append(target_details)
 
     if failed:
         msg = f"Following machine details are not in the proper format {failed_targets}"
@@ -2069,12 +2070,15 @@ def register_client(module, targets):
         target_login_id = target_detail[1]
         target_password = target_detail[2]
         machine_name = target_host_name.split('.')[0]
-        cmd_body = f'machine {machine_name} login {target_login_id} password {target_password}'
-        cmd = f'echo {cmd_body} >> /.netrc'
-        module.run_command(cmd)
-        cmd_body = f'machine {target_host_name} login {target_login_id} password {target_password}'
-        cmd = f'echo {cmd_body} >> /.netrc'
-        module.run_command(cmd)
+        # cmd_body = f'machine {machine_name} login {target_login_id} password {target_password}'
+        # cmd = f'echo {cmd_body} >> /.netrc'
+        # module.run_command(cmd)
+        # cmd_body = f'machine {target_host_name} login {target_login_id} password {target_password}'
+        # cmd = f'echo {cmd_body} >> /.netrc'
+        # module.run_command(cmd)
+        with open('/.netrc', 'a', encoding='utf-8') as netrc:
+            netrc.write(f'machine {machine_name} login {target_login_id} password {target_password}\n')
+            netrc.write(f'machine {target_host_name} login {target_login_id} password {target_password}\n')
         cmd = "netstat -rn"
         rc, stdout, stderr = module.run_command(cmd)
         gateway_line = stdout.split("\n")[4].split(' ')
@@ -2143,7 +2147,7 @@ def main():
                                  'reset', 'reboot', 'maintenance', 'show', 'register_client', 'install_fileset']),
             lpp_source=dict(type='str'),
             targets=dict(type='list', elements='str'),
-            new_targets=dict(type='list', elements='str'),  # The elements format is <machine name>-<login id>-<password>
+            new_targets=dict(type='list', elements='str', no_log=True),  # The elements format is <machine name>-<login id>-<password>
             asynchronous=dict(type='bool', default=False),
             device=dict(type='str'),
             installp_bundle=dict(type='str'),
