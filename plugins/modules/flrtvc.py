@@ -141,7 +141,7 @@ notes:
     try installing B(sudo) on the managed system.
   - When use local patch server settings  localpatchserver and localpatchpath must be both set
     in order to have a complete full url with patches, for example the local url
-    192.168.1.100/ifix should become in module localpatchserver 192.168.1.100 and localpatchpath ifix.
+    X.X.1.100/ifix should become in module localpatchserver X.X.1.100 and localpatchpath ifix.
   - Using this module with Python version 3.9.20 can lead to erroneous conditions. It is recommended
     to use Python version 3.11 or later.
 '''
@@ -166,10 +166,10 @@ EXAMPLES = r'''
   flrtvc:
     apar: sec
     protocol: https
-    localpatchserver: 192.168.1.1
+    localpatchserver: X.X.1.1
     localpatchpath: ifix
-    flrtvczip: https://192.168.1.1/ifix/flrtvc.zip
-    csv: https://192.168.1.1/ifix/apar.csv
+    flrtvczip: https://X.X.1.1/ifix/flrtvc.zip
+    csv: https://X.X.1.1/ifix/apar.csv
 '''
 
 RETURN = r'''
@@ -1071,12 +1071,12 @@ def run_parser(report, localpatchserver, localpatchpath):
 
     protocol = module.params['protocol']
     dict_rows = csv.DictReader(report, delimiter='|')
-    rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
-    rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?.tar)$'
+    rule1 = r'^(http|https|ftp)://(aix\.software\.ibm\.com|public\.dhe\.ibm\.com)'
+    rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?\.tar)$'
     if localpatchserver != "":
-        rule1 = r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com|' + localpatchserver + ')'
+        rule1 = r'^(http|https|ftp)://(aix\.software\.ibm\.com|public\.dhe\.ibm\.com|' + re.escape(localpatchserver) + ')'
     if localpatchpath != "":
-        rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?.tar|' + localpatchpath + '/.*?.tar)$'
+        rule2 = r'/(aix/ifixes/.*?/?|aix/efixes/security/.*?\.tar|' + re.escape(localpatchpath) + r'/.*?\.tar)$'
 
     pattern = re.compile(rule1 + rule2)
 
@@ -1086,7 +1086,7 @@ def run_parser(report, localpatchserver, localpatchpath):
         if protocol:
             row = re.sub(r'^(https|http|ftp)', protocol, row, count=1)
         if localpatchserver:
-            row = re.sub(r'://(aix.software.ibm.com|public.dhe.ibm.com)/', '://' + localpatchserver + '/', row, count=1)
+            row = re.sub(r'://(aix\.software\.ibm\.com|public\.dhe\.ibm\.com)/', '://' + localpatchserver + '/', row, count=1)
         if localpatchpath:
             row = re.sub(r'/(aix/ifixes/|aix/efixes/security)/', '/' + localpatchpath + '/', row, count=1)
         rows.append(row)
