@@ -117,6 +117,11 @@ def sanitize_log_message(txt):
                        txt, flags=re.IGNORECASE | re.DOTALL)
     sanitized = re.sub(r'(<X-API-Session[^>]*>).*?(</X-API-Session>)', r'\1***\2',
                        sanitized, flags=re.IGNORECASE | re.DOTALL)
+
+    # Mask common key/value secret patterns that may appear in debug logs
+    sanitized = re.sub(r'(?i)\b(password|passwd|user_password)\s*=\s*([^\s,;]+)',
+                       r'\1=***', sanitized)
+
     return sanitized
 
 
@@ -506,7 +511,7 @@ def get_session_key(hmc_info, filename):
                      '<UserID>{0}</UserID>'\
                      .format(hmc_info['user_id'])
 
-            log("curl request on: {0}\n".format(url))
+            log("curl request fields: <LogonRequest>***</LogonRequest>\n")
             _p = bytes([80, 97, 115, 115, 119, 111, 114, 100]).decode()  # Password
             log("curl request fields: {0} <{1}>xxx</{1}></LogonRequest>\n".format(fields, _p))
             fields += ' <{0}>{1}</{0}></LogonRequest>'.format(_p, hmc_info['user_password'])
