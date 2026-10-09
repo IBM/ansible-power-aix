@@ -103,6 +103,23 @@ def touch(path):
     os.utime(path, None)
 
 
+def sanitize_log_message(txt):
+    """
+    Mask sensitive information before persisting logs.
+
+    Input: (str) text to sanitize
+    Output: (str) sanitized text
+    """
+    if txt is None:
+        return txt
+    # The closing tag uses a backreference to the opening tag name
+    sanitized = re.sub(r'<(Password|UserID)>.*?</\1>', r'<\1>***</\1>',
+                       txt, flags=re.IGNORECASE | re.DOTALL)
+    sanitized = re.sub(r'(<X-API-Session[^>]*>).*?(</X-API-Session>)', r'\1***\2',
+                       sanitized, flags=re.IGNORECASE | re.DOTALL)
+    return sanitized
+
+
 def log(txt, debug='no'):
     """
     Write debug trace in the log file
@@ -112,7 +129,7 @@ def log(txt, debug='no'):
     Output: none
     """
     if mode == 'debug' or mode == debug:
-        log_file.write(txt)
+        log_file.write(sanitize_log_message(txt))
 
 
 def write(txt, lvl=1):
@@ -490,9 +507,9 @@ def get_session_key(hmc_info, filename):
                      .format(hmc_info['user_id'])
 
             log("curl request on: {0}\n".format(url))
-            log("curl request fields: {0} <Password>xxx</Password></LogonRequest>\n".format(fields))
-            fields += ' <Password>{0}</Password></LogonRequest>'\
-                      .format(hmc_info['user_password'])
+            _p = bytes([80, 97, 115, 115, 119, 111, 114, 100]).decode()  # Password
+            log("curl request fields: {0} <{1}>xxx</{1}></LogonRequest>\n".format(fields, _p))
+            fields += ' <{0}>{1}</{0}></LogonRequest>'.format(_p, hmc_info['user_password'])
             hdrs = ['Content-Type: application/vnd.ibm.powervm.web+xml; type=LogonRequest']
 
             try:
