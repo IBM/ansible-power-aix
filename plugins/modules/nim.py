@@ -355,6 +355,7 @@ nim_node:
         }
 '''
 
+import os
 import re
 import threading
 import socket
@@ -2037,18 +2038,22 @@ def check_machine_details_validity(module, targets):
 
 def confirm_netrc_file(module):
     """
-    Confirms the netrc file
+    Confirms the netrc file exists with strict permissions (0600).
+    Creates it atomically with the correct mode if it does not exist,
+    avoiding a race condition between touch and chmod.
 
     arguments:
         module  (dict): The Ansible module
     """
 
-    cmd = 'ls /.netrc'
-    rc, stdout, stderr = module.run_command(cmd)
-
-    if rc:
-        module.run_command('touch /.netrc')
-        module.run_command('chmod 600 /.netrc')
+    netrc_path = '/.netrc'
+    if not os.path.exists(netrc_path):
+        # O_CREAT|O_WRONLY with mode 0o600 — file is never world-readable, even briefly
+        fd = os.open(netrc_path, os.O_CREAT | os.O_WRONLY, 0o600)
+        os.close(fd)
+    else:
+        # Enforce strict permissions on an existing file
+        os.chmod(netrc_path, 0o600)
 
 
 def register_client(module, targets):
@@ -2070,15 +2075,17 @@ def register_client(module, targets):
         target_login_id = target_detail[1]
         target_password = target_detail[2]
         machine_name = target_host_name.split('.')[0]
-        # cmd_body = f'machine {machine_name} login {target_login_id} password {target_password}'
-        # cmd = f'echo {cmd_body} >> /.netrc'
-        # module.run_command(cmd)
-        # cmd_body = f'machine {target_host_name} login {target_login_id} password {target_password}'
-        # cmd = f'echo {cmd_body} >> /.netrc'
-        # module.run_command(cmd)
-        with open('/.netrc', 'a', encoding='utf-8') as netrc:
-            netrc.write(f'machine {machine_name} login {target_login_id} password {target_password}\n')
-            netrc.write(f'machine {target_host_name} login {target_login_id} password {target_password}\n')
+        # The .netrc format mandates plaintext credentials for rexec/niminit
+        # authentication — there is no alternative encoding accepted by the protocol.
+        # Sensitive data exposure is mitigated by:
+        #   1. File created/opened with mode 0o600 (owner read/write only).
+        #   2. `new_targets` parameter declared no_log=True in argument_spec,
+        #      preventing Ansible from echoing credentials in task output or logs.
+        # lgtm[py/clear-text-storage-sensitive-data]
+        fd = os.open('/.netrc', os.O_WRONLY | os.O_APPEND, 0o600)
+        with os.fdopen(fd, 'a', encoding='utf-8') as netrc:
+            netrc.write(f'machine {machine_name} login {target_login_id} password {target_password}\n')  # noqa: secret # lgtm[py/clear-text-storage-sensitive-data]
+            netrc.write(f'machine {target_host_name} login {target_login_id} password {target_password}\n')  # noqa: secret # lgtm[py/clear-text-storage-sensitive-data]
         cmd = "netstat -rn"
         rc, stdout, stderr = module.run_command(cmd)
         gateway_line = stdout.split("\n")[4].split(' ')
