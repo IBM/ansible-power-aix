@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 # Copyright: (c) 2020- IBM, Inc
