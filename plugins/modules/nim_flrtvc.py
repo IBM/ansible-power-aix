@@ -1107,8 +1107,8 @@ def run_parser(module, machine, output, report):
         report  (str): The compact report
     """
     dict_rows = csv.DictReader(report, delimiter='|')
-    pattern = re.compile(r'^(http|https|ftp)://(aix.software.ibm.com|public.dhe.ibm.com)'
-                         r'/(aix/ifixes/.*?/|aix/efixes/security/.*?.tar)$')
+    pattern = re.compile(r'^(http|https|ftp)://(aix\.software\.ibm\.com|public\.dhe\.ibm\.com)'
+                         r'/(aix/ifixes/.*?/|aix/efixes/security/.*?\.tar)$')
     rows = []
     for row in dict_rows:
         rows.append(row['Download URL'])
