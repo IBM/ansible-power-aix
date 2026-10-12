@@ -1,0 +1,8 @@
+devops/bin/gen_doc.sh shebang
+devops/bin/gen_doc.sh shellcheck:SC2006
+devops/bin/gen_doc.sh shellcheck:SC2086
+devops/bin/sanity_test.sh shebang
+devops/bin/sanity_test.sh shellcheck:SC2006
+devops/bin/sanity_test.sh shellcheck:SC2086
+plugins/modules/_nim_upgradeios.py compile-2.7!skip # Python 2.7 is not supported
+plugins/modules/_nim_upgradeios.py import-2.7!skip # Python 2.7 is not supported
