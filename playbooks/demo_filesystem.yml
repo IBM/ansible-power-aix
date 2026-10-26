@@ -4,7 +4,7 @@
   gather_facts: false
   remote_user: root
   vars:
-    host_name: 10.32.148.135
+    host_name: ALL
     filesystem_name: /mnt4
     fs_type_v: jfs2
     mount_group_v: test
