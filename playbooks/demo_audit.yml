@@ -3,13 +3,14 @@
   hosts: "{{ host_name }}"
   gather_facts: false
   vars:
-    host_name: usertest
+    host_name: ALL
     user_name: aixguest
     password_val: Password
     concat_v1: true
     output_dir: "/tmp/auditdata"
 
   tasks:
+
     - name: Start the AIX audit subsystem
       ibm.power_aix.audit:
         action: start
@@ -19,35 +20,26 @@
 
     - name: Suspend the audit system (audit off)
       ibm.power_aix.audit:
-        action: "off"
-    - name: Suspend the audit system (audit off) - second call
-      ibm.power_aix.audit:
-        action: "off"
+        action: 'off'
 
     - name: Restart the audit system (audit on)
       ibm.power_aix.audit:
-        action: "on"
+        action: 'on'
     - name: Restart the audit system with panic mode
       ibm.power_aix.audit:
-        action: "on"
+        action: 'on'
         panic: true
     - name: Restart the audit system with fullpath mode
       ibm.power_aix.audit:
-        action: "on"
+        action: 'on'
         fullpath: true
     - name: Query audit subsystem status
       ibm.power_aix.audit:
         action: query
 
-    - name: Shut down the audit subsystem
+    - name: Shut down the audit subsystem again
       ibm.power_aix.audit:
         action: shutdown
-    - name: Shut down the audit subsystem - second shutdown
-      ibm.power_aix.audit:
-        action: shutdown
-    - name: Query audit subsystem status after shutdown
-      ibm.power_aix.audit:
-        action: query
     - name: Query audit with custom auditpr options
       ibm.power_aix.audit:
         action: query
@@ -68,7 +60,7 @@
         auditpr_message: "This is AIX Ansible Team"
         auditpr_suppress_translation: true
         capture_delay: 5
-    - name: Query audit with custom auditpr options with single line and long usernames
+    - name: Query audit with custom auditpr options with single line
       ibm.power_aix.audit:
         action: query
         recorded_output: "/tmp/auditdata/audit_custom2.txt"
@@ -85,3 +77,124 @@
         action: shutdown
         recorded_output: "/tmp/auditdata/audit_shutdown.txt"
         auditpr_verbose: true
+
+    - name: Add new audit events to the general class
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - FILE_Mode
+          - FILE_Owner
+          - USER_Create
+
+    - name: Add same audit events again to check idempotency
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - FILE_Mode
+          - FILE_Owner
+          - USER_Create
+
+    - name: Add audit events where some are new and some are already present
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - USER_SU
+          - USER_Remove
+
+    - name: Add audit events with duplicate names in the list
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - USER_Change
+          - USER_Change
+
+    - name: Add audit events with extra spaces in the names
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - " USER_Change "
+          - " FILE_Mode "
+
+    - name: Add audit event with backup of the config file
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - GROUP_Change
+        backup: true
+
+    - name: Add same audit event with backup to check no backup is created
+      ibm.power_aix.audit:
+        action: add_events
+        audit_events:
+          - GROUP_Change
+        backup: true
+
+    - name: Add audit events to a new custom audit class
+      ibm.power_aix.audit:
+        action: add_events
+        audit_class: ansible_test
+        audit_events:
+          - PASSWORD_Change
+          - USER_Login
+
+    - name: Add same audit events to the class again to check idempotency
+      ibm.power_aix.audit:
+        action: add_events
+        audit_class: ansible_test
+        audit_events:
+          - PASSWORD_Change
+          - USER_Login
+
+    - name: Remove audit event which is present in the general class
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_events:
+          - USER_Change
+
+    - name: Remove audit events where some are present and some are not
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_events:
+          - FILE_Owner
+          - NFS3_Read
+
+    - name: Remove same audit events again to check idempotency
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_events:
+          - FILE_Owner
+          - NFS3_Read
+
+    - name: Remove audit events from a class which does not exist
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_class: no_such_class
+        audit_events:
+          - USER_SU
+
+    - name: Remove audit event with backup of the config file
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_events:
+          - GROUP_Change
+        backup: true
+
+    - name: Start audit to load the new event configuration
+      ibm.power_aix.audit:
+        action: start
+
+    - name: Query audit subsystem status with new events
+      ibm.power_aix.audit:
+        action: query
+
+    - name: Shut down the audit subsystem
+      ibm.power_aix.audit:
+        action: shutdown
+
+    - name: Remove test audit events to restore the general class
+      ibm.power_aix.audit:
+        action: remove_events
+        audit_events:
+          - FILE_Mode
+          - USER_Create
+          - USER_Remove
