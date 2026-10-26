@@ -39,7 +39,7 @@
           - "options={{ options_value }}"
         auto_mount: 'yes'
         state: present
-    
+
     - name: Set options on filesystem
       ibm.power_aix.filesystem:
         filesystem: /testing123
@@ -47,5 +47,3 @@
           - "options={{ options_value }}"
         auto_mount: 'yes'
         state: present
-
-
