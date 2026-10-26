@@ -40,7 +40,7 @@
         auto_mount: 'yes'
         state: present
 
-    - name: Set options on filesystem
+    - name: Set options on filesystem idem
       ibm.power_aix.filesystem:
         filesystem: /testing123
         attributes:
