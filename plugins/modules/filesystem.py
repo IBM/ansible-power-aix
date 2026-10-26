@@ -245,6 +245,22 @@ def fs_state(module, filesystem):
     return False
 
 
+def is_same_options(requested_options, current_options):
+    """
+    Checks if the requested mount options are already set on the filesystem.
+    Order of the options does not matter, e.g. 'rw,noatime' is same as 'noatime,rw'.
+    params:
+        requested_options (str) - Options provided by the user, e.g. 'rw,noatime'
+        current_options (str) - Options currently set on the filesystem, e.g. 'noatime,rw'
+    return:
+        True - requested options are already set / False - options need to be changed
+    """
+    requested_options_list = sorted(option.strip() for option in requested_options.split(','))
+    current_options_list = sorted(option.strip() for option in current_options.split(','))
+
+    return requested_options_list == current_options_list
+
+
 def compare_attrs(module):
     """
     Helper function to compare the provided and already existing attributes of a filesystem
@@ -351,6 +367,14 @@ def compare_attrs(module):
             attr = attrs[0].strip()
             val = attrs[1].strip()
             val = val.strip('\"')  # For case when variables are used while providing values to attributes
+
+            # options can have more than one value, so compare all of them (issue: chfs runs every time)
+            if attr == "options":
+                options_value = val.strip("'")  # For case when value is given in single quotes, e.g. options='rw,noatime'
+                if not is_same_options(options_value, current_attributes['options']):
+                    updated_attrs.append(f"{attr}={options_value}")
+                continue
+
             if attr == "log" or attr == "logname":
                 if val == "INLINE":
                     val = "yes"
