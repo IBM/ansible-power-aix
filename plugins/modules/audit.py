@@ -30,9 +30,13 @@ options:
       - C(off) Suspends the auditing system, but leaves the configuration valid. Data collection pauses until you give the 'audit on' command
       - C(on) Restarts the auditing system after a suspension.
       - C(query) Queries the auditing status of the audit subsystem.
+      - C(add_events) Adds the events given in C(audit_events) to the audit class C(audit_class) in /etc/security/audit/config.
+        Events that are already present are not added again.
+      - C(remove_events) Removes the events given in C(audit_events) from the audit class C(audit_class) in /etc/security/audit/config.
+        Events that are not present are skipped.
     required: true
     type: str
-    choices: [ 'start', 'shutdown', 'on', 'off', 'query' ]
+    choices: [ 'start', 'shutdown', 'on', 'off', 'query', 'add_events', 'remove_events' ]
   panic:
     description:
       - Used only with C(action=on). Enables panic mode (system halts if bin data cannot be written).
@@ -100,8 +104,37 @@ options:
       - Print long user names at end of audit record (-X flag).
     type: bool
     default: false
+  audit_events:
+    description:
+      - List of audit event names to add to or remove from the audit class.
+      - Required when C(action=add_events) or C(action=remove_events), and allowed only with these two actions.
+      - For C(add_events), every event must be defined in /etc/security/audit/events, otherwise the task fails and nothing is changed.
+      - Event names are case-sensitive and can contain only letters, digits and underscore.
+      - Duplicate names in the list are ignored.
+    type: list
+    elements: str
+  audit_class:
+    description:
+      - Name of the audit class in the C(classes) stanza of /etc/security/audit/config.
+      - Used only with C(action=add_events) or C(action=remove_events).
+      - If the class does not exist, C(add_events) creates it.
+      - Removing all events from a class is not allowed, because at least one event must remain.
+    type: str
+    default: general
+  backup:
+    description:
+      - Create a backup copy of /etc/security/audit/config before changing it.
+      - The backup file name includes a timestamp, so older configuration can be restored if needed.
+      - A backup is created only when the file is actually changed.
+      - Used only with C(action=add_events) or C(action=remove_events).
+    type: bool
+    default: false
 notes:
   - Refer to IBM documentation for more details U(https://www.ibm.com/docs/en/aix/7.3?topic=a-audit-command)
+  - Changes made by C(add_events) and C(remove_events) are written only to /etc/security/audit/config.
+    To load them into the kernel, run C(action=shutdown) and then C(action=start).
+  - A new audit class created by C(add_events) is audited only after it is assigned to users in the C(users) stanza.
+  - A custom event must first be defined in /etc/security/audit/events before it can be added to an audit class.
 '''
 
 EXAMPLES = r'''
@@ -151,6 +184,43 @@ EXAMPLES = r'''
   audit:
     action: shutdown
     recorded_output: /var/log/audit_final.log
+
+- name: Add audit events to the general class
+  audit:
+    action: add_events
+    audit_events:
+      - FILE_Open
+      - FILE_Read
+      - USER_SU
+
+- name: Add audit events to a custom class
+  audit:
+    action: add_events
+    audit_class: security_watch
+    audit_events:
+      - PASSWORD_Change
+      - USER_Login
+
+- name: Add audit events and keep a backup of the old config
+  audit:
+    action: add_events
+    backup: true
+    audit_events:
+      - FILE_Open
+
+- name: Remove audit events from the general class
+  audit:
+    action: remove_events
+    audit_events:
+      - FS_Chdir
+
+- name: Stop audit to apply the new event configuration
+  audit:
+    action: shutdown
+
+- name: Start audit with the new event configuration
+  audit:
+    action: start
 '''
 
 RETURN = r'''
@@ -165,16 +235,16 @@ msg:
 
 cmd:
     description: Full audit command executed.
-    returned: always
+    returned: when action is start, shutdown, on, off or query
     type: str
     sample: 'audit query'
 rc:
     description: Return code from audit command.
-    returned: always
+    returned: when action is start, shutdown, on, off or query
     type: int
 stdout:
     description: Standard output from audit command.
-    returned: always
+    returned: when action is start, shutdown, on, off or query
     type: str
 stderr:
     description: Error output from audit command (if any).
@@ -190,17 +260,62 @@ auditpr_cmd:
     returned: when log capture is performed
     type: str
     sample: 'auditpr -i /audit/trail -v -t 1 -h E,l,R,t,c,r,p,P,T,h,W'
+audit_class:
+    description: Audit class that was checked or updated.
+    returned: when action is add_events or remove_events
+    type: str
+    sample: 'general'
+events_added:
+    description: Events that were newly added to the audit class.
+    returned: when action is add_events
+    type: list
+    elements: str
+    sample: ['FILE_Open', 'FILE_Read']
+events_already_present:
+    description: Requested events that were already in the audit class, so they were not added again.
+    returned: when action is add_events
+    type: list
+    elements: str
+    sample: ['USER_SU']
+events_removed:
+    description: Events that were removed from the audit class.
+    returned: when action is remove_events
+    type: list
+    elements: str
+    sample: ['FS_Chdir']
+events_not_present:
+    description: Requested events that were not in the audit class, so nothing was removed for them.
+    returned: when action is remove_events
+    type: list
+    elements: str
+    sample: ['FS_Rmdir']
+audit_class_events:
+    description: Final list of events in the audit class after the task.
+    returned: when action is add_events or remove_events
+    type: list
+    elements: str
+    sample: ['USER_SU', 'PASSWORD_Change', 'FILE_Open', 'FILE_Read']
+backup_file:
+    description: Name of the backup file created before the audit config file was changed.
+    returned: when backup is true and the config file was changed
+    type: str
+    sample: '/etc/security/audit/config.12345.2026-10-24@11:40:12~'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
 import os
 import re
 import time
+import tempfile
 
 # Module-level constants
 AUDIT_TRAIL_FILES = ['trail', 'bin1', 'bin2', 'auditb']
 MIN_CAPTURE_DELAY = 0
 MAX_CAPTURE_DELAY = 300
+AUDIT_CONFIG_FILE = '/etc/security/audit/config'
+AUDIT_EVENTS_FILE = '/etc/security/audit/events'
+EVENT_ACTIONS = ['add_events', 'remove_events']
+VALID_NAME_PATTERN = r'^[A-Za-z0-9_]+$'
 
 
 def check_audit_config_file(module):
@@ -585,12 +700,397 @@ def capture_audit_logs(module, result):
     return result
 
 
+def validate_event_options(module):
+    '''
+    Validate the options used with add_events / remove_events.
+
+    Arguments:
+        module (dict): The Ansible module
+
+    Returns:
+        requested_events - Clean list of event names (no spaces, no duplicates, user order kept)
+    '''
+    action = module.params['action']
+    audit_class = module.params['audit_class']
+
+    # panic and fullpath belong to 'audit on' only
+    if module.params['panic'] or module.params['fullpath']:
+        module.fail_json(msg="'panic' and 'fullpath' options are not allowed with action: '{0}'.".format(action))
+
+    # Class name must be a simple name, for example: general, security_watch
+    if not re.match(VALID_NAME_PATTERN, audit_class):
+        module.fail_json(
+            msg="Invalid audit class name: '{0}'. Use only letters, digits and underscore.".format(audit_class)
+        )
+
+    requested_events = []
+    invalid_event_names = []
+
+    for event_name in module.params['audit_events']:
+        event_name = event_name.strip()
+
+        # Skip empty names, for example '' or '   '
+        if not event_name:
+            continue
+
+        if not re.match(VALID_NAME_PATTERN, event_name):
+            invalid_event_names.append(event_name)
+        elif event_name not in requested_events:
+            # Add only once, so duplicates are ignored
+            requested_events.append(event_name)
+
+    if invalid_event_names:
+        module.fail_json(
+            msg="Invalid audit event names: {0}. Use only letters, digits and underscore.".format(
+                ', '.join(invalid_event_names)
+            )
+        )
+
+    if not requested_events:
+        module.fail_json(msg="Parameter 'audit_events' must contain at least one event name.")
+
+    return requested_events
+
+
+def get_defined_audit_events(module):
+    '''
+    Read all event names defined in /etc/security/audit/events.
+
+    Arguments:
+        module (dict): The Ansible module
+
+    Returns:
+        defined_events - Set of event names known to the system
+    '''
+    defined_events = set()
+
+    try:
+        with open(AUDIT_EVENTS_FILE, 'r') as events_file:
+            for line in events_file:
+                line = line.strip()
+
+                # Skip empty lines and comments
+                if not line or line.startswith('*') or line.startswith('#'):
+                    continue
+
+                # Event lines look like: USER_SU = printf "%s"
+                match = re.match(r'^([A-Za-z0-9_]+)\s*=', line)
+                if match:
+                    defined_events.add(match.group(1))
+    except (IOError, OSError) as error:
+        module.fail_json(msg="Cannot read {0}: {1}".format(AUDIT_EVENTS_FILE, str(error)))
+
+    return defined_events
+
+
+def read_audit_config_lines(module):
+    '''
+    Read the audit config file as a list of lines (line endings are kept).
+
+    Arguments:
+        module (dict): The Ansible module
+
+    Returns:
+        config_lines - List of lines from /etc/security/audit/config
+    '''
+    try:
+        with open(AUDIT_CONFIG_FILE, 'r') as config_file:
+            return config_file.readlines()
+    except (IOError, OSError) as error:
+        module.fail_json(msg="Cannot read {0}: {1}".format(AUDIT_CONFIG_FILE, str(error)))
+
+
+def write_audit_config(module, config_lines):
+    '''
+    Safely write the audit config file.
+
+    How it works:
+      1. Create a temporary file in the same directory as the config file.
+      2. Register it with add_cleanup_file, so Ansible deletes it automatically
+         when the module ends (success or failure) if it still exists.
+      3. Write all lines into the temporary file.
+      4. atomic_move renames the temporary file to the config file.
+         After the rename, the temporary file no longer exists, so nothing is left behind.
+         atomic_move also keeps the owner and permissions of the original config file.
+
+    Arguments:
+        module (dict): The Ansible module
+        config_lines (list): Lines to write
+    '''
+    config_dir = os.path.dirname(AUDIT_CONFIG_FILE)
+
+    try:
+        temp_fd, temp_path = tempfile.mkstemp(dir=config_dir)
+    except (IOError, OSError) as error:
+        module.fail_json(msg="Cannot create temporary file in {0}: {1}".format(config_dir, str(error)))
+
+    # Ansible removes this file on exit_json / fail_json if it still exists
+    module.add_cleanup_file(temp_path)
+
+    try:
+        with os.fdopen(temp_fd, 'w') as temp_file:
+            temp_file.writelines(config_lines)
+    except (IOError, OSError) as error:
+        module.fail_json(msg="Cannot write temporary audit config file: {0}".format(str(error)))
+
+    module.atomic_move(temp_path, AUDIT_CONFIG_FILE)
+
+
+def find_classes_stanza(config_lines):
+    '''
+    Find the 'classes:' stanza header.
+
+    Arguments:
+        config_lines (list): Lines of the audit config file
+
+    Returns:
+        line index of 'classes:' or None if not found
+    '''
+    for line_index, line in enumerate(config_lines):
+        if line.strip() == 'classes:':
+            return line_index
+    return None
+
+
+def find_audit_class(config_lines, class_name):
+    '''
+    Find the class line inside the 'classes:' stanza and read its events.
+
+    Example line:  general = USER_SU,PASSWORD_Change,FILE_Unlink
+
+    Arguments:
+        config_lines (list): Lines of the audit config file
+        class_name (str): Audit class to look for
+
+    Returns:
+        tuple: (line_index, current_events)
+               line_index is None when the class does not exist
+    '''
+    inside_classes_stanza = False
+
+    for line_index, line in enumerate(config_lines):
+        stripped_line = line.strip()
+
+        # Skip empty lines and comments
+        if not stripped_line or stripped_line.startswith('*') or stripped_line.startswith('#'):
+            continue
+
+        # A line ending with ':' starts a new stanza
+        if stripped_line.endswith(':'):
+            inside_classes_stanza = (stripped_line[:-1].strip() == 'classes')
+            continue
+
+        if inside_classes_stanza and '=' in stripped_line:
+            name, value = stripped_line.split('=', 1)
+
+            if name.strip() == class_name:
+                # Value looks like: USER_SU,PASSWORD_Change,FILE_Unlink
+                current_events = []
+                for event_name in value.split(','):
+                    event_name = event_name.strip()
+                    if event_name:
+                        current_events.append(event_name)
+                return line_index, current_events
+
+    return None, []
+
+
+def update_class_line(config_lines, class_name, event_names, class_line_index, classes_header_index):
+    '''
+    Put the new event list of the class into config_lines.
+      - If the class line exists, it is replaced (indentation is kept).
+      - If the class does not exist, a new line is added just below 'classes:'.
+
+    Arguments:
+        config_lines (list): Lines of the audit config file
+        class_name (str): Audit class name
+        event_names (list): Final list of events for the class
+        class_line_index (int): Index of the class line, or None for a new class
+        classes_header_index (int): Index of the 'classes:' line
+
+    Returns:
+        config_lines - Updated list of lines
+    '''
+    events_text = ','.join(event_names)
+
+    if class_line_index is not None:
+        old_line = config_lines[class_line_index]
+
+        # Keep the same leading spaces/tab as the old line.
+        # Example: old_line = '\tgeneral = USER_SU\n'  ->  indentation = '\t'
+        indentation = old_line[:len(old_line) - len(old_line.lstrip())]
+
+        config_lines[class_line_index] = "{0}{1} = {2}\n".format(indentation, class_name, events_text)
+    else:
+        # Make sure the 'classes:' line ends with a newline before inserting below it
+        if not config_lines[classes_header_index].endswith('\n'):
+            config_lines[classes_header_index] += '\n'
+
+        config_lines.insert(classes_header_index + 1, "\t{0} = {1}\n".format(class_name, events_text))
+
+    return config_lines
+
+
+def format_event_list(event_names):
+    '''
+    Return event names as text for messages, or 'none' if the list is empty.
+    '''
+    if not event_names:
+        return 'none'
+    return ', '.join(event_names)
+
+
+def manage_audit_events(module):
+    '''
+    Add or remove audit events in an audit class of /etc/security/audit/config.
+    This function always ends the module run (exit_json or fail_json).
+
+    Idempotency:
+      - add_events    : events already in the class are not added again.
+      - remove_events : events not in the class are skipped.
+      - If nothing changes, the module returns changed=False.
+
+    Arguments:
+        module (dict): The Ansible module
+    '''
+    action = module.params['action']
+    class_name = module.params['audit_class']
+    apply_hint = "Run 'audit shutdown' and then 'audit start' to load the new configuration."
+
+    # Step 1: Validate options and clean the event list
+    requested_events = validate_event_options(module)
+
+    # Step 2: Read the config file and find the class
+    config_lines = read_audit_config_lines(module)
+
+    classes_header_index = find_classes_stanza(config_lines)
+    if classes_header_index is None:
+        module.fail_json(msg="'classes:' stanza not found in {0}.".format(AUDIT_CONFIG_FILE))
+
+    class_line_index, current_events = find_audit_class(config_lines, class_name)
+
+    result = {
+        'changed': False,
+        'audit_class': class_name,
+    }
+
+    # ---------------- add_events ----------------
+    if action == 'add_events':
+        # Every requested event must be defined in /etc/security/audit/events.
+        # Unknown names (for example 'Ram_Event' or a typo like 'FILE_Opne')
+        # stop the task here, before the config file is touched.
+        defined_events = get_defined_audit_events(module)
+
+        undefined_events = []
+        for event_name in requested_events:
+            if event_name not in defined_events:
+                undefined_events.append(event_name)
+
+        if undefined_events:
+            module.fail_json(
+                msg="Audit events not defined in {0}: {1}. Check the event name and its case. "
+                    "A custom event must be defined in {0} before it can be added to an audit class.".format(
+                        AUDIT_EVENTS_FILE, ', '.join(undefined_events)
+                    ),
+                **result
+            )
+
+        # Split requested events into "already in the class" and "new"
+        events_already_present = []
+        events_to_add = []
+        for event_name in requested_events:
+            if event_name in current_events:
+                events_already_present.append(event_name)
+            else:
+                events_to_add.append(event_name)
+
+        result['events_added'] = events_to_add
+        result['events_already_present'] = events_already_present
+
+        # Idempotent case: nothing new to add
+        if not events_to_add:
+            result['audit_class_events'] = current_events
+            result['msg'] = "All requested events are already present in audit class '{0}': {1}. No change needed.".format(
+                class_name, format_event_list(events_already_present)
+            )
+            module.exit_json(**result)
+
+        # New events are added at the end, old order is kept
+        updated_events = current_events + events_to_add
+
+        if class_line_index is None:
+            class_status = "Audit class '{0}' created in {1}.".format(class_name, AUDIT_CONFIG_FILE)
+        else:
+            class_status = "Audit class '{0}' updated in {1}.".format(class_name, AUDIT_CONFIG_FILE)
+
+        result['msg'] = "{0} New events added: {1}. Events already present: {2}. {3}".format(
+            class_status, format_event_list(events_to_add), format_event_list(events_already_present), apply_hint
+        )
+
+    # ---------------- remove_events ----------------
+    else:
+        # Split requested events into "in the class" (to remove) and "not in the class"
+        events_to_remove = []
+        events_not_present = []
+        for event_name in requested_events:
+            if event_name in current_events:
+                events_to_remove.append(event_name)
+            else:
+                events_not_present.append(event_name)
+
+        result['events_removed'] = events_to_remove
+        result['events_not_present'] = events_not_present
+
+        # Idempotent case: nothing to remove
+        if not events_to_remove:
+            result['audit_class_events'] = current_events
+            if class_line_index is None:
+                result['msg'] = "Audit class '{0}' does not exist in {1}. No change needed.".format(
+                    class_name, AUDIT_CONFIG_FILE
+                )
+            else:
+                result['msg'] = "None of the requested events are present in audit class '{0}': {1}. No change needed.".format(
+                    class_name, format_event_list(events_not_present)
+                )
+            module.exit_json(**result)
+
+        # Keep every current event that the user did not ask to remove
+        updated_events = []
+        for event_name in current_events:
+            if event_name not in events_to_remove:
+                updated_events.append(event_name)
+
+        # A class with no events is not valid
+        if not updated_events:
+            module.fail_json(
+                msg="Cannot remove all events from audit class '{0}'. At least one event must remain.".format(class_name),
+                **result
+            )
+
+        result['msg'] = "Audit class '{0}' updated in {1}. Events removed: {2}. Events not present: {3}. {4}".format(
+            class_name, AUDIT_CONFIG_FILE, format_event_list(events_to_remove),
+            format_event_list(events_not_present), apply_hint
+        )
+
+    # ---------------- save the change ----------------
+    # Backup is taken only here, so it happens only when the file really changes
+    if module.params['backup']:
+        result['backup_file'] = module.backup_local(AUDIT_CONFIG_FILE)
+
+    config_lines = update_class_line(config_lines, class_name, updated_events, class_line_index, classes_header_index)
+    write_audit_config(module, config_lines)
+
+    result['changed'] = True
+    result['audit_class_events'] = updated_events
+    module.exit_json(**result)
+
+
 def main():
 
     module = AnsibleModule(
         argument_spec=dict(
             action=dict(type='str', required=True,
-                        choices=['start', 'shutdown', 'on', 'off', 'query']),
+                        choices=['start', 'shutdown', 'on', 'off', 'query', 'add_events', 'remove_events']),
             panic=dict(type='bool', default=False),
             fullpath=dict(type='bool', default=False),
             recorded_output=dict(type='str'),
@@ -603,9 +1103,16 @@ def main():
             auditpr_suppress_translation=dict(type='bool', default=False),
             auditpr_single_line=dict(type='bool', default=False),
             auditpr_long_usernames=dict(type='bool', default=False),
+            audit_events=dict(type='list', elements='str'),
+            audit_class=dict(type='str', default='general'),
+            backup=dict(type='bool', default=False),
         ),
         mutually_exclusive=[
             ['auditpr_verbose', 'auditpr_single_line']
+        ],
+        required_if=[
+            ['action', 'add_events', ['audit_events']],
+            ['action', 'remove_events', ['audit_events']],
         ],
         supports_check_mode=False
     )
@@ -628,6 +1135,26 @@ def main():
             msg="Parameter 'recorded_output' is only supported with actions: 'query', 'shutdown', or 'off'. "
                 "Current action '{0}' does not support log capture.".format(action)
         )
+
+    # audit_events is allowed only with add_events / remove_events
+    if module.params['audit_events'] and action not in EVENT_ACTIONS:
+        module.fail_json(
+            msg="Parameter 'audit_events' is only supported with actions: 'add_events' or 'remove_events'. "
+                "Current action '{0}' does not support it.".format(action)
+        )
+
+    # backup is allowed only with add_events / remove_events
+    if module.params['backup'] and action not in EVENT_ACTIONS:
+        module.fail_json(
+            msg="Parameter 'backup' is only supported with actions: 'add_events' or 'remove_events'. "
+                "Current action '{0}' does not support it.".format(action)
+        )
+
+    # Audit event management only edits the config file and does not run the 'audit' command.
+    # manage_audit_events() always ends the module run.
+    if action in EVENT_ACTIONS:
+        check_audit_config_file(module)
+        manage_audit_events(module)
 
     # Validate configuration if log capture is requested
     if recorded_output and should_capture_logs(action):
