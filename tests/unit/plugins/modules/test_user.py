@@ -66,6 +66,28 @@ class TestCreateUser(unittest.TestCase):
         testResult = result.exception.args[0]
         self.assertTrue(testResult['failed'])
 
+    def test_create_user_lowercases_boolean_attributes(self):
+        # Issue #788: mkuser must receive "true"/"false", not "True"/"False"
+        self.module.params["password"] = None
+        self.module.params["attributes"] = {"login": True, "rlogin": False}
+        user.create_user(self.module)
+        self.module.run_command.assert_called_once_with(
+            'mkuser -R files login="true" rlogin="false"  test123')
+
+    def test_create_user_lowercases_keyword_strings(self):
+        self.module.params["password"] = None
+        self.module.params["attributes"] = {"account_locked": "Yes", "su": "TRUE"}
+        user.create_user(self.module)
+        self.module.run_command.assert_called_once_with(
+            'mkuser -R files account_locked="yes" su="true"  test123')
+
+    def test_create_user_keeps_free_text_values(self):
+        self.module.params["password"] = None
+        self.module.params["attributes"] = {"gecos": "Normal User", "data": "1272"}
+        user.create_user(self.module)
+        self.module.run_command.assert_called_once_with(
+            'mkuser -R files gecos="Normal User" data="1272"  test123')
+
     # def test_success_user_modify_without_password(self):
     #     self.module.params["password"] = None
     #     self.module.params["attributes"] = {"home": "/test/home/test123", "data": "1272"}
