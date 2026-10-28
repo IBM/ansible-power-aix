@@ -126,6 +126,17 @@ from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 
+def normalize_attr_value(val):
+    '''
+    Returns the value in the form AIX expects: booleans and the
+    yes/no/true/false/always/never keywords are lowercased, anything
+    else is returned unchanged.
+    '''
+    if isinstance(val, bool) or re.fullmatch(r'(yes|true|always|no|false|never)', str(val), re.IGNORECASE):
+        return str(val).lower()
+    return val
+
+
 def get_chuser_command(module):
     '''
     Returns the 'cmd' needed to run to implement changes on
@@ -336,7 +347,7 @@ def create_user(module):
 
     if attributes is not None:
         for attr, val in attributes.items():
-            opts += f"{attr}=\"{val}\" "
+            opts += f"{attr}=\"{normalize_attr_value(val)}\" "
         if load_module_opts is not None:
             opts = load_module_opts + opts
     cmd = f"mkuser {opts} {name}"
