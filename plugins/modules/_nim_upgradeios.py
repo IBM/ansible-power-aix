@@ -304,13 +304,13 @@ nim_node:
                     "cable_type1": "N/A",
                     "class": "management",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> 0",
                     "mgmt_profile1": "p8-hmc 1 vios-cec",
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "alt_disk_install operation is being performed",
-                    "hostname": "vios1.aus.stglabs.ibm.com",
+                    "hostname": "<hostname>",
                     "cluster": {
                         "vios1": {
                             "repos_state": "",

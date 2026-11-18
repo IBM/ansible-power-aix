@@ -5,7 +5,7 @@
   gather_facts: false
   vars:
     check_targets_v: standalone
-    install_targets_v: quimby06
+    install_targets_v: <hostname>
     update_lpp_v: latest_sp
     bos_inst_resgroup_v: basic_res_grp
     bos_inst_script_v: setup_root
@@ -14,7 +14,7 @@
     define_location_v: /export/nim/script_res/yum_install.sh
     apply_script_v: setup_yum
     alloc_resource_v: 7200-03-04-1938-lpp_source
-    rm_resource_v: quimby06_svg
+    rm_resource_v: <hostname>_svg
 
   tasks:
     - name: Update a LPAR to the latest level available

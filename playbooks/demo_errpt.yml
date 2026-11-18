@@ -103,13 +103,13 @@
 
     - name: Run errpt with machine details
       ibm.power_aix.errpt:
-        machine: "00FB29314C00"
+        machine: "dummy_id"
         recorded_output: "/tmp/errptdata/errpt_output.txt"
         concatenated_output: "{{ concat_v1 }}"
 
     - name: Run errpt with node name
       ibm.power_aix.errpt:
-        node: "p9zpa-ansible-nim2"
+        node: "<hostname>"
         recorded_output: "/tmp/errptdata/errpt_output.txt"
         concatenated_output: "{{ concat_v1 }}"
 
@@ -125,8 +125,8 @@
         ascii_format: true
         include_errids: "192AC071"
         sequence_number: "119"
-        machine: "00FB29314C00"
-        node: "p9zpa-ansible-nim2"
+        machine: "dummy_id"
+        node: "<hostname>"
         resource_names: "errdemon"
         start_date: "0512000025"
         end_date: "0522150525"

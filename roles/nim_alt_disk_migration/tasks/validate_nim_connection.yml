@@ -31,7 +31,7 @@
   register: nim_alt_disk_migration_chk_client_output
   failed_when:
     - nim_alt_disk_migration_chk_client_output is failed
-    # 0042-053 lsnim: there is no NIM object named "quimby07"
+    # 0042-053 lsnim: there is no NIM object named "<hostname>"
     - nim_alt_disk_migration_chk_client_output.stderr.find( "0042-053" ) != -1
 # - debug: var=nim_alt_disk_migration_chk_client_output
 

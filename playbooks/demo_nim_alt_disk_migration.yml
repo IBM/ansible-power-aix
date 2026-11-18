@@ -16,7 +16,7 @@
   remote_user: root
   vars:
     hosts_val: nimserver
-    nim_client_v: p9zpa-ansible-test2
+    nim_client_v: <hostname>
     target_disk_v: ""
     target_disk_policy_v: minimize
     lpp_source_v: lpp_72V_2114

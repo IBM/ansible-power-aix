@@ -4,7 +4,7 @@
 ############################################################
 # parsing the nim client hostname from lsnim output
 # - /usr/sbin/lsnim -a if1 {{ nim_alt_disk_migration_nim_client }}
-# e.g. output "if1 = master_net p9zpa-ansible-test1.aus.stglabs.ibm.com A2421B1DED02 ent0"
+# e.g. output "if1 = master_net <hostname> dummy_id ent0"
 # - /usr/bin/awk -F '=' '{print $2}'
 # retains only the string on the right hand side of '='
 # - /usr/bin/awk '{ print $2 }' | /usr/bin/xargs

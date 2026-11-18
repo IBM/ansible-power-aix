@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     apar: all
-    vm_targets: quimby01
+    vm_targets: <hostname>
     path: /export/nim/ansible
     download: false
 

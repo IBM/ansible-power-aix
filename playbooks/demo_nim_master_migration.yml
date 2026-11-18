@@ -14,7 +14,7 @@
         name: nim_master_migration
       vars:
         nim_master_migration_master_a: ansible-nim1
-        nim_master_migration_master_b: "p9zpa-ansible-test2"
+        nim_master_migration_master_b: "<hostname>"
         nim_master_migration_alt_disk: "hdisk1"
         nim_master_migration_db_filename: "db_backupfile"
         nim_master_migration_lpp_source_v: "2317A_73D"

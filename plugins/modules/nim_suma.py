@@ -140,7 +140,7 @@ lpp_source_name:
     description: Name of the NIM Lpp Source resource used.
     returned: always
     type: str
-    sample: 'quimby01_lpp_source'
+    sample: '<hostname>_lpp_source'
 targets:
     description: Status information.
     returned: always
@@ -317,7 +317,7 @@ def expand_targets(module, targets, nim_clients):
 
     for target in targets:
 
-        # Build target(s) from: range i.e. quimby[7:12]
+        # Build target(s) from: range i.e. <hostname>[7:12]
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
             name = rmatch.group(1)
@@ -330,7 +330,7 @@ def expand_targets(module, targets, nim_clients):
                     clients.append(curr_name)
             continue
 
-        # Build target(s) from: val*. i.e. quimby*
+        # Build target(s) from: val*. i.e. <hostname>*
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
             name = rmatch.group(1)
@@ -345,7 +345,7 @@ def expand_targets(module, targets, nim_clients):
             clients = nim_clients
             continue
 
-        # Build target(s) from full name: quimby05
+        # Build target(s) from full name: <hostname>
         if (target in nim_clients) or (target == 'master'):
             clients.append(target)
 

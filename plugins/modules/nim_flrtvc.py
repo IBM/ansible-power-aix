@@ -1428,7 +1428,7 @@ def expand_targets(module, targets, nim_clients):
 
     for target in targets:
 
-        # Build target(s) from: range i.e. quimby[7:12]
+        # Build target(s) from: range i.e. <hostname>[7:12]
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
             name = rmatch.group(1)
@@ -1442,7 +1442,7 @@ def expand_targets(module, targets, nim_clients):
                     clients.append(curr_name)
             continue
 
-        # Build target(s) from: val*. i.e. quimby*
+        # Build target(s) from: val*. i.e. <hostname>*
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
             name = rmatch.group(1)
@@ -1457,7 +1457,7 @@ def expand_targets(module, targets, nim_clients):
             clients = nim_clients
             continue
 
-        # Build target(s) from: quimby05 quimby08 quimby12
+        # Build target(s) from: <hostname> <hostname> <hostname>
         if (target in nim_clients) or (target == 'master'):
             clients.append(target)
 

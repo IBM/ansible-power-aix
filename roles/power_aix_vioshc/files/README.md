@@ -55,39 +55,39 @@ This command returns the following exit values:
 
 ## Example
 
-- /usr/sbin/vioshc.py -l a -i e08hmc2.aus.stglabs.ibm.com                                                                              
+- /usr/sbin/vioshc.py -l a -i <hostname>                                                                              
 
 <pre><code>
 
 Managed Systems UUIDs                   Serial
 -------------------------------------   ----------------------
-931a9335-bb33-388b-b708-a01b5cd24534    8246-L2C*100194A
+Dummy_uuid                              dummy_serial
 
         VIOS                                    Partition ID
         -------------------------------------   --------------
-        21C6104E-2D61-4180-B525-8522ECFF2938    2
-        5D01525E-8A34-4B1E-997B-36932C562755    1
+        Dummy                                   2
+        Dummy                                   1
 
-582ae663-feb3-3946-9602-ee0999416c59    8246-L2C*10018FA
+dummy_uuid                              dummy_serial
 
         VIOS                                    Partition ID
         -------------------------------------   --------------
-        277A536E-7436-4AB7-B5C5-7398AB470AEB    2
-        7DDD1C13-95C6-4801-9BCF-9EA829670217    1
+        dummy                                   2
+        dummy                                   1
 
 </code></pre>
 
-- /usr/sbin/vioshc.py -i e08hmc2.aus.stglabs.ibm.com -m 582ae663-feb3-3946-9602-ee0999416c59 -U 277A536E-7436-4AB7-B5C5-7398AB470AEB -U 7DDD1C13-95C6-4801-9BCF-9EA829670217
+- /usr/sbin/vioshc.py -i <hostname> -m dummy_id -U dummy_id -U dummy_id
 
 <pre><code>
 
 Primary VIOS Name         IP Address      ID         UUID                
 -------------------------------------------------------------------------------------------------
-gdrh9v2                   9.3.18.143      2          277A536E-7436-4AB7-B5C5-7398AB470AEB     
+dummy                   X.X.X.X      2          dummy_uuid     
 
 Backup VIOS Name          IP Address      ID         UUID                
 -------------------------------------------------------------------------------------------------
-gdrh9v1                   9.3.18.142      1          7DDD1C13-95C6-4801-9BCF-9EA829670217     
+dummy                   X.X.X.X      1          dummy_uuid     
 
 PASS: Active client lists are the same for both VIOSes
 FAIL: vSCSI configurations are not identical on both vioses.

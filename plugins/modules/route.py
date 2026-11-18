@@ -125,8 +125,8 @@ EXAMPLES = r'''
 - name: Add a route with weight and policy
   aix_route_command:
     action: add
-    destination: 192.158.2.2
-    gateway: 192.158.2.5
+    destination: X.X.X.X
+    gateway: X.X.X.X
     arguments:
       - -weight
       - "5"

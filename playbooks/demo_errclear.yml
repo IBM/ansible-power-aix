@@ -53,13 +53,13 @@
     - name: Test machine (-m) - Clear for this machine
       ibm.power_aix.errclear:
         days: 0
-        machine: "00FB29314C00"
+        machine: "dummy_id"
         input_log: "/tmp/errlog_data/errlog8"
 
     - name: Test node (-n) - Clear for this node
       ibm.power_aix.errclear:
         days: 0
-        node: "p9zpa-ansible-nim2"
+        node: "<hostname>"
         input_log: "/tmp/errlog_data/errlog9"
 
     - name: Test resource_names (-N) - Clear SRC errors
@@ -102,8 +102,8 @@
         days: 0
         error_class: "S"
         include_labels: "SRC_SVKO"
-        machine: "00FB29314C00"
-        node: "p9zpa-ansible-nim2"
+        machine: "dummy_id"
+        node: "<hostname>"
         resource_names: "SRC"
         error_types: "PERM"
         input_log: "/tmp/errlog_data/errlog16"

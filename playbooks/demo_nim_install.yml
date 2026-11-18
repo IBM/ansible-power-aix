@@ -3,7 +3,7 @@
   hosts: nimserver
   gather_facts: false
   vars:
-    vm_targets: quimby01
+    vm_targets: <hostname>
     res_group: basic_res_grp
 
   tasks:
