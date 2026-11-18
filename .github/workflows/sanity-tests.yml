@@ -27,12 +27,12 @@ jobs:
     name: running sanity tests with python ${{ matrix.python-version }}
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ansible_collections/ibm/power_aix
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -61,12 +61,12 @@ jobs:
     name: running EDA sanity tests with python ${{ matrix.python-version }}
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ansible_collections/ibm/power_aix
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 

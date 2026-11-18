@@ -103,7 +103,7 @@ install-unit-test-requirements:
 .PHONY: install-pylint-py3k
 install-pylint-py3k: uninstall-pylint
 	python3 -m pip install --upgrade pip
-	python3 -m pip install pylint==2.10.*
+	python3 -m pip install pylint
 
 ######################################################################################
 # testing targets
@@ -168,7 +168,7 @@ role-lint:
 
 .PHONY: porting
 porting:
-	python3 -m pylint --py3k --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
+	python3 -m pylint --errors-only --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
 
 .PHONY: compile
 compile:
