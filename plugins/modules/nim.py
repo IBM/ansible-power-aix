@@ -326,10 +326,10 @@ nim_node:
                     "class": "machines",
                     "comments": "object defined using nimquery -d",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> dummy_id ent0",
                     "installed_image": "ansible_img",
-                    "mgmt_profile1": "p8-hmc 2 nimclient-cec nimclient-vios1",
+                    "mgmt_profile1": "p8-hmc 2 <hostname> <hostname>",
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "customization is being performed",
@@ -343,9 +343,9 @@ nim_node:
                     "cable_type1": "N/A",
                     "class": "management",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
-                    "ip": "vios1.aus.stglabs.ibm.com",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> 0",
+                    "ip": "<hostname>",
                     "mgmt_profile1": "p8-hmc 1 vios-cec",
                     "netboot_kernel": "64",
                     "platform": "chrp",
@@ -738,7 +738,7 @@ def expand_targets(targets):
             clients.extend(list(results['nim_node'][target.lower()]))
             continue
 
-        # Build target(s) from: range i.e. quimby[7:12]
+        # Build target(s) from: range i.e. <hostname>[7:12]
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
             name = rmatch.group(1)
@@ -752,7 +752,7 @@ def expand_targets(targets):
                     clients.append(curr_name)
             continue
 
-        # Build target(s) from: val*. i.e. quimby*
+        # Build target(s) from: val*. i.e. <hostname>*
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
 

@@ -97,7 +97,7 @@
       ibm.power_aix.snap:
         action: "snapsplit"
         ss_filename: "/tmp/ibmsupt/snap.pax.Z"
-        ss_machinename: "p9zpa-ansible-test4.aix-test.tadn.ibm.com"
+        ss_machinename: "<hostname>"
         ss_size: "1"
     - name: Run the snapsplit command for split the file without machine name
       ibm.power_aix.snap:
@@ -108,7 +108,7 @@
         action: "snapsplit"
         ss_rejoining: true
         ss_timestamp: "020725032455"
-        ss_machinename: "p9zpa-ansible-test4.aix-test.tadn.ibm.com"
+        ss_machinename: "<hostname>"
         ss_size: "2"
     - name: Run the snapsplit restore command without machine details
       ibm.power_aix.snap:

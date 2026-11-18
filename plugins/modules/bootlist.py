@@ -129,9 +129,9 @@ EXAMPLES = r'''
         blv: hd5
         pathid: "1"
       - device: ent0
-        client: 129.35.9.23
-        gateway: 129.35.21.1
-        bserver: 129.12.2.10
+        client: X.X.X.X
+        gateway: X.X.X.X
+        bserver: X.X.X.X
     service:
       - device: cd0
 
@@ -187,10 +187,10 @@ ansible_facts:
                     "pathid": "0"
                 },
                 {
-                    "bserver": "129.12.2.10",
-                    "client": "129.35.9.23",
+                    "bserver": "X.X.X.X",
+                    "client": "X.X.X.X",
                     "device": "ent0",
-                    "gateway": "129.35.21.1"
+                    "gateway": "X.X.X.X"
                 }
             ]
         service:

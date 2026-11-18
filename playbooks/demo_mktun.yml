@@ -11,11 +11,11 @@
         manual:
           ipv4:
             - src:
-                address: 10.10.11.72
+                address: X.X.X.X
                 ah_algo: HMAC_MD5
                 esp_algo: DES_CBC_8
               dst:
-                address: 10.10.11.98
+                address: X.X.X.X
                 esp_spi: 12345
 
     - name: Export IPv4 tunnel definition for tunnel id 3 on srchost

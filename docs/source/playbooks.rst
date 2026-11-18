@@ -79,7 +79,7 @@ should be included when running the sample playbook.
 
 
 The value for the property **ansible_host** is the hostname of the managed node;
-for example, ``ansible_host: regency.aus.stglabs.ibm.com``
+for example, ``ansible_host: <hostname>``
 
 The value for the property **aix_target_username** is the user name to use when
 connecting to the host; for example, ``ansible_user: padmin``.

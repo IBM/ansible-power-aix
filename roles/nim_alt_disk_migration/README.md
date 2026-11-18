@@ -271,7 +271,7 @@ None.
       - include_role:
           name: nim_alt_disk_migration
         vars:
-          nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+          nim_alt_disk_migration_nim_client: <hostname>
           nim_alt_disk_migration_target_disk:
             disk_name: hdisk1
           nim_alt_disk_migration_lpp_source: lpp_2134A_730
@@ -285,7 +285,7 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_nim_client: <hostname>
         nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
         nim_alt_disk_migration_lpp_source: lpp_2134A_730
@@ -323,7 +323,7 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_nim_client: <hostname>
         nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
         nim_alt_disk_migration_lpp_source: lpp_2134A_730
@@ -345,7 +345,7 @@ None.
     - include_role:
         name: nim_alt_disk_migration
       vars:
-        nim_alt_disk_migration_nim_client: p9zpa-ansible-test1
+        nim_alt_disk_migration_nim_client: <hostname>
         nim_alt_disk_migration_target_disk:
           disk_size_policy: minimize
         nim_alt_disk_migration_lpp_source: lpp_2134A_730

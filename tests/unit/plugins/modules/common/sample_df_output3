@@ -8,7 +8,7 @@ Filesystem    512-blocks      Free %Used    Iused %Iused Mounted on
 /proc                  -         -    -        -      - /proc
 /dev/hd10opt      524288    106960   80%     9593    44% /opt
 /dev/livedump     524288    523552    1%        4     1% /var/adm/ras/livedump
-nimitz.aus.stglabs.ibm.com:/nim/build_net    65011712  21760832   67%    61015     3% /test
+<hostname>:/nim/build_net    65011712  21760832   67%    61015     3% /test
 /ahafs                 -         -    -       35     1% /aha
 /dev/testlv       163840    163152    1%        4     1% /tmp/testfs
 /dev/testnfslv     655360    654600    1%        4     1% /tmp/servnfs

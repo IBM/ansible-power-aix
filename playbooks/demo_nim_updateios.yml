@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     preview_v: true
-    targets_v: quimby-vios2
+    targets_v: <hostname>
     lpp_source_v: ""
     rm_filesets_v: ""
     rm_installp_bundle_v: ""

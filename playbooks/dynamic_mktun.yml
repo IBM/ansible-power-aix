@@ -4,8 +4,8 @@
   gather_facts: true
   vars:
     log_file: /tmp/ansible_mktun_debug.log
-    ip_v4_address_src: 10.10.11.72
-    ip_v4_address_dest: 10.10.11.98
+    ip_v4_address_src: X.X.X.X
+    ip_v4_address_dest: X.X.X.X
     var_ah_algo: HMAC_MD5
     var_esp_algo: DES_CBC_8
     var_esp_spi: 12345

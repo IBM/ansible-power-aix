@@ -17,7 +17,7 @@
     svg_shrink_fs_v: false
     # for Standalone LPAR
     # lpar_nim_node_v:        {}
-    lpar_targets_v: quimby06
+    lpar_targets_v: <hostname>
     sysb_location_v: /export/nim/mksysb
     sysb_name_v: ansible_img
     sysb_name_prefix_v: ansible
@@ -32,7 +32,7 @@
     sysb_boot_target_v: true
     # for VIOS
     # vios_nim_node_v:        {}
-    vios_targets_v: quimby-vios2
+    vios_targets_v: <hostname>
     iossysb_type_v: ios_mksysb
     iossysb_location_v: /export/nim/ios_mksysb
     iossysb_name_v: ""
@@ -97,7 +97,7 @@
         action: view
         type: "{{ iosb_type_v }}"
         #  targets: "{{ vios_targets_v }}"
-        name: quimby-vios2_iosb
+        name: <hostname>_iosb
       register: result
     - name: Display ios backup view result
       ansible.builtin.debug:

@@ -165,8 +165,8 @@ Available variables are listed below, along with default values:
     - import_role:
         name: ibm.power_aix.nim_master_migration
       vars:
-        nim_master_migration_master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
-        nim_master_migration_master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        nim_master_migration_master_a: <hostname>
+        nim_master_migration_master_b: "<hostname>"
         nim_master_migration_alt_disk: "hdisk1"
         nim_master_migration_db_filename: "db_backupfile"
         nim_master_migration_lpp_source_v: "2317A_73D"
@@ -190,8 +190,8 @@ Available variables are listed below, along with default values:
     - import_role:
         name: ibm.power_aix.nim_master_migration
       vars:
-        nim_master_migration_master_a: p9zpa-ansible-nim1.aus.stglabs.ibm.com
-        nim_master_migration_master_b: "fvtfleet1-lp1.aus.stglabs.ibm.com"
+        nim_master_migration_master_a: <hostname>
+        nim_master_migration_master_b: "<hostname>"
         nim_master_migration_alt_disk: "hdisk1"
         nim_master_migration_db_filename: "db_backupfile"
         nim_master_migration_lpp_source_v: "2317A_73D"

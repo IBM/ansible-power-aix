@@ -384,10 +384,10 @@ nim_node:
                     "class": "machines",
                     "comments": "object defined using nimquery -d",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net nimclient01.aus.stglabs.ibm.com AED8E7E90202 ent0",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> dummy_id ent0",
                     "installed_image": "ansible_img",
-                    "mgmt_profile1": "p8-hmc 2 nimclient-cec nimclient-vios1",
+                    "mgmt_profile1": "p8-hmc 2 <hostname> <hostname>",
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "customization is being performed",
@@ -401,8 +401,8 @@ nim_node:
                     "cable_type1": "N/A",
                     "class": "management",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> 0",
                     "mgmt_profile1": "p8-hmc 1 vios-cec",
                     "netboot_kernel": "64",
                     "platform": "chrp",
@@ -632,7 +632,7 @@ def expand_targets(targets):
             clients.extend(list(results['nim_node'][target.lower()]))
             continue
 
-        # Build target(s) from: range i.e. quimby[7:12]
+        # Build target(s) from: range i.e. <hostname>[7:12]
         rmatch = re.match(r"(\w+)\[(\d+):(\d+)\]", target)
         if rmatch:
             name = rmatch.group(1)
@@ -645,7 +645,7 @@ def expand_targets(targets):
                     clients.append(curr_name)
             continue
 
-        # Build target(s) from: val*. i.e. quimby*
+        # Build target(s) from: val*. i.e. <hostname>*
         rmatch = re.match(r"(\w+)\*$", target)
         if rmatch:
             name = rmatch.group(1)
@@ -657,7 +657,7 @@ def expand_targets(targets):
                     clients.append(curr_name)
             continue
 
-        # Build target(s) from: quimby05 quimby08 quimby12
+        # Build target(s) from: <hostname> <hostname> <hostname>
         if target in results['nim_node']['standalone'] or target in results['nim_node']['vios']:
             clients.append(target)
 
@@ -1069,7 +1069,7 @@ def nim_view_backup(module, params):
         module.fail_json(**results)
     target = results['backup_info'][params['name']]['source_image']
 
-    # nim -Fo viosbr -a viosbr_action=view -a ios_backup=quimby-vios1_iosb quimby-vios1
+    # nim -Fo viosbr -a viosbr_action=view -a ios_backup=<hostname>_iosb <hostname>
     cmd = ['nim', '-Fo', 'viosbr', '-a', 'viosbr_action=view']
     cmd += ['-a', f'ios_backup={params_name}']
     if params['other_attributes']:

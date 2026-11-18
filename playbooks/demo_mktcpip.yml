@@ -4,14 +4,14 @@
   gather_facts: false
   vars:
     host_name: all
-    address_v: 192.9.200.4
-    nameserver_v: 192.9.200.1
+    address_v: X.X.X.X
+    nameserver_v: X.X.X.X
     interface_v: en0
-    domain_v: austin.century.com
+    domain_v: dummy_host
   tasks:
     - name: Set the required values for starting TCP/IP
       ibm.power_aix.mktcpip:
-        hostname: fred.austin.century.com
+        hostname: test_hostname
         address: "{{ address_v }}"
         interface: "{{ interface_v }}"
         nameserver: "{{ nameserver_v }}"

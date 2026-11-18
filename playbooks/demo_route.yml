@@ -167,7 +167,7 @@
       ibm.power_aix.route:
         action: add
         destination: "192.158.4.2"
-        gateway: "192.158.3.5"
+        gateway: "X.X.X.X"
         arguments:
           weight: "5"
           policy: "4"
@@ -176,7 +176,7 @@
       ibm.power_aix.route:
         action: change
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         flags: "host"
         arguments:
           weight: "4"
@@ -185,7 +185,7 @@
       ibm.power_aix.route:
         action: set
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         arguments:
           weight: "6"
           policy: "4"
@@ -194,7 +194,7 @@
       ibm.power_aix.route:
         action: delete
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         arguments:
           weight: "4"
           policy: "2"
@@ -203,7 +203,7 @@
       ibm.power_aix.route:
         action: add
         destination: "192.158.4.2"
-        gateway: "192.158.3.5"
+        gateway: "X.X.X.X"
         prefixlen: 24
         arguments:
           weight: "5"
@@ -213,7 +213,7 @@
       ibm.power_aix.route:
         action: change
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         prefixlen: 24
         flags: "net"
         arguments:
@@ -223,7 +223,7 @@
       ibm.power_aix.route:
         action: set
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         prefixlen: 24
         arguments:
           weight: "4"
@@ -233,7 +233,7 @@
       ibm.power_aix.route:
         action: delete
         destination: "192.158.4.2"
-        gateway: "10.32.144.2"
+        gateway: "X.X.X.X"
         prefixlen: 24
         arguments:
           weight: "4"

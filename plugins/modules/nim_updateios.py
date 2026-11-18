@@ -197,13 +197,13 @@ nim_node:
                     "cable_type1": "N/A",
                     "class": "management",
                     "connect": "nimsh",
-                    "cpuid": "00F600004C00",
-                    "if1": "master_net vios1.aus.stglabs.ibm.com 0",
+                    "cpuid": "dummy_id",
+                    "if1": "master_net <hostname> 0",
                     "mgmt_profile1": "p8-hmc 1 vios-cec",
                     "netboot_kernel": "64",
                     "platform": "chrp",
                     "prev_state": "alt_disk_install operation is being performed",
-                    "hostname": "vios1.aus.stglabs.ibm.com",
+                    "hostname": "<hostname>",
                     "cluster": {
                         "vios1": {
                             "repos_state": "",
@@ -610,11 +610,11 @@ def check_vios_cluster_status(module, target_tuple):
             return False
 
         # stdout is like:
-        # CLUSTER_NAME:    porthos_cl1
+        # CLUSTER_NAME:    <cluster_name>
         # CLUSTER_ID:      adf01bd81de611ea8012be6aa4a49d02
         #
-        # porthos_cl1:OK:porthos-vios1:8286-42A02103341V:2:OK:OK
-        # porthos_cl1:OK:porthos-vios2:8286-42A02103341V:3:OK:OK
+        # <cluster_name>:OK:<hostname>:dummy_id:2:OK:OK
+        # <cluster_name>:OK:<hostname>:dummy_id:3:OK:OK
         #
         # with the following:
         # Cluster Name:Cluster State:Node Name:Node MTM:Node Partition Num:Node State:Node Repos State

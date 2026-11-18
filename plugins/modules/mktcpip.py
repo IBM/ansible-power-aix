@@ -74,9 +74,9 @@ EXAMPLES = r'''
 - name: Set the required values for starting TCP/IP
   mktcpip:
     hostname: fred.austin.century.com
-    address: 192.9.200.4
+    address: X.X.X.X
     interface: en0
-    nameserver: 192.9.200.1
+    nameserver: X.X.X.X
     domain: austin.century.com
     start_daemons: true
 '''
@@ -86,7 +86,7 @@ msg:
     description: The execution message.
     returned: always
     type: str
-    sample: "Command 'mktcpip -h quimby01.aus.stglabs.ibm.com -a 9.3.149.150 -i en1' successful."
+    sample: "Command 'mktcpip -h <hostname> -a X.X.X.X -i en1' successful."
 cmd:
     description: The command executed.
     returned: always
@@ -100,7 +100,7 @@ stdout:
     returned: always
     type: str
     sample: 'en1\n
-             quimby01.aus.stglabs.ibm.com\n
+             <hostname>\n
              inet0 changed\n
              en1 changed'
 stderr:
