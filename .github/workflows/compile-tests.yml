@@ -13,7 +13,7 @@ jobs:
   ########################################################################
   # compile test
   # - makes sure that the collection has compatible syntax
-  # with python version 3.6, and 3.8
+  # with python version 3.8, and 3.9
   ########################################################################
   compile-test:
     runs-on: ubuntu-22.04
@@ -29,12 +29,12 @@ jobs:
     name: running compile tests with python ${{ matrix.python-version }}
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ansible_collections/ibm/power_aix
 
       - name: setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
