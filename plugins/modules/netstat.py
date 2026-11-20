@@ -238,13 +238,6 @@ def validate_mutual_exclusiveness(module):
     """
     results = {}
 
-    if module.params['count'] is None:
-        for f in ['numeric_network_address', 'pcb_address', 'all_sockets_state', 'routing_table', 'show_route_details', 'display_configured_interfaces',
-                  'interface_name', 'memory_stats', 'mbuf_pool_stats', 'protocol_stats', 'concise_protocol_stats', 'domain_sockets',
-                  'display_adapter_statistics', 'address_family', 'protocol']:
-            if module.params[f]:
-                results['msg'] = f"' count ' is mandatory with '{f}' option."
-                module.fail_json(**results)
     if module.params['count'] is not None:
         for f in ['virtual_interface_and_multicast', 'cache_stats', 'packet_counts']:
             if module.params[f]:
