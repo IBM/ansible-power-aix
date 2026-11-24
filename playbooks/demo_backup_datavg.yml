@@ -90,7 +90,7 @@
         delete_lvs: true
 
     - name: Restvg to view the backup image information
-      backup:
+      ibm.power_aix.backup:
         action: view
         type: "{{ type_v }}"
         location: "{{ location_v }}"

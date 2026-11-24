@@ -5,7 +5,7 @@
 
   tasks:
     - name: AIX NIM
-      nim:
+      ibm.power_aix.nim:
         action: check
       register: result
     - name: Display nim check result

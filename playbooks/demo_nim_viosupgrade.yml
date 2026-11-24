@@ -48,7 +48,7 @@
         var: result.meta["{{ target_v }}"].stdout.split('\n')
 
     - name: Wait for viosupgrade to complete
-      nim_viosupgrade:
+      ibm.power_aix.nim_viosupgrade:
         action: get_status
         targets: "{{ target_v }}"
       register: result
