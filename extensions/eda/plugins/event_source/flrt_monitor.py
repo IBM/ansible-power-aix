@@ -1,6 +1,4 @@
 
-from __future__ import annotations
-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -10,14 +8,16 @@ from __future__ import annotations
 
 # pylint: disable=duplicate-code
 
+from __future__ import annotations
+
 import asyncio
 import csv
 import hashlib
 import logging
-from pathlib import Path
 import sys
 import tempfile
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
@@ -757,7 +757,7 @@ class FLRTMonitor:  # pylint: disable=too-many-instance-attributes
                     self.logger.debug("Downloaded %s bytes", len(csv_content))
                     return csv_content
 
-            except asyncio.TimeoutError as e:
+            except TimeoutError as e:
                 last_exception = e
                 self.logger.warning("Request timeout on attempt %s", attempt + 1)
             except aiohttp.ClientError as e:

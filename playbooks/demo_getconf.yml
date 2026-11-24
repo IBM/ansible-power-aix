@@ -42,7 +42,7 @@
 
     # Get the maximum length in bytes
     - name: Get ARG_MAX values
-      getconf:
+      ibm.power_aix.getconf:
         variable: ARG_MAX
 
     # Get the info if the machine is 32/64 bit

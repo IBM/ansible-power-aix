@@ -15,7 +15,7 @@
 
   tasks:
     - name: FLRTVC
-      flrtvc:
+      ibm.power_aix.flrtvc:
         path: "{{ path }}"
         verbose: "{{ verbose_v }}"
         apar: "{{ apar }}"

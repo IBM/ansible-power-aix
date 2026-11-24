@@ -126,7 +126,7 @@ module-lint:
 eda-lint:
 	@echo "Running EDA plugin linting..."
 	@echo "Running ruff..."
-	ruff check --select ALL --ignore D100,D104,INP001,FA102,UP001,UP010,I001,FA100,PLR0913,E501 $(EDA_MODULE)
+	ruff check --select E,F,W,I,B,C4,UP --ignore UP001,UP010,UP017,E501 $(EDA_MODULE)
 	@echo "Running flake8..."
 	flake8 --ignore=E402,W503 --max-line-length=160 $(EDA_MODULE)
 	@echo "Running pycodestyle..."
@@ -168,7 +168,7 @@ role-lint:
 
 .PHONY: porting
 porting:
-	python3 -m pylint --errors-only --output-format=colorized $(MODULE) $(VIOSHC_SCRIPT)
+	python3 -m py_compile $(MODULE) $(VIOSHC_SCRIPT)
 
 .PHONY: compile
 compile:

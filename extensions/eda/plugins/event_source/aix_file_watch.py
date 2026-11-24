@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -9,12 +7,16 @@ from __future__ import annotations
 
 # pylint: disable=duplicate-code,no-else-return
 
+from __future__ import annotations
+
 import asyncio
+import logging
+import os
 from datetime import datetime, timezone
 from typing import Any
-import os
+
 import paramiko  # pylint: disable=import-error
-import logging
+
 logger = logging.getLogger("ibm.power_aix.aix_file_watch")
 
 DOCUMENTATION = r"""

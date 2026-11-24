@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -13,13 +11,16 @@ from __future__ import annotations
 
 # pylint: disable=duplicate-code
 
+from __future__ import annotations
+
 import asyncio
+import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import paramiko  # pylint: disable=import-error
-import logging
-import os
+
 logger = logging.getLogger("ibm.power_aix.aix_cpu_watch")
 
 DOCUMENTATION = r"""
@@ -238,11 +239,13 @@ def _compute_cpu_usage_from_vmstat(line: str) -> dict[str, float]:
     return {"us": us, "sy": sy, "id": idl, "wa": wa, "usage": usage}
 
 
+# pylint: disable=too-many-instance-attributes
 class _SSHClient:
     def __init__(
         self,
         host: str,
         username: str,
+        *,
         port: int = 22,
         key_path: str | None = None,
         password: str | None = None,
@@ -262,9 +265,9 @@ class _SSHClient:
         if self._client:
             return
         self._client = paramiko.SSHClient()
-        expanded = os.path.expanduser(self.known_hosts_file)
-        if os.path.exists(expanded):
-            self._client.load_host_keys(expanded)
+        expanded = Path(self.known_hosts_file).expanduser()
+        if expanded.exists():
+            self._client.load_host_keys(str(expanded))
         else:
             logger.warning(
                 "known_hosts file not found at '%s'. "
@@ -315,6 +318,64 @@ class _SSHClient:
             self._client = None
 
 
+async def _poll_host(
+    host_info: dict[str, Any],
+    cli: _SSHClient,
+    sample_cmd: str,
+    threshold: float,
+    emit_only_above: bool,
+    queue: asyncio.Queue,
+) -> None:
+    host = host_info["host"]
+    try:
+        out = await asyncio.to_thread(cli.run, sample_cmd)
+        lines = [line for line in out.splitlines() if line.strip()][-1]
+        if not lines:
+            msg = "vmstat returned no data"
+            raise ValueError(msg)
+        cpu = _compute_cpu_usage_from_vmstat(lines)
+        crossed = cpu["usage"] >= threshold
+        if (not emit_only_above) or crossed:
+            event = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "host": host,
+                "cpu": {
+                    "percent": round(cpu["usage"], 2),
+                    "us": cpu["us"],
+                    "sy": cpu["sy"],
+                    "id": cpu["id"],
+                    "wa": cpu["wa"],
+                },
+                "threshold": threshold,
+                "crossed": crossed,
+                "source": "aix_cpu_watch",
+            }
+            await queue.put(event)
+    except paramiko.ssh_exception.SSHException as e:
+        logger.exception(
+            "SSH connection REJECTED for host '%s': %s",
+            host, e,
+        )
+        err_event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "host": host,
+            "error": str(e),
+            "source": "aix_cpu_watch",
+            "severity": "error",
+        }
+        await queue.put(err_event)
+        cli.close()
+    except (ValueError, RuntimeError, OSError) as e:
+        err_event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "host": host,
+            "error": str(e),
+            "source": "aix_cpu_watch",
+            "severity": "error",
+        }
+        await queue.put(err_event)
+
+
 async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
     """EDA event source: aix_cpu_watch.
 
@@ -334,12 +395,11 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
         emit_only_above = bool(args.get("emit_only_above", False))
         sample_cmd = args.get("sample_cmd", "vmstat 1 3 | tail -1")
 
-        # Prepare SSH clients
         for h in hosts:
             key = h["host"]
             clients[key] = _SSHClient(
-                host=h["host"],
-                username=h.get("username", "root"),
+                h["host"],
+                h.get("username", "root"),
                 port=int(h.get("port", 22)),
                 key_path=h.get("key_path"),
                 password=h.get("password"),
@@ -349,73 +409,11 @@ async def main(queue: asyncio.Queue, args: dict[str, Any]) -> None:
 
         while running:
             start = asyncio.get_event_loop().time()
-
-            def _raise_no_data_error() -> None:
-                """Raise error when vmstat returns no data."""
-                msg = "vmstat returned no data"
-                raise ValueError(msg)
-
-            async def poll_one(h: dict[str, Any]) -> None:
-                host = h["host"]
-                cli = clients[host]
-                try:
-                    # Run vmstat once per cycle
-                    out = await asyncio.to_thread(cli.run, sample_cmd)  # pylint: disable=no-member
-                    # Use the last non-empty line (tail -1 already, but be safe)
-                    lines = [line for line in out.splitlines() if line.strip()][-1]
-                    if not lines:
-                        _raise_no_data_error()
-                    cpu = _compute_cpu_usage_from_vmstat(lines)
-                    crossed = cpu["usage"] >= threshold
-                    if (not emit_only_above) or crossed:
-                        event = {
-                            "timestamp": datetime.now(timezone.utc).isoformat(),
-                            "host": host,
-                            "cpu": {
-                                "percent": round(cpu["usage"], 2),
-                                "us": cpu["us"],
-                                "sy": cpu["sy"],
-                                "id": cpu["id"],
-                                "wa": cpu["wa"],
-                            },
-                            "threshold": threshold,
-                            "crossed": crossed,
-                            "source": "aix_cpu_watch",
-                        }
-                        await queue.put(event)
-                except paramiko.ssh_exception.SSHException as e:
-                    logger.error(
-                        "SSH connection REJECTED for host '%s': %s",
-                        host, e
-                    )
-                    err_event = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "host": host,
-                        "error": str(e),
-                        "source": "aix_cpu_watch",
-                        "severity": "error",
-                    }
-                    await queue.put(err_event)
-                    cli.close()
-
-                except (ValueError, RuntimeError, OSError) as e:
-                    err_event = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "host": host,
-                        "error": str(e),
-                        "source": "aix_cpu_watch",
-                        "severity": "error",
-                    }
-                    # Always emit errors so rules can alert
-                    await queue.put(err_event)
-
-            # Poll all hosts concurrently
-            await asyncio.gather(*(poll_one(h) for h in hosts))
-
-            # Sleep until next tick (interval from loop start)
+            await asyncio.gather(
+                *(_poll_host(h, clients[h["host"]], sample_cmd, threshold, emit_only_above, queue) for h in hosts)
+            )
             elapsed = asyncio.get_event_loop().time() - start
             await asyncio.sleep(max(0, interval - elapsed))
     finally:
-        # Cleanup SSH sessions
         for cli in clients.values():
             cli.close()

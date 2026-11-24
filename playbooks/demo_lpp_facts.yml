@@ -7,7 +7,7 @@
     log_file: /tmp/ansible_lpp_debug.log
   tasks:
     - name: Gather the fileset facts
-      lpp_facts:
+      ibm.power_aix.lpp_facts:
 
     - name: Check whether a fileset called 'openssh.base.client' is installed
       ansible.builtin.debug:

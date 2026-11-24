@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # Copyright: (c) 2020- IBM, Inc
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -9,13 +7,16 @@ from __future__ import annotations
 
 # pylint: disable=duplicate-code
 
+from __future__ import annotations
+
 import asyncio
+import logging
+import os
 from datetime import datetime, timezone
 from typing import Any
 
 import paramiko  # pylint: disable=import-error
-import os
-import logging
+
 logger = logging.getLogger("ibm.power_aix.aix_filesystem_watch")
 
 DOCUMENTATION = r"""
@@ -295,6 +296,7 @@ def _parse_df_output(output: str, filter_filesystems: list[str] | None = None) -
     return filesystems
 
 
+# pylint: disable=too-many-instance-attributes
 class _SSHClient:
     def __init__(
         self,
