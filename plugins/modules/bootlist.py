@@ -206,6 +206,45 @@ from ansible.module_utils.basic import AnsibleModule
 __metaclass__ = type
 
 
+def get_bootlist(module, bootlist_path, mode):
+    """Return the current boot list for 'normal' or 'service' as a list of dicts, or None."""
+    cmd = [bootlist_path, '-m', mode, '-o']
+    ret, stdout, stderr = module.run_command(cmd)
+    if ret != 0:
+        return None
+    current = []
+    for line in stdout.splitlines():
+        elems = line.split()
+        if len(elems) < 1:
+            continue
+        entry = dict(device=elems.pop(0))
+        for elem in elems:
+            if '=' in elem:
+                attr, val = elem.split('=', 2)
+                entry[attr] = val
+        current.append(entry)
+    return current
+
+
+def bootlist_matches(current, requested):
+    """Check whether the current boot list already satisfies the requested one.
+
+    The order of the devices is significant. Only the attributes specified by the user
+    are compared; attributes reported by AIX but not requested are ignored.
+    """
+    if current is None or len(current) != len(requested):
+        return False
+    for cur_entry, req_entry in zip(current, requested):
+        if cur_entry.get('device') != req_entry['device']:
+            return False
+        for attr, val in req_entry.items():
+            if attr == 'device' or not val:
+                continue
+            if cur_entry.get(attr) != str(val):
+                return False
+    return True
+
+
 def main():
     # Options common to "normal", "service" and "both" dictionary keys
     attrs = dict(
@@ -247,6 +286,11 @@ def main():
     for mode in ['normal', 'service', 'both']:
         if not module.params[mode]:
             continue
+        # Skip the change if the current boot list(s) already match the requested one
+        modes_to_check = ['normal', 'service'] if mode == 'both' else [mode]
+        if all(bootlist_matches(get_bootlist(module, bootlist_path, m), module.params[mode])
+               for m in modes_to_check):
+            continue
         # Run bootlist in verbose mode
         cmd = [bootlist_path, '-v', '-m', mode]
         if module.params['force']:
@@ -266,21 +310,10 @@ def main():
     # Retrieve boot lists
     bootlists = {}
     for mode in ['normal', 'service']:
-        cmd = [bootlist_path, '-m', mode, '-o']
-        ret, stdout, stderr = module.run_command(cmd)
-        if ret != 0:
+        current = get_bootlist(module, bootlist_path, mode)
+        if current is None:
             continue
-        bootlists[mode] = []
-        for line in stdout.splitlines():
-            elems = line.split()
-            if len(elems) < 1:
-                continue
-            entry = dict(device=elems.pop(0))
-            for elem in elems:
-                if '=' in elem:
-                    attr, val = elem.split('=', 2)
-                    entry[attr] = val
-            bootlists[mode].append(entry)
+        bootlists[mode] = current
     results['ansible_facts'] = dict(bootlist=bootlists)
 
     module.exit_json(**results)
